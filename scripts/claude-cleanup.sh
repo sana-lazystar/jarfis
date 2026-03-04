@@ -259,7 +259,7 @@ if [ "$MODE" = "--kill" ] && [ "$zombie_count" -gt 0 ]; then
         done
     done < "$ZOMBIE_FILE"
     echo ""
-    echo -e "${GREEN}${BOLD}$killed개 프로세스 그룹 정리 완료. ~${total_mb}MB 메모리 회수.${NC}"
+    echo -e "${GREEN}${BOLD}${killed}개 프로세스 그룹 정리 완료. ~${total_mb}MB 메모리 회수.${NC}"
 elif [ "$zombie_count" -gt 0 ]; then
     echo -e "${DIM}실제로 정리하려면:${NC}"
     echo -e "  ${CYAN}${BOLD}./claude-cleanup.sh --kill${NC}"

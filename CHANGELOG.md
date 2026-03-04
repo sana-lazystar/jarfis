@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.5] - 2026-03-04
+
+### Fixed
+- `claude-cleanup.sh` line 262: `$killed개` → `${killed}개` — bash `set -u`에서 한글이 변수명에 포함되어 unbound variable 경고 발생하던 버그 수정
+
 ## [1.0.4] - 2026-03-04
 
 ### Changed
