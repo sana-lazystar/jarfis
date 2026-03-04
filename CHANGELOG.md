@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.3] - 2026-03-04
+
+### Changed
+- README.md rewritten for public release — feature showcase with workflow pipeline, learning system, context resilience, self-evolution sections
+
 ## [1.0.2] - 2026-03-04
 
 ### Added
