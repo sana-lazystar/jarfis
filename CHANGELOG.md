@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.4] - 2026-03-04
+
+### Changed
+- README.md 상단 소개 섹션 개선 — 더 생동감 있는 톤으로 JARFIS 파이프라인 설명
+
 ## [1.0.3] - 2026-03-04
 
 ### Changed
