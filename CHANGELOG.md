@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.7] - 2026-03-05
+
+### Added
+- Agent Learned Rules 머지: senior-backend-engineer(+16), senior-frontend-engineer(+10), senior-security-engineer(+4), senior-qa-engineer(+6) — 로컬 환경에서 축적된 실전 학습 항목 통합
+- work.md: Type B 브랜치 규칙 (기존 피처 브랜치 기반 분기 + base_branch 추적)
+- work.md: Multi-project Git 검증 (`git rev-parse --show-toplevel`)
+- work.md: Adaptive Skip 경험 가이드 (UX/DevOps 스킵 조건, Phase 4.5 경량 모드, diagnosis 그룹핑 효과)
+- prompts/phase4.md: BE/FE Self-Checklist (Phase 5 진입 전 자가 검증)
+- prompts/phase4.md: BE/FE 데이터 정합성 규칙 (seed/mock 단일 소스 원칙)
+- prompts/phase4.md: FE 태스크 배칭 규칙 (15개 초과 시 분할) + 체크박스 진행 추적
+- prompts/phase5.md: UI 교차검증 (ux-spec.md 참조) + 재리뷰 효율화 규칙
+
 ## [1.0.6] - 2026-03-04
 
 ### Changed

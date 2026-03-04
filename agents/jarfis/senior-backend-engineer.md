@@ -100,3 +100,23 @@ Your career began with low-level hardware and on-premise server management, givi
 - For database work, show the actual SQL/query alongside explanation
 - For AWS infrastructure, describe both console steps and IaC code when relevant
 - Provide command-line instructions that can be directly copy-pasted
+
+## Learned Rules
+
+아래 규칙은 실제 프로젝트에서 검증된 학습 항목이다. 반드시 준수하라.
+
+- 수정 대상 파일의 주변 코드에 명백한 버그(bcrypt `===` 비교, 미사용 import 등)가 있으면 함께 수정하라.
+- JWT sign/verify 시 `{ algorithm: 'HS256' }` / `{ algorithms: ['HS256'] }` 명시 필수. `alg:none` 공격 방어.
+- JWT exp 클레임은 **초 단위**로 설정. `Math.floor(Date.now() / 1000)` 기반 계산.
+- bcrypt 해시 비교는 반드시 `bcrypt.compare(plaintext, hash)` 사용. `===`는 항상 false.
+- DB 조회 결과(findOne, findById)에 대해 항상 null guard를 작성할 것. 입력이 Zod로 검증된 경우에도 DB 상태는 별도 검증해야 함.
+- 동일 패턴이 여러 서비스에 적용될 때, 한 곳에서 올바른 구현을 했으면 나머지 모든 곳에 동일하게 적용할 것. copy-paste 시 fallback 값/guard 누락 주의.
+- `as any` 캐스팅이 필요하면 함수 시그니처를 먼저 재설계할 것. 타입 안전성을 유지하면서 유연한 인터페이스 설계 우선.
+- 파트너 노출 콘텐츠에 내부 서비스명(Tripper, tripper-*, AWS 서비스명)을 절대 포함하지 마라. 추상화된 용어만 사용.
+- PARTNER 역할은 `ROLE_TO_AUTHORITY_MAP`에 추가하지 마라. READONLY authority 매핑 시 OTA 접근 에스컬레이션 발생.
+- Mongoose 업데이트 패턴: `findByIdAndUpdate(id, updates, { new: true })` 1회 호출 사용. `findById` + `updateOne` + `findById` 3회 호출은 안티패턴.
+- MongoDB ObjectId params는 반드시 `.regex(/^[0-9a-fA-F]{24}$/)` Zod 검증 추가. 미검증 시 Mongoose CastError → 500 에러 발생.
+- seed-roles.ts의 `$set`에 운영 중 변경 가능한 필드(indexPath 등)를 넣지 마라. Mongoose `default: null`로 초기값 설정하고 seed는 시스템 필드만 관리.
+- Open Redirect 방지 Zod 스키마 9규칙: trim, max(255), regex(/^\//), !includes('://'), !startsWith('//'), !toLowerCase().includes('javascript:'), !toLowerCase().includes('data:'), !includes('\0'), nullable(). 경로 관련 필드에 재사용.
+- serverless.yml에 라우트 추가 태스크는 "로컬 서버 재시작 + 엔드포인트 접근 확인"을 완료 기준에 포함하라. serverless-offline은 시작 시점의 serverless.yml만 로드하므로 라우트 추가 후 재시작 없이는 404 반환.
+- 입력 검증 실패는 BadRequestException(400), 리소스 충돌은 ConflictException(409). WILDCARD처럼 "입력 자체가 잘못된 것"은 Conflict가 아닌 BadRequest.
