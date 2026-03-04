@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.5
+> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.6
 
 ## 파일 구조
 ```
@@ -49,7 +49,7 @@
 | `/jarfis` | `jarfis.md` | 명령어 목록 출력 |
 | `/jarfis:meeting` | `jarfis/meeting.md` | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성) |
 | `/jarfis:work` | `jarfis/work.md` | 기획→설계→구현→리뷰 전체 워크플로우 |
-| `/jarfis:project-init` | `jarfis/project-init.md` | 프로젝트 분석 → `./jarfis/project-profile.md` 생성 |
+| `/jarfis:project-init` | `jarfis/project-init.md` | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성 |
 | `/jarfis:project-update` | `jarfis/project-update.md` | 기존 프로필 증분 갱신 (git diff 기반) |
 | `/jarfis:upgrade` | `jarfis/upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
@@ -58,11 +58,11 @@
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
 ## 산출물/데이터 파일
-- `./jarfis/project-profile.md` — project-init이 생성, work이 참조
-- `./jarfis/context.md` — work 실행 시 참조하는 컨텍스트 (선택적)
+- `./.jarfis/project-profile.md` — project-init이 생성, work이 참조
+- `./.jarfis/context.md` — work 실행 시 참조하는 컨텍스트 (선택적)
 - `~/.claude/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
-- `./jarfis/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
-- `./jarfis/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
+- `./.jarfis/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
+- `./.jarfis/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
   - `summary.md` — YAML frontmatter + 미팅 요약 (work.md 자동 감지용)
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
@@ -77,7 +77,7 @@
 ## 내부 참조 관계
 - `jarfis.md` → 모든 명령어 참조 (도우미 텍스트)
 - `meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
-- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0 자동 감지, `./jarfis/meetings/*/` glob 스캔) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
+- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0 자동 감지, `./.jarfis/meetings/*/` glob 스캔) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
 - `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드)
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)

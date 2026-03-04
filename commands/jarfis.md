@@ -15,7 +15,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 
   /jarfis:project-init [--depth basic|medium|deep]
     현재 프로젝트 디렉토리를 분석하여 프로필을 생성합니다.
-    기본 깊이: deep. 산출물: ./jarfis/project-profile.md
+    기본 깊이: deep. 산출물: ./.jarfis/project-profile.md
     /jarfis:work 시 서브에이전트가 자동 참조 → 토큰 절약 + 컨벤션 준수
 
   /jarfis:project-update
@@ -26,7 +26,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   /jarfis:meeting [기획 주제]
     아이디어 탐색을 위한 기획 킥오프 미팅을 시작합니다.
     PO와 Tech Lead가 사용자와 자유롭게 토론하며 아이디어를 구체화합니다.
-    산출물: ./jarfis/meeting/{기획명}/ (summary, 회의록, 결정사항, 기술조사)
+    산출물: ./.jarfis/meetings/{기획명}/ (summary, 회의록, 결정사항, 기술조사)
     ※ /jarfis:work 실행 시 미팅 산출물을 자동으로 감지/참조합니다.
 
   /jarfis:work [기획 내용]

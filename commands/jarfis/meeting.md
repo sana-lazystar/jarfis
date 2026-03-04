@@ -25,9 +25,9 @@
      - "이름 변경" 선택 시 새 이름 입력받아 `$MEETING_NAME` 갱신
 
 2. **디렉토리 생성**
-   - `$MEETING_DIR` = `./jarfis/meetings/{YYYYMMDD}/$MEETING_NAME/` (YYYYMMDD: 미팅 시작 날짜)
+   - `$MEETING_DIR` = `./.jarfis/meetings/{YYYYMMDD}/$MEETING_NAME/` (YYYYMMDD: 미팅 시작 날짜)
    - 디렉토리를 생성한다: `mkdir -p $MEETING_DIR`
-   - 동일 `$MEETING_NAME`이 `./jarfis/meetings/*/` 하위에 이미 존재하면 AskUserQuestion:
+   - 동일 `$MEETING_NAME`이 `./.jarfis/meetings/*/` 하위에 이미 존재하면 AskUserQuestion:
      ```
      "이미 '$MEETING_NAME' 미팅 기록이 있습니다.
       1. 기존 기록 위에 이어서 진행
@@ -35,8 +35,8 @@
      ```
 
 3. **컨텍스트 로드**
-   - `./jarfis/project-profile.md` → 존재하면 `$PROJECT_PROFILE` 변수로 읽기
-   - `./jarfis/context.md` → 존재하면 `$PROJECT_CONTEXT` 변수로 읽기
+   - `./.jarfis/project-profile.md` → 존재하면 `$PROJECT_PROFILE` 변수로 읽기
+   - `./.jarfis/context.md` → 존재하면 `$PROJECT_CONTEXT` 변수로 읽기
    - `~/.claude/jarfis-learnings.md` → 존재하면 `$LEARNINGS` 변수로 읽기
    - 세 파일 모두 없어도 미팅은 진행 가능 (로드 실패 시 빈 문자열)
 

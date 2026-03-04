@@ -1,6 +1,6 @@
 # JARFIS Init — 프로젝트 프로필 생성
 
-현재 디렉토리의 프로젝트를 분석하여 `./jarfis/project-profile.md`를 생성합니다.
+현재 디렉토리의 프로젝트를 분석하여 `./.jarfis/project-profile.md`를 생성합니다.
 이 프로필은 `/jarfis:work` 실행 시 서브에이전트에게 주입되어 코드베이스 탐색 토큰을 절약하고 프로젝트 컨벤션에 맞는 코드를 생성하게 합니다.
 
 사용자 요청: $ARGUMENTS
@@ -131,7 +131,7 @@
 
 ### Step 4: 프로필 문서 생성
 
-분석 결과를 `./jarfis/project-profile.md`에 저장하세요.
+분석 결과를 `./.jarfis/project-profile.md`에 저장하세요.
 
 > 📄 템플릿: `templates/project-profile.md`를 읽어서 산출물 양식으로 사용한다.
 
@@ -149,7 +149,7 @@
 📂 프로젝트: [프로젝트명]
 🔍 유형: [BE/FE/Fullstack]
 📊 깊이: [basic/medium/deep]
-📄 산출물: ./jarfis/project-profile.md
+📄 산출물: ./.jarfis/project-profile.md
 
 이 프로필은 /jarfis:work 실행 시 자동으로 참조됩니다.
 프로젝트 구조가 크게 변경되면 /jarfis:project-init 을 다시 실행하세요.

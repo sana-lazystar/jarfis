@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.6] - 2026-03-04
+
+### Changed
+- 산출물 디렉토리 `./jarfis/` → `./.jarfis/`로 변경 (dotfile 디렉토리로 숨김 처리)
+  - work.md, meeting.md, project-init.md, project-update.md, jarfis.md, templates/project-profile.md 내 경로 참조 갱신
+  - `jarfis-pre-compact.sh` 훅 경로 갱신
+
 ## [1.0.5] - 2026-03-04
 
 ### Fixed

@@ -10,8 +10,8 @@ SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # 1. jarfis-state.json 백업 (work 워크플로우용)
-#    $CWD/jarfis/ 하위에서 가장 최근 .jarfis-state.json을 찾는다.
-STATE_FILE=$(find "$CWD/jarfis" -name ".jarfis-state.json" -maxdepth 3 2>/dev/null | head -1)
+#    $CWD/.jarfis/ 하위에서 가장 최근 .jarfis-state.json을 찾는다.
+STATE_FILE=$(find "$CWD/.jarfis" -name ".jarfis-state.json" -maxdepth 3 2>/dev/null | head -1)
 
 if [ -n "$STATE_FILE" ]; then
   STATE_DIR=$(dirname "$STATE_FILE")
@@ -30,8 +30,8 @@ if [ -n "$STATE_FILE" ]; then
 fi
 
 # 2. meeting 진행 중 임시 노트 백업
-#    ./jarfis/meeting/ 하위에서 최근 수정된 디렉토리 확인
-MEETING_DIR=$(find "$CWD/jarfis/meeting" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | while read d; do
+#    ./.jarfis/meetings/ 하위에서 최근 수정된 디렉토리 확인
+MEETING_DIR=$(find "$CWD/.jarfis/meetings" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | while read d; do
   if [ -f "$d/summary.md" ]; then
     echo "$d"
   fi

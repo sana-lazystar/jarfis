@@ -1,6 +1,6 @@
 # Project Profile Template
 
-아래 구조로 `./jarfis/project-profile.md`를 생성한다.
+아래 구조로 `./.jarfis/project-profile.md`를 생성한다.
 해당 depth에서 분석하지 않은 섹션은 포함하지 말 것 (빈 섹션 금지).
 
 ```markdown
