@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-03-04
+
+### Removed
+- `/jarfis:pack` command — Git-based distribution (`git clone` + `install.sh`) fully replaces portable archive
+
+### Changed
+- `distill.md` meta-tool exclusion list: replaced `pack.md` with `version.md`
+
 ## [1.0.0] - 2026-03-04
 
 ### Added

@@ -54,10 +54,6 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     JARFIS 시스템 자체를 수정/기능 추가합니다.
     인덱스 파일을 읽고 → 수정 → 인덱스 자동 갱신 → 버전 범프
 
-  /jarfis:pack
-    현재 설치된 JARFIS 파일을 포터블 아카이브로 패키징합니다.
-    결과물: ~/Desktop/jarfis-v{X.Y.Z}-portable.tar.gz
-
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   권장 순서:
     1. cd my-project && /jarfis:project-init     ← 프로젝트 프로필 생성 (최초 1회)
@@ -77,6 +73,5 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     /jarfis:distill work.md
     /jarfis:version
     /jarfis:health
-    /jarfis:pack
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

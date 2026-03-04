@@ -23,7 +23,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
      - `~/.claude/commands/jarfis/templates/` (외부화된 템플릿, 존재 시)
      - `~/.claude/commands/jarfis/prompts/` (외부화된 프롬프트, 존재 시)
    - 제외 대상 판단 기준:
-     - JARFIS 메타 도구 (시스템 관리용, 워크플로우가 아닌 것): `distill.md`, `implement.md`, `jarfis-index.md`, `pack.md`, `health.md`, `upgrade.md`
+     - JARFIS 메타 도구 (시스템 관리용, 워크플로우가 아닌 것): `distill.md`, `implement.md`, `jarfis-index.md`, `health.md`, `upgrade.md`, `version.md`
      - 위 목록은 인덱스의 명령어 매핑에서 역할이 "시스템 관리"에 해당하는 것들이다.
      - **인덱스에 새 명령어가 추가된 경우**: 역할을 확인하여 워크플로우 프롬프트인지 메타 도구인지 판단하고, 워크플로우 프롬프트만 증류 대상에 포함한다.
    - 각 파일: 줄 수, 문자 수, 토큰 추정 (문자 수 / 4)

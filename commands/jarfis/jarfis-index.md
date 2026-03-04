@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.0
+> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.1
 
 ## 파일 구조
 ```
@@ -14,7 +14,6 @@
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (660줄, 프롬프트+템플릿 외부화 후)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
-    ├── pack.md                    # 포터블 아카이브 생성 (251줄)
     ├── upgrade.md                 # 학습 항목 관리 및 시스템 적용 (285줄)
     ├── distill.md                 # 프롬프트 증류 — 토큰 효율 최적화 (208줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
@@ -55,7 +54,6 @@
 | `/jarfis:upgrade` | `jarfis/upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
-| `/jarfis:pack` | `jarfis/pack.md` | JARFIS 파일을 tar.gz로 패키징 |
 | `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
