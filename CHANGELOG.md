@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.2] - 2026-03-04
+
+### Added
+- Repo 동기화 step in `implement.md` (Step 4) — syncs modified files from `~/.claude/` to Git repo
+- Repo 동기화 step in `upgrade.md` (3-A-8) — syncs applied agent/workflow files to Git repo
+- Repo 동기화 step in `distill.md` (D-4 step 5) — syncs distilled files to Git repo
+- Repo 동기화 entry in `jarfis-index.md` 수정 시 체크리스트 and 내부 참조 관계
+
 ## [1.0.1] - 2026-03-04
 
 ### Removed

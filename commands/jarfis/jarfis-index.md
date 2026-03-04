@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.1
+> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.2
 
 ## 파일 구조
 ```
@@ -108,4 +108,5 @@
   - Phase 추가/삭제 시 → work.md + 대응하는 prompts/ + templates/ 파일 동시 갱신
   - `agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
 - **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + jarfis-index.md Version + CHANGELOG 갱신
+- **Repo 동기화**: implement/distill/upgrade 완료 후 → 변경 파일을 `~/.claude/` → `{repo_path}/`로 복사 (로컬 전용 파일 제외)
 - **Git repo**: `~/.claude/.jarfis-source`에서 경로 확인 (기본: `~/repos/jarfis`)
