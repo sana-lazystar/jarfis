@@ -1,0 +1,15 @@
+# User data (local only)
+jarfis-learnings.md
+.jarfis-state.json
+
+# Backup directories
+.compact-backups/
+.distill-backup/
+
+# OS
+.DS_Store
+
+# Editor
+*.swp
+*.swo
+*~
