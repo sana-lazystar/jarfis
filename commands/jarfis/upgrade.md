@@ -242,14 +242,14 @@ options:
 
 비우기 시: 섹션 헤더 구조는 유지하고 항목(`-`로 시작하는 줄)만 제거하라.
 
-##### 3-A-7. 버전 범프 (PATCH)
+##### 3-A-7. 버전 범프 (PATCH) — `jarfis-version-bump.sh` 사용
 
 학습 적용은 에이전트 프롬프트 내용 변경이므로 PATCH 범프한다:
-- `~/.claude/.jarfis-source`에서 Git repo 경로를 읽는다 (없으면 `~/repos/jarfis`).
-- `{repo_path}/VERSION`의 PATCH를 +1 한다.
-- `~/.claude/.jarfis-version`을 새 버전으로 갱신한다.
-- `jarfis-index.md`의 `Version:` 표기를 새 버전으로 갱신한다.
-- `{repo_path}/CHANGELOG.md`의 `[Unreleased]` 섹션에 적용 내역을 추가한다.
+```bash
+bash ~/.claude/scripts/jarfis-version-bump.sh patch "upgrade: 학습 적용 (적용 내역 요약)"
+```
+- 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
+- 출력 JSON의 `previous`/`new` 버전을 결과 보고에 포함한다.
 
 ##### 3-A-8. Repo 동기화
 

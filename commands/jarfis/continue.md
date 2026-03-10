@@ -24,15 +24,16 @@
 - 존재하면 해당 워크플로우를 선택한다 (완료 여부 무관 — 사용자가 명시적으로 지정했으므로).
 - 존재하지 않으면: "지정된 경로에 워크플로우가 없습니다: `{$WORKFLOW_PATH}`" 출력 후 종료.
 
-`$WORKFLOW_PATH`가 없는 경우 (기존 자동 탐색):
+`$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis-state.sh 사용):
 
 1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `~/.jarfis-workspace`)
-   `$JARFIS_WORKSPACE_DIR/works/` 디렉토리를 스캔하여 완료된 워크플로우를 찾는다:
+   완료된 워크플로우를 스크립트로 검색한다:
    ```bash
-   find $JARFIS_WORKSPACE_DIR/works/ -name ".jarfis-state.json" -type f 2>/dev/null
+   bash ~/.claude/scripts/jarfis-state.sh list-workflows "$JARFIS_WORKSPACE_DIR" --completed-only
    ```
+   JSON 출력의 `workflows` 배열에서 각 워크플로우의 `work_name`, `project_name`, `started_at`, `docs_dir`을 확인한다.
 
-2. 각 상태 파일을 읽어 `current_phase`가 `"done"` 또는 마지막 Phase가 `"completed"`인 워크플로우를 필터링한다.
+2. `count`가 0이면 "완료된 워크플로우가 없습니다" 출력 후 종료.
 
 3. **워크플로우가 1개**: 자동 선택
    **워크플로우가 2개 이상**: AskUserQuestion으로 선택:
@@ -59,7 +60,11 @@
    - `$DOCS_DIR/tasks.md` — 태스크 분해 (완료된 항목 확인)
    - `$DOCS_DIR/architecture.md` — 아키텍처 (첫 50줄만, 개요 파악용)
 
-6. 컨텍스트/프로필 로드 — work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
+6. **Pre-flight 검증** — 스크립트로 컨텍스트/프로필 존재 여부를 확인:
+   ```bash
+   bash ~/.claude/scripts/jarfis-preflight.sh
+   ```
+   JSON 출력의 `has_learnings`, `has_context`, `has_profile`로 각 파일을 로드한다. work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
 
 ---
 

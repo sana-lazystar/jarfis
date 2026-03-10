@@ -35,11 +35,16 @@
       2. 기존 기록 삭제하고 새로 시작"
      ```
 
-3. **컨텍스트 로드**
-   - `./.jarfis/project-profile.md` → 존재하면 `$PROJECT_PROFILE` 변수로 읽기
-   - `./.jarfis/project-context.md` → 존재하면 `$PROJECT_CONTEXT` 변수로 읽기
-   - `~/.claude/jarfis-learnings.md` → 존재하면 `$LEARNINGS` 변수로 읽기
+3. **컨텍스트 로드 (jarfis-preflight.sh)**
+   ```bash
+   bash ~/.claude/scripts/jarfis-preflight.sh
+   ```
+   JSON 출력의 `has_profile`, `has_learnings`, `has_context`를 확인하여:
+   - `has_profile`=true → `profile_path`에서 `$PROJECT_PROFILE` 로드
+   - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
+   - `has_context`=true → `context_path`에서 `$PROJECT_CONTEXT` 로드
    - 세 파일 모두 없어도 미팅은 진행 가능 (로드 실패 시 빈 문자열)
+   - `warnings` 배열의 내용은 정보성으로 표시 (미팅 진행을 차단하지 않음)
 
 4. **미팅 안내 출력**
    미팅명, 참석자(PO/TL), 명령어("정리해줘"→중간요약, "마무리"/"끝"→종료+산출물), 전문가 자동 소환 안내를 배너로 표시한다.

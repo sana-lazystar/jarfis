@@ -1,23 +1,23 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.5
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.4.1
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (89줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (94줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (192줄)
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 183줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (427줄, 프롬프트+템플릿 외부화 후)
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (187줄)
+    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (443줄, 프롬프트+템플릿 외부화 후)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
-    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (299줄)
+    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (371줄)
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (305줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (256줄)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (261줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (143줄)
@@ -28,7 +28,7 @@
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅 (46줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 (76줄)
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 (80줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
         ├── project-context.md     # project-context.md 템플릿 (17줄)
         ├── project-profile.md     # 프로젝트 프로필 템플릿 (66줄)
@@ -38,13 +38,13 @@
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄) [NEW]
 ├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄) [NEW]
 ├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
-├── senior-frontend-engineer.md    # FE 구현 에이전트 (83줄)
-├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (85줄)
+├── senior-frontend-engineer.md    # FE 구현 에이전트 (105줄)
+├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (92줄)
 ├── senior-product-owner.md        # PO 역질문/PRD 에이전트 (79줄)
-├── tech-lead.md                   # TL 태스크 분해 에이전트 (142줄)
+├── tech-lead.md                   # TL 태스크 분해 에이전트 (154줄)
 ├── technical-architect.md         # 아키텍처 설계 에이전트 (128줄)
-├── senior-security-engineer.md    # 보안 리뷰 에이전트 (99줄)
-├── senior-qa-engineer.md          # QA 리뷰 에이전트 (94줄)
+├── senior-security-engineer.md    # 보안 리뷰 에이전트 (105줄)
+├── senior-qa-engineer.md          # QA 리뷰 에이전트 (95줄)
 └── senior-ux-designer.md          # UX 리뷰 에이전트 (92줄)
 ```
 
@@ -75,6 +75,11 @@
   - `decisions.md` — 의사결정 표 + 근거 + 대안
   - `tech-research.md` — 전문가 조사 결과 (전문가 소환 시에만 생성)
 - `~/.claude/scripts/jarfis-sync.sh` — Repo 동기화 스크립트 (`~/.claude/` → `{repo_path}/` 자동 diff+복사)
+- `~/.claude/scripts/jarfis-measure.sh` — 프롬프트 파일 토큰 측정 + 구조 진단 (distill D-0/D-1/D-4에서 사용)
+- `~/.claude/scripts/jarfis-version-bump.sh` — semver 버전 범프 자동화 (implement/distill/upgrade에서 사용)
+- `~/.claude/scripts/jarfis-preflight.sh` — 사전 검증 (프로필/학습/컨텍스트/git 상태 JSON 출력, work/continue/meeting에서 사용)
+- `~/.claude/scripts/jarfis-state.sh` — .jarfis-state.json CRUD (init/read/write/set/set-nested/list-workflows, work/continue에서 사용)
+- `~/.claude/scripts/jarfis-detect-project.sh` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업)
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
@@ -91,15 +96,21 @@
 - `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드)
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
-- `distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
+- `distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → `jarfis-measure.sh`로 토큰 측정 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
 - `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
 - `agents/jarfis/jarfis-advocate.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 옹호)
 - `agents/jarfis/jarfis-critic.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 비판)
 - `continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조 + `prompts/continue-extend.md` 참조 (Extend 모드) + work.md Agent Mapping 참조 (모델 라우팅 SSOT) + project-profile.md/project-context.md 로드 (work.md Phase 0과 동일)
 - `implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
 - `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
-- `distill.md` → 완료 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
-- `upgrade.md` → 학습 적용 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
+- `distill.md` → 완료 후 `jarfis-version-bump.sh patch` 호출
+- `upgrade.md` → 학습 적용 후 `jarfis-version-bump.sh patch` 호출
+- `implement.md` → 완료 후 `jarfis-version-bump.sh <type>` 호출 (사용자 선택)
+- `jarfis-measure.sh` → distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
+- `jarfis-version-bump.sh` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG 자동 갱신
+- `jarfis-preflight.sh` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
+- `jarfis-state.sh` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
+- `jarfis-detect-project.sh` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지
 - `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행)
 
 ## Git Auto-Commit 기능

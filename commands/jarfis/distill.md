@@ -12,32 +12,32 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 0. **시스템 현황 파악**
    - `~/.claude/commands/jarfis/jarfis-index.md`를 먼저 읽어 현재 JARFIS 파일 구조를 파악한다.
-   - 인덱스의 "파일 구조"와 "명령어 매핑"을 기반으로 아래 스캔 범위를 동적으로 결정한다.
-   - 인덱스에 없는 파일이 디스크에 존재하거나, 인덱스에 있는 파일이 디스크에 없으면 경고를 출력한다.
+   - 인덱스의 "파일 구조"와 "명령어 매핑"을 기반으로 제외 대상을 결정한다.
+   - **인덱스에 새 명령어가 추가된 경우**: 역할을 확인하여 워크플로우 프롬프트인지 메타 도구인지 판단하고, 메타 도구는 제외 목록에 추가한다.
 
-1. **파일별 토큰 비용 측정**
-   - 스캔 범위:
-     - `~/.claude/commands/jarfis.md` (메인 도우미)
-     - `~/.claude/commands/jarfis/` 내 **워크플로우 프롬프트** `.md` 파일
-     - `~/.claude/agents/jarfis/` 내 모든 `.md` 파일 (에이전트 프롬프트)
-     - `~/.claude/commands/jarfis/templates/` (외부화된 템플릿, 존재 시)
-     - `~/.claude/commands/jarfis/prompts/` (외부화된 프롬프트, 존재 시)
-   - 제외 대상 판단 기준:
-     - JARFIS 메타 도구 (시스템 관리용, 워크플로우가 아닌 것): `distill.md`, `implement.md`, `jarfis-index.md`, `health.md`, `upgrade.md`, `version.md`
-     - 위 목록은 인덱스의 명령어 매핑에서 역할이 "시스템 관리"에 해당하는 것들이다.
-     - **인덱스에 새 명령어가 추가된 경우**: 역할을 확인하여 워크플로우 프롬프트인지 메타 도구인지 판단하고, 워크플로우 프롬프트만 증류 대상에 포함한다.
-   - 각 파일: 줄 수, 문자 수, 토큰 추정 (문자 수 / 4)
+1. **파일별 토큰 비용 측정** — `jarfis-measure.sh` 스크립트 사용 (LLM이 파일을 직접 읽지 않고 측정 결과만 받음)
+   ```bash
+   bash ~/.claude/scripts/jarfis-measure.sh \
+     --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
+     --index ~/.claude/commands/jarfis/jarfis-index.md \
+     --diagnostics
+   ```
+   - 스크립트가 스캔하는 범위: `commands/jarfis/`, `agents/jarfis/`, `commands/jarfis.md` (재귀, `.distill-backup/` 제외)
+   - 제외 대상: 메타 도구 (`distill.md`, `implement.md`, `jarfis-index.md`, `health.md`, `upgrade.md`, `version.md`)
+   - 출력 JSON에서 `files[].{name, lines, tokens_est}` + `total` + `index_mismatches`를 파싱하여 테이블로 표시
+   - `index_mismatches`가 있으면 경고를 출력한다
+   - `--diagnostics` 옵션으로 D-1 진단에 필요한 코드블록/헤더/프롬프트 패턴 정보도 함께 수집
    - 결과를 테이블로 출력:
      ```
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
        JARFIS Distill — Before 측정
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      파일명              줄수    토큰추정
-     work.md             1507   16,527
-     meeting.md           363    2,972
+     work.md              427    4,558
+     meeting.md           183    1,872
      ...
      ─────────────────────────────────────────
-     TOTAL               2838   29,234
+     TOTAL               3330   40,549
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      ```
 
@@ -54,36 +54,36 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 ### D-1: 진단
 
-대상 파일 각각에 대해 다음 6가지 진단을 수행한다 (진단 6은 에이전트 파일에만 적용):
+대상 파일 각각에 대해 다음 6가지 진단을 수행한다 (진단 6은 에이전트 파일에만 적용).
+**D-0에서 `--diagnostics` 옵션으로 수집한 `diagnostics` 데이터를 활용**하여, 기계적 카운팅은 스크립트 출력에서 읽고 의미 분석만 LLM이 수행한다.
 
 #### 1. 인라인 템플릿 탐지
-- 코드블록(``` ... ```) 내부의 줄 수를 합산한다.
-- 전체 대비 코드블록 비율이 50%를 넘으면 "템플릿 과다 인라인" 경고.
-- 각 코드블록의 위치, 크기, 소속 Phase를 기록한다.
+- D-0 스크립트 출력의 `diagnostics.codeblock_lines`와 `diagnostics.codeblock_ratio`를 참조한다.
+- `codeblock_ratio`가 0.50을 넘으면 "템플릿 과다 인라인" 경고.
+- 비율이 높은 파일만 직접 읽어 코드블록의 위치, 크기, 소속 Phase를 기록한다.
 
 #### 2. 에이전트 프롬프트 탐지
-- `Task prompt:` 또는 `prompt:` 패턴으로 시작하는 코드블록을 찾는다.
-- 각 프롬프트의 줄 수, 토큰 추정, 소속 Phase를 기록한다.
+- D-0 스크립트 출력의 `diagnostics.prompt_patterns`를 참조한다. (`📄 프롬프트:`, `📄 템플릿:`, `Task prompt:` 패턴의 라인 번호 목록)
+- 프롬프트 패턴이 있는 파일만 해당 라인 주변을 읽어 줄 수, 토큰 추정, 소속 Phase를 기록한다.
 - 15줄 이상인 프롬프트를 "외부화 후보"로 표시한다.
 
-#### 3. 중복 규칙 탐지
+#### 3. 중복 규칙 탐지 (LLM 의미 분석 — 스크립트 대체 불가)
 - 동일/유사 문장이 2회 이상 등장하는 패턴을 찾는다.
   - 키워드 기반: 같은 개념어(예: `.jarfis-state.json`, `AskUserQuestion`)가 규칙 맥락에서 N회 이상 등장
   - 규칙 반복: "반드시 ~ 한다", "~ 해야 한다" 패턴의 유사 문장
 - 각 중복 그룹의 위치와 내용을 기록한다.
 
 #### 4. 구조 분석
-- `##` 레벨 헤더 목록을 추출한다.
-- "워크플로우 규칙" 헤더와 "산출물 템플릿" 헤더를 분류한다:
+- D-0 스크립트 출력의 `diagnostics.headers`를 참조한다. (`##` 레벨 헤더의 라인 번호 + 텍스트 목록)
+- 헤더를 "워크플로우 규칙"과 "산출물 템플릿"으로 분류한다:
   - Phase N, Execution Rules, Workflow Overview 등 → 규칙
   - 나머지 (산출물 양식명) → 템플릿
 - 두 유형이 같은 레벨에 섞여있으면 "구조 혼재" 경고.
 
 #### 5. 표현 밀도 분석
-- **출력 포맷 과다**: 코드블록 중 실제 데이터/템플릿이 아닌 "출력 예시"(UI 표시용 포맷 샘플)의 줄 수를 합산한다. 전체의 20%를 넘으면 "출력 예시 과다" 경고.
-- **섹션 압축 가능성**: 각 `##` 섹션의 "규칙 밀도"(규칙 수 / 줄 수)를 계산한다. 밀도가 0.1 미만인 섹션(=줄은 많지만 규칙이 적음)을 "저밀도 섹션"으로 표시한다.
-  - 저밀도의 원인: 장황한 설명, 과도한 예시, 에지케이스 대비 상세 기술 등
-- **압축 불가 마커**: `<!-- no-condense -->` 주석이 있는 섹션은 압축 대상에서 제외한다 (의도적으로 상세해야 하는 경우).
+- **출력 포맷 과다**: `diagnostics.codeblock_lines`에서 코드블록 비중이 높은 파일을 선별 → 해당 파일만 읽어 출력 예시 비율 확인. 전체의 20%를 넘으면 "출력 예시 과다" 경고.
+- **섹션 압축 가능성**: `diagnostics.headers`의 헤더 간 줄 수 차이로 섹션 크기를 추정. 큰 섹션만 읽어 "규칙 밀도"(규칙 수 / 줄 수)를 계산. 밀도가 0.1 미만이면 "저밀도 섹션"으로 표시.
+- **압축 불가 마커**: `<!-- no-condense -->` 주석이 있는 섹션은 압축 대상에서 제외한다.
 
 #### 6. 에이전트 추상화 분석 (`agents/jarfis/*.md` 전용)
 - 이 진단은 `~/.claude/agents/jarfis/` 내 에이전트 파일에만 적용한다. 워크플로우 파일은 건너뛴다.
@@ -242,7 +242,13 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 ### D-4: 측정 (After) + 리포트
 
-1. **After 측정**: D-0과 동일한 방식으로 토큰 비용을 재측정한다.
+1. **After 측정** — `jarfis-measure.sh`로 재측정 (D-0과 동일한 스크립트, `--diagnostics` 불필요):
+   ```bash
+   bash ~/.claude/scripts/jarfis-measure.sh \
+     --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
+     --index ~/.claude/commands/jarfis/jarfis-index.md
+   ```
+   - D-0의 Before 데이터와 After 데이터를 `files[].{name, tokens_est}`로 비교한다.
 
 2. **Before/After 비교 리포트 출력**:
    ```
@@ -275,12 +281,12 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 3. **인덱스 갱신**: `jarfis-index.md`를 수정 결과에 맞게 갱신한다.
 
-4. **버전 범프 (PATCH)**: 증류는 동작 변경 없이 토큰 최적화만 수행하므로 PATCH 범프한다.
-   - `~/.claude/.jarfis-source`에서 Git repo 경로를 읽는다 (없으면 `~/repos/jarfis`).
-   - `{repo_path}/VERSION`의 PATCH를 +1 한다 (예: 1.0.0 → 1.0.1).
-   - `~/.claude/.jarfis-version`을 새 버전으로 갱신한다.
-   - `jarfis-index.md`의 `Version:` 표기를 새 버전으로 갱신한다.
-   - `{repo_path}/CHANGELOG.md`의 `[Unreleased]` 섹션에 증류 내역을 추가한다.
+4. **버전 범프 (PATCH)** — `jarfis-version-bump.sh` 사용:
+   ```bash
+   bash ~/.claude/scripts/jarfis-version-bump.sh patch "distill: 토큰 최적화 (증류 내역 요약)"
+   ```
+   - 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
+   - 출력 JSON의 `previous`/`new` 버전을 리포트에 포함한다.
 
 5. **Repo 동기화**: 반드시 sync 스크립트를 실행한다:
    ```bash

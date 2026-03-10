@@ -140,14 +140,12 @@ options:
     description: "버전 범프를 건너뜁니다"
 ```
 
-"Skip"이 아닌 경우, 다음 파일들을 갱신하세요:
-
-1. **Git repo의 VERSION 파일**: `{repo_path}/VERSION` → 새 버전
-2. **jarfis-index.md**: `Last updated` 줄의 `Version: X.Y.Z` 갱신
-3. **~/.claude/.jarfis-version**: 새 버전으로 갱신
-4. **CHANGELOG.md**: `[Unreleased]` 섹션에 변경 내용 추가
-
-Git repo 경로는 Step 0에서 확인한 `.jarfis-source` 값을 사용하세요.
+"Skip"이 아닌 경우, `jarfis-version-bump.sh`를 사용하세요:
+```bash
+bash ~/.claude/scripts/jarfis-version-bump.sh <patch|minor|major> "implement: 변경 내역 요약"
+```
+- 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
+- 출력 JSON의 `previous`/`new` 버전을 결과 보고에 포함한다.
 
 - 파일 구조 트리 갱신 (파일 추가/삭제/이름 변경 시 줄 수 포함)
 - 명령어 매핑 테이블 갱신

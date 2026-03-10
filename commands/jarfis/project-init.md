@@ -18,29 +18,26 @@
 
 ## 실행 흐름
 
-### Step 0: 프로젝트 감지
+### Step 0: 프로젝트 감지 (jarfis-detect-project.sh)
 
-현재 디렉토리에서 프로젝트 유형을 감지하세요:
+스크립트로 프로젝트 유형을 자동 감지한다:
+```bash
+bash ~/.claude/scripts/jarfis-detect-project.sh
+```
 
-1. 프로젝트 매니페스트 파일 탐색:
-   - `package.json` → Node.js (FE 또는 BE)
-   - `pom.xml` / `build.gradle` / `build.gradle.kts` → Java/Kotlin (BE)
-   - `requirements.txt` / `pyproject.toml` / `Pipfile` → Python (BE)
-   - `go.mod` → Go (BE)
-   - `Cargo.toml` → Rust (BE)
-   - `pubspec.yaml` → Flutter/Dart (FE)
-   - `Gemfile` → Ruby (BE)
+JSON 출력을 분석한다:
+- `languages`: 감지된 언어 목록
+- `frameworks`: 감지된 프레임워크 목록
+- `package_managers`: 패키지 매니저
+- `project_type`: backend / frontend / fullstack / mobile / desktop / unknown
+- `confidence`: high / medium / low
+- `manifests_found`: 감지에 사용된 파일 목록
 
-2. 프레임워크 감지 (매니페스트의 dependencies 기반):
-   - **FE 프레임워크**: react, vue, angular, svelte, next (pages/app 라우터), nuxt, astro, solid
-   - **BE 프레임워크**: express, fastify, nestjs, koa, hono, spring, django, flask, fastapi, gin, echo, fiber
-   - **풀스택**: next.js(api routes 존재), nuxt(server/ 존재), remix, sveltekit
-
-3. 감지 실패 시 사용자에게 질문:
-   ```
-   프로젝트 유형을 자동 감지하지 못했습니다.
-   이 프로젝트의 유형과 기술 스택을 알려주세요.
-   ```
+`confidence`가 `low`이거나 `project_type`이 `unknown`이면 사용자에게 질문:
+```
+프로젝트 유형을 자동 감지하지 못했습니다.
+이 프로젝트의 유형과 기술 스택을 알려주세요.
+```
 
 감지 결과를 표시하세요:
 ```
@@ -48,7 +45,10 @@
   JARFIS Init — 프로젝트 분석
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 📂 경로: (현재 디렉토리)
-🔍 유형: BE / FE / Fullstack
+🔍 유형: {project_type}
+🛠️ 프레임워크: {frameworks}
+📦 패키지 매니저: {package_managers}
+🎯 신뢰도: {confidence}
 ⚙️ 깊이: basic / medium / deep
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

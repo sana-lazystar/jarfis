@@ -121,7 +121,10 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
    **0-a. 작업물명 입력**
    - AskUserQuestion으로 작업물명(`$WORK_NAME`)을 입력받는다 (디렉토리명/Git 브랜치명으로 사용).
-   - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/$WORK_NAME` (절대경로). 디렉토리 생성 + `.jarfis-state.json` 초기화.
+   - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/$WORK_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
+     ```bash
+     bash ~/.claude/scripts/jarfis-state.sh init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_NAME" "$DOCS_DIR"
+     ```
    > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
 
    **0-a-2. Meeting 감지**
@@ -144,7 +147,11 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    | FE만 | monorepo | `N/A` | `.` 또는 입력 | — |
    | BE만 | monorepo | `.` 또는 입력 | `N/A` | — |
 
-   - 각 경로에서 `package.json`으로 프레임워크 자동 감지 (next→Next.js, nuxt→Nuxt 등)
+   - 각 경로에서 프레임워크 자동 감지 스크립트 실행:
+     ```bash
+     bash ~/.claude/scripts/jarfis-detect-project.sh "$PROJECT_PATH"
+     ```
+     JSON 출력의 `frameworks`, `languages`, `project_type`을 활용하여 workspace 정보를 `.jarfis-state.json`에 기록한다.
    - `$BACKEND_PROJECT_DIR`, `$FRONTEND_PROJECT_DIR` 변수 설정 (`N/A`이면 빈 문자열)
 
    **0-b. Git 브랜치 동기화 및 생성**
@@ -153,8 +160,17 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - **multi-project**: BE/FE 각 경로에서 독립적으로 동일 과정 반복. `.jarfis-state.json`에 `branches: { backend, frontend }` 기록.
 
 1. **시스템 헬스체크** — `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion, 1~4개 → 경고, 0개 → 무시.
-2. `~/.claude/jarfis-learnings.md` → `$LEARNINGS`, `./.jarfis/project-context.md` → `$PROJECT_CONTEXT` (없으면 빈 문자열)
-3. 프로젝트 프로필 로드: `./.jarfis/project-profile.md` (Phase 0), `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4~5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
+2. **Pre-flight 검증** — 스크립트로 프로필/학습/컨텍스트 존재 여부를 한번에 확인:
+   ```bash
+   bash ~/.claude/scripts/jarfis-preflight.sh --check-meetings
+   ```
+   JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `warnings`를 확인하여:
+   - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
+   - `has_context`=true → `context_path`에서 `$PROJECT_CONTEXT` 로드
+   - `has_profile`=true → `profile_path`에서 프로필 로드
+   - `warnings` 배열이 비어있지 않으면 사용자에게 경고 표시
+   - 없는 파일은 빈 문자열로 치환
+3. 프로젝트 프로필 로드: `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4~5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
 
 **주입 규칙:**
 - Phase 1 (PO, Architect): `$LEARNINGS`의 Workflow Patterns + `$PROJECT_CONTEXT` 전체
@@ -351,14 +367,14 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
 > 📄 상태 파일 스키마 및 필드 설명: `templates/jarfis-state-schema.md`를 참조한다.
 
-**상태 파일 관리 규칙:**
-1. 워크플로우 시작 시 `$DOCS_DIR` 결정 + 상태 파일 초기화 (`current_phase: 0`, 모든 Phase `pending`)
-2. Phase 시작/완료 시 status 업데이트 (`in_progress` → `completed`/`skipped`)
-3. 에이전트 실행 시 개별 상태 업데이트
-4. 게이트 통과 시 결과 기록 + `current_phase` 갱신
-5. 매 Phase 시작 전 상태 파일 읽기 — 이미 완료된 Phase는 재실행하지 않음
-6. 상태 변경 시마다 `last_checkpoint` 갱신 (timestamp, phase, summary)
-7. 워크플로우 종료 시 `current_phase`를 `"done"`으로 설정
+**상태 파일 관리 규칙 (jarfis-state.sh 사용):**
+1. 워크플로우 시작: `jarfis-state.sh init "$STATE_FILE" "$PROJECT_NAME" "$WORK_NAME" "$DOCS_DIR"`
+2. Phase 시작/완료 시: `jarfis-state.sh set-nested "$STATE_FILE" "phases.{N}.status" "in_progress|completed|skipped"`
+3. 에이전트 상태: `jarfis-state.sh set-nested "$STATE_FILE" "phase4_agents.backend" "completed"`
+4. 게이트 결과: `jarfis-state.sh set-nested "$STATE_FILE" "gate_results.gate1.decision" "approved"`
+5. 매 Phase 시작 전: `jarfis-state.sh read "$STATE_FILE"` — 이미 완료된 Phase는 재실행하지 않음
+6. 상태 변경 시마다: `jarfis-state.sh set "$STATE_FILE" "current_phase" "{N}"` + `last_checkpoint` 갱신
+7. 워크플로우 종료: `jarfis-state.sh set "$STATE_FILE" "current_phase" '"done"'`
 
 **`api_spec_required` 판단**: `required_roles.backend == true AND frontend == true` → `true`, 그 외 → `false`
 
