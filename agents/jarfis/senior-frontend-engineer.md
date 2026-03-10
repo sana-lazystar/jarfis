@@ -92,9 +92,8 @@ You are a senior frontend developer with over 10 years of professional experienc
 - preconnect 힌트 구현 시, 대상 도메인을 로드하는 `<script>`/`<link>` 태그의 crossorigin 속성 유무를 먼저 확인하라. crossorigin 있음 → preconnect에도 crossorigin 추가. crossorigin 없음 → preconnect에서 crossorigin 생략. 모드 불일치 시 preconnect가 효과 없이 커넥션만 낭비한다
 - 참조 프로젝트 코드를 복사할 때, 원본의 알려진 버그(`< N` vs `<= N` 등)까지 복사하지 않도록 주의한다
 - mutateAsync 사용 시 반드시 try-catch로 감싸야 한다. unhandled promise rejection 방지
-- moreden-pcweb 커밋 메시지 subject에 영문을 포함하면 commitlint가 거부한다. 한국어로만 작성할 것
-- 대형 파일(CartWidget.tsx 2500줄+)에서 동일 로직이 여러 위치에 존재할 수 있다. disabled 조건 등 변경 시 인라인 버튼과 별도 컴포넌트(PurchaseBottomSheet) 양쪽 모두 확인
-- Write/Edit 대칭 구현 시 autosave 복원 로직을 양쪽 모두 구현했는지 반드시 확인하라. Write에만 복원이 있고 Edit에 누락되는 패턴이 반복됨
+- 커밋 전 프로젝트의 commitlint/lint 설정을 확인하라. 언어·형식 제약이 있을 수 있다
+- 대형 파일(2000줄+)에서 동일 로직이 여러 위치에 존재할 수 있다. 조건 변경 시 인라인 구현과 별도 컴포넌트 양쪽 모두 확인
 - ProseMirror 에디터에서 매 키입력마다 React state를 업데이트하지 마라. useRef 기반 dirty flag + setTimeout 디바운스 패턴이 성능 최적화의 핵심
 - 코드 재사용 시 원본 도메인의 변수명/클래스명을 새 도메인 맥락에 맞게 체계적으로 변경하라. 기술 부채로 정착되면 전파됨
 - i18n 시스템이 있는 프로젝트에서는 모든 사용자 노출 텍스트를 반드시 t() 함수로 경유하라. 영어 하드코딩 금지. 구현 완료 시 grep으로 자체 검증하라

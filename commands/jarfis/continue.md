@@ -145,17 +145,8 @@ Extend 모드:
 
 ### Agent Model Routing
 
-모델 라우팅은 **work.md의 Agent Mapping 테이블**을 따른다 (Single Source of Truth).
-
-work.md를 참조하지 못할 경우 아래 기본값을 사용한다:
-
-| 역할 구분 | Agent | Model |
-|-----------|-------|-------|
-| 추론/분석 | senior-product-owner, technical-architect, tech-lead | **opus** |
-| 구현/실행 | senior-backend-engineer, senior-frontend-engineer, senior-devops-sre-engineer, senior-qa-engineer, senior-security-engineer | **sonnet** |
-
-> **원칙**: 추론·분석·설계·리뷰 = Opus, 코드 구현·실행 = Sonnet.
-> Fix/Extend 모드 모두 이 매핑을 동일하게 적용한다.
+> ※ work.md "Execution Rules > Agent Mapping" 테이블을 SSOT로 따른다.
+> 원칙: 추론·분석·설계·리뷰 = Opus, 코드 구현·실행 = Sonnet.
 
 ---
 
@@ -256,74 +247,15 @@ Fix 작업이 완료되었습니다.
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-PO (senior-product-owner, model: **opus**)에게 다음 프롬프트로 호출:
-```
-기존 PRD를 참조하여 확장 요구사항을 추가해주세요.
+> 📄 프롬프트: `prompts/continue-extend.md`를 읽어서 PO/Architect/TL 에이전트에 전달한다.
 
-## 기존 PRD
-{$DOCS_DIR/prd.md 내용}
-
-## 확장 요청
-{$ARGUMENTS}
-
-$PROJECT_CONTEXT
-
-## 지시사항
-1. 기존 PRD의 구조와 스타일을 유지하세요.
-2. 새 요구사항을 기존 PRD 뒤에 "## Extension #{iteration}" 섹션으로 추가하세요.
-3. 기존 기능과의 의존성/충돌을 분석하세요.
-4. 추가 역할이 필요한지 판단하세요 (기존: {required_roles 요약}).
-5. Working Backwards는 생략합니다 (기존 press-release.md 참조).
-6. 불명확한 점이 있으면 사용자에게 역질문하세요.
-```
-
+PO (senior-product-owner, model: **opus**)에게 PO Prompt로 호출.
 PO의 역질문이 있으면 사용자에게 전달 → 답변 후 PRD 보강 완료.
 
 ### 4-2. 설계 보강 (Phase 2 경량)
 
-Architect (technical-architect, model: **opus**)에게 호출:
-```
-기존 아키텍처를 기반으로 확장 설계를 추가해주세요.
-
-## 기존 아키텍처
-{$DOCS_DIR/architecture.md 내용}
-
-## 확장 PRD
-{prd.md의 Extension 섹션}
-
-$PROJECT_CONTEXT
-$BE_PROJECT_PROFILE
-$FE_PROJECT_PROFILE
-
-## 지시사항
-1. 기존 아키텍처에 미치는 영향을 분석하세요.
-2. 변경/추가할 컴포넌트를 식별하세요.
-3. architecture.md에 "## Extension #{iteration}" 섹션으로 추가하세요.
-4. 기존 ADR과 충돌하는 결정이 있으면 새 ADR을 추가하세요.
-```
-
-Tech Lead (tech-lead, model: **opus**)에게 호출:
-```
-확장 요구사항에 대한 태스크를 분해해주세요.
-
-## 기존 태스크
-{$DOCS_DIR/tasks.md 내용}
-
-## 확장 설계
-{architecture.md Extension 섹션}
-
-## 확장 PRD
-{prd.md Extension 섹션}
-
-$BE_PROJECT_PROFILE
-$FE_PROJECT_PROFILE
-
-## 지시사항
-1. tasks.md에 "## Extension Tasks (#N)" 섹션을 추가하세요.
-2. 기존 태스크와의 의존성을 명시하세요.
-3. 기존과 동일한 형식(BE/FE/DevOps 분류, 체크박스)을 따르세요.
-4. 프로젝트 프로필이 존재하면 디렉토리 구조와 컨벤션을 참조하여 대상 파일을 구체적으로 명시하세요.
-```
+Architect (technical-architect, model: **opus**)에게 Architect Prompt로 호출.
+Tech Lead (tech-lead, model: **opus**)에게 Tech Lead Prompt로 호출.
 
 ### 4-3. 🔒 게이트: 사용자 컨펌 (설계 리뷰)
 

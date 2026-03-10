@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.4] - 2026-03-10
+
+### Fixed
+- **work.md**: distill 압축 시 누락된 규칙 2건 복원 — Skip Rules에 "최소 1파트 실행" 제약 추가, State Management에 "종료 시 current_phase=done" 규칙 추가
+
+## [1.3.3] - 2026-03-10
+
+### Changed
+- **work.md**: Phase 0 Workspace Detection/Meeting/Git 압축, Workflow Overview 4줄 압축, Gate 메시지 1줄 압축, Skip Rules/Workspace Dir Resolution을 Execution Rules로 통합, State Management 압축 (schema.md 참조) — ~5,000tok 절감
+- **continue.md**: Extend 모드 PO/Architect/TL 프롬프트를 `prompts/continue-extend.md`로 외부화, Agent Model Routing 중복 제거 (work.md SSOT 참조) — ~530tok 절감
+- **senior-frontend-engineer.md**: moreden-pcweb commitlint → 범용 commitlint 확인 규칙, CartWidget.tsx → 범용 대형 파일 확인 규칙, Write/Edit 중복 제거 — ~60tok 절감
+- **tech-lead.md**: CartWidgetCallbacks → 범용 shared interface 규칙으로 추상화 — ~15tok 절감
+
+### Added
+- **prompts/continue-extend.md**: continue.md에서 외부화된 Extend 모드 PO/Architect/TL 프롬프트 (69줄)
+
 ## [1.3.2] - 2026-03-10
 
 ### Added

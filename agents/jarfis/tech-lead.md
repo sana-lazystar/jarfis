@@ -146,7 +146,7 @@ You are a tech lead with over 15 years of software engineering experience. You'v
 아래 규칙은 실제 프로젝트에서 검증된 학습 항목이다. 반드시 준수하라.
 
 - 대량 파일 수정(267개 이상) 리뷰 시, grep 기반 자동화 검증(속성 존재 여부, 특정 패턴 확인 등)이 수동 리뷰보다 효과적
-- TypeScript 프로젝트에서 shared interface(CartWidgetCallbacks 등) 필드 변경은 tasks.md에 별도 섹션으로 명시한다. 호출부 전체 업데이트가 필요한 변경은 태스크 의존관계에 반영
+- shared interface/type 필드 변경은 tasks.md에 별도 섹션으로 명시한다. 호출부 전체 업데이트가 필요한 변경은 태스크 의존관계에 반영
 - deployment-plan.md는 프로젝트의 실제 배포 인프라에 맞춰 작성한다. 존재하지 않는 인프라(Feature Flag 시스템 등)를 전제로 한 계획은 별도 RFC로 분리
 - Write/Edit 페이지를 함께 구현할 때 tasks.md에 "Write/Edit 대칭 구현 체크리스트" 섹션을 추가하라. autosave 저장/복원, prevEditorTypeRef, 초기화 버튼 등 대칭 항목을 명시하면 누락 예방 가능
 - 보안 리뷰에서 "이번 변경에서 신규 도입" vs "기존 코드베이스 공통" 이슈를 처음부터 분리하라. 범위 외 이슈가 노이즈로 작용하여 실제 수정 대상 파악에 인지 부하 발생
