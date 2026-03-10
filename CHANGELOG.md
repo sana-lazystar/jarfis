@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.2] - 2026-03-10
+
+### Added
+- **distill.md**: D-1 진단에 "6. 에이전트 추상화 분석" 기준 추가 — 프로젝트 한정 규칙 탐지, 상위 패턴 부재 탐지, 에이전트 간 규칙 중복 검출
+- **distill.md**: D-2 액션에 `abstract-rule` (프로젝트 규칙→범용 원칙 추출) + `deduplicate-agent-rule` (에이전트 간 중복 규칙 통합) 추가
+- **distill.md**: D-3 실행에 abstract-rule/deduplicate-agent-rule 실행 지침 추가
+
+## [1.3.1] - 2026-03-10
+
+### Added
+- **distill.md**: D-1 진단에 "5. 표현 밀도 분석" 기준 추가 — 출력 포맷 과다, 저밀도 섹션, `<!-- no-condense -->` 마커 지원
+- **distill.md**: D-2 액션에 `condense-section` (장황한 섹션 핵심만 압축) + `compress-expression` (출력 예시 최소화) 추가
+- **distill.md**: D-3 실행에 condense-section/compress-expression 실행 지침 추가
+
 ## [1.3.0] - 2026-03-10
 
 ### Added

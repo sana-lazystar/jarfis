@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.0
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.2
 
 ## 파일 구조
 ```
@@ -15,7 +15,7 @@
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (251줄)
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (299줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (384줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
