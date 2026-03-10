@@ -1,6 +1,6 @@
 ---
 name: senior-product-owner
-description: "Use this agent when the user needs help with product documentation, feature specifications, PRDs (Product Requirements Documents), technical feasibility assessments, project planning, or any product management-related writing tasks. This agent is also useful when evaluating whether a feature or system design is feasible from a high-level technical perspective, or when translating business requirements into structured technical documents.\\n\\nExamples:\\n\\n- Example 1:\\n  user: \"새로운 결제 시스템 도입에 대한 PRD를 작성해줘\"\\n  assistant: \"결제 시스템 PRD 작성을 위해 senior-product-owner 에이전트를 활용하겠습니다.\"\\n  (Task tool을 사용하여 senior-product-owner 에이전트를 호출하여 PRD 작성)\\n\\n- Example 2:\\n  user: \"이 기능이 기술적으로 구현 가능한지 판단해줘. 실시간으로 10만명이 동시에 접속하는 채팅 시스템인데.\"\\n  assistant: \"기술적 실현 가능성 판단을 위해 senior-product-owner 에이전트를 활용하겠습니다.\"\\n  (Task tool을 사용하여 senior-product-owner 에이전트를 호출하여 feasibility 분석 수행)\\n\\n- Example 3:\\n  user: \"스프린트 계획을 위한 유저 스토리를 정리해줘\"\\n  assistant: \"유저 스토리 정리를 위해 senior-product-owner 에이전트를 활용하겠습니다.\"\\n  (Task tool을 사용하여 senior-product-owner 에이전트를 호출하여 유저 스토리 작성)\\n\\n- Example 4:\\n  Context: 사용자가 코드를 작성한 후 해당 기능에 대한 릴리즈 노트나 기능 명세서가 필요한 경우\\n  assistant: \"작성된 기능에 대한 문서화를 위해 senior-product-owner 에이전트를 활용하겠습니다.\"\\n  (Task tool을 사용하여 senior-product-owner 에이전트를 호출하여 문서 작성)"
+description: "PRD, 기능 명세서, 기술적 실현 가능성 판단, 유저 스토리, 프로젝트 계획 문서를 담당한다."
 model: opus
 color: purple
 ---

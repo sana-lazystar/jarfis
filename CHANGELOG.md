@@ -7,6 +7,25 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.6] - 2026-03-10
+
+### Changed
+- **Distill: 에이전트 description 축소**: 9개 역할 에이전트의 YAML description에서 Examples 제거, 1-2문장으로 축소
+  - 시스템 프롬프트 토큰 절감: ~3,294tok (매 대화마다 절감)
+  - 에이전트 본문(역할/전문성/규칙)은 변경 없음
+  - 대상: senior-frontend-engineer, tech-lead, technical-architect, senior-qa-engineer, senior-security-engineer, senior-backend-engineer, senior-ux-designer, senior-devops-sre-engineer, senior-product-owner
+
+## [1.2.5] - 2026-03-10
+
+### Changed
+- **Learnings 적용**: 27개 학습 항목을 에이전트/워크플로우 프롬프트에 반영 (중복 3건 스킵)
+  - senior-frontend-engineer.md: +10개 Learned Rules
+  - senior-qa-engineer.md: +1개 Learned Rules
+  - senior-devops-sre-engineer.md: +2개 Learned Rules (섹션 신규 생성)
+  - senior-security-engineer.md: +1개 Learned Rules (섹션 신규 생성)
+  - tech-lead.md: +4개 Learned Rules
+  - work.md: +6개 Learned Workflow Patterns
+
 ## [1.2.4] - 2026-03-10
 
 ### Changed

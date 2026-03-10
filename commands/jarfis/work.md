@@ -15,6 +15,12 @@
 - Playwright + CDP로 네트워크 쓰로틀링(Slow 4G) + 캐시 비활성화 가능: Network.emulateNetworkConditions + Network.setCacheDisabled
 - 변경 규모가 작아도(1파일) 브라우저 동작 원리가 개입하는 작업(Resource Hints, Cache-Control 등)은 성능 측정을 생략하지 마라. 측정 없이는 효과 검증 불가능하고 기술 부채 우선순위 판단 근거도 사라진다
 - 참조 프로젝트(market-frontend 등)가 있는 작업에서는 Phase 2에서 참조 코드의 API 파라미터/폼 필드 구조를 스냅샷으로 기록해야 한다. Phase 4 구현 시작 전에 참조 코드 변경 여부를 재확인하는 체크포인트 필요
+- i18n이 있는 프로젝트에서 Phase 4 FE 구현 시 i18n 하드코딩 방지 제약조건을 에이전트 프롬프트에 명시적으로 전달하라
+- Phase 4.5에 자동화 pre-check(i18n 커버리지, base path 검증, 중복 ID 탐지)를 추가하면 Phase 5 리뷰 반복을 줄일 수 있음
+- SSG(Astro/Next.js static) 프로젝트에서는 deployment-plan.md의 대부분 항목이 N/A. Big Bang + Git Revert가 최적 배포 전략
+- admin 전용 / 내부 도구 피처에서는 Press Release 단계를 스킵하고 PRD의 "목표" 섹션으로 대체하라
+- Devil's Advocate(architecture.md Section 8)가 실질적 효과를 냄. 설계에서 "무엇이 잘못될 수 있는가"를 구조화하는 패턴 유지
+- JARFIS 시스템 파일(commands/jarfis/*, agents/jarfis/*, prompts/*, templates/*)을 수정할 때는 반드시 /jarfis:implement를 통해 실행하라
 
 ---
 
