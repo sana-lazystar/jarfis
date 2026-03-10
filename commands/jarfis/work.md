@@ -139,7 +139,7 @@ Phase 6: Retrospective ────────── 학습 축적 (전역 lear
 | 파일 | 위치 | 설명 |
 |------|------|------|
 | `jarfis-learnings.md` | `~/.claude/jarfis-learnings.md` | **전역** — Agent Hints + Workflow Patterns |
-| `context.md` | `./.jarfis/context.md` | **프로젝트별** — 이 코드베이스 고유 지식 |
+| `project-context.md` | `./.jarfis/project-context.md` | **프로젝트별** — 이 코드베이스 고유 지식 |
 
 ---
 
@@ -232,7 +232,7 @@ Phase 6: Retrospective ────────── 학습 축적 (전역 lear
    - 좀비 0개이면 아무것도 출력하지 않고 1번으로 진행
 
 1. `~/.claude/jarfis-learnings.md` 존재 여부 확인 → 있으면 읽기
-2. `./.jarfis/context.md` 존재 여부 확인 → 있으면 읽기
+2. `./.jarfis/project-context.md` 존재 여부 확인 → 있으면 읽기
 3. 프로젝트 프로필 로드 (`/jarfis:project-init`으로 생성된 파일):
    - workspace가 결정되기 전 (Phase 0): 현재 디렉토리의 `./.jarfis/project-profile.md` 확인
    - workspace가 결정된 후 (Phase 4~5): `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md`와 `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md`를 각각 확인
@@ -520,11 +520,11 @@ retrospective.md에서 **프로젝트에 무관하게 재사용 가능한 학습
 - 오래되거나 틀린 것으로 판명된 항목은 **제거**
 - 각 항목에 날짜를 기록하여 추적 가능하게 유지
 
-**2. 프로젝트 컨텍스트 — `./.jarfis/context.md`**
+**2. 프로젝트 컨텍스트 — `./.jarfis/project-context.md`**
 
 retrospective.md에서 **이 코드베이스에만 해당하는 지식**만 추출하여 저장:
 
-> 📄 템플릿: `templates/context.md`를 읽어서 산출물 양식으로 사용한다.
+> 📄 템플릿: `templates/project-context.md`를 읽어서 산출물 양식으로 사용한다.
 
 관리 규칙:
 - 기존 파일이 있으면 **업데이트** (새 정보 추가, 오래된 정보 갱신)

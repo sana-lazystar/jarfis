@@ -1,4 +1,4 @@
-# context.md Template
+# project-context.md Template
 
 ```markdown
 # Project Context

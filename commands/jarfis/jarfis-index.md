@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.1
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.2
 
 ## 파일 구조
 ```
@@ -17,7 +17,7 @@
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (251줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 (NEW)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (366줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (217줄)
@@ -29,7 +29,7 @@
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 (76줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
-        ├── context.md             # context.md 템플릿 (17줄)
+        ├── project-context.md     # project-context.md 템플릿 (17줄)
         ├── project-profile.md     # 프로젝트 프로필 템플릿 (66줄)
         └── meeting-artifacts.md   # 미팅 산출물 4종 템플릿 (86줄)
 
@@ -64,7 +64,7 @@
 
 ## 산출물/데이터 파일
 - `./.jarfis/project-profile.md` — project-init이 생성, work이 참조
-- `./.jarfis/context.md` — work 실행 시 참조하는 컨텍스트 (선택적)
+- `./.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (선택적)
 - `~/.claude/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
 - `./.jarfis/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
 - `./.jarfis/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
@@ -91,7 +91,7 @@
 - `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
 - `agents/jarfis/jarfis-advocate.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 옹호)
 - `agents/jarfis/jarfis-critic.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 비판)
-- `continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조
+- `continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조 + work.md Agent Mapping 참조 (모델 라우팅 SSOT)
 - `implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
 - `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
 - `distill.md` → 완료 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)

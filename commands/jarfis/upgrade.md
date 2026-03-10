@@ -131,10 +131,10 @@ options:
   1. ...
 
 📁 Project-Specific 적용:
-[FE] .jarfis/context.md → Frontend 섹션 ← 1개 항목
+[FE] .jarfis/project-context.md → Frontend 섹션 ← 1개 항목
   1. src/components/shared/ 하위 컴포넌트 수정 시 ...
 
-[WF] .jarfis/context.md → Workflow 섹션 ← 2개 항목
+[WF] .jarfis/project-context.md → Workflow 섹션 ← 2개 항목
   1. ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -163,7 +163,7 @@ options:
 | 학습 scope | 적용 대상 |
 |-----------|----------|
 | `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md`의 `## Learned Rules` |
-| `[project]` Agent Hints | `./.jarfis/context.md`의 해당 역할 섹션 |
+| `[project]` Agent Hints | `./.jarfis/project-context.md`의 해당 역할 섹션 |
 
 **`[universal]` 항목 적용**:
 
@@ -182,9 +182,9 @@ options:
 
 **`[project]` 항목 적용**:
 
-`./.jarfis/context.md`를 읽고, 해당 역할 섹션이 있는지 확인하라:
+`./.jarfis/project-context.md`를 읽고, 해당 역할 섹션이 있는지 확인하라:
 
-- **파일이 없으면**: `./.jarfis/context.md`를 생성하고 기본 구조를 만든다.
+- **파일이 없으면**: `./.jarfis/project-context.md`를 생성하고 기본 구조를 만든다.
 - **역할 섹션이 없으면**: `## Project-Specific Learned Rules` 하위에 `### {역할명}` 섹션을 추가한다.
 - **역할 섹션이 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**.
 
@@ -197,7 +197,7 @@ options:
 | 학습 scope | 적용 대상 |
 |-----------|----------|
 | `[universal]` Workflow Patterns | `work.md`의 `## Learned Workflow Patterns` |
-| `[project]` Workflow Patterns | `./.jarfis/context.md`의 Workflow 섹션 |
+| `[project]` Workflow Patterns | `./.jarfis/project-context.md`의 Workflow 섹션 |
 
 **`[universal]` 항목 적용**:
 
@@ -217,7 +217,7 @@ options:
 
 **`[project]` 항목 적용**:
 
-`./.jarfis/context.md`를 읽고, `## Project-Specific Workflow Patterns` 섹션이 있는지 확인하라:
+`./.jarfis/project-context.md`를 읽고, `## Project-Specific Workflow Patterns` 섹션이 있는지 확인하라:
 
 - **섹션이 없으면**: 해당 섹션을 추가한다.
 - **섹션이 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**.

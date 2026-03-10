@@ -36,7 +36,7 @@
 
 3. **컨텍스트 로드**
    - `./.jarfis/project-profile.md` → 존재하면 `$PROJECT_PROFILE` 변수로 읽기
-   - `./.jarfis/context.md` → 존재하면 `$PROJECT_CONTEXT` 변수로 읽기
+   - `./.jarfis/project-context.md` → 존재하면 `$PROJECT_CONTEXT` 변수로 읽기
    - `~/.claude/jarfis-learnings.md` → 존재하면 `$LEARNINGS` 변수로 읽기
    - 세 파일 모두 없어도 미팅은 진행 가능 (로드 실패 시 빈 문자열)
 

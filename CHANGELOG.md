@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.2] - 2026-03-10
+
+### Added
+- **Continue Agent Model Routing**: `continue.md`에 모델 라우팅 규칙 추가
+  - work.md Agent Mapping을 SSOT로 참조 (동기화 드리프트 방지)
+  - 폴백 기본값 명시: 추론/분석(PO, Architect, TL) → Opus, 구현/실행(BE, FE, DevOps, QA, Security) → Sonnet
+  - Fix/Extend 모드 모든 에이전트 호출 지점에 model 힌트 추가
+
 ## [1.2.1] - 2026-03-10
 
 ### Added
