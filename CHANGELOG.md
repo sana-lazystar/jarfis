@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.3] - 2026-03-10
+
+### Added
+- **Continue 프로젝트 프로필 로드**: `continue.md` Step 0에 project-profile.md 로드 추가
+  - work.md Phase 0과 동일하게 `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` 변수 설정
+  - Fix 모드 구현 에이전트(Step 3-2)에 프로필 전달 추가
+  - Extend 모드 PO/Architect/Tech Lead(Step 4-1~4-2)에 `$PROJECT_CONTEXT` + 프로필 전달 추가
+- **학습 항목 추가**: JARFIS 시스템 파일 수정 시 반드시 `/jarfis:implement` 경유 규칙 (jarfis-learnings.md)
+
 ## [1.2.2] - 2026-03-10
 
 ### Added
