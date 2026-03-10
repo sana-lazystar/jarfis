@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-03-10
+
+### Added
+- **Continue 플래그 지원**: `--workflow {경로}` 워크플로우 직접 지정, `--mode fix|extend` 모드 명시 지정
+  - 플래그 없으면 기존 자동 탐색/자동 분류 동작 유지
+  - `--workflow` 지정 시 완료 여부 무관하게 해당 워크플로우 선택
+
+## [1.2.0] - 2026-03-10
+
+### Added
+- **Continue Command** (`/jarfis:continue`): 완료된 워크플로우의 후속 작업 지원
+  - **Fix 모드**: 테스트 후 발견된 버그/수정사항을 기존 산출물 기반으로 빠르게 처리 (Phase 4→5→6 경량 실행)
+  - **Extend 모드**: 기존 설계 위에 추가 기능 개발 (Phase 1→2→4→5→6 경량 실행)
+  - 이전 워크플로우의 PRD, 아키텍처, 태스크, 브랜치를 자동 재활용
+  - `.jarfis-state.json`에 `follow_up` 필드 추가 (모드, iteration 추적)
+  - 반복 실행 시 iteration 자동 증가
+
 ## [1.1.1] - 2026-03-10
 
 ### Changed

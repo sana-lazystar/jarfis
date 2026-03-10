@@ -1,4 +1,4 @@
-# JARFIS - IT Team Workflow Orchestration
+# JARFIS — 사용 가능한 명령어 도움말
 
 JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을 사용자에게 보여주세요.
 
@@ -33,6 +33,14 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     기획을 입력하면 전체 개발 워크플로우를 자동 실행합니다.
     Phase 0~6: 학습 로드 → 기획 구체화 → 설계 → UX → 구현 → 리뷰 → 회고
 
+  /jarfis:continue [후속 작업 내용] [--workflow 경로] [--mode fix|extend]
+    완료된 워크플로우를 이어서 작업합니다.
+    Fix 모드: 버그 수정/테스트 실패 대응 → Phase 4→5→6 경량 실행
+    Extend 모드: 기능 추가/확장 → Phase 1→2→4→5→6 경량 실행
+    --workflow: 워크플로우 디렉토리 직접 지정 (생략 시 자동 탐색)
+    --mode: fix 또는 extend 명시 (생략 시 키워드 자동 분류 → 판단 불가 시 선택창)
+    이전 산출물(PRD, 설계, 태스크)과 브랜치를 자동 재활용
+
   /jarfis:upgrade
     JARFIS 학습 파일(~/.claude/jarfis-learnings.md)을 관리합니다.
     학습 항목 CRUD + universal/project scope 자동 분류 + 에이전트 적용
@@ -64,6 +72,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     2. /jarfis:project-update                    ← 변경사항 반영 (수시)
     3. /jarfis:meeting 결제 시스템 리뉴얼  ← 아이디어 탐색 (선택)
     4. /jarfis:work 결제 시스템 리뉴얼    ← 워크플로우 실행
+    5. /jarfis:continue 카드 결제 버그 수정  ← 후속 작업 (선택)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   예시:
     /jarfis:project-init
@@ -72,6 +81,10 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     /jarfis:meeting 결제 시스템 리뉴얼
     /jarfis:work 결제 시스템 리뉴얼
     /jarfis:work 결제 시스템 리뉴얼 --meeting 결제-시스템-리뉴얼
+    /jarfis:continue 카드 결제 오류 수정
+    /jarfis:continue 소셜 로그인 기능 추가
+    /jarfis:continue 버그 수정 --workflow .jarfis/works/20260310/결제-시스템
+    /jarfis:continue 기능 추가 --mode extend
     /jarfis:upgrade
     /jarfis:distill
     /jarfis:distill work.md

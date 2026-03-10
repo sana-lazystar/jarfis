@@ -1,12 +1,12 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.1.1
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.1
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (81줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (89줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (192줄)
@@ -17,6 +17,7 @@
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (251줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 (NEW)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (217줄)
@@ -57,6 +58,7 @@
 | `/jarfis:upgrade` | `jarfis/upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
+| `/jarfis:continue` | `jarfis/continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
 | `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
@@ -89,6 +91,7 @@
 - `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
 - `agents/jarfis/jarfis-advocate.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 옹호)
 - `agents/jarfis/jarfis-critic.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 비판)
+- `continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조
 - `implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
 - `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
 - `distill.md` → 완료 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
@@ -100,6 +103,10 @@
   - 형식: `jarfis(BE-N):`, `jarfis(FE-N):`, `jarfis(DevOps-N):`
 - Phase 5 Step 5-3 (수정): 이슈 그룹별 자동 커밋
   - 형식: `jarfis(fix/BE):`, `jarfis(fix/FE):`
+- Continue Fix 모드: Fix 태스크 완료 시마다 자동 커밋
+  - 형식: `jarfis(fix/BE-N):`, `jarfis(fix/FE-N):`
+- Continue Extend 모드: Extension 태스크 완료 시마다 자동 커밋
+  - 형식: `jarfis(ext/BE-N):`, `jarfis(ext/FE-N):`
 - git index.lock 충돌 대비 3초 대기 후 재시도 (최대 3회)
 
 ## 수정 시 체크리스트
