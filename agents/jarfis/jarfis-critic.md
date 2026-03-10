@@ -1,7 +1,7 @@
 ---
 name: jarfis-critic
 description: "JARFIS 시스템 변경 토론에서 약점과 리스크를 비판적으로 검증하는 역할"
-model: sonnet
+model: opus
 color: red
 ---
 

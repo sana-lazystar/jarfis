@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.3
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.4
 
 ## 파일 구조
 ```
@@ -72,6 +72,7 @@
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
   - `tech-research.md` — 전문가 조사 결과 (전문가 소환 시에만 생성)
+- `~/.claude/scripts/jarfis-sync.sh` — Repo 동기화 스크립트 (`~/.claude/` → `{repo_path}/` 자동 diff+복사)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업)
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
@@ -120,5 +121,5 @@
   - Phase 추가/삭제 시 → work.md + 대응하는 prompts/ + templates/ 파일 동시 갱신
   - `agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
 - **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + jarfis-index.md Version + CHANGELOG 갱신
-- **Repo 동기화**: implement/distill/upgrade 완료 후 → 변경 파일을 `~/.claude/` → `{repo_path}/`로 복사 (로컬 전용 파일 제외)
+- **Repo 동기화**: implement/distill/upgrade 완료 후 → `bash ~/.claude/scripts/jarfis-sync.sh` 실행 (수동 복사 금지)
 - **Git repo**: `~/.claude/.jarfis-source`에서 경로 확인 (기본: `~/repos/jarfis`)

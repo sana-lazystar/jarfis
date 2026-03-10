@@ -1,7 +1,7 @@
 ---
 name: jarfis-advocate
 description: "JARFIS 시스템 변경 토론에서 제안의 장점과 가능성을 옹호하는 역할"
-model: sonnet
+model: opus
 color: green
 ---
 

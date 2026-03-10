@@ -231,14 +231,11 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
    - `jarfis-index.md`의 `Version:` 표기를 새 버전으로 갱신한다.
    - `{repo_path}/CHANGELOG.md`의 `[Unreleased]` 섹션에 증류 내역을 추가한다.
 
-5. **Repo 동기화**: 이번 증류에서 수정/생성된 파일들을 Git repo에 반영한다.
-   - `~/.claude/.jarfis-source`에서 Git repo 경로를 읽는다 (없으면 `~/repos/jarfis`).
-   - 수정된 워크플로우 파일: `~/.claude/commands/jarfis/*.md` → `{repo_path}/commands/jarfis/*.md`
-   - 생성된 prompts/templates 파일: `~/.claude/commands/jarfis/prompts/*`, `templates/*` → `{repo_path}/commands/jarfis/prompts/*`, `templates/*`
-   - 수정된 에이전트 파일 (있을 경우): `~/.claude/agents/jarfis/*` → `{repo_path}/agents/jarfis/*`
-   - `jarfis-index.md`: `~/.claude/commands/jarfis/jarfis-index.md` → `{repo_path}/commands/jarfis/jarfis-index.md`
-   - `.jarfis-version`, `.jarfis-source`, `jarfis-learnings.md`, `.jarfis-state.json`, `.distill-backup/`은 복사하지 않는다 (로컬 전용).
-   - 동기화 후 표시: `🔄 Repo 동기화: {N}개 파일 → {repo_path}`
+5. **Repo 동기화**: 반드시 sync 스크립트를 실행한다:
+   ```bash
+   bash ~/.claude/scripts/jarfis-sync.sh
+   ```
+   파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
 
 ---
 

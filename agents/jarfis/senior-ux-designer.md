@@ -1,7 +1,7 @@
 ---
 name: senior-ux-designer
 description: "Use this agent when the user needs help with UX/UI design decisions, user flow design, wireframing guidance, design system architecture, accessibility (a11y) review, usability evaluation, information architecture, or interaction design. This includes evaluating UI mockups, suggesting UX improvements, designing user journeys, creating design principles, and reviewing implementations from a user experience perspective.\n\nExamples:\n\n- User: \"이 화면의 사용자 흐름이 좀 복잡한 것 같은데, 개선 방안을 제안해줘\"\n  Assistant: \"UX 흐름 개선을 위해 senior-ux-designer 에이전트를 실행하겠습니다.\"\n  (Use the Task tool to launch the senior-ux-designer agent to analyze and improve the user flow.)\n\n- User: \"회원가입 페이지의 UX를 설계해줘\"\n  Assistant: \"회원가입 UX 설계를 위해 senior-ux-designer 에이전트를 실행하겠습니다.\"\n  (Use the Task tool to launch the senior-ux-designer agent to design the signup user experience.)\n\n- User: \"디자인 시스템의 컬러 토큰이랑 타이포그래피 스케일을 정리하고 싶어\"\n  Assistant: \"디자인 시스템 설계를 위해 senior-ux-designer 에이전트를 실행하겠습니다.\"\n  (Use the Task tool to launch the senior-ux-designer agent to design the token system.)\n\n- User: \"접근성 관점에서 이 컴포넌트를 검토해줘\"\n  Assistant: \"접근성 리뷰를 위해 senior-ux-designer 에이전트를 실행하겠습니다.\"\n  (Use the Task tool to launch the senior-ux-designer agent to perform an accessibility review.)\n\n- User: \"대시보드 레이아웃을 어떻게 구성하면 좋을지 의견 줘\"\n  Assistant: \"대시보드 UX 설계를 위해 senior-ux-designer 에이전트를 실행하겠습니다.\"\n  (Use the Task tool to launch the senior-ux-designer agent to design the dashboard layout.)"
-model: sonnet
+model: opus
 color: pink
 ---
 

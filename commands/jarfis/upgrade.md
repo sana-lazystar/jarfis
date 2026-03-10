@@ -253,13 +253,11 @@ options:
 
 ##### 3-A-8. Repo 동기화
 
-이번 학습 적용에서 수정된 파일들을 Git repo에 반영한다:
-- `~/.claude/.jarfis-source`에서 Git repo 경로를 읽는다 (없으면 `~/repos/jarfis`).
-- 수정된 에이전트 파일: `~/.claude/agents/jarfis/*` → `{repo_path}/agents/jarfis/*`
-- 수정된 워크플로우 파일 (Workflow Patterns 적용 시): `~/.claude/commands/jarfis/work.md` → `{repo_path}/commands/jarfis/work.md`
-- `jarfis-index.md`: `~/.claude/commands/jarfis/jarfis-index.md` → `{repo_path}/commands/jarfis/jarfis-index.md`
-- `.jarfis-version`, `.jarfis-source`, `jarfis-learnings.md`, `.jarfis-state.json`은 복사하지 않는다 (로컬 전용).
-- 동기화 후 표시: `🔄 Repo 동기화: {N}개 파일 → {repo_path}`
+반드시 sync 스크립트를 실행한다:
+```bash
+bash ~/.claude/scripts/jarfis-sync.sh
+```
+파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
 
 적용 결과를 보여주고 Step 2로 돌아가라.
 

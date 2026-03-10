@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.4] - 2026-03-10
+
+### Changed
+- **Repo 동기화 자동화**: 수동 복사 → `jarfis-sync.sh` 스크립트 실행으로 전환
+  - implement.md Step 4: 스크립트 한 줄 실행으로 교체 (AI 기억 의존 제거)
+  - distill.md Repo 동기화: 동일 스크립트 호출로 교체
+  - upgrade.md 3-A-8 Repo 동기화: 동일 스크립트 호출로 교체
+  - 근본 원인: "사후 동기화" 패턴이 LLM의 긴 컨텍스트 후반 지시 누락에 취약
+
+### Added
+- **jarfis-sync.sh**: `~/.claude/` → `{repo_path}/` 단방향 자동 동기화 스크립트
+  - diff 비교 후 변경분만 복사, 로컬 전용 파일 자동 제외
+  - .jarfis-source에서 repo 경로 자동 결정
+
 ## [1.2.3] - 2026-03-10
 
 ### Added
