@@ -5,7 +5,7 @@
 이전 워크플로우의 산출물과 브랜치를 재활용하여 효율적으로 후속 작업을 수행합니다.
 
 **플래그 옵션:**
-- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `.jarfis/works/20260310/결제-시스템`)
+- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `~/.jarfis-workspace/works/20260310/결제-시스템`)
 - `--mode fix|extend` — 모드를 명시적으로 지정 (자동 분류 없이 바로 해당 모드 실행)
 
 ---
@@ -26,9 +26,10 @@
 
 `$WORKFLOW_PATH`가 없는 경우 (기존 자동 탐색):
 
-1. `.jarfis/works/` 디렉토리를 스캔하여 완료된 워크플로우를 찾는다:
+1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `~/.jarfis-workspace`)
+   `$JARFIS_WORKSPACE_DIR/works/` 디렉토리를 스캔하여 완료된 워크플로우를 찾는다:
    ```bash
-   find .jarfis/works/ -name ".jarfis-state.json" -type f 2>/dev/null
+   find $JARFIS_WORKSPACE_DIR/works/ -name ".jarfis-state.json" -type f 2>/dev/null
    ```
 
 2. 각 상태 파일을 읽어 `current_phase`가 `"done"` 또는 마지막 Phase가 `"completed"`인 워크플로우를 필터링한다.
@@ -60,7 +61,7 @@
 
 6. 컨텍스트 로드:
    - `~/.claude/jarfis-learnings.md` — 학습 파일 → `$LEARNINGS`
-   - `./.jarfis/project-context.md` — 프로젝트 컨텍스트 → `$PROJECT_CONTEXT`
+   - `workspace`의 프로젝트 경로에서 `.jarfis/project-context.md` → `$PROJECT_CONTEXT` (여러 프로젝트인 경우 병합)
 
 7. 프로젝트 프로필 로드 (work.md Phase 0과 동일):
    - `workspace`에서 BE/FE 프로젝트 경로를 확인한다.

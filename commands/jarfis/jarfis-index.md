@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.2.6
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.0
 
 ## 파일 구조
 ```
@@ -63,11 +63,12 @@
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
 ## 산출물/데이터 파일
-- `./.jarfis/project-profile.md` — project-init이 생성, work이 참조
-- `./.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (선택적)
+- `{프로젝트경로}/.jarfis/project-profile.md` — project-init이 생성, work이 참조 (각 프로젝트 내부)
+- `{프로젝트경로}/.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (각 프로젝트 내부, 선택적)
 - `~/.claude/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
-- `./.jarfis/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
-- `./.jarfis/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
+- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 설정 파일 (install.sh가 생성)
+- `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
+- `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
   - `summary.md` — YAML frontmatter + 미팅 요약 (work.md 자동 감지용)
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
@@ -77,6 +78,7 @@
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
 - `~/.claude/.jarfis-source` — Git repo 경로 기록 (install.sh가 생성)
+- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 (install.sh가 생성, 기본: `~/.jarfis-workspace`)
 - `~/repos/jarfis/VERSION` — Git repo의 semver 버전 (1.0.0)
 - `~/repos/jarfis/CHANGELOG.md` — Keep-a-Changelog 형식 변경 이력
 
@@ -97,7 +99,7 @@
 - `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
 - `distill.md` → 완료 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
 - `upgrade.md` → 학습 적용 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
-- `jarfis-pre-compact.sh` → `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행)
+- `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행)
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋

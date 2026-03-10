@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-03-10
+
+### Added
+- **install.sh**: Workspace 디렉토리 설정 단계 추가 (Step 4/7) — `~/.jarfis-workspace` 기본값, `~/.claude/.jarfis-works-dir`에 경로 저장
+- **work.md**: Phase 0에 Step 0-a-4 Workspace Detection 추가 — AskUserQuestion으로 프로젝트 구조(Monorepo/Multi-project/FE만/BE만) 명시적 확정
+- **jarfis-state-schema.md**: `branches` 필드 추가 (multi-project Git 브랜치 지원)
+
+### Changed
+- **work.md**: `$DOCS_DIR` 경로를 CWD 기반(`CWD/.jarfis/works/`)에서 전용 디렉토리(`$JARFIS_WORKSPACE_DIR/works/`)로 변경
+- **work.md**: Step 0-b Git 브랜치 로직을 monorepo/multi-project별 분기로 개선
+- **work.md**: Execution Rules에서 workspace 설정을 "Phase 1 완료 후 PRD 파싱"에서 "Phase 0 Step 0-a-4 사용자 입력 기반"으로 변경
+- **prompts/phase1.md**: PO 역질문에서 프로젝트 구조 질문 제거 (Phase 0에서 확정), Workspace 표를 `.jarfis-state.json` 자동 반영으로 변경
+- **meeting.md**: meetings 디렉토리를 `$JARFIS_WORKSPACE_DIR/meetings/`로 변경
+- **continue.md**: 워크플로우 탐색 경로를 `$JARFIS_WORKSPACE_DIR/works/`로 변경
+- **jarfis-pre-compact.sh**: 상태파일/미팅 백업 경로를 `$JARFIS_WORKSPACE_DIR` 기반으로 변경
+- **jarfis-state-schema.md**: `docs_dir` 예시를 절대경로로 변경
+
 ## [1.2.6] - 2026-03-10
 
 ### Changed

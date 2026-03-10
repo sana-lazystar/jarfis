@@ -16,10 +16,7 @@ Task prompt:
 - 기존 시스템과의 연계 필요성
 - 비기능 요구사항 (성능, 보안, 확장성)
 - UI/화면이 필요한 기획인지 (CLI 도구, 백엔드 API 등은 UI 불필요)
-- **프로젝트 구조**: BE와 FE가 같은 프로젝트인지, 별도 프로젝트인지
-  - 예: Next.js 풀스택 → 같은 디렉토리
-  - 예: Vite(CSR) + Nest.js(BFF) → 별도 디렉토리
-  - 별도 프로젝트인 경우 각 프로젝트의 디렉토리 경로를 확인
+(참고: 프로젝트 구조(monorepo/multi-project)는 Phase 0에서 이미 확정됨 — 재질문 불필요)
 
 $PROJECT_CONTEXT
 
@@ -115,23 +112,19 @@ PRD에 포함할 항목:
 - 기존 인프라를 그대로 사용하는 경우 → DevOps 불필요 가능
 - 프론트엔드만의 기획 (UI 라이브러리, 위젯 등) → Backend 불필요 가능
 
-9. **Workspace 구성** — 사용자의 프로젝트 구조 답변을 기반으로 아래 표 작성:
+9. **Workspace 구성** — Phase 0의 Step 0-a-4에서 확정된 `.jarfis-state.json`의 `workspace` 값을 자동 반영:
 
 ## Workspace
 
 | 항목 | 값 |
 |------|-----|
-| 구조 유형 | monorepo / multi-project |
-| Backend 경로 | (예: `.` 또는 `./backend-bff`) |
-| Backend 프레임워크 | (예: Next.js API Routes, Nest.js, Spring Boot) |
-| Frontend 경로 | (예: `.` 또는 `./frontend-app`) |
-| Frontend 프레임워크 | (예: Next.js, Vite+React, Vue) |
+| 구조 유형 | (`.jarfis-state.json`의 `workspace.type` 값) |
+| Backend 경로 | (`.jarfis-state.json`의 `workspace.projects.backend.path` 값) |
+| Backend 프레임워크 | (`.jarfis-state.json`의 `workspace.projects.backend.framework` 값) |
+| Frontend 경로 | (`.jarfis-state.json`의 `workspace.projects.frontend.path` 값) |
+| Frontend 프레임워크 | (`.jarfis-state.json`의 `workspace.projects.frontend.framework` 값) |
 
-판단 기준:
-- BE/FE가 같은 package.json을 공유 (Next.js, Nuxt 등) → monorepo, 경로 모두 `.`
-- BE/FE가 별도 디렉토리에 각자 package.json 보유 → multi-project, 각각의 경로 명시
-- Backend 불필요인 경우 → Backend 경로는 `N/A`
-- Frontend 불필요인 경우 → Frontend 경로는 `N/A`
+참고: 이 표는 Phase 0에서 사용자 입력과 자동 감지로 확정된 값을 그대로 사용한다. PO가 별도로 판단하지 않는다.
 
 10. **Performance Budget** — 정량적 성능 목표:
 

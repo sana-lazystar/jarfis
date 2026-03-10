@@ -6,8 +6,12 @@
 {
   "project_name": "기획 내용 요약",
   "work_name": "사용자가-입력한-작업물명",
-  "docs_dir": "jarfis/works/20250101/사용자가-입력한-작업물명",
+  "docs_dir": "~/.jarfis-workspace/works/20250101/사용자가-입력한-작업물명",
   "branch": "사용자가-입력한-작업물명",
+  "branches": {
+    "backend": "사용자가-입력한-작업물명",
+    "frontend": "사용자가-입력한-작업물명"
+  },
   "started_at": "2025-01-01T00:00:00Z",
   "current_phase": 1,
   "workspace": {

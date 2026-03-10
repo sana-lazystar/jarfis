@@ -11,6 +11,8 @@ CLAUDE_DIR="$HOME/.claude"
 VERSION_FILE="$SCRIPT_DIR/VERSION"
 INSTALLED_VERSION_FILE="$CLAUDE_DIR/.jarfis-version"
 SOURCE_FILE="$CLAUDE_DIR/.jarfis-source"
+WORKS_DIR_FILE="$CLAUDE_DIR/.jarfis-works-dir"
+DEFAULT_WORKSPACE="$HOME/.jarfis-workspace"
 
 # Parse arguments
 TARGET_VERSION=""
@@ -87,7 +89,7 @@ if [[ -d "$CLAUDE_DIR/commands/jarfis" ]] || [[ -f "$CLAUDE_DIR/commands/jarfis.
 fi
 
 if [[ "$BACKUP_NEEDED" == "true" ]]; then
-  echo "[1/6] Creating backup..."
+  echo "[1/7] Creating backup..."
   mkdir -p "$BACKUP_DIR"
 
   # Backup commands
@@ -129,11 +131,11 @@ if [[ "$BACKUP_NEEDED" == "true" ]]; then
 
   echo "  [OK] Backup → $BACKUP_DIR"
 else
-  echo "[1/6] No existing installation found, skipping backup."
+  echo "[1/7] No existing installation found, skipping backup."
 fi
 
 # ── Step 2: Extract Learned Rules ──────────
-echo "[2/6] Extracting Learned Rules..."
+echo "[2/7] Extracting Learned Rules..."
 LEARNED_RULES_DIR=$(mktemp -d)
 learned_count=0
 
@@ -157,7 +159,7 @@ if [[ $learned_count -eq 0 ]]; then
 fi
 
 # ── Step 3: Install files ─────────────────
-echo "[3/6] Installing files..."
+echo "[3/7] Installing files..."
 
 # Create directories
 mkdir -p "$CLAUDE_DIR/commands/jarfis/prompts"
@@ -225,8 +227,39 @@ if [[ -f "$SCRIPT_DIR/statusline-command.sh" ]]; then
   echo "  [OK] statusline-command.sh"
 fi
 
-# ── Step 4: Re-apply Learned Rules ────────
-echo "[4/6] Re-applying Learned Rules..."
+# ── Step 4: Workspace directory setup ────
+echo "[4/7] Setting up workspace directory..."
+
+WORKSPACE_DIR="$DEFAULT_WORKSPACE"
+
+if [[ -f "$WORKS_DIR_FILE" ]]; then
+  EXISTING_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
+  if [[ -n "$EXISTING_DIR" ]]; then
+    echo "  Existing workspace: $EXISTING_DIR"
+    WORKSPACE_DIR="$EXISTING_DIR"
+  fi
+else
+  echo ""
+  echo "  JARFIS stores workflow artifacts (PRD, architecture, tasks, etc.)"
+  echo "  in a dedicated workspace directory."
+  echo ""
+  read -p "  Workspace directory [$DEFAULT_WORKSPACE]: " user_input
+  if [[ -n "$user_input" ]]; then
+    # Expand ~ to $HOME
+    WORKSPACE_DIR="${user_input/#\~/$HOME}"
+  fi
+fi
+
+# Create workspace directory structure
+mkdir -p "$WORKSPACE_DIR/works"
+mkdir -p "$WORKSPACE_DIR/meetings"
+
+# Save workspace path
+echo "$WORKSPACE_DIR" > "$WORKS_DIR_FILE"
+echo "  [OK] Workspace → $WORKSPACE_DIR"
+
+# ── Step 5: Re-apply Learned Rules ────────
+echo "[5/7] Re-applying Learned Rules..."
 reapplied=0
 
 for lr_file in "$LEARNED_RULES_DIR/"*.md; do
@@ -263,8 +296,8 @@ fi
 # Cleanup temp
 rm -rf "$LEARNED_RULES_DIR"
 
-# ── Step 5: Register hooks in settings.json ─
-echo "[5/6] Checking settings.json..."
+# ── Step 6: Register hooks in settings.json ─
+echo "[6/7] Checking settings.json..."
 
 SETTINGS_FILE="$CLAUDE_DIR/settings.json"
 
@@ -303,8 +336,8 @@ else
   fi
 fi
 
-# ── Step 6: Version stamps ────────────────
-echo "[6/6] Writing version stamps..."
+# ── Step 7: Version stamps ────────────────
+echo "[7/7] Writing version stamps..."
 
 echo "$REPO_VERSION" > "$INSTALLED_VERSION_FILE"
 echo "  [OK] $INSTALLED_VERSION_FILE → $REPO_VERSION"
@@ -322,6 +355,7 @@ echo "  /jarfis          — 명령어 도움말"
 echo "  /jarfis:work     — 워크플로우 실행"
 echo "  /jarfis:version  — 버전 확인/업데이트"
 echo ""
+echo "  Workspace: $WORKSPACE_DIR"
 if [[ "$BACKUP_NEEDED" == "true" ]]; then
   echo "  Backup: $BACKUP_DIR"
 fi
