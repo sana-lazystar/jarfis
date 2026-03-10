@@ -78,28 +78,64 @@ options:
 | `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
 | `Workflow Patterns` | `~/.claude/commands/jarfis/work.md` |
 
-##### 3-A-2. 적용 계획 표시
+##### 3-A-2. Scope 자동 분류 + Dialectic Review
 
-매핑 결과를 사용자에게 보여줘라:
+각 학습 항목에 scope를 자동 분류한다:
+
+**자동 분류 규칙**:
+1. 특정 파일 경로/디렉토리 언급 → `[project]`
+2. 특정 프레임워크 버전/설정 언급 → `[project]` 후보 (판단 불가 시 `[ambiguous]`)
+3. "이 프로젝트에서", "이 코드베이스" 등 한정 표현 → `[project]`
+4. 범용 도구/기법/원칙 → `[universal]`
+5. 판단 불가 → `[ambiguous]`
+
+**분류 결과 표시**:
+```
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+학습 Scope 분류 결과
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[universal] FE-1: img 태그 대량 수정 시 인덴테이션 일관성 검증
+[project]  FE-2: src/components/shared/ 하위 컴포넌트 수정 시 ...
+[ambiguous] QA-1: Playwright PerformanceObserver 설정 패턴
+...
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+**Dialectic Review 게이트**:
+- 모든 항목이 `[universal]` 또는 `[project]`로 명확 분류 → 토론 SKIP, 분류 결과만 사용자에게 보여주고 확인
+- `[ambiguous]` 항목이 1개 이상 → 해당 항목에 대해서만 토론 실행:
+  1. **Advocate 호출** (Agent tool, subagent_type: `general-purpose`):
+     - jarfis-advocate.md 페르소나를 프롬프트에 포함
+     - prompt: "다음 학습 항목의 scope를 판단하세요: [항목 내용]. 이것이 범용 원칙인 이유를 논증하세요."
+  2. **Critic 호출** (Agent tool, subagent_type: `general-purpose`):
+     - jarfis-critic.md 페르소나를 프롬프트에 포함
+     - prompt: "다음 학습 항목의 scope를 판단하세요: [항목 내용]. Advocate 의견: [결과]. 이것이 프로젝트 종속인 이유를 논증하세요."
+  3. 합의 or 사용자 판단 → `[universal]` 또는 `[project]`로 확정
+
+##### 3-A-2b. 적용 계획 표시
+
+분류 확정 후, 적용 대상을 scope별로 매핑하여 보여줘라:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 학습 적용 계획
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-[FE] senior-frontend-engineer.md ← 4개 항목
+🌐 Universal 적용:
+[FE] senior-frontend-engineer.md → Learned Rules ← 3개 항목
   1. img 태그 대량 수정 시 인덴테이션 일관성 검증...
-  2. tasks.md에 성능 측정/벤치마크 태스크...
-  3. ...
-  4. ...
-
-[QA] senior-qa-engineer.md ← 2개 항목
-  1. Playwright PerformanceObserver는 addInitScript...
   2. ...
 
-[WF] work.md ← 4개 항목
-  1. FE-only + HTML 속성 추가만 하는 작업은...
-  2. ...
+[WF] work.md → Learned Workflow Patterns ← 2개 항목
+  1. ...
+
+📁 Project-Specific 적용:
+[FE] .jarfis/context.md → Frontend 섹션 ← 1개 항목
+  1. src/components/shared/ 하위 컴포넌트 수정 시 ...
+
+[WF] .jarfis/context.md → Workflow 섹션 ← 2개 항목
+  1. ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
@@ -122,6 +158,15 @@ options:
 
 ##### 3-A-4. 에이전트 파일 적용 방법
 
+**scope에 따라 적용 경로가 다르다:**
+
+| 학습 scope | 적용 대상 |
+|-----------|----------|
+| `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md`의 `## Learned Rules` |
+| `[project]` Agent Hints | `./.jarfis/context.md`의 해당 역할 섹션 |
+
+**`[universal]` 항목 적용**:
+
 대상 에이전트 파일을 읽고, 파일 끝에 `## Learned Rules` 섹션이 있는지 확인하라:
 
 - **섹션이 없으면**: 파일 맨 끝에 새로 추가:
@@ -135,9 +180,26 @@ options:
   ```
 - **섹션이 이미 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**하라 (내용이 유사하면 스킵).
 
+**`[project]` 항목 적용**:
+
+`./.jarfis/context.md`를 읽고, 해당 역할 섹션이 있는지 확인하라:
+
+- **파일이 없으면**: `./.jarfis/context.md`를 생성하고 기본 구조를 만든다.
+- **역할 섹션이 없으면**: `## Project-Specific Learned Rules` 하위에 `### {역할명}` 섹션을 추가한다.
+- **역할 섹션이 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**.
+
 날짜 정보 `(YYYY-MM-DD)` 는 적용 시 제거하라 — 프롬프트에 날짜는 불필요하다.
 
 ##### 3-A-5. 워크플로우 파일 적용 방법
+
+**scope에 따라 적용 경로가 다르다:**
+
+| 학습 scope | 적용 대상 |
+|-----------|----------|
+| `[universal]` Workflow Patterns | `work.md`의 `## Learned Workflow Patterns` |
+| `[project]` Workflow Patterns | `./.jarfis/context.md`의 Workflow 섹션 |
+
+**`[universal]` 항목 적용**:
 
 `work.md`에서 `## Learned Workflow Patterns` 섹션이 있는지 확인하라:
 
@@ -152,6 +214,13 @@ options:
   ---
   ```
 - **섹션이 이미 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**.
+
+**`[project]` 항목 적용**:
+
+`./.jarfis/context.md`를 읽고, `## Project-Specific Workflow Patterns` 섹션이 있는지 확인하라:
+
+- **섹션이 없으면**: 해당 섹션을 추가한다.
+- **섹션이 있으면**: 기존 항목 뒤에 새 항목을 추가하되, **중복 체크**.
 
 날짜 및 확인 횟수 정보 `(YYYY-MM-DD, N회 확인)` 는 적용 시 제거하라.
 

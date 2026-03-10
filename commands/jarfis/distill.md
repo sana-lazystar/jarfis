@@ -133,6 +133,31 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 - 옵션: "전체 진행" / "선택적 진행" / "취소"
 - "선택적 진행" 시 개별 액션 선택 가능
 
+### D-2.5: Dialectic Review (토론 게이트)
+
+증류 계획의 품질을 다관점으로 검증하는 단계이다.
+
+**게이트 진입 조건**:
+- 예상 토큰 절감률 30% 이상 → 토론 실행
+- 30% 미만 → 토론 SKIP → D-3으로 이동
+
+**토론 흐름** (토론 실행 시):
+
+1. **Advocate 호출** (Agent tool, subagent_type: `general-purpose`):
+   - jarfis-advocate.md 페르소나를 프롬프트에 포함
+   - prompt: "다음 JARFIS 증류 계획을 검토하세요: [증류 계획 요약]. 이 외부화/통합으로 토큰 절감 효과와 유지보수성 향상을 분석하세요."
+
+2. **Critic 호출** (Agent tool, subagent_type: `general-purpose`):
+   - jarfis-critic.md 페르소나를 프롬프트에 포함
+   - prompt: "다음 JARFIS 증류 계획을 검토하세요: [증류 계획 요약]. Advocate 의견: [결과]. 외부화로 인한 맥락 손실 위험, 에이전트 참조 누락 가능성을 분석하세요."
+
+3. **합의 판단**:
+   - Critic이 핵심 증류 액션에 동의 → 합의 → D-3 진행
+   - 미합의 시 → Round 2 (Advocate 반론 → Critic 재반론)
+   - Round 2에서도 미합의 → 사용자에게 양측 요약 + AskUserQuestion
+
+4. **결과 표시**: implement.md의 Dialectic Review 표시 형식과 동일.
+
 ### D-3: 증류 실행
 
 승인된 액션을 순서대로 실행한다:

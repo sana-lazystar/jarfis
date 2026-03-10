@@ -35,7 +35,9 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 
   /jarfis:upgrade
     JARFIS 학습 파일(~/.claude/jarfis-learnings.md)을 관리합니다.
-    학습 항목의 추가, 수정, 삭제를 인터랙티브하게 수행합니다.
+    학습 항목 CRUD + universal/project scope 자동 분류 + 에이전트 적용
+    [universal] → agent Learned Rules, [project] → .jarfis/context.md
+    애매한 항목은 Advocate/Critic 토론으로 scope 확정
 
   /jarfis:health [--clean]
     시스템 헬스체크: 좀비 Claude 프로세스 진단 및 정리
@@ -45,14 +47,16 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     JARFIS 프롬프트 파일의 토큰 효율을 분석하고 최적화합니다.
     중복 제거 + 템플릿 외부화 + 규칙 통합 → Before/After 리포트
     파일명 생략 시 토큰 비용 상위 3개 파일을 자동 선택
+    절감률 30%↑ 시 Advocate/Critic Dialectic Review 자동 실행
 
   /jarfis:version
     JARFIS 버전 확인, 업데이트 체크, 업데이트 실행, 특정 버전 설치
     Git 기반 배포 관리
 
-  /jarfis:implement [수정 내용]
+  /jarfis:implement [수정 내용] [--review=major|minor|patch]
     JARFIS 시스템 자체를 수정/기능 추가합니다.
     인덱스 파일을 읽고 → 수정 → 인덱스 자동 갱신 → 버전 범프
+    --review 플래그로 Advocate/Critic Dialectic Review 수준 지정
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   권장 순서:

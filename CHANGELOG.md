@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.1] - 2026-03-10
+
+### Changed
+- jarfis.md 도움말에 v1.1.0 Dialectic Review 기능 반영 (implement --review 플래그, upgrade scope 분류, distill 토론 게이트 설명 추가)
+
+## [1.1.0] - 2026-03-10
+
+### Added
+- **Dialectic Review System**: Advocate/Critic 에이전트 2개 신규 생성 (`jarfis-advocate.md`, `jarfis-critic.md`)
+  - implement.md: Step 1과 Step 2 사이에 토론 게이트 추가 (`--review=major|minor|patch` 플래그 지원)
+  - upgrade.md: 학습 scope 자동 분류 + ambiguous 항목에 대해 토론 실행
+  - distill.md: 예상 토큰 절감률 30% 이상 시 토론 게이트 실행
+- **Learning 2-Layer 분리**: universal vs project-specific 학습 구분
+  - learnings.md 템플릿에 Universal/Project-Specific 하위 섹션 추가
+  - phase6.md 회고 프롬프트에 `[universal]`/`[project]` scope 태깅 지시 추가
+  - upgrade.md에 scope별 적용 경로 분기 (`[universal]` → agent Learned Rules, `[project]` → `.jarfis/context.md`)
+
 ## [1.0.7] - 2026-03-05
 
 ### Added

@@ -1,21 +1,21 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-04 | Version: 1.0.6
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.1.1
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (77줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (81줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 (75줄)
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (192줄)
     ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (660줄, 프롬프트+템플릿 외부화 후)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
-    ├── upgrade.md                 # 학습 항목 관리 및 시스템 적용 (285줄)
-    ├── distill.md                 # 프롬프트 증류 — 토큰 효율 최적화 (208줄)
+    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (251줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -24,14 +24,17 @@
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 (109줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트 (35줄)
     │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 (220줄)
-    │   └── phase6.md              # Phase 6 Retrospective 프롬프트 (35줄)    └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
+    │   └── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅 (46줄)
+    └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 (76줄)
-        ├── learnings.md           # jarfis-learnings.md 템플릿 (23줄)
+        ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
         ├── context.md             # context.md 템플릿 (17줄)
         ├── project-profile.md     # 프로젝트 프로필 템플릿 (66줄)
         └── meeting-artifacts.md   # 미팅 산출물 4종 템플릿 (86줄)
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄) [NEW]
+├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄) [NEW]
 ├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
 ├── senior-frontend-engineer.md    # FE 구현 에이전트 (83줄)
 ├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (85줄)
@@ -84,6 +87,8 @@
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
 - `distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
 - `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
+- `agents/jarfis/jarfis-advocate.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 옹호)
+- `agents/jarfis/jarfis-critic.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 비판)
 - `implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
 - `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
 - `distill.md` → 완료 후 PATCH 범프 (VERSION, .jarfis-version, jarfis-index.md, CHANGELOG)
