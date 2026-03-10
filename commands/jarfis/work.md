@@ -152,16 +152,9 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - **monorepo**: git repo 확인 → uncommitted 경고 → 기본 브랜치+develop pull → `git checkout -b $WORK_NAME develop` → `.jarfis-state.json` `branch` 기록. develop 없으면 기본 브랜치에서 분기 여부 확인.
    - **multi-project**: BE/FE 각 경로에서 독립적으로 동일 과정 반복. `.jarfis-state.json`에 `branches: { backend, frontend }` 기록.
 
-1. **시스템 헬스체크** (좀비 프로세스 감지)
-   - `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion (정리/무시/중단). 1~4개 → 경고만 표시. 0개 → 무시.
-
-1. `~/.claude/jarfis-learnings.md` 존재 여부 확인 → 있으면 읽기
-2. `./.jarfis/project-context.md` 존재 여부 확인 → 있으면 읽기
-3. 프로젝트 프로필 로드:
-   - Phase 0: `./.jarfis/project-profile.md` 확인
-   - Phase 4~5: `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md`와 `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` 각각 확인
-   - `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` 변수로 저장 (monorepo면 동일 파일 참조 가능)
-4. 읽은 내용을 `$LEARNINGS` (전역)와 `$PROJECT_CONTEXT` (프로젝트) 변수로 저장
+1. **시스템 헬스체크** — `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion, 1~4개 → 경고, 0개 → 무시.
+2. `~/.claude/jarfis-learnings.md` → `$LEARNINGS`, `./.jarfis/project-context.md` → `$PROJECT_CONTEXT` (없으면 빈 문자열)
+3. 프로젝트 프로필 로드: `./.jarfis/project-profile.md` (Phase 0), `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4~5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
 
 **주입 규칙:**
 - Phase 1 (PO, Architect): `$LEARNINGS`의 Workflow Patterns + `$PROJECT_CONTEXT` 전체
@@ -396,11 +389,8 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 **Phase 2-1.5 스킵**: BE+FE 모두 필요하지 않으면 api-spec.md SKIP
 
 #### Adaptive Skip 경험 가이드
-- **UX Designer 스킵**: 기존 디자인 시스템/UI 패턴 재활용 + 새 화면 설계 불필요 → SKIP 적절
-- **DevOps 스킵**: serverless.yml 설정 변경만 필요 + 인프라 구조 변경 없음 → SKIP 적절
-- **Mongoose default null**: DB 마이그레이션 대신 `default: null`로 처리 가능하면 마이그레이션 불필요
-- **Phase 4.5 경량 모드**: `required_roles.devops == false`이면 5항목 체크리스트로 축소
-- **diagnosis.md 이슈 그룹**: 상관관계 기반 그룹핑이 교차 분석에 효과적
+- UX SKIP: 기존 디자인 시스템 재활용 + 새 화면 불필요 시. DevOps SKIP: 설정 변경만 + 인프라 구조 변경 없음 시.
+- Phase 4.5 경량: `required_roles.devops == false`이면 5항목 체크리스트로 축소. Mongoose `default: null`로 마이그레이션 대체 가능.
 
 ### Parallel Execution Rules
 - Phase 2+3 동시 시작 (Phase 3 SKIP이면 Phase 2만)

@@ -59,16 +59,7 @@
    - `$DOCS_DIR/tasks.md` — 태스크 분해 (완료된 항목 확인)
    - `$DOCS_DIR/architecture.md` — 아키텍처 (첫 50줄만, 개요 파악용)
 
-6. 컨텍스트 로드:
-   - `~/.claude/jarfis-learnings.md` — 학습 파일 → `$LEARNINGS`
-   - `workspace`의 프로젝트 경로에서 `.jarfis/project-context.md` → `$PROJECT_CONTEXT` (여러 프로젝트인 경우 병합)
-
-7. 프로젝트 프로필 로드 (work.md Phase 0과 동일):
-   - `workspace`에서 BE/FE 프로젝트 경로를 확인한다.
-   - `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` → `$BE_PROJECT_PROFILE`
-   - `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` → `$FE_PROJECT_PROFILE`
-   - monorepo인 경우 둘 다 같은 파일을 참조할 수 있음
-   - 파일이 없으면 빈 문자열로 치환한다
+6. 컨텍스트/프로필 로드 — work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
 
 ---
 
@@ -156,16 +147,7 @@ Extend 모드:
 
 사용자의 수정 요청을 분석하여 수정 대상을 정리한다:
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🔧 JARFIS Continue — Fix 모드
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 원본 기획: {PRD 제목}
-🔧 수정 사항: {$ARGUMENTS 요약}
-📂 이전 산출물: {$DOCS_DIR}
-🌿 브랜치: {$BRANCH}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Fix 모드 배너를 표시한다: 원본 기획, 수정 사항, 산출물 경로, 브랜치.
 
 1. `$DOCS_DIR/tasks.md`를 읽어 기존 태스크 구조를 파악한다.
 2. 수정 사항을 기존 역할(BE/FE/DevOps)에 매핑하여 fix 태스크를 생성한다.
@@ -210,18 +192,7 @@ work.md의 Phase 5를 경량으로 실행한다:
 
 ### 3-4. 🔒 게이트: 사용자 컨펌
 
-```
-Fix 작업이 완료되었습니다.
-
-📋 수정 내역:
-- [수정 사항 요약]
-
-📄 리뷰 결과: $DOCS_DIR/review.md
-
-1. ✅ 승인 — 회고 후 완료
-2. ✏️ 추가 수정 — 수정할 내용을 알려주세요
-3. ❌ 완료 — 회고 없이 종료
-```
+수정 내역 요약 + 리뷰 결과 표시 → AskUserQuestion: 승인(회고→완료) / 추가 수정 / 회고 없이 종료
 
 ### 3-5. 회고 (Phase 6 경량)
 
@@ -236,16 +207,7 @@ Fix 작업이 완료되었습니다.
 
 ### 4-1. PRD 보강 (Phase 1 경량)
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-🚀 JARFIS Continue — Extend 모드
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 원본 기획: {PRD 제목}
-➕ 확장 내용: {$ARGUMENTS 요약}
-📂 이전 산출물: {$DOCS_DIR}
-🌿 브랜치: {$BRANCH}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+Extend 모드 배너를 표시한다: 원본 기획, 확장 내용, 산출물 경로, 브랜치.
 
 > 📄 프롬프트: `prompts/continue-extend.md`를 읽어서 PO/Architect/TL 에이전트에 전달한다.
 
@@ -259,19 +221,7 @@ Tech Lead (tech-lead, model: **opus**)에게 Tech Lead Prompt로 호출.
 
 ### 4-3. 🔒 게이트: 사용자 컨펌 (설계 리뷰)
 
-```
-확장 설계가 완료되었습니다.
-
-📄 산출물:
-- $DOCS_DIR/prd.md (Extension 섹션 추가)
-- $DOCS_DIR/architecture.md (Extension 섹션 추가)
-- $DOCS_DIR/tasks.md (Extension Tasks 추가)
-
-확장 설계를 검토해주세요:
-1. ✅ 승인 — 구현으로 진행합니다
-2. ✏️ 수정 요청 — 수정할 내용을 알려주세요
-3. ❌ 중단 — 워크플로우를 종료합니다
-```
+확장 설계 산출물(prd.md Extension, architecture.md Extension, tasks.md Extension Tasks) 요약 표시 → AskUserQuestion: 승인 / 수정 요청 / 중단
 
 ### 4-4. 구현 (Phase 4 재활용)
 
@@ -301,17 +251,6 @@ Fix 모드의 3-5와 동일하되, 회고 관점을 확장 작업에 맞춤:
 
 ## Step 5: 완료
 
-```
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ JARFIS Continue 완료
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 원본: {작업물명}
-🔧 모드: {Fix|Extend} (#{iteration})
-✅ 완료 내역:
-   - {변경 사항 요약}
-📂 갱신된 산출물: {$DOCS_DIR}
-🌿 브랜치: {$BRANCH}
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-```
+완료 배너를 표시한다: 원본 작업물명, 모드(Fix/Extend), iteration, 변경 사항 요약, 산출물 경로, 브랜치.
 
 상태 파일의 `follow_up.status`를 `"completed"`로 갱신한다.

@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.3.5] - 2026-03-10
+
+### Changed
+- **phase4.md**: BE/FE/DevOps 공통 구현 규칙(Git Auto-Commit 등)을 Common Implementation Rules 섹션으로 통합 — ~578tok 절감
+- **phase2.md**: API spec 형식 49줄→12줄 압축, 태스크 분해 형식 78줄→16줄 압축 — ~809tok 절감
+- **continue.md**: 5개 출력 포맷 코드블록을 1줄 설명으로 압축, 프로필/컨텍스트 로드 절차를 work.md Phase 0 참조로 간소화 — ~601tok 절감
+- **meeting.md**: 전문가 소환 프로토콜 47줄→7줄, 3개 출력 포맷 블록 1줄 압축 — ~1,100tok 절감
+- **phase1.md**: Required Roles/Workspace/Performance Budget 표를 1줄 지시로 압축, Completeness Check 30줄→5줄 — ~394tok 절감
+- **phase5.md**: BE/FE fix 프롬프트 공통화(2→1), 병리 패턴 감지 30줄→8줄 — ~484tok 절감
+- **work.md**: Phase 0 로드 절차 압축, Adaptive Skip 가이드 5줄→2줄 — ~130tok 절감
+
 ## [1.3.4] - 2026-03-10
 
 ### Fixed

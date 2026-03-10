@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.4
+> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.3.5
 
 ## 파일 구조
 ```
@@ -10,21 +10,21 @@
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (192줄)
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (660줄, 프롬프트+템플릿 외부화 후)
+    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 183줄)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (427줄, 프롬프트+템플릿 외부화 후)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (373줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (299줄)
     ├── version.md                 # 버전 관리/업데이트 (NEW)
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (384줄)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (256줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (217줄)
-    │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 (274줄)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 (109줄)
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (143줄)
+    │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 (170줄)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 (85줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트 (35줄)
-    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 (220줄)
+    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 (177줄)
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅 (46줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)

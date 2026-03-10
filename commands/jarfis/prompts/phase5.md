@@ -97,35 +97,15 @@ Task prompt:
 결과를 정리하세요."
 ```
 
-**Step 5-2 병리 패턴 감지** (오케스트레이터 직접 실행 — 에이전트 아님)
+**Step 5-2 병리 패턴 감지** (오케스트레이터 직접 실행, 재리뷰 2회차 이상에서만)
 
-> 이 검증은 Step 5-2 재리뷰(2회차 이상)에서만 실행한다.
-> 이전 review.md와 현재 review.md를 비교하여 리뷰 루프의 병리 패턴을 감지한다.
+이전/현재 review.md를 비교하여 3가지 패턴을 감지한다:
+- **Stagnation**: 동일 이슈 2회 연속 → "현재 설계에서 해결 불가능할 수 있음" 경고
+- **Regression**: 이전에 없던 새 이슈 발생 → "수정이 회귀를 유발" 경고
+- **Oscillation** (3회차↑): N회차 = N-2회차 이슈 → "진동 패턴" 경고
 
-검증 절차:
-```
-1. [Stagnation 감지]
-   이전 review.md의 이슈 목록과 현재 이슈를 비교한다.
-   - 동일한 이슈가 2회 연속 등장 → Stagnation
-   - 경고 메시지: "⚠️ 다음 이슈가 2회 연속 미해결입니다. 현재 설계에서 해결 불가능할 수 있습니다:"
-     (해당 이슈 목록 표시)
-
-2. [Regression 감지]
-   이전 review.md에 없던 새 이슈가 현재 등장했는지 확인한다.
-   - 이전에 없던 이슈가 새로 발생 → Regression
-   - 경고 메시지: "⚠️ 수정이 회귀를 유발했습니다. 새로 발생한 이슈:"
-     (새 이슈 목록 표시)
-
-3. [Oscillation 감지]
-   3회차 이상인 경우, N회차와 N-2회차의 이슈가 동일한지 확인한다.
-   - 동일하면 → Oscillation (두 상태 사이에서 진동)
-   - 경고 메시지: "⚠️ 수정이 이전 상태로 되돌아갔습니다 (진동 패턴 감지)."
-```
-
-병리 패턴 발견 시:
-- 게이트 3 선택지에 "🔙 Phase 2로 돌아가 설계 재검토" 옵션을 추가한다.
-- `.jarfis-state.json`의 `review_iterations` 필드를 증가시킨다.
-- 3회 이상 반복 시: "⚠️ 리뷰 루프가 3회 이상 반복되었습니다. 설계 재검토를 강력히 권장합니다."
+병리 패턴 발견 시: 게이트에 "Phase 2 설계 재검토" 옵션 추가, `review_iterations` 증가.
+3회↑ 반복 시 설계 재검토 강력 권장.
 
 ---
 
@@ -174,12 +154,14 @@ Task prompt:
 "
 ```
 
-Backend (senior-backend-engineer) — **diagnosis.md에 BE 수정 지시가 있을 때만**:
+BE/FE Fix 에이전트 (diagnosis.md에 해당 역할 수정 지시가 있을 때만 실행):
+- BE: senior-backend-engineer, 작업 디렉토리 $BACKEND_PROJECT_DIR
+- FE: senior-frontend-engineer, 작업 디렉토리 $FRONTEND_PROJECT_DIR
 ```
 Task prompt:
 "$DOCS_DIR/diagnosis.md를 읽고, 당신에게 할당된 수정 지시를 수행하세요.
 
-📂 **작업 디렉토리**: $BACKEND_PROJECT_DIR
+📂 **작업 디렉토리**: $PROJECT_DIR (역할에 따라 BE/FE 디렉토리)
 
 각 수정 지시에 대해:
 1. 지시된 파일과 라인을 확인한다.
@@ -187,33 +169,8 @@ Task prompt:
 3. 회귀 방지 섹션에 명시된 테스트를 추가한다.
 4. 수정 전후의 동작을 검증한다.
 
-Git Auto-Commit (이슈별):
-- 각 이슈 그룹 수정 완료 시 변경된 파일을 git add하고 커밋하세요.
-- 커밋 메시지 형식: jarfis(fix/BE): 이슈 요약 (한 줄)
-  예: jarfis(fix/BE): SQL injection 취약점 수정 및 파라미터 바인딩 적용
-- git commit이 index.lock 에러로 실패하면 3초 대기 후 재시도하세요 (최대 3회).
-
-⚠️ diagnosis.md에 명시된 수정 범위만 수정하세요. 범위 밖의 리팩토링은 하지 마세요."
-```
-
-Frontend (senior-frontend-engineer) — **diagnosis.md에 FE 수정 지시가 있을 때만**:
-```
-Task prompt:
-"$DOCS_DIR/diagnosis.md를 읽고, 당신에게 할당된 수정 지시를 수행하세요.
-
-📂 **작업 디렉토리**: $FRONTEND_PROJECT_DIR
-
-각 수정 지시에 대해:
-1. 지시된 파일과 라인을 확인한다.
-2. 근본 원인 분석을 참고하여 수정한다.
-3. 회귀 방지 섹션에 명시된 테스트를 추가한다.
-4. 수정 전후의 동작을 검증한다.
-
-Git Auto-Commit (이슈별):
-- 각 이슈 그룹 수정 완료 시 변경된 파일을 git add하고 커밋하세요.
-- 커밋 메시지 형식: jarfis(fix/FE): 이슈 요약 (한 줄)
-  예: jarfis(fix/FE): XSS 방지를 위한 입력 새니타이징 추가
-- git commit이 index.lock 에러로 실패하면 3초 대기 후 재시도하세요 (최대 3회).
+Git Auto-Commit: 이슈 그룹별 커밋. 형식: jarfis(fix/{ROLE}): 이슈 요약
+index.lock 에러 시 3초 대기 후 재시도 (최대 3회).
 
 ⚠️ diagnosis.md에 명시된 수정 범위만 수정하세요. 범위 밖의 리팩토링은 하지 마세요."
 ```

@@ -60,59 +60,17 @@ Task prompt:
 Architect (technical-architect):
 ```
 Task prompt:
-"$DOCS_DIR/architecture.md를 기반으로 상세 API 명세를 작성하세요.
+"$DOCS_DIR/architecture.md를 기반으로 상세 API 명세(BE-FE API Contract)를 작성하세요.
 
-⚠️ 이 명세는 BE와 FE가 동시에 독립적으로 개발할 수 있도록 하는 **API Contract** 역할을 합니다.
-BE는 이 명세대로 API를 구현하고, FE는 이 명세를 기준으로 타입 정의와 API 호출 코드를 작성합니다.
+각 엔드포인트별 포함 항목:
+- ## [Method] [Path] (예: ## POST /api/v1/boards)
+- Description, Authentication(권한/역할)
+- Request 파라미터 표 (Parameter, Location, Type, Required, Description)
+- Request Body Example (JSON)
+- Response Example (JSON)
+- Error Responses 표 (Code, Error Key, Message, 설명)
 
-각 엔드포인트에 대해 다음을 정의하세요:
-
-### 엔드포인트별 작성 형식:
-
-## [Method] [Path]
-예: ## POST /api/v1/boards
-
-### Description
-엔드포인트의 목적과 사용 시나리오를 간략히 설명
-
-### Authentication
-인증 필요 여부 및 필요한 권한/역할
-
-### Request
-| Parameter | Location | Type | Required | Description |
-|-----------|----------|------|----------|-------------|
-| id | path | number | ✅ | 리소스 ID |
-| page | query | number | ⬜ | 페이지 번호 (기본값: 1) |
-| title | body | string | ✅ | 게시글 제목 |
-
-### Request Body Example
-```json
-{
-  \"title\": \"string\",
-  \"content\": \"string\"
-}
-```
-
-### Response (200 OK)
-```json
-{
-  \"id\": 1,
-  \"title\": \"string\",
-  \"content\": \"string\",
-  \"created_at\": \"2025-01-01T00:00:00Z\"
-}
-```
-
-### Error Responses
-| Code | Error Key | Message | 설명 |
-|------|-----------|---------|------|
-| 400 | INVALID_TITLE | 제목을 입력해주세요 | 제목이 빈 값 |
-| 401 | UNAUTHORIZED | 인증이 필요합니다 | 미인증 접근 |
-| 404 | NOT_FOUND | 리소스를 찾을 수 없습니다 | 존재하지 않는 리소스 |
-
----
-
-모든 엔드포인트를 위 형식으로 작성하세요.
+FE가 타입 정의로 바로 변환할 수 있을 정도로 명확하게 작성하세요.
 결과를 $DOCS_DIR/api-spec.md에 저장하세요."
 ```
 
@@ -133,79 +91,17 @@ Task prompt:
 **Step 2-2: 태스크 분해** (tech-lead)
 ```
 Task prompt:
-"$DOCS_DIR/prd.md와 $DOCS_DIR/architecture.md를 읽고 구현 태스크를 분해하세요.
-$DOCS_DIR/api-spec.md가 존재하면 함께 참조하여, BE/FE 태스크에 관련 API 엔드포인트를 매핑하세요.
-$DOCS_DIR/impact-analysis.md를 참조하여 영향 범위가 큰 변경은 태스크에 명시하세요.
-$DOCS_DIR/test-strategy.md를 참조하여 각 태스크에 해당하는 테스트 항목을 인라인하세요.
-Phase 4-0 보안 가이드라인이 아직 없으므로, $DOCS_DIR/architecture.md의 보안 아키텍처 섹션을 참고하여
-각 태스크에 보안 주의사항을 인라인하세요.
+"$DOCS_DIR/prd.md, architecture.md, impact-analysis.md, test-strategy.md, api-spec.md(존재 시)를 읽고 태스크를 분해하세요.
 
-⚠️ 중요: PRD의 'Required Roles' 표를 먼저 확인하세요.
-'불필요'로 표시된 역할의 섹션은 'N/A — 이 프로젝트에서는 해당 없음'으로 표기하세요.
+⚠️ PRD 'Required Roles' 표에서 '불필요' 역할 섹션은 'N/A'로 표기.
+프로젝트 프로필($BE/$FE_PROJECT_PROFILE) 존재 시 대상 파일을 구체적으로 명시.
 
-⚠️ **프로젝트 프로필 활용**: $BE_PROJECT_PROFILE 또는 $FE_PROJECT_PROFILE이 존재하면,
-프로필의 디렉토리 구조와 파일 패턴을 참조하여 각 태스크의 '대상 파일'을 구체적으로 명시하세요.
-프로필이 없으면 architecture.md 기준으로 추정하세요.
+각 역할별(BE/FE/DevOps) 태스크를 다음 필드로 정리:
+- 설명, 관련 API(api-spec.md 참조), 대상 파일(신규/수정), 의존관계
+- 완료 기준, 테스트(test-strategy.md에서 인라인), 보안(architecture.md 보안 섹션 참고)
+- 예상 규모(S/M/L), UX 참조(FE만), 카테고리 A/B(DevOps만)
 
-다음 형식으로 정리하세요:
-
-## Backend Tasks
-(또는: N/A — 이 프로젝트에서는 백엔드 작업이 필요하지 않습니다. 근거: ...)
-
-### BE-1: [태스크명]
-- 설명: [구현할 내용]
-- 관련 API: [POST/GET/PUT/DELETE /api/v1/xxx] (api-spec.md 참조)
-- 대상 파일:
-  - [src/path/file.ts] (신규/수정)
-  - [src/path/file2.ts] (수정 — 변경 이유)
-- 의존: [없음 / BE-0 완료 후 / Shared-1 완료 후]
-- 완료 기준: [구체적 수락 조건]
-- 테스트: [test-strategy.md에서 이 태스크에 해당하는 항목 인라인]
-- 보안: [이 태스크에 해당하는 보안 주의사항 인라인]
-- 예상 규모: [S: ~50줄 / M: ~200줄 / L: ~500줄+]
-
-### BE-2: [태스크명]
-...
-
-## Frontend Tasks
-(또는: N/A — 이 프로젝트에서는 프론트엔드 작업이 필요하지 않습니다. 근거: ...)
-
-### FE-1: [태스크명]
-- 설명: [구현할 내용]
-- 관련 API: [POST/GET /api/v1/xxx] (api-spec.md 참조)
-- UX 참조: [ux-spec.md의 해당 화면/섹션 명시]
-- 대상 파일:
-  - [src/pages/xxx/index.tsx] (신규/수정)
-  - [src/components/xxx.tsx] (신규/수정)
-- 의존: [없음 / FE-0 완료 후]
-- 완료 기준: [구체적 수락 조건]
-- 테스트: [test-strategy.md에서 이 태스크에 해당하는 항목 인라인]
-- 보안: [이 태스크에 해당하는 보안 주의사항 인라인]
-- 예상 규모: [S / M / L]
-
-### FE-2: [태스크명]
-...
-
-## DevOps Tasks
-(또는: N/A — 이 프로젝트에서는 DevOps 작업이 필요하지 않습니다. 근거: ...)
-
-### DevOps-1: [태스크명]
-- 설명: [구현할 내용]
-- 카테고리: [A: 로컬 생성 / B: 클라우드 작업 (문서화)]
-- 대상 파일: [생성/수정할 파일 경로]
-- 의존: [없음 / BE-1 완료 후]
-- 완료 기준: [구체적 수락 조건]
-- 예상 규모: [S / M / L]
-
-## Shared / Cross-cutting
-### Shared-1: [태스크명]
-- 설명: [공통 작업 내용]
-- 대상 파일: [파일 경로]
-- 사용처: [BE-1, FE-2 등 이 결과를 사용하는 태스크]
-
-## 의존관계 요약
-(Mermaid 또는 텍스트로 전체 의존관계 시각화)
-
+추가 섹션: Shared/Cross-cutting + 의존관계 요약(Mermaid)
 결과를 $DOCS_DIR/tasks.md에 저장하세요."
 ```
 
