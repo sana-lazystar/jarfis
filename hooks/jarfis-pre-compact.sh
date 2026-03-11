@@ -19,7 +19,7 @@ fi
 
 # 1. jarfis-state.json 백업 (work 워크플로우용)
 #    $JARFIS_WORKSPACE_DIR/works/ 하위에서 가장 최근 .jarfis-state.json을 찾는다.
-STATE_FILE=$(find "$JARFIS_WORKSPACE_DIR/works" -name ".jarfis-state.json" -maxdepth 3 2>/dev/null | head -1)
+STATE_FILE=$(find "$JARFIS_WORKSPACE_DIR/works" -name ".jarfis-state.json" -maxdepth 2 2>/dev/null | head -1)
 
 if [ -n "$STATE_FILE" ]; then
   STATE_DIR=$(dirname "$STATE_FILE")

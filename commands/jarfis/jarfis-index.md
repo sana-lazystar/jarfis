@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.4.2
+> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.5.0
 
 ## 파일 구조
 ```
@@ -68,8 +68,8 @@
 - `{프로젝트경로}/.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (각 프로젝트 내부, 선택적)
 - `~/.claude/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
 - `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 설정 파일 (install.sh가 생성)
-- `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/{작업물명}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR)
-- `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}/{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리:
+- `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR, flat 구조)
+- `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리 (flat 구조):
   - `summary.md` — YAML frontmatter + 미팅 요약 (work.md 자동 감지용)
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
@@ -78,6 +78,7 @@
 - `~/.claude/scripts/jarfis-readme-update.sh` — README.md 자동 갱신 (Commands/Architecture/Latest Changes 섹션, sync.sh에서 호출)
 - `~/.claude/scripts/jarfis-measure.sh` — 프롬프트 파일 토큰 측정 + 구조 진단 (distill D-0/D-1/D-4에서 사용)
 - `~/.claude/scripts/jarfis-version-bump.sh` — semver 버전 범프 자동화 (implement/distill/upgrade에서 사용)
+- `~/.claude/scripts/jarfis-recent-meetings.sh` — 최근 미팅 N개 JSON 출력 (work.md Phase 0 미팅 선택에서 사용)
 - `~/.claude/scripts/jarfis-preflight.sh` — 사전 검증 (프로필/학습/컨텍스트/git 상태 JSON 출력, work/continue/meeting에서 사용)
 - `~/.claude/scripts/jarfis-state.sh` — .jarfis-state.json CRUD (init/read/write/set/set-nested/list-workflows, work/continue에서 사용)
 - `~/.claude/scripts/jarfis-detect-project.sh` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
@@ -92,7 +93,7 @@
 ## 내부 참조 관계
 - `jarfis.md` → 모든 명령어 참조 (도우미 텍스트)
 - `meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
-- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0 자동 감지, `./.jarfis/meetings/*/` glob 스캔) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
+- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis-recent-meetings.sh`로 워크스페이스 미팅 조회 + AskUserQuestion 선택) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
 - `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드)
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
@@ -110,10 +111,11 @@
 - `jarfis-measure.sh` → distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
 - `jarfis-version-bump.sh` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG 자동 갱신
 - `jarfis-readme-update.sh` → jarfis-sync.sh에서 호출, jarfis-index.md + CHANGELOG.md → README.md 섹션 갱신 (Commands/Architecture/Latest Changes)
+- `jarfis-recent-meetings.sh` → work.md Phase 0에서 최근 미팅 N개 JSON 조회 (AskUserQuestion 미팅 선택용)
 - `jarfis-preflight.sh` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
 - `jarfis-state.sh` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis-detect-project.sh` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지
-- `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행)
+- `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행, flat 구조 대응)
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋

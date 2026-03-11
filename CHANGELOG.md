@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- implement: flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (2026-03-11)
 - implement: README.md 자동 갱신 기능 추가 — jarfis-readme-update.sh + sync.sh 연동 (Commands/Architecture/Latest Changes 섹션) (2026-03-11)
 - implement: Batch 2 스크립트 추가 — jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh + command md 교체 (2026-03-10)
 - implement: bash 스크립트 패턴 도입 Batch 1 (jarfis-measure.sh, jarfis-version-bump.sh) — distill/implement/upgrade 토큰 효율화 (2026-03-10)

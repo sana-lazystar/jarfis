@@ -152,9 +152,11 @@ from datetime import datetime, timezone
 state = {
     'project_name': '$PROJECT_NAME',
     'work_name': '$WORK_NAME',
+    'work_input': '',
     'docs_dir': '$DOCS_DIR',
     'branch': '$WORK_NAME',
     'branches': {},
+    'source_meeting': None,
     'started_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
     'current_phase': 0,
     'workspace': {},

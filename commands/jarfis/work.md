@@ -77,7 +77,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 ### 산출물 디렉토리 규칙
 
-산출물은 `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/{작업물명}/` 디렉토리에 저장한다 (`$DOCS_DIR`).
+산출물은 `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` 디렉토리에 저장한다 (`$DOCS_DIR`).
 > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
 
 - 워크플로우 시작 시 `$DOCS_DIR` 값을 결정하고, `.jarfis-state.json`의 `docs_dir` 필드에 **절대경로**로 저장한다.
@@ -120,21 +120,32 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 0. **작업물명 입력 및 Git 브랜치 설정**
 
    **0-a. 작업물명 입력**
-   - AskUserQuestion으로 작업물명(`$WORK_NAME`)을 입력받는다 (디렉토리명/Git 브랜치명으로 사용).
-   - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}/$WORK_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
+   - AskUserQuestion으로 작업물명(`$WORK_INPUT`)을 입력받는다 (예: `feat/TICKET-123`, `fix/BUG-456`).
+   - `$WORK_DIR_NAME` = `{YYYYMMDD}-{$WORK_INPUT의 / → - 변환}` (예: `20260311-feat-TICKET-123`)
+   - `$BRANCH` = `$WORK_INPUT` (Git 브랜치명은 원본 유지, 예: `feat/TICKET-123`)
+   - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/$WORK_DIR_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
      ```bash
-     bash ~/.claude/scripts/jarfis-state.sh init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_NAME" "$DOCS_DIR"
+     bash ~/.claude/scripts/jarfis-state.sh init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_DIR_NAME" "$DOCS_DIR"
      ```
+   - 상태 파일에 원본 입력값 보존: `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "work_input" "$WORK_INPUT"`
+   - 브랜치명 기록: `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
    > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
 
-   **0-a-2. Meeting 감지**
-   - `$ARGUMENTS`에 `--meeting {기획명}` 있으면 → `$MEETING_REF` 설정, `$MEETING_DIR` = `./.jarfis/meetings/*/$MEETING_REF/` (glob)
-   - 플래그 없으면 → `./.jarfis/meetings/*/summary.md` 스캔, `idea` 필드와 `$ARGUMENTS` 키워드 매칭. 관련 미팅 발견 시 AskUserQuestion으로 참조 여부 확인.
-   - 미발견/미선택 시 `$MEETING_REF` = 빈 문자열
+   **0-a-2. Meeting 선택 (jarfis-recent-meetings.sh)**
+   - 스크립트를 실행하여 최근 미팅 목록을 조회한다:
+     ```bash
+     bash ~/.claude/scripts/jarfis-recent-meetings.sh 3
+     ```
+   - JSON 결과가 빈 배열(`[]`)이 아니면 → AskUserQuestion으로 표시:
+     - 각 미팅을 Option으로 변환: `[{date}] {name} - {summary}`
+     - 마지막 Option: `관련 미팅 없음`
+   - JSON 결과가 빈 배열이면 → 미팅 선택 단계 스킵
+   - `$ARGUMENTS`에 `--meeting {기획명}` 플래그가 있으면 → 스크립트 결과에서 해당 기획명과 매칭하여 자동 선택 (AskUserQuestion 스킵)
 
    **0-a-3. Meeting 컨텍스트 로드**
-   - `$MEETING_REF` 있으면: `$MEETING_DIR/`의 `summary.md`, `meeting-notes.md`, `decisions.md`, `tech-research.md`(선택)를 읽어 변수 저장. `.jarfis-state.json`에 `meeting_ref`, `meeting_dir` 기록.
-   - 없으면: 모든 `$MEETING_*` 변수 = 빈 문자열
+   - 미팅이 선택되면: `$JARFIS_WORKSPACE_DIR/{선택된 미팅 path}/`의 `summary.md`, `decisions.md`를 읽어 변수 저장.
+     - `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
+   - 미팅 없음 선택 시: `source_meeting` = `null`, 모든 `$MEETING_*` 변수 = 빈 문자열
 
    **0-a-4. Workspace Detection (프로젝트 구조 확인)**
 
@@ -156,7 +167,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
    **0-b. Git 브랜치 동기화 및 생성**
 
-   - **monorepo**: git repo 확인 → uncommitted 경고 → 기본 브랜치+develop pull → `git checkout -b $WORK_NAME develop` → `.jarfis-state.json` `branch` 기록. develop 없으면 기본 브랜치에서 분기 여부 확인.
+   - **monorepo**: git repo 확인 → uncommitted 경고 → 기본 브랜치+develop pull → `git checkout -b $BRANCH develop` → `.jarfis-state.json` `branch` 기록. develop 없으면 기본 브랜치에서 분기 여부 확인.
    - **multi-project**: BE/FE 각 경로에서 독립적으로 동일 과정 반복. `.jarfis-state.json`에 `branches: { backend, frontend }` 기록.
 
 1. **시스템 헬스체크** — `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion, 1~4개 → 경고, 0개 → 무시.
