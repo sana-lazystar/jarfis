@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.9.2 (hook infrastructure)
+> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.9.3 (agent model routing)
 
 ## 파일 구조
 ```

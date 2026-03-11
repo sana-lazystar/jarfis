@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.3] - 2026-03-11
+
+- implement: agent model routing 통일 (UX/QA/Security → opus)
+
 ## [1.9.2] - 2026-03-11
 
 - implement: implement/distill/upgrade 완료 시 commit+push 명령어 제공

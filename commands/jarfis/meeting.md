@@ -142,10 +142,12 @@ PO와 TL이 `$ARGUMENTS` (기획 주제)에 대한 첫인상을 각각 공유한
 
 PO/TL이 전문 지식 필요 시 자율적으로 소환한다.
 
-**소환 가능 전문가:** Architect(technical-architect), Security(senior-security-engineer), DevOps(senior-devops-sre-engineer), UX(senior-ux-designer), QA(senior-qa-engineer)
+**소환 가능 전문가:** Architect(technical-architect, opus), Security(senior-security-engineer, opus), DevOps(senior-devops-sre-engineer, sonnet), UX(senior-ux-designer, opus), QA(senior-qa-engineer, opus)
+
+> ※ 모델은 work.md Agent Mapping(SSOT)을 따른다: 추론·분석·리뷰 = opus, 코드 실행 = sonnet.
 
 **절차:**
-1. PO/TL이 자연스럽게 선언 → Agent 도구로 호출 (기획 주제, 논의 맥락 2~3줄, 구체적 질문, 프로젝트 컨텍스트 전달)
+1. PO/TL이 자연스럽게 선언 → Agent 도구로 호출 (model은 위 매핑 참조, 기획 주제, 논의 맥락 2~3줄, 구체적 질문, 프로젝트 컨텍스트 전달)
 2. 전문가 응답을 PO/TL이 미팅에 자연스럽게 통합
 3. 조사 결과는 `$MEETING_DIR/tech-research.md`에 누적 기록 (전문가 유형, 주제, 질문, 답변 요약, 권고사항)
 

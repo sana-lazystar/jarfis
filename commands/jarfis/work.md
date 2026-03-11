@@ -399,12 +399,12 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 | Product Owner | senior-product-owner | opus |
 | Architect | technical-architect | opus |
 | Tech Lead | tech-lead | opus |
-| UX Designer | senior-ux-designer | sonnet |
+| UX Designer | senior-ux-designer | opus |
 | Backend Engineer | senior-backend-engineer | sonnet |
 | Frontend Engineer | senior-frontend-engineer | sonnet |
 | DevOps/SRE | senior-devops-sre-engineer | sonnet |
-| QA Engineer | senior-qa-engineer | sonnet |
-| Security Engineer | senior-security-engineer | sonnet |
+| QA Engineer | senior-qa-engineer | opus |
+| Security Engineer | senior-security-engineer | opus |
 
 ### Skip Rules
 
