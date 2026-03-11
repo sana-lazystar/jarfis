@@ -201,19 +201,18 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 <!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                  | Description                                                                              |
-| ------------------------ | ---------------------------------------------------------------------------------------- |
-| `/jarfis`                | 명령어 목록 출력                                                                  |
+| Command                  | Description                                            |
+| ------------------------ | ------------------------------------------------------ |
 | `/jarfis:meeting`        | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
-| `/jarfis:work`           | 기획→설계→구현→리뷰 전체 워크플로우                                 |
-| `/jarfis:project-init`   | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성                            |
-| `/jarfis:project-update` | 기존 프로필 증분 갱신 (git diff 기반)                                         |
-| `/jarfis:upgrade`        | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                  |
-| `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                                 |
-| `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                   |
+| `/jarfis:work`           | 기획→설계→구현→리뷰 전체 워크플로우                                   |
+| `/jarfis:project-init`   | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
+| `/jarfis:project-update` | 기존 프로필 증분 갱신 (git diff 기반)                             |
+| `/jarfis:upgrade`        | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
+| `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                   |
+| `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
 | `/jarfis:continue`       | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                             |
-| `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                          |
+| `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
+| `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -350,23 +349,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.7.0] - 2026-03-11
+## [1.8.2] - 2026-03-11
 
-### Changed
-- **Data 경로 통합**: workspace/learnings를 `{JARFIS_SOURCE}/.local/`로 이동 (기존 `~/.jarfis/` → `.local/workspace`, `.local/jarfis-learnings.md`)
-- **install.sh**: `.local/` 마이그레이션 로직 추가 (기존 `~/.jarfis/`, `~/.jarfis-workspace` 자동 감지 및 복사)
-- **jarfis-state.sh**: 모든 Python inline 코드를 환경변수 방식으로 변경 — single quote 인젝션 취약점 해결
-- **jarfis-pre-compact.sh**: jq → python3 → 기본값 3단계 fallback (jq 미설치 환경 대응)
-- **statusline-command.sh**: jq → python3 → 기본값 3단계 fallback
-- **jarfis-version-bump.sh**: `sed -i ''` → `sed -i.bak` + `rm *.bak` (macOS/Linux 크로스플랫폼)
-- **jarfis-sync.sh**: `claude-cleanup.sh`도 동기화 대상에 포함
-- **health.md**: 존재하지 않는 `/jarfis:pack` 참조 → `install.sh`/`/jarfis:version`으로 수정
-- **jarfis-index.md**: version.md의 (NEW) 태그 제거
-
-### Added
-- flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (v1.5.0~v1.6.0 미커밋 변경 포함)
-- README.md 자동 갱신 기능 — jarfis-readme-update.sh + sync.sh 연동
-- Batch 1+2 스크립트: jarfis-measure.sh, jarfis-version-bump.sh, jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh
+- implement: 스텝 강제 실행 규칙, 수정 위치 명시, 동기화 방향 경고, 스텝 간 흐름 연결 강화
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

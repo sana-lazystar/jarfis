@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.2] - 2026-03-11
+
+- implement: 스텝 강제 실행 규칙, 수정 위치 명시, 동기화 방향 경고, 스텝 간 흐름 연결 강화
+
+## [1.8.1] - 2026-03-11
+
+- implement: CHANGELOG 버전 범프 로직 개선 — [Unreleased] → [X.Y.Z] 릴리스 섹션 자동 전환
+
 ## [1.8.0] - 2026-03-11
 
 ### Changed

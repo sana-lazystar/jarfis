@@ -82,21 +82,51 @@ def main(args):
         with open(index_file, "w") as f:
             f.write(content)
 
-    # Update CHANGELOG.md
-    if os.path.isfile(changelog_file) and changelog_entry:
+    # Update CHANGELOG.md — release [Unreleased] section into [X.Y.Z]
+    if os.path.isfile(changelog_file):
         with open(changelog_file) as f:
-            lines = f.readlines()
+            content = f.read()
 
-        new_lines = []
-        for line in lines:
-            new_lines.append(line)
-            if "[Unreleased]" in line:
-                # Check if next line is blank
-                # Insert entry after [Unreleased] header
-                new_lines.append(f"\n- {changelog_entry} ({today})\n")
+        # Find [Unreleased] section and extract its content
+        unreleased_pattern = re.compile(
+            r"(## \[Unreleased\] *\n)"   # [Unreleased] header line only
+            r"(.*?)"                      # content under [Unreleased]
+            r"(?=^## \[)",               # next version section at line start
+            re.DOTALL | re.MULTILINE,
+        )
+        match = unreleased_pattern.search(content)
 
-        with open(changelog_file, "w") as f:
-            f.writelines(new_lines)
+        if match:
+            unreleased_header = match.group(1)
+            unreleased_content = match.group(2).strip()
+
+            # Skip if nothing to release
+            if not unreleased_content and not changelog_entry:
+                pass  # No changes to record in CHANGELOG
+            else:
+                # Build new version section
+                new_section = f"## [{new_version}] - {today}\n"
+                if unreleased_content:
+                    new_section += f"\n{unreleased_content}\n"
+                if changelog_entry:
+                    new_section += f"\n- {changelog_entry}\n"
+
+                # Replace: empty [Unreleased] + insert new version section
+                replacement = f"{unreleased_header}\n{new_section}\n"
+                content = content[:match.start()] + replacement + content[match.end():]
+
+                with open(changelog_file, "w") as f:
+                    f.write(content)
+        elif changelog_entry:
+            # Fallback: no [Unreleased] found, insert new section after header
+            # Find first ## [ line and insert before it
+            first_version = re.search(r"\n(## \[)", content)
+            if first_version:
+                pos = first_version.start()
+                new_section = f"\n## [{new_version}] - {today}\n\n- {changelog_entry}\n\n"
+                content = content[:pos] + new_section + content[pos:]
+                with open(changelog_file, "w") as f:
+                    f.write(content)
 
     files_updated = [version_file, jarfis_version_file, index_file, changelog_file]
     json_output({
