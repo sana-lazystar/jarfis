@@ -198,20 +198,23 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 
 ---
 
+<!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                  | Description                     |
-| ------------------------ | ------------------------------- |
-| `/jarfis`                | 전체 명령어 목록                |
-| `/jarfis:work`           | 워크플로우 실행 (Phase T→6)     |
-| `/jarfis:meeting`        | 기획 킥오프 미팅 (PO + TL 토론) |
-| `/jarfis:project-init`   | 프로젝트 프로필 생성            |
-| `/jarfis:project-update` | 프로필 증분 갱신                |
-| `/jarfis:upgrade`        | 학습 관리 + 에이전트 적용       |
-| `/jarfis:distill`        | 프롬프트 증류 (토큰 최적화)     |
-| `/jarfis:implement`      | 시스템 자체 수정                |
-| `/jarfis:version`        | 버전 확인 / 업데이트            |
-| `/jarfis:health`         | 좀비 프로세스 진단              |
+| Command                  | Description                                                                              |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `/jarfis`                | 명령어 목록 출력                                                                  |
+| `/jarfis:meeting`        | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
+| `/jarfis:work`           | 기획→설계→구현→리뷰 전체 워크플로우                                 |
+| `/jarfis:project-init`   | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성                            |
+| `/jarfis:project-update` | 기존 프로필 증분 갱신 (git diff 기반)                                         |
+| `/jarfis:upgrade`        | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                  |
+| `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                                 |
+| `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                   |
+| `/jarfis:continue`       | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                             |
+| `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                          |
+<!-- JARFIS-COMMANDS-END -->
 
 ---
 
@@ -258,29 +261,51 @@ bash install.sh --version 1.0.0
 
 ---
 
+<!-- JARFIS-ARCHITECTURE-START -->
 ## Architecture
 
 ```
-~/.claude/
-├── commands/
-│   ├── jarfis.md                    # Entry point
-│   └── jarfis/
-│       ├── work.md                  # Workflow orchestration (Phase T→6)
-│       ├── meeting.md               # Meeting facilitation
-│       ├── prompts/                 # Externalized agent prompts (per Phase)
-│       └── templates/               # Artifact templates
-├── agents/jarfis/                   # 9 specialized agent role prompts
-│   ├── senior-backend-engineer.md
-│   ├── senior-frontend-engineer.md
-│   ├── senior-devops-sre-engineer.md
-│   ├── senior-product-owner.md
-│   ├── tech-lead.md
-│   ├── technical-architect.md
-│   ├── senior-security-engineer.md
-│   ├── senior-qa-engineer.md
-│   └── senior-ux-designer.md
-└── hooks/
-    └── jarfis-pre-compact.sh        # Auto-backup before context compression
+~/.claude/commands/
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력
+└── jarfis/
+    ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
+    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션
+    ├── project-init.md            # 프로젝트 프로필 생성
+    ├── project-update.md          # 프로필 증분 갱신
+    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트
+    ├── version.md                 # 버전 관리/업데이트 (NEW)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing
+    ├── health.md                  # 좀비 프로세스 진단
+    ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트
+    │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트
+    │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트
+    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트
+    │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅
+    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
+    └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마
+        ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
+        ├── project-context.md     # project-context.md 템플릿
+        ├── project-profile.md     # 프로젝트 프로필 템플릿
+        └── meeting-artifacts.md   # 미팅 산출물 4종 템플릿
+
+~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트
+├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트
+├── senior-backend-engineer.md     # BE 구현 에이전트
+├── senior-frontend-engineer.md    # FE 구현 에이전트
+├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트
+├── senior-product-owner.md        # PO 역질문/PRD 에이전트
+├── tech-lead.md                   # TL 태스크 분해 에이전트
+├── technical-architect.md         # 아키텍처 설계 에이전트
+├── senior-security-engineer.md    # 보안 리뷰 에이전트
+├── senior-qa-engineer.md          # QA 리뷰 에이전트
+└── senior-ux-designer.md          # UX 리뷰 에이전트
 ```
 
 **설계 원칙**:
@@ -288,6 +313,7 @@ bash install.sh --version 1.0.0
 - **워크플로우 흐름**은 `work.md`에, **에이전트 프롬프트**는 `prompts/`에, **산출물 양식**은 `templates/`에 분리
 - 에이전트 역할 프롬프트(`agents/`)와 워크플로우 프롬프트(`prompts/`)는 별개 — 역할은 고정, 태스크는 Phase마다 다름
 - 학습 데이터는 로컬에만 존재 (Git repo에 포함되지 않음)
+<!-- JARFIS-ARCHITECTURE-END -->
 
 ---
 
@@ -302,6 +328,25 @@ Semantic Versioning을 따릅니다.
 | Phase 구조 변경         | MAJOR |
 
 `/jarfis:implement`, `/jarfis:upgrade`, `/jarfis:distill` 실행 시 자동으로 버전이 범프되고 CHANGELOG에 기록됩니다.
+
+---
+
+<!-- JARFIS-LATEST-CHANGES-START -->
+## Latest Changes
+
+> 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
+
+## [1.3.5] - 2026-03-10
+
+### Changed
+- **phase4.md**: BE/FE/DevOps 공통 구현 규칙(Git Auto-Commit 등)을 Common Implementation Rules 섹션으로 통합 — ~578tok 절감
+- **phase2.md**: API spec 형식 49줄→12줄 압축, 태스크 분해 형식 78줄→16줄 압축 — ~809tok 절감
+- **continue.md**: 5개 출력 포맷 코드블록을 1줄 설명으로 압축, 프로필/컨텍스트 로드 절차를 work.md Phase 0 참조로 간소화 — ~601tok 절감
+- **meeting.md**: 전문가 소환 프로토콜 47줄→7줄, 3개 출력 포맷 블록 1줄 압축 — ~1,100tok 절감
+- **phase1.md**: Required Roles/Workspace/Performance Budget 표를 1줄 지시로 압축, Completeness Check 30줄→5줄 — ~394tok 절감
+- **phase5.md**: BE/FE fix 프롬프트 공통화(2→1), 병리 패턴 감지 30줄→8줄 — ~484tok 절감
+- **work.md**: Phase 0 로드 절차 압축, Adaptive Skip 가이드 5줄→2줄 — ~130tok 절감
+<!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
 

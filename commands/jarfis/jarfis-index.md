@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-10 | Version: 1.4.1
+> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.4.2
 
 ## 파일 구조
 ```
@@ -74,7 +74,8 @@
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
   - `tech-research.md` — 전문가 조사 결과 (전문가 소환 시에만 생성)
-- `~/.claude/scripts/jarfis-sync.sh` — Repo 동기화 스크립트 (`~/.claude/` → `{repo_path}/` 자동 diff+복사)
+- `~/.claude/scripts/jarfis-sync.sh` — Repo 동기화 스크립트 (`~/.claude/` → `{repo_path}/` 자동 diff+복사 + README 갱신)
+- `~/.claude/scripts/jarfis-readme-update.sh` — README.md 자동 갱신 (Commands/Architecture/Latest Changes 섹션, sync.sh에서 호출)
 - `~/.claude/scripts/jarfis-measure.sh` — 프롬프트 파일 토큰 측정 + 구조 진단 (distill D-0/D-1/D-4에서 사용)
 - `~/.claude/scripts/jarfis-version-bump.sh` — semver 버전 범프 자동화 (implement/distill/upgrade에서 사용)
 - `~/.claude/scripts/jarfis-preflight.sh` — 사전 검증 (프로필/학습/컨텍스트/git 상태 JSON 출력, work/continue/meeting에서 사용)
@@ -108,6 +109,7 @@
 - `implement.md` → 완료 후 `jarfis-version-bump.sh <type>` 호출 (사용자 선택)
 - `jarfis-measure.sh` → distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
 - `jarfis-version-bump.sh` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG 자동 갱신
+- `jarfis-readme-update.sh` → jarfis-sync.sh에서 호출, jarfis-index.md + CHANGELOG.md → README.md 섹션 갱신 (Commands/Architecture/Latest Changes)
 - `jarfis-preflight.sh` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
 - `jarfis-state.sh` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis-detect-project.sh` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지

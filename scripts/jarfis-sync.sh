@@ -80,10 +80,18 @@ fi
 # 6. statusline-command.sh
 sync_file "$CLAUDE_DIR/statusline-command.sh" "$REPO_PATH/statusline-command.sh"
 
+# 7. README.md 자동 갱신
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+if [ -f "$SCRIPT_DIR/jarfis-readme-update.sh" ]; then
+  README_RESULT=$(bash "$SCRIPT_DIR/jarfis-readme-update.sh" "$REPO_PATH" 2>&1) || true
+  CHANGES="${CHANGES}\n  ${README_RESULT}"
+fi
+
 # 결과 보고
 if [ $SYNCED -gt 0 ]; then
   echo "🔄 Repo 동기화: ${SYNCED}개 파일 → ${REPO_PATH}"
   echo -e "$CHANGES"
 else
   echo "✅ Repo 동기화: 이미 최신 (변경 없음)"
+  echo -e "$CHANGES"
 fi
