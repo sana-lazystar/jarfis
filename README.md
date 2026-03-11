@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.1] - 2026-03-11
+## [1.9.2] - 2026-03-11
 
-- implement: LICENSE 파일 추가 + README Philosophy 링크
+- implement: implement/distill/upgrade 완료 시 commit+push 명령어 제공
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

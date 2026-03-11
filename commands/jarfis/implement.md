@@ -198,7 +198,10 @@ python3 ~/.claude/scripts/jarfis_cli.py sync
 
 → Step 5로 진행
 
-### Step 5: 결과 보고
+### Step 5: 결과 보고 + Commit 명령어
+
+1. `git status`와 `git diff --stat`으로 변경 파일을 확인한다.
+2. 결과 배너를 출력한다:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -212,4 +215,19 @@ python3 ~/.claude/scripts/jarfis_cli.py sync
 🔄 인덱스 갱신 완료
 🔄 Repo 동기화 완료
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+```
+
+3. **Commit + Push 명령어를 생성하여 사용자에게 제공한다** (직접 실행하지 않음):
+   - `git add`에 변경된 파일만 명시적으로 나열
+   - 커밋 메시지: `implement: [변경 요약] (v{새버전})`
+   - 버전 범프가 있었으면 태그 + `--tags` 포함
+   - `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` 포함
+   - heredoc 대신 큰따옴표로 감싼 한 줄 메시지 사용 (쉘 호환성)
+
+```
+📋 아래 명령어를 복사해서 실행하세요:
+
+git add [파일1] [파일2] ... && git commit -m "implement: [요약] (v{버전})
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} && git push origin main --tags
 ```

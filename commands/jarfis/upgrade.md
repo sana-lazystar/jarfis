@@ -361,6 +361,22 @@ JARFIS Upgrade 완료
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
+버전 범프가 실행되었으면, **Commit + Push 명령어를 생성하여 사용자에게 제공한다** (직접 실행하지 않음):
+- `git status`와 `git diff --stat`으로 repo의 변경 파일을 확인한다.
+- 변경된 파일만 명시적으로 `git add`에 나열한다.
+- 커밋 메시지: `upgrade: [적용 내역 요약] (v{새버전})`
+- 버전 범프가 있었으면 태그 + `--tags` 포함
+- `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` 포함
+- heredoc 대신 큰따옴표로 감싼 한 줄 메시지 사용 (쉘 호환성)
+
+```
+📋 아래 명령어를 복사해서 실행하세요:
+
+git add [파일1] [파일2] ... && git commit -m "upgrade: [요약] (v{버전})
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} && git push origin main --tags
+```
+
 ---
 
 ## 주의사항
