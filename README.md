@@ -160,7 +160,11 @@ Phase 6 회고
 Claude Code의 auto-compact로 컨텍스트가 압축되어도 워크플로우가 끊기지 않습니다.
 
 - **`.jarfis-state.json`**: 현재 Phase, 완료된 태스크, 체크포인트를 실시간 기록
-- **PreCompact Hook**: auto-compact 직전에 상태를 자동 백업
+- **4개 Hook 인프라**:
+  - **PreCompact**: auto-compact 직전에 워크플로우 상태를 자동 백업
+  - **Safety (PreToolUse)**: 위험한 Bash 명령어 사전 차단
+  - **Quality Gate (PostToolUse)**: Edit/Write 후 코드 품질 자동 검증
+  - **Session Start**: 세션 시작 시 이전 컨텍스트 자동 복원
 - **Phase 4 자동 커밋**: 구현 중 태스크 완료 시마다 `jarfis(BE-1):`, `jarfis(FE-2):` 형식으로 커밋
 - **Resume**: 컨텍스트 유실 시 상태 파일에서 복원하여 중단 지점부터 재개
 
@@ -223,8 +227,8 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 
 - [Claude Code](https://claude.ai/code) CLI
 - Git
-- Python 3 (상태 관리에 필요)
-- jq (선택 — 없으면 python3 fallback 사용)
+- Python 3 (상태 관리, CLI, Hook 인프라)
+- jq (선택 — 없으면 hook 등록을 수동으로 설정)
 
 ### Install
 
@@ -237,8 +241,11 @@ bash install.sh
 `install.sh`는 다음을 수행합니다:
 
 - `commands/`, `agents/`, `hooks/`, `scripts/` → `~/.claude/`로 복사
+- Python 패키지(`scripts/jarfis/`, `jarfis_cli.py`) 설치
+- `statusline-command.sh` 설치
 - 워크스페이스와 학습 데이터를 `.local/`로 통합 (기존 `~/.jarfis/`에서 자동 마이그레이션)
-- PreCompact hook 등록 (settings.json)
+- 4개 Hook 등록 (settings.json): PreCompact, PreToolUse(Safety), PostToolUse(Quality Gate), SessionStart
+- statusLine 등록 (settings.json)
 - 기존 에이전트의 Learned Rules 보존 (덮어쓰기 시에도 학습 유지)
 - 버전 스탬프 기록
 
@@ -278,12 +285,24 @@ bash install.sh --version 1.0.0
 ## Architecture
 
 ```
+~/repos/jarfis/                    # Git repo (배포 소스)
+├── install.sh                     # 설치/업데이트 스크립트
+├── VERSION                        # 현재 버전
+├── CHANGELOG.md                   # 변경 이력
+├── PHILOSOPHY.md                  # JARFIS 9 Principles
+├── statusline-command.sh          # Claude Code statusLine 스크립트
+├── commands/                      # → ~/.claude/commands/로 설치됨
+├── agents/                        # → ~/.claude/agents/로 설치됨
+├── hooks/                         # → ~/.claude/hooks/로 설치됨
+├── scripts/                       # → ~/.claude/scripts/로 설치됨
+└── .local/                        # 런타임 데이터 (gitignored)
+
 ~/.claude/commands/
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력
 └── jarfis/
-    ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
+    ├── jarfis-index.md            # JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
+    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신
@@ -319,12 +338,34 @@ bash install.sh --version 1.0.0
 ├── senior-security-engineer.md    # 보안 리뷰 에이전트
 ├── senior-qa-engineer.md          # QA 리뷰 에이전트
 └── senior-ux-designer.md          # UX 리뷰 에이전트
+
+~/.claude/hooks/                   # Claude Code Hook 스크립트
+├── jarfis-pre-compact.sh          # PreCompact — 워크플로우 상태 백업
+├── jarfis-safety.sh               # PreToolUse — 위험 명령어 차단
+├── jarfis-quality-gate.sh         # PostToolUse — 코드 품질 검증
+└── jarfis-session-start.sh        # SessionStart — 컨텍스트 복원
+
+~/.claude/scripts/                 # CLI 인프라 (Python stdlib-only)
+├── jarfis_cli.py                  # CLI 디스패처
+├── jarfis/                        # Python 패키지
+│   ├── state.py                   # 워크플로우 상태 관리
+│   ├── detect.py                  # 프로젝트 감지
+│   ├── preflight.py               # Phase 0 Pre-flight
+│   ├── sync.py                    # README/CHANGELOG 동기화
+│   ├── measure.py                 # 프롬프트 토큰 측정
+│   ├── meetings.py                # 미팅 산출물 관리
+│   ├── quality_gate.py            # Quality Gate 로직
+│   ├── version.py                 # 버전 관리
+│   └── utils.py                   # 공통 유틸리티
+└── claude-cleanup.sh              # Claude 프로세스 정리
 ```
 
 **설계 원칙**:
 
 - **워크플로우 흐름**은 `work.md`에, **에이전트 프롬프트**는 `prompts/`에, **산출물 양식**은 `templates/`에 분리
 - 에이전트 역할 프롬프트(`agents/`)와 워크플로우 프롬프트(`prompts/`)는 별개 — 역할은 고정, 태스크는 Phase마다 다름
+- 스크립트는 Python stdlib-only — 외부 의존성 없이 Python 3만으로 동작
+- Hook 4종이 워크플로우 안정성을 보장 (상태 백업, 안전성, 품질, 컨텍스트 복원)
 - 학습 데이터는 로컬에만 존재 (Git repo에 포함되지 않음)
 <!-- JARFIS-ARCHITECTURE-END -->
 
@@ -349,9 +390,15 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.0] - 2026-03-11
+### [1.9.0] - 2026-03-11
 
-- implement: Hook infrastructure (safety/quality-gate/session-start) + workflow handoff + learning candidates
+- Hook infrastructure: Safety(PreToolUse), Quality Gate(PostToolUse), Session Start + workflow handoff + learning candidates
+
+### [1.8.0] - 2026-03-11
+
+- Bash → Python 마이그레이션: 9개 Bash 스크립트 중 8개를 Python stdlib-only 패키지로 전환
+- `scripts/jarfis/` Python 패키지 + `jarfis_cli.py` CLI 디스패처 추가
+- `PHILOSOPHY.md` — JARFIS 9 Principles 문서 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
