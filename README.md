@@ -349,9 +349,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.8.3] - 2026-03-11
+## [1.8.4] - 2026-03-11
 
-- implement: 명령어 .md 파일 스크립트 참조를 .sh → Python CLI(jarfis_cli.py)로 일괄 전환
+- implement: remove deprecated sh scripts replaced by py modules
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
