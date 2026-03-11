@@ -7,7 +7,27 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- implement: JARFIS 약어를 Just A Rather Foolish Integration System으로 확정 + README.md 현행화 (v1.7.0 상태 반영) (2026-03-11)
+## [1.8.0] - 2026-03-11
+
+### Changed
+- **Bash → Python 마이그레이션**: 9개 Bash 스크립트 중 8개를 Python stdlib-only 패키지로 전환
+- **jarfis-detect-project.sh**: `grep` 기반 JSON 파싱 → `json.load()` 정확 파싱
+- **jarfis-state.sh**: Bash + `python3 -c` 인라인 혼합 → 순수 Python 모듈
+- **workspace 경로 해석**: 4개 스크립트에 중복되던 로직을 `utils.py`로 통합
+- **jarfis-sync.sh + jarfis-readme-update.sh**: `sync.py`로 병합 (`--readme-only` 플래그)
+- **install.sh**: Python 패키지(`scripts/jarfis/`, `jarfis_cli.py`) 백업/설치 로직 추가
+
+### Added
+- `scripts/jarfis/` Python 패키지 (8 모듈 + utils)
+- `scripts/jarfis_cli.py` CLI 디스패처
+- `PHILOSOPHY.md` — JARFIS 9 Principles 문서
+
+## [1.7.1] - 2026-03-11
+
+### Changed
+- JARFIS 약어를 **Just A Rather Foolish Integration System**으로 확정
+- README.md 현행화: Artifacts 경로 `.local/` 반영, python3 요구사항 추가, jq optional 변경, (NEW) 태그 제거
+
 ## [1.7.0] - 2026-03-11
 
 ### Changed
@@ -25,6 +45,41 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (v1.5.0~v1.6.0 미커밋 변경 포함)
 - README.md 자동 갱신 기능 — jarfis-readme-update.sh + sync.sh 연동
 - Batch 1+2 스크립트: jarfis-measure.sh, jarfis-version-bump.sh, jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh
+
+## [1.6.0] - 2026-03-11
+
+### Changed
+- **workspace 경로**: `~/.jarfis-workspace` → `~/.jarfis/workspace`로 통합
+- **learnings 경로**: `~/.claude/jarfis-learnings.md` → `~/.jarfis/jarfis-learnings.md`로 이동
+- **install.sh**: 기존 경로 → 신규 경로 자동 마이그레이션 로직 추가
+
+## [1.5.0] - 2026-03-11
+
+### Changed
+- **디렉토리 구조 flat 전환**: `meetings/{YYYYMMDD}/{name}/` → `meetings/{YYYYMMDD}-{name}/`, `works/` 동일
+- **work.md**: Phase 0에서 AskUserQuestion으로 최근 미팅 3개 선택 기능 추가
+- **pre-compact.sh**: meetings 탐색 버그 수정 (maxdepth 조정)
+
+### Added
+- **jarfis-recent-meetings.sh**: 최근 미팅 N개 JSON 출력 스크립트
+- `.jarfis-state.json`에 `source_meeting`, `work_input` 필드 추가
+
+## [1.4.2] - 2026-03-11
+
+### Added
+- **jarfis-readme-update.sh**: jarfis-index.md + CHANGELOG.md 기반 README.md 섹션 자동 갱신 (HTML 마커 기반)
+- jarfis-sync.sh에서 동기화 시 자동 호출 연동
+
+## [1.4.1] - 2026-03-10
+
+### Added
+- **Batch 1 스크립트**: jarfis-measure.sh (토큰 측정), jarfis-version-bump.sh (버전 범프)
+- **Batch 2 스크립트**: jarfis-preflight.sh (사전검증), jarfis-state.sh (상태 CRUD), jarfis-detect-project.sh (프로젝트 감지)
+- command md 5종 스크립트 연동으로 교체 (work, continue, meeting, project-init, implement)
+
+### Changed
+- jarfis-index.md 줄 수 10건 실제값으로 갱신
+
 ## [1.3.5] - 2026-03-10
 
 ### Changed
