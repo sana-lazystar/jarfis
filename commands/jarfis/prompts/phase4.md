@@ -3,6 +3,30 @@
 > 이 파일은 work.md에서 외부화된 에이전트 프롬프트입니다.
 > distill에 의해 자동 생성됨.
 
+## Phase 2 Handoff (오케스트레이터 사전 작업)
+
+> Phase 4 시작 전, 오케스트레이터는 `.jarfis-state.json`의 `phases.2.handoff`를 읽어
+> 아래 정보를 각 구현 에이전트 프롬프트에 주입한다.
+
+```
+Handoff 주입 형식:
+─── Phase 2 Architect Handoff ───
+Key Decisions: $HANDOFF.key_decisions (각 항목)
+Warnings: $HANDOFF.warnings (각 항목 — 반드시 이번 Phase에서 해결할 것)
+Unresolved: $HANDOFF.unresolved (각 항목 — 구현 시 주의)
+───────────────────────────────
+```
+
+> Handoff가 없으면 이 섹션을 생략한다.
+
+## Handoff 작성 (Phase 2 완료 시)
+
+> Phase 2 Architect가 설계 완료 시, 오케스트레이터는 다음을 `.jarfis-state.json`에 기록한다:
+> `jarfis state set-nested <state_file> phases.2.handoff '{"key_decisions":[...],"warnings":[...],"unresolved":[...]}'`
+> work.md Phase 2 완료 블록에도 handoff 요약을 추가한다.
+
+---
+
 ## Common Implementation Rules
 
 > 아래 규칙은 BE/FE/DevOps 모든 구현 에이전트 프롬프트에 공통 적용한다.

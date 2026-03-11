@@ -295,13 +295,13 @@ bash install.sh --version 1.0.0
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff 주입
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트
-    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트
-    │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅
+    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 + Learning Candidate 감지
+    │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + handoff 필드
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
         ├── project-profile.md     # 프로젝트 프로필 템플릿
@@ -349,9 +349,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.8.4] - 2026-03-11
+## [1.9.0] - 2026-03-11
 
-- implement: remove deprecated sh scripts replaced by py modules
+- implement: Hook infrastructure (safety/quality-gate/session-start) + workflow handoff + learning candidates
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

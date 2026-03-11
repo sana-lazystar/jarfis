@@ -175,3 +175,24 @@ index.lock 에러 시 3초 대기 후 재시도 (최대 3회).
 ⚠️ diagnosis.md에 명시된 수정 범위만 수정하세요. 범위 밖의 리팩토링은 하지 마세요."
 ```
 
+---
+
+## Learning Candidate Detection (오케스트레이터 — diagnosis.md 완료 후)
+
+> diagnosis.md의 이슈 그룹을 분석하여, 동일 카테고리의 fix가 2건 이상 반복되면
+> `learning_candidates` 필드에 기록한다. 이는 Phase 6 retrospective에서 참조된다.
+
+```
+판단 기준:
+- diagnosis.md 이슈 그룹의 '수정 내용' 패턴이 유사한 그룹이 2건 이상일 때
+  예: "입력 검증 누락" 유형이 2건 → learning candidate
+  예: "에러 핸들링 미흡" 유형이 3건 → learning candidate
+- 이전 워크플로우의 diagnosis.md에서도 동일 카테고리가 등장한 경우 우선 포함
+
+기록 방법:
+jarfis state set-nested <state_file> learning_candidates '[
+  {"category": "input-validation", "count": 3, "examples": ["BE-2 파라미터 검증", "FE-1 폼 검증"]},
+  {"category": "error-handling", "count": 2, "examples": ["BE-4 에러 응답", "FE-3 에러 바운더리"]}
+]'
+```
+

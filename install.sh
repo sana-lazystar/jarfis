@@ -107,11 +107,16 @@ if [[ "$BACKUP_NEEDED" == "true" ]]; then
     cp -r "$CLAUDE_DIR/agents/jarfis" "$BACKUP_DIR/agents/"
   fi
 
-  # Backup hooks
-  if [[ -f "$CLAUDE_DIR/hooks/jarfis-pre-compact.sh" ]]; then
-    mkdir -p "$BACKUP_DIR/hooks"
-    cp "$CLAUDE_DIR/hooks/jarfis-pre-compact.sh" "$BACKUP_DIR/hooks/"
-  fi
+  # Backup hooks (all jarfis-*.sh)
+  HOOK_FILES_FOUND=false
+  for hf in "$CLAUDE_DIR/hooks/"jarfis-*.sh; do
+    [[ ! -f "$hf" ]] && continue
+    if [[ "$HOOK_FILES_FOUND" == "false" ]]; then
+      mkdir -p "$BACKUP_DIR/hooks"
+      HOOK_FILES_FOUND=true
+    fi
+    cp "$hf" "$BACKUP_DIR/hooks/"
+  done
 
   # Backup scripts
   if [[ -d "$CLAUDE_DIR/scripts" ]]; then
@@ -208,12 +213,14 @@ for f in "$SCRIPT_DIR/agents/jarfis/"*.md; do
   echo "  [OK] agents/jarfis/$filename"
 done
 
-# Install hooks
-if [[ -f "$SCRIPT_DIR/hooks/jarfis-pre-compact.sh" ]]; then
-  cp "$SCRIPT_DIR/hooks/jarfis-pre-compact.sh" "$CLAUDE_DIR/hooks/"
-  chmod +x "$CLAUDE_DIR/hooks/jarfis-pre-compact.sh"
-  echo "  [OK] hooks/jarfis-pre-compact.sh"
-fi
+# Install hooks (all jarfis-*.sh)
+for hf in "$SCRIPT_DIR/hooks/"jarfis-*.sh; do
+  [[ ! -f "$hf" ]] && continue
+  hf_name=$(basename "$hf")
+  cp "$hf" "$CLAUDE_DIR/hooks/$hf_name"
+  chmod +x "$CLAUDE_DIR/hooks/$hf_name"
+  echo "  [OK] hooks/$hf_name"
+done
 
 # Install scripts
 for f in "$SCRIPT_DIR/scripts/"*.sh; do
@@ -384,6 +391,39 @@ if command -v jq &>/dev/null && [[ -f "$SETTINGS_FILE" ]]; then
     changed=true
   else
     echo "  [OK] PreCompact hook already exists"
+  fi
+
+  # Check PreToolUse safety hook
+  has_pretooluse=$(jq -r '.hooks.PreToolUse // empty' "$SETTINGS_FILE")
+  if [[ -z "$has_pretooluse" ]]; then
+    jq '.hooks.PreToolUse = [{"matcher":"Bash","hooks":[{"type":"command","command":"bash '"$CLAUDE_DIR"'/hooks/jarfis-safety.sh","timeout":5000}]}]' \
+      "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "  [OK] Added PreToolUse hook (safety)"
+    changed=true
+  else
+    echo "  [OK] PreToolUse hook already exists"
+  fi
+
+  # Check PostToolUse quality gate hook
+  has_posttooluse=$(jq -r '.hooks.PostToolUse // empty' "$SETTINGS_FILE")
+  if [[ -z "$has_posttooluse" ]]; then
+    jq '.hooks.PostToolUse = [{"matcher":"Edit|Write|MultiEdit","hooks":[{"type":"command","command":"bash '"$CLAUDE_DIR"'/hooks/jarfis-quality-gate.sh","timeout":12000}]}]' \
+      "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "  [OK] Added PostToolUse hook (quality-gate)"
+    changed=true
+  else
+    echo "  [OK] PostToolUse hook already exists"
+  fi
+
+  # Check SessionStart context restore hook
+  has_sessionstart=$(jq -r '.hooks.SessionStart // empty' "$SETTINGS_FILE")
+  if [[ -z "$has_sessionstart" ]]; then
+    jq '.hooks.SessionStart = [{"matcher":".*","hooks":[{"type":"command","command":"bash '"$CLAUDE_DIR"'/hooks/jarfis-session-start.sh","timeout":8000}]}]' \
+      "$SETTINGS_FILE" > "${SETTINGS_FILE}.tmp" && mv "${SETTINGS_FILE}.tmp" "$SETTINGS_FILE"
+    echo "  [OK] Added SessionStart hook (context-restore)"
+    changed=true
+  else
+    echo "  [OK] SessionStart hook already exists"
   fi
 
   # Check statusLine

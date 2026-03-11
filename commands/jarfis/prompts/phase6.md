@@ -41,6 +41,17 @@ $DOCS_DIR/ 내의 모든 산출물과 .jarfis-state.json을 참조하세요.
 - '이 프로젝트에서' 등 한정 표현 → [project]
 - 범용 도구 사용법, 엔지니어링 원칙 → [universal]
 
+### Suggested Learnings (자동 생성 섹션)
+.jarfis-state.json의 learning_candidates 필드가 존재하면, 아래 형식으로 추가하세요:
+
+**반복 패턴에서 도출된 학습 후보:**
+| 카테고리 | 반복 횟수 | 예시 | 제안 학습 |
+|----------|----------|------|----------|
+(learning_candidates 각 항목을 표로 정리하고, 각각에 대해 구체적인 학습 규칙을 제안)
+
+사용자가 /jarfis:upgrade로 명시적 승격할 수 있도록 후보 형태로 제시합니다.
+learning_candidates가 없으면 이 섹션을 생략하세요.
+
 결과를 $DOCS_DIR/retrospective.md에 저장하세요."
 ```
 

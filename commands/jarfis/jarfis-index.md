@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.8.4 (sh cleanup)
+> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.9.0 (hook infrastructure)
 
 ## 파일 구조
 ```
@@ -22,13 +22,13 @@
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (143줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 (170줄)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 (85줄)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff 주입 (109줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트 (35줄)
-    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 (177줄)
-    │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + 학습 scope 태깅 (46줄)
+    │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 + Learning Candidate 감지 (198줄)
+    │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings (57줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 (80줄)
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + handoff 필드 (89줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
         ├── project-context.md     # project-context.md 템플릿 (17줄)
         ├── project-profile.md     # 프로젝트 프로필 템플릿 (66줄)
@@ -82,8 +82,13 @@
   - `jarfis_cli.py preflight` — 사전 검증 (프로필/학습/컨텍스트/git 상태 JSON 출력, work/continue/meeting에서 사용)
   - `jarfis_cli.py state` — .jarfis-state.json CRUD (init/read/write/set/set-nested/list-workflows, work/continue에서 사용)
   - `jarfis_cli.py detect` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
+  - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
+  - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업, shell-only)
+- `~/.claude/hooks/jarfis-safety.sh` — PreToolUse 훅 (Bash 위험 명령 차단/경고, 100줄)
+- `~/.claude/hooks/jarfis-quality-gate.sh` — PostToolUse 훅 (Edit/Write 후 린트/타입체크, 85줄)
+- `~/.claude/hooks/jarfis-session-start.sh` — SessionStart 훅 (in-progress 워크플로우 컨텍스트 복원, 98줄)
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
 - `~/.claude/.jarfis-source` — Git repo 경로 기록 (install.sh가 생성)
@@ -117,6 +122,13 @@
 - `jarfis_cli.py state` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis_cli.py detect` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지
 - `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행, shell-only hook)
+- `jarfis-safety.sh` → PreToolUse(Bash) 차단: force push, --no-verify, main/master 직접 커밋 | 경고: .env, rm -rf, credentials, curl|bash (킬 스위치: JARFIS_SAFETY_HOOK=0)
+- `jarfis-quality-gate.sh` → PostToolUse(Edit/Write/MultiEdit) 린트/타입체크 경고 (절대 차단 안함, 킬 스위치: JARFIS_QUALITY_GATE=0)
+- `jarfis-session-start.sh` → SessionStart에서 in-progress 워크플로우 탐색 → stdout 컨텍스트 주입 (킬 스위치: JARFIS_SESSION_RESTORE=0)
+- `quality_gate.py` → jarfis-quality-gate.sh가 호출, biome/prettier + tsc 실행 (프로젝트 루트 자동 감지)
+- `phase4.md` → Phase 2 handoff 읽기/쓰기 지침 (key_decisions, warnings, unresolved)
+- `phase5.md` → Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
+- `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성)
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋

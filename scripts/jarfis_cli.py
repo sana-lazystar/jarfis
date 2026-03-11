@@ -5,13 +5,14 @@ Usage:
     jarfis_cli.py <command> [args...]
 
 Commands:
-    state       State CRUD (.jarfis-state.json)
-    detect      Project framework/language detection
-    measure     Prompt file token measurement
-    preflight   Pre-flight validation
-    meetings    Recent meetings list
-    version     Version bump
-    sync        Repo sync + README update
+    state         State CRUD (.jarfis-state.json)
+    detect        Project framework/language detection
+    measure       Prompt file token measurement
+    preflight     Pre-flight validation
+    meetings      Recent meetings list
+    version       Version bump
+    sync          Repo sync + README update
+    quality-gate  Run lint/typecheck on edited file
 """
 
 import os
@@ -26,7 +27,7 @@ if SCRIPT_DIR not in sys.path:
 def main():
     if len(sys.argv) < 2:
         print(
-            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync> [args...]"}',
+            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate> [args...]"}',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -42,6 +43,7 @@ def main():
         "meetings": "jarfis.meetings",
         "version": "jarfis.version",
         "sync": "jarfis.sync",
+        "quality-gate": "jarfis.quality_gate",
     }
 
     if command not in commands:

@@ -26,7 +26,14 @@
   "phases": {
     "0": { "status": "completed" },
     "1": { "status": "completed", "gate": "approved" },
-    "2": { "status": "completed" },
+    "2": {
+      "status": "completed",
+      "handoff": {
+        "key_decisions": ["REST over GraphQL — 기존 팀 경험"],
+        "warnings": ["rate limiting 미구현, Phase 4 필수"],
+        "unresolved": ["캐시 전략 미확정"]
+      }
+    },
     "3": { "status": "skipped", "reason": "UX Designer 불필요" },
     "4": { "status": "in_progress" },
     "4.5": { "status": "pending" },
