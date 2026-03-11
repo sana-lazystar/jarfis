@@ -12,7 +12,7 @@ VERSION_FILE="$SCRIPT_DIR/VERSION"
 INSTALLED_VERSION_FILE="$CLAUDE_DIR/.jarfis-version"
 SOURCE_FILE="$CLAUDE_DIR/.jarfis-source"
 WORKS_DIR_FILE="$CLAUDE_DIR/.jarfis-works-dir"
-DEFAULT_WORKSPACE="$HOME/.jarfis-workspace"
+DEFAULT_WORKSPACE="$HOME/.jarfis/workspace"
 
 # Parse arguments
 TARGET_VERSION=""
@@ -231,12 +231,22 @@ fi
 echo "[4/7] Setting up workspace directory..."
 
 WORKSPACE_DIR="$DEFAULT_WORKSPACE"
+OLD_WORKSPACE="$HOME/.jarfis-workspace"
 
 if [[ -f "$WORKS_DIR_FILE" ]]; then
   EXISTING_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
   if [[ -n "$EXISTING_DIR" ]]; then
-    echo "  Existing workspace: $EXISTING_DIR"
-    WORKSPACE_DIR="$EXISTING_DIR"
+    # Migrate old default path → new default path
+    if [[ "$EXISTING_DIR" == "$OLD_WORKSPACE" ]] && [[ -d "$OLD_WORKSPACE" ]]; then
+      echo "  Migrating workspace: $OLD_WORKSPACE → $DEFAULT_WORKSPACE"
+      mkdir -p "$(dirname "$DEFAULT_WORKSPACE")"
+      mv "$OLD_WORKSPACE" "$DEFAULT_WORKSPACE"
+      WORKSPACE_DIR="$DEFAULT_WORKSPACE"
+      echo "  [OK] Workspace migrated"
+    else
+      echo "  Existing workspace: $EXISTING_DIR"
+      WORKSPACE_DIR="$EXISTING_DIR"
+    fi
   fi
 else
   echo ""
@@ -257,6 +267,19 @@ mkdir -p "$WORKSPACE_DIR/meetings"
 # Save workspace path
 echo "$WORKSPACE_DIR" > "$WORKS_DIR_FILE"
 echo "  [OK] Workspace → $WORKSPACE_DIR"
+
+# Migrate learnings from ~/.claude/ to ~/.jarfis/
+JARFIS_DIR="$HOME/.jarfis"
+OLD_LEARNINGS="$CLAUDE_DIR/jarfis-learnings.md"
+NEW_LEARNINGS="$JARFIS_DIR/jarfis-learnings.md"
+
+mkdir -p "$JARFIS_DIR"
+if [[ -f "$OLD_LEARNINGS" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
+  mv "$OLD_LEARNINGS" "$NEW_LEARNINGS"
+  echo "  [OK] Learnings migrated → $NEW_LEARNINGS"
+elif [[ ! -f "$NEW_LEARNINGS" ]]; then
+  echo "  (learnings file will be created on first /jarfis:upgrade)"
+fi
 
 # ── Step 5: Re-apply Learned Rules ────────
 echo "[5/7] Re-applying Learned Rules..."

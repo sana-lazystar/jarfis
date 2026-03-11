@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- workspace 기본경로 ~/.jarfis/workspace로 변경, learnings를 ~/.jarfis/로 이동, install.sh migration 로직 추가 (2026-03-11)
 - implement: flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (2026-03-11)
 - implement: README.md 자동 갱신 기능 추가 — jarfis-readme-update.sh + sync.sh 연동 (Commands/Architecture/Latest Changes 섹션) (2026-03-11)
 - implement: Batch 2 스크립트 추가 — jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh + command md 교체 (2026-03-10)
