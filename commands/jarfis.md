@@ -42,7 +42,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
     이전 산출물(PRD, 설계, 태스크)과 브랜치를 자동 재활용
 
   /jarfis:upgrade
-    JARFIS 학습 파일(~/.claude/jarfis-learnings.md)을 관리합니다.
+    JARFIS 학습 파일({JARFIS_SOURCE}/.local/jarfis-learnings.md)을 관리합니다.
     학습 항목 CRUD + universal/project scope 자동 분류 + 에이전트 적용
     [universal] → agent Learned Rules, [project] → .jarfis/context.md
     애매한 항목은 Advocate/Critic 토론으로 scope 확정

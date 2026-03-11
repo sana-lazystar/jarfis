@@ -25,7 +25,7 @@
      - "이름 변경" 선택 시 새 이름 입력받아 `$MEETING_NAME` 갱신
 
 2. **디렉토리 생성**
-   - `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `~/.jarfis-workspace`)
+   - `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace`)
    - `$MEETING_DIR` = `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-$MEETING_NAME/` (YYYYMMDD: 미팅 시작 날짜)
    - 디렉토리를 생성한다: `mkdir -p $MEETING_DIR`
    - 동일 `$MEETING_NAME`을 포함하는 디렉토리가 `$JARFIS_WORKSPACE_DIR/meetings/` 하위에 이미 존재하면 AskUserQuestion:

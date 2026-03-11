@@ -237,9 +237,22 @@ bash install.sh
 `install.sh`는 다음을 수행합니다:
 
 - `commands/`, `agents/`, `hooks/`, `scripts/` → `~/.claude/`로 복사
+- 워크스페이스와 학습 데이터를 `.local/`로 통합 (기존 `~/.jarfis/`에서 자동 마이그레이션)
 - PreCompact hook 등록 (settings.json)
 - 기존 에이전트의 Learned Rules 보존 (덮어쓰기 시에도 학습 유지)
 - 버전 스탬프 기록
+
+### Data Directory
+
+런타임 데이터는 repo 내 `.local/` 디렉토리에 저장됩니다 (`.gitignore`에 의해 추적 제외):
+
+```
+~/repos/jarfis/.local/
+├── workspace/
+│   ├── works/        # 워크플로우 산출물
+│   └── meetings/     # 미팅 산출물
+└── jarfis-learnings.md  # 학습 항목
+```
 
 ### Update
 

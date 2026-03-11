@@ -69,12 +69,12 @@ if [ -d "$CLAUDE_DIR/hooks" ]; then
   done < <(find "$CLAUDE_DIR/hooks" -type f -name "jarfis-*")
 fi
 
-# 5. scripts/* (jarfis- 접두사)
+# 5. scripts/* (jarfis- 접두사 + claude-cleanup.sh)
 if [ -d "$CLAUDE_DIR/scripts" ]; then
   while IFS= read -r f; do
     rel="${f#$CLAUDE_DIR/scripts/}"
     sync_file "$f" "$REPO_PATH/scripts/$rel"
-  done < <(find "$CLAUDE_DIR/scripts" -type f -name "jarfis-*")
+  done < <(find "$CLAUDE_DIR/scripts" -type f \( -name "jarfis-*" -o -name "claude-cleanup.sh" \))
 fi
 
 # 6. statusline-command.sh

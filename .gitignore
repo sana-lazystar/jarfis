@@ -1,3 +1,6 @@
+# Local runtime data
+.local/
+
 # User data (local only)
 jarfis-learnings.md
 .jarfis-state.json

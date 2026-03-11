@@ -24,7 +24,12 @@ WORKS_DIR_FILE="$HOME/.claude/.jarfis-works-dir"
 if [ -f "$WORKS_DIR_FILE" ]; then
   JARFIS_WORKSPACE_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
 else
-  JARFIS_WORKSPACE_DIR="$HOME/.jarfis-workspace"
+  SOURCE_FILE="$HOME/.claude/.jarfis-source"
+  if [ -f "$SOURCE_FILE" ]; then
+    JARFIS_WORKSPACE_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.local/workspace"
+  else
+    JARFIS_WORKSPACE_DIR="$HOME/repos/jarfis/.local/workspace"
+  fi
 fi
 
 MEETINGS_DIR="$JARFIS_WORKSPACE_DIR/meetings"

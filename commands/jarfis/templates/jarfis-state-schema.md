@@ -7,7 +7,7 @@
   "project_name": "기획 내용 요약",
   "work_name": "20250101-feat-TICKET-123",
   "work_input": "feat/TICKET-123",
-  "docs_dir": "~/.jarfis-workspace/works/20250101-feat-TICKET-123",
+  "docs_dir": "{JARFIS_SOURCE}/.local/workspace/works/20250101-feat-TICKET-123",
   "branch": "feat/TICKET-123",
   "branches": {
     "backend": "feat/TICKET-123",

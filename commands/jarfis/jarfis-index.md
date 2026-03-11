@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.6.0
+> 수동 편집하지 마세요. Last updated: 2026-03-11 | Version: 1.7.0
 
 ## 파일 구조
 ```
@@ -16,7 +16,7 @@
     ├── project-update.md          # 프로필 증분 갱신 (133줄)
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (371줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (305줄)
-    ├── version.md                 # 버전 관리/업데이트 (NEW)
+    ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (261줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -66,7 +66,7 @@
 ## 산출물/데이터 파일
 - `{프로젝트경로}/.jarfis/project-profile.md` — project-init이 생성, work이 참조 (각 프로젝트 내부)
 - `{프로젝트경로}/.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (각 프로젝트 내부, 선택적)
-- `~/.claude/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
+- `{JARFIS_SOURCE}/.local/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
 - `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 설정 파일 (install.sh가 생성)
 - `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR, flat 구조)
 - `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리 (flat 구조):
@@ -86,9 +86,9 @@
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
 - `~/.claude/.jarfis-source` — Git repo 경로 기록 (install.sh가 생성)
-- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 (install.sh가 생성, 기본: `~/.jarfis-workspace`)
-- `~/repos/jarfis/VERSION` — Git repo의 semver 버전 (1.0.0)
-- `~/repos/jarfis/CHANGELOG.md` — Keep-a-Changelog 형식 변경 이력
+- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 (install.sh가 생성, 기본: `{JARFIS_SOURCE}/.local/workspace`)
+- `{JARFIS_SOURCE}/VERSION` — Git repo의 semver 버전
+- `{JARFIS_SOURCE}/CHANGELOG.md` — Keep-a-Changelog 형식 변경 이력
 
 ## 내부 참조 관계
 - `jarfis.md` → 모든 명령어 참조 (도우미 텍스트)

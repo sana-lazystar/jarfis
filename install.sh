@@ -12,7 +12,7 @@ VERSION_FILE="$SCRIPT_DIR/VERSION"
 INSTALLED_VERSION_FILE="$CLAUDE_DIR/.jarfis-version"
 SOURCE_FILE="$CLAUDE_DIR/.jarfis-source"
 WORKS_DIR_FILE="$CLAUDE_DIR/.jarfis-works-dir"
-DEFAULT_WORKSPACE="$HOME/.jarfis/workspace"
+DEFAULT_WORKSPACE="$SCRIPT_DIR/.local/workspace"
 
 # Parse arguments
 TARGET_VERSION=""
@@ -231,24 +231,39 @@ fi
 echo "[4/7] Setting up workspace directory..."
 
 WORKSPACE_DIR="$DEFAULT_WORKSPACE"
-OLD_WORKSPACE="$HOME/.jarfis-workspace"
+MIGRATION_NEEDED=false
+OLD_JARFIS_DIR="$HOME/.jarfis"
 
 if [[ -f "$WORKS_DIR_FILE" ]]; then
   EXISTING_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
   if [[ -n "$EXISTING_DIR" ]]; then
-    # Migrate old default path → new default path
-    if [[ "$EXISTING_DIR" == "$OLD_WORKSPACE" ]] && [[ -d "$OLD_WORKSPACE" ]]; then
-      echo "  Migrating workspace: $OLD_WORKSPACE → $DEFAULT_WORKSPACE"
-      mkdir -p "$(dirname "$DEFAULT_WORKSPACE")"
-      mv "$OLD_WORKSPACE" "$DEFAULT_WORKSPACE"
+    # Case 2: Already migrated to .local/workspace
+    if [[ "$EXISTING_DIR" == "$SCRIPT_DIR/.local/workspace" ]]; then
+      echo "  [OK] Workspace already at new location: $EXISTING_DIR"
+      WORKSPACE_DIR="$EXISTING_DIR"
+    # Case 3: Migrate from ~/.jarfis/workspace
+    elif [[ "$EXISTING_DIR" == "$HOME/.jarfis/workspace" ]] && [[ -d "$EXISTING_DIR" ]]; then
+      echo "  Migrating workspace: $EXISTING_DIR → $DEFAULT_WORKSPACE"
+      mkdir -p "$DEFAULT_WORKSPACE"
+      cp -a "$EXISTING_DIR/." "$DEFAULT_WORKSPACE/"
       WORKSPACE_DIR="$DEFAULT_WORKSPACE"
-      echo "  [OK] Workspace migrated"
+      MIGRATION_NEEDED=true
+      echo "  [OK] Workspace copied (original preserved)"
+    # Case 4: Migrate from ~/.jarfis-workspace (legacy)
+    elif [[ "$EXISTING_DIR" == "$HOME/.jarfis-workspace" ]] && [[ -d "$EXISTING_DIR" ]]; then
+      echo "  Migrating workspace: $EXISTING_DIR → $DEFAULT_WORKSPACE"
+      mkdir -p "$DEFAULT_WORKSPACE"
+      cp -a "$EXISTING_DIR/." "$DEFAULT_WORKSPACE/"
+      WORKSPACE_DIR="$DEFAULT_WORKSPACE"
+      echo "  [OK] Workspace copied from legacy location (original preserved)"
+    # Case 5: Custom path — keep as-is
     else
-      echo "  Existing workspace: $EXISTING_DIR"
+      echo "  Existing workspace (custom): $EXISTING_DIR"
       WORKSPACE_DIR="$EXISTING_DIR"
     fi
   fi
 else
+  # Case 1: Fresh install
   echo ""
   echo "  JARFIS stores workflow artifacts (PRD, architecture, tasks, etc.)"
   echo "  in a dedicated workspace directory."
@@ -268,17 +283,31 @@ mkdir -p "$WORKSPACE_DIR/meetings"
 echo "$WORKSPACE_DIR" > "$WORKS_DIR_FILE"
 echo "  [OK] Workspace → $WORKSPACE_DIR"
 
-# Migrate learnings from ~/.claude/ to ~/.jarfis/
-JARFIS_DIR="$HOME/.jarfis"
-OLD_LEARNINGS="$CLAUDE_DIR/jarfis-learnings.md"
-NEW_LEARNINGS="$JARFIS_DIR/jarfis-learnings.md"
+# ── Learnings migration ──
+LOCAL_DIR="$SCRIPT_DIR/.local"
+NEW_LEARNINGS="$LOCAL_DIR/jarfis-learnings.md"
+mkdir -p "$LOCAL_DIR"
 
-mkdir -p "$JARFIS_DIR"
-if [[ -f "$OLD_LEARNINGS" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
-  mv "$OLD_LEARNINGS" "$NEW_LEARNINGS"
-  echo "  [OK] Learnings migrated → $NEW_LEARNINGS"
-elif [[ ! -f "$NEW_LEARNINGS" ]]; then
+# Migrate from ~/.jarfis/jarfis-learnings.md
+if [[ -f "$OLD_JARFIS_DIR/jarfis-learnings.md" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
+  cp -a "$OLD_JARFIS_DIR/jarfis-learnings.md" "$NEW_LEARNINGS"
+  MIGRATION_NEEDED=true
+  echo "  [OK] Learnings copied: ~/.jarfis/jarfis-learnings.md → .local/"
+# Migrate from ~/.claude/jarfis-learnings.md (legacy)
+elif [[ -f "$CLAUDE_DIR/jarfis-learnings.md" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
+  cp -a "$CLAUDE_DIR/jarfis-learnings.md" "$NEW_LEARNINGS"
+  echo "  [OK] Learnings copied: ~/.claude/jarfis-learnings.md → .local/"
+elif [[ -f "$NEW_LEARNINGS" ]]; then
+  echo "  [OK] Learnings already at .local/"
+else
   echo "  (learnings file will be created on first /jarfis:upgrade)"
+fi
+
+# Post-migration notice
+if [[ "$MIGRATION_NEEDED" == "true" ]] && [[ -d "$OLD_JARFIS_DIR" ]]; then
+  echo ""
+  echo "  [NOTE] Old ~/.jarfis/ directory still exists."
+  echo "         After verifying everything works: rm -rf ~/.jarfis"
 fi
 
 # ── Step 5: Re-apply Learned Rules ────────

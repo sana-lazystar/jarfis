@@ -6,7 +6,7 @@
 #   jarfis-preflight.sh [options] [project_dir]
 #
 # Options:
-#   --workspace-dir path   워크스페이스 디렉토리 (기본: ~/.jarfis-workspace)
+#   --workspace-dir path   워크스페이스 디렉토리 (기본: {JARFIS_SOURCE}/.local/workspace)
 #   --check-meetings       미팅 디렉토리 존재 여부도 확인
 #   --verbose              상세 출력 (stderr)
 #
@@ -16,7 +16,7 @@
 #   "profile_path": ".jarfis/project-profile.md" or null,
 #   "has_profile": true/false,
 #   "has_learnings": true/false,
-#   "learnings_path": "~/.claude/jarfis-learnings.md" or null,
+#   "learnings_path": "{JARFIS_SOURCE}/.local/jarfis-learnings.md" or null,
 #   "has_context": true/false,
 #   "context_path": ".jarfis/project-context.md" or null,
 #   "git_available": true/false,
@@ -59,7 +59,12 @@ if [ -z "$WORKSPACE_DIR" ]; then
   if [ -f "$WORKS_DIR_FILE" ]; then
     WORKSPACE_DIR="$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')"
   else
-    WORKSPACE_DIR="$HOME/.jarfis-workspace"
+    SOURCE_FILE="$HOME/.claude/.jarfis-source"
+    if [ -f "$SOURCE_FILE" ]; then
+      WORKSPACE_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.local/workspace"
+    else
+      WORKSPACE_DIR="$HOME/repos/jarfis/.local/workspace"
+    fi
   fi
 fi
 
@@ -79,7 +84,12 @@ else
 fi
 
 # ── Learnings check ──
-LEARNINGS_PATH="$HOME/.claude/jarfis-learnings.md"
+SOURCE_FILE_L="$HOME/.claude/.jarfis-source"
+if [ -f "$SOURCE_FILE_L" ]; then
+  LEARNINGS_PATH="$(cat "$SOURCE_FILE_L" | tr -d '[:space:]')/.local/jarfis-learnings.md"
+else
+  LEARNINGS_PATH="$HOME/repos/jarfis/.local/jarfis-learnings.md"
+fi
 HAS_LEARNINGS=false
 LEARNINGS_JSON="null"
 if [ -f "$LEARNINGS_PATH" ]; then

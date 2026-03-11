@@ -7,11 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- workspace 기본경로 ~/.jarfis/workspace로 변경, learnings를 ~/.jarfis/로 이동, install.sh migration 로직 추가 (2026-03-11)
-- implement: flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (2026-03-11)
-- implement: README.md 자동 갱신 기능 추가 — jarfis-readme-update.sh + sync.sh 연동 (Commands/Architecture/Latest Changes 섹션) (2026-03-11)
-- implement: Batch 2 스크립트 추가 — jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh + command md 교체 (2026-03-10)
-- implement: bash 스크립트 패턴 도입 Batch 1 (jarfis-measure.sh, jarfis-version-bump.sh) — distill/implement/upgrade 토큰 효율화 (2026-03-10)
+## [1.7.0] - 2026-03-11
+
+### Changed
+- **Data 경로 통합**: workspace/learnings를 `{JARFIS_SOURCE}/.local/`로 이동 (기존 `~/.jarfis/` → `.local/workspace`, `.local/jarfis-learnings.md`)
+- **install.sh**: `.local/` 마이그레이션 로직 추가 (기존 `~/.jarfis/`, `~/.jarfis-workspace` 자동 감지 및 복사)
+- **jarfis-state.sh**: 모든 Python inline 코드를 환경변수 방식으로 변경 — single quote 인젝션 취약점 해결
+- **jarfis-pre-compact.sh**: jq → python3 → 기본값 3단계 fallback (jq 미설치 환경 대응)
+- **statusline-command.sh**: jq → python3 → 기본값 3단계 fallback
+- **jarfis-version-bump.sh**: `sed -i ''` → `sed -i.bak` + `rm *.bak` (macOS/Linux 크로스플랫폼)
+- **jarfis-sync.sh**: `claude-cleanup.sh`도 동기화 대상에 포함
+- **health.md**: 존재하지 않는 `/jarfis:pack` 참조 → `install.sh`/`/jarfis:version`으로 수정
+- **jarfis-index.md**: version.md의 (NEW) 태그 제거
+
+### Added
+- flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (v1.5.0~v1.6.0 미커밋 변경 포함)
+- README.md 자동 갱신 기능 — jarfis-readme-update.sh + sync.sh 연동
+- Batch 1+2 스크립트: jarfis-measure.sh, jarfis-version-bump.sh, jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh
 ## [1.3.5] - 2026-03-10
 
 ### Changed

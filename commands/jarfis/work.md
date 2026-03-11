@@ -105,7 +105,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 | 파일 | 위치 | 설명 |
 |------|------|------|
-| `jarfis-learnings.md` | `~/.claude/jarfis-learnings.md` | **전역** — Agent Hints + Workflow Patterns |
+| `jarfis-learnings.md` | `{JARFIS_SOURCE}/.local/jarfis-learnings.md` | **전역** — Agent Hints + Workflow Patterns |
 | `project-context.md` | `./.jarfis/project-context.md` | **프로젝트별** — 이 코드베이스 고유 지식 |
 
 ---
@@ -358,7 +358,7 @@ Backend/Frontend (해당 수정 지시가 있을 때만):
 
 retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
-**1. 전역 학습 — `~/.claude/jarfis-learnings.md`**
+**1. 전역 학습 — `{JARFIS_SOURCE}/.local/jarfis-learnings.md`**
 > 📄 템플릿: `templates/learnings.md`를 읽어서 산출물 양식으로 사용한다.
 
 관리 규칙: 기존 파일에 추가 (중복이면 업데이트), 오래된 항목 제거, 날짜 기록
@@ -391,7 +391,7 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
 ### Workspace Dir Resolution
 
-`$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일 내용 (없으면 `~/.jarfis-workspace` 기본값, 자동 생성)
+`$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace` 기본값, 자동 생성). `{JARFIS_SOURCE}`는 `~/.claude/.jarfis-source` 파일에서 읽는다.
 
 ### Agent Mapping
 | Role | Agent (subagent_type) | Model |

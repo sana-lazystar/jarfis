@@ -14,7 +14,7 @@
 ```
 [JARFIS Health] cleanup 스크립트가 설치되지 않았습니다.
 경로: ~/.claude/scripts/claude-cleanup.sh
-/jarfis:pack으로 재설치하거나 수동으로 스크립트를 배치하세요.
+install.sh를 재실행하거나 /jarfis:version으로 업데이트하세요.
 ```
 
 ### Step 2: 모드 판별

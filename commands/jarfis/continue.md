@@ -5,7 +5,7 @@
 이전 워크플로우의 산출물과 브랜치를 재활용하여 효율적으로 후속 작업을 수행합니다.
 
 **플래그 옵션:**
-- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `~/.jarfis-workspace/works/20260310-feat-결제-시스템`)
+- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `{JARFIS_SOURCE}/.local/workspace/works/20260310-feat-결제-시스템`)
 - `--mode fix|extend` — 모드를 명시적으로 지정 (자동 분류 없이 바로 해당 모드 실행)
 
 ---
@@ -26,7 +26,7 @@
 
 `$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis-state.sh 사용):
 
-1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `~/.jarfis-workspace`)
+1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace`)
    완료된 워크플로우를 스크립트로 검색한다:
    ```bash
    bash ~/.claude/scripts/jarfis-state.sh list-workflows "$JARFIS_WORKSPACE_DIR" --completed-only

@@ -5,9 +5,29 @@ input=$(cat)
 
 user=$(whoami)
 host=$(hostname -s)
-cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
-model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
-used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+
+# JSON parsing: jq if available, python3 fallback
+if command -v jq >/dev/null 2>&1; then
+  cwd=$(echo "$input" | jq -r '.workspace.current_dir // .cwd')
+  model=$(echo "$input" | jq -r '.model.display_name // "Claude"')
+  used=$(echo "$input" | jq -r '.context_window.used_percentage // empty')
+elif command -v python3 >/dev/null 2>&1; then
+  eval "$(echo "$input" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+ws = d.get('workspace', {})
+cwd = ws.get('current_dir', d.get('cwd', '.'))
+model = d.get('model', {}).get('display_name', 'Claude')
+used = d.get('context_window', {}).get('used_percentage', '')
+print(f'cwd={cwd!r}')
+print(f'model={model!r}')
+print(f'used={used!r}')
+")"
+else
+  cwd="."
+  model="Claude"
+  used=""
+fi
 
 # Get short directory (basename only, unless it's home)
 home_dir="$HOME"

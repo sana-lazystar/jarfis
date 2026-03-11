@@ -72,7 +72,7 @@ echo "$NEW_VERSION" > "$JARFIS_VERSION_FILE"
 # ── Update jarfis-index.md Version line ──
 if [ -f "$INDEX_FILE" ]; then
   # Update "Last updated: YYYY-MM-DD | Version: X.Y.Z"
-  sed -i '' "s/Last updated: [0-9-]* | Version: [0-9.]*/Last updated: $TODAY | Version: $NEW_VERSION/" "$INDEX_FILE"
+  sed -i.bak "s/Last updated: [0-9-]* | Version: [0-9.]*/Last updated: $TODAY | Version: $NEW_VERSION/" "$INDEX_FILE" && rm -f "$INDEX_FILE.bak"
 fi
 
 # ── Update CHANGELOG.md ──

@@ -42,11 +42,11 @@ case "$ACTION" in
     if [ -z "$KEY" ]; then
       cat "$STATE_FILE"
     else
-      python3 -c "
-import json, sys
-with open('$STATE_FILE') as f:
+      JARFIS_STATE_FILE="$STATE_FILE" JARFIS_KEY="$KEY" python3 -c "
+import json, sys, os
+with open(os.environ['JARFIS_STATE_FILE']) as f:
     data = json.load(f)
-keys = '$KEY'.split('.')
+keys = os.environ['JARFIS_KEY'].split('.')
 val = data
 for k in keys:
     if isinstance(val, dict) and k in val:
@@ -66,12 +66,13 @@ print(json.dumps(val))
       exit 1
     fi
     # Validate and pretty-print
-    echo "$JSON_STRING" | python3 -c "
-import json, sys
+    echo "$JSON_STRING" | JARFIS_STATE_FILE="$STATE_FILE" python3 -c "
+import json, sys, os
 data = json.load(sys.stdin)
-with open('$STATE_FILE', 'w') as f:
+state_file = os.environ['JARFIS_STATE_FILE']
+with open(state_file, 'w') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
-print(json.dumps({'success': True, 'path': '$STATE_FILE'}))
+print(json.dumps({'success': True, 'path': state_file}))
 "
     ;;
 
@@ -86,20 +87,22 @@ print(json.dumps({'success': True, 'path': '$STATE_FILE'}))
       echo '{"error":"State file not found","path":"'"$STATE_FILE"'"}' >&2
       exit 1
     fi
-    python3 -c "
-import json, sys
-with open('$STATE_FILE') as f:
+    JARFIS_STATE_FILE="$STATE_FILE" JARFIS_KEY="$KEY" JARFIS_VALUE="$VALUE" python3 -c "
+import json, sys, os
+state_file = os.environ['JARFIS_STATE_FILE']
+key = os.environ['JARFIS_KEY']
+value = os.environ.get('JARFIS_VALUE', '')
+with open(state_file) as f:
     data = json.load(f)
-value = '$VALUE'
 # Try to parse as JSON (for numbers, booleans, objects)
 try:
     value = json.loads(value)
 except (json.JSONDecodeError, ValueError):
     pass
-data['$KEY'] = value
-with open('$STATE_FILE', 'w') as f:
+data[key] = value
+with open(state_file, 'w') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
-print(json.dumps({'success': True, 'key': '$KEY'}))
+print(json.dumps({'success': True, 'key': key}))
 "
     ;;
 
@@ -114,12 +117,14 @@ print(json.dumps({'success': True, 'key': '$KEY'}))
       echo '{"error":"State file not found","path":"'"$STATE_FILE"'"}' >&2
       exit 1
     fi
-    python3 -c "
-import json
-with open('$STATE_FILE') as f:
+    JARFIS_STATE_FILE="$STATE_FILE" JARFIS_KEY_PATH="$KEY_PATH" JARFIS_VALUE="$VALUE" python3 -c "
+import json, os
+state_file = os.environ['JARFIS_STATE_FILE']
+key_path = os.environ['JARFIS_KEY_PATH']
+value = os.environ.get('JARFIS_VALUE', '')
+with open(state_file) as f:
     data = json.load(f)
-keys = '$KEY_PATH'.split('.')
-value = '$VALUE'
+keys = key_path.split('.')
 try:
     value = json.loads(value)
 except (json.JSONDecodeError, ValueError):
@@ -130,9 +135,9 @@ for k in keys[:-1]:
         obj[k] = {}
     obj = obj[k]
 obj[keys[-1]] = value
-with open('$STATE_FILE', 'w') as f:
+with open(state_file, 'w') as f:
     json.dump(data, f, ensure_ascii=False, indent=2)
-print(json.dumps({'success': True, 'key_path': '$KEY_PATH'}))
+print(json.dumps({'success': True, 'key_path': key_path}))
 "
     ;;
 
@@ -146,15 +151,19 @@ print(json.dumps({'success': True, 'key_path': '$KEY_PATH'}))
     fi
     # Ensure directory exists
     mkdir -p "$(dirname "$STATE_FILE")"
-    python3 -c "
-import json
+    JARFIS_STATE_FILE="$STATE_FILE" JARFIS_PROJECT="$PROJECT_NAME" JARFIS_WORK="$WORK_NAME" JARFIS_DOCS="$DOCS_DIR" python3 -c "
+import json, os
 from datetime import datetime, timezone
+project_name = os.environ['JARFIS_PROJECT']
+work_name = os.environ['JARFIS_WORK']
+docs_dir = os.environ['JARFIS_DOCS']
+state_file = os.environ['JARFIS_STATE_FILE']
 state = {
-    'project_name': '$PROJECT_NAME',
-    'work_name': '$WORK_NAME',
+    'project_name': project_name,
+    'work_name': work_name,
     'work_input': '',
-    'docs_dir': '$DOCS_DIR',
-    'branch': '$WORK_NAME',
+    'docs_dir': docs_dir,
+    'branch': work_name,
     'branches': {},
     'source_meeting': None,
     'started_at': datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
@@ -178,9 +187,9 @@ state = {
         'summary': 'Initialized'
     }
 }
-with open('$STATE_FILE', 'w') as f:
+with open(state_file, 'w') as f:
     json.dump(state, f, ensure_ascii=False, indent=2)
-print(json.dumps({'success': True, 'path': '$STATE_FILE', 'work_name': '$WORK_NAME'}))
+print(json.dumps({'success': True, 'path': state_file, 'work_name': work_name}))
 "
     ;;
 
@@ -204,12 +213,11 @@ print(json.dumps({'success': True, 'path': '$STATE_FILE', 'work_name': '$WORK_NA
       echo '{"workflows":[],"count":0}'
       exit 0
     fi
-    python3 -c "
-import json, os, glob
-workspace = '$WORKSPACE_DIR'
-completed_only = $( $COMPLETED_ONLY && echo 'True' || echo 'False' )
+    JARFIS_COMPLETED_ONLY="$COMPLETED_ONLY" JARFIS_STATE_FILES="$STATE_FILES" python3 -c "
+import json, os
+completed_only = os.environ.get('JARFIS_COMPLETED_ONLY', 'false') == 'true'
 results = []
-state_files = '''$STATE_FILES'''.strip().split('\n')
+state_files = os.environ.get('JARFIS_STATE_FILES', '').strip().split('\n')
 for sf in state_files:
     sf = sf.strip()
     if not sf or not os.path.isfile(sf):

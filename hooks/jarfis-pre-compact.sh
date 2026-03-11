@@ -4,9 +4,22 @@
 # Claude Code가 stdin으로 JSON을 전달하며, trigger(manual/auto)와 cwd를 포함한다.
 
 INPUT=$(cat)
-TRIGGER=$(echo "$INPUT" | jq -r '.trigger // "unknown"')
-CWD=$(echo "$INPUT" | jq -r '.cwd // "."')
-SESSION_ID=$(echo "$INPUT" | jq -r '.session_id // "unknown"')
+
+# JSON parsing: jq if available, python3 fallback
+_json_get() {
+  local json="$1" key="$2" default="$3"
+  if command -v jq >/dev/null 2>&1; then
+    echo "$json" | jq -r ".$key // \"$default\""
+  elif command -v python3 >/dev/null 2>&1; then
+    echo "$json" | python3 -c "import json,sys; d=json.load(sys.stdin); print(d.get('$key','$default'))"
+  else
+    echo "$default"
+  fi
+}
+
+TRIGGER=$(_json_get "$INPUT" "trigger" "unknown")
+CWD=$(_json_get "$INPUT" "cwd" ".")
+SESSION_ID=$(_json_get "$INPUT" "session_id" "unknown")
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
 # Workspace directory resolution
@@ -14,7 +27,12 @@ WORKS_DIR_FILE="$HOME/.claude/.jarfis-works-dir"
 if [ -f "$WORKS_DIR_FILE" ]; then
   JARFIS_WORKSPACE_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
 else
-  JARFIS_WORKSPACE_DIR="$HOME/.jarfis-workspace"
+  SOURCE_FILE="$HOME/.claude/.jarfis-source"
+  if [ -f "$SOURCE_FILE" ]; then
+    JARFIS_WORKSPACE_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.local/workspace"
+  else
+    JARFIS_WORKSPACE_DIR="$HOME/repos/jarfis/.local/workspace"
+  fi
 fi
 
 # 1. jarfis-state.json 백업 (work 워크플로우용)
