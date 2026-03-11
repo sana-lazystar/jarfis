@@ -125,16 +125,16 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - `$BRANCH` = `$WORK_INPUT` (Git 브랜치명은 원본 유지, 예: `feat/TICKET-123`)
    - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/$WORK_DIR_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
      ```bash
-     bash ~/.claude/scripts/jarfis-state.sh init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_DIR_NAME" "$DOCS_DIR"
+     python3 ~/.claude/scripts/jarfis_cli.py state init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_DIR_NAME" "$DOCS_DIR"
      ```
-   - 상태 파일에 원본 입력값 보존: `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "work_input" "$WORK_INPUT"`
-   - 브랜치명 기록: `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
+   - 상태 파일에 원본 입력값 보존: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "work_input" "$WORK_INPUT"`
+   - 브랜치명 기록: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
    > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
 
-   **0-a-2. Meeting 선택 (jarfis-recent-meetings.sh)**
+   **0-a-2. Meeting 선택 (jarfis_cli.py meetings)**
    - 스크립트를 실행하여 최근 미팅 목록을 조회한다:
      ```bash
-     bash ~/.claude/scripts/jarfis-recent-meetings.sh 3
+     python3 ~/.claude/scripts/jarfis_cli.py meetings 3
      ```
    - JSON 결과가 빈 배열(`[]`)이 아니면 → AskUserQuestion으로 표시:
      - 각 미팅을 Option으로 변환: `[{date}] {name} - {summary}`
@@ -144,7 +144,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
    **0-a-3. Meeting 컨텍스트 로드**
    - 미팅이 선택되면: `$JARFIS_WORKSPACE_DIR/{선택된 미팅 path}/`의 `summary.md`, `decisions.md`를 읽어 변수 저장.
-     - `jarfis-state.sh set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
+     - `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
    - 미팅 없음 선택 시: `source_meeting` = `null`, 모든 `$MEETING_*` 변수 = 빈 문자열
 
    **0-a-4. Workspace Detection (프로젝트 구조 확인)**
@@ -160,7 +160,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
    - 각 경로에서 프레임워크 자동 감지 스크립트 실행:
      ```bash
-     bash ~/.claude/scripts/jarfis-detect-project.sh "$PROJECT_PATH"
+     python3 ~/.claude/scripts/jarfis_cli.py detect "$PROJECT_PATH"
      ```
      JSON 출력의 `frameworks`, `languages`, `project_type`을 활용하여 workspace 정보를 `.jarfis-state.json`에 기록한다.
    - `$BACKEND_PROJECT_DIR`, `$FRONTEND_PROJECT_DIR` 변수 설정 (`N/A`이면 빈 문자열)
@@ -173,7 +173,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 1. **시스템 헬스체크** — `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion, 1~4개 → 경고, 0개 → 무시.
 2. **Pre-flight 검증** — 스크립트로 프로필/학습/컨텍스트 존재 여부를 한번에 확인:
    ```bash
-   bash ~/.claude/scripts/jarfis-preflight.sh --check-meetings
+   python3 ~/.claude/scripts/jarfis_cli.py preflight --check-meetings
    ```
    JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `warnings`를 확인하여:
    - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
@@ -378,14 +378,14 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
 > 📄 상태 파일 스키마 및 필드 설명: `templates/jarfis-state-schema.md`를 참조한다.
 
-**상태 파일 관리 규칙 (jarfis-state.sh 사용):**
-1. 워크플로우 시작: `jarfis-state.sh init "$STATE_FILE" "$PROJECT_NAME" "$WORK_NAME" "$DOCS_DIR"`
-2. Phase 시작/완료 시: `jarfis-state.sh set-nested "$STATE_FILE" "phases.{N}.status" "in_progress|completed|skipped"`
-3. 에이전트 상태: `jarfis-state.sh set-nested "$STATE_FILE" "phase4_agents.backend" "completed"`
-4. 게이트 결과: `jarfis-state.sh set-nested "$STATE_FILE" "gate_results.gate1.decision" "approved"`
-5. 매 Phase 시작 전: `jarfis-state.sh read "$STATE_FILE"` — 이미 완료된 Phase는 재실행하지 않음
-6. 상태 변경 시마다: `jarfis-state.sh set "$STATE_FILE" "current_phase" "{N}"` + `last_checkpoint` 갱신
-7. 워크플로우 종료: `jarfis-state.sh set "$STATE_FILE" "current_phase" '"done"'`
+**상태 파일 관리 규칙 (jarfis_cli.py state 사용):**
+1. 워크플로우 시작: `jarfis_cli.py state init "$STATE_FILE" "$PROJECT_NAME" "$WORK_NAME" "$DOCS_DIR"`
+2. Phase 시작/완료 시: `jarfis_cli.py state set-nested "$STATE_FILE" "phases.{N}.status" "in_progress|completed|skipped"`
+3. 에이전트 상태: `jarfis_cli.py state set-nested "$STATE_FILE" "phase4_agents.backend" "completed"`
+4. 게이트 결과: `jarfis_cli.py state set-nested "$STATE_FILE" "gate_results.gate1.decision" "approved"`
+5. 매 Phase 시작 전: `jarfis_cli.py state read "$STATE_FILE"` — 이미 완료된 Phase는 재실행하지 않음
+6. 상태 변경 시마다: `jarfis_cli.py state set "$STATE_FILE" "current_phase" "{N}"` + `last_checkpoint` 갱신
+7. 워크플로우 종료: `jarfis_cli.py state set "$STATE_FILE" "current_phase" '"done"'`
 
 **`api_spec_required` 판단**: `required_roles.backend == true AND frontend == true` → `true`, 그 외 → `false`
 

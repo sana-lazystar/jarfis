@@ -244,11 +244,11 @@ options:
 
 비우기 시: 섹션 헤더 구조는 유지하고 항목(`-`로 시작하는 줄)만 제거하라.
 
-##### 3-A-7. 버전 범프 (PATCH) — `jarfis-version-bump.sh` 사용
+##### 3-A-7. 버전 범프 (PATCH) — `jarfis_cli.py version` 사용
 
 학습 적용은 에이전트 프롬프트 내용 변경이므로 PATCH 범프한다:
 ```bash
-bash ~/.claude/scripts/jarfis-version-bump.sh patch "upgrade: 학습 적용 (적용 내역 요약)"
+python3 ~/.claude/scripts/jarfis_cli.py version patch "upgrade: 학습 적용 (적용 내역 요약)"
 ```
 - 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
 - 출력 JSON의 `previous`/`new` 버전을 결과 보고에 포함한다.
@@ -257,7 +257,7 @@ bash ~/.claude/scripts/jarfis-version-bump.sh patch "upgrade: 학습 적용 (적
 
 반드시 sync 스크립트를 실행한다:
 ```bash
-bash ~/.claude/scripts/jarfis-sync.sh
+python3 ~/.claude/scripts/jarfis_cli.py sync
 ```
 파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
 

@@ -18,11 +18,11 @@
 
 ## 실행 흐름
 
-### Step 0: 프로젝트 감지 (jarfis-detect-project.sh)
+### Step 0: 프로젝트 감지 (jarfis_cli.py detect)
 
 스크립트로 프로젝트 유형을 자동 감지한다:
 ```bash
-bash ~/.claude/scripts/jarfis-detect-project.sh
+python3 ~/.claude/scripts/jarfis_cli.py detect
 ```
 
 JSON 출력을 분석한다:

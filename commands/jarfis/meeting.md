@@ -35,9 +35,9 @@
       2. 기존 기록 삭제하고 새로 시작"
      ```
 
-3. **컨텍스트 로드 (jarfis-preflight.sh)**
+3. **컨텍스트 로드 (jarfis_cli.py preflight)**
    ```bash
-   bash ~/.claude/scripts/jarfis-preflight.sh
+   python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
    JSON 출력의 `has_profile`, `has_learnings`, `has_context`를 확인하여:
    - `has_profile`=true → `profile_path`에서 `$PROJECT_PROFILE` 로드

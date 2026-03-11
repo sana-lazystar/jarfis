@@ -24,12 +24,12 @@
 - 존재하면 해당 워크플로우를 선택한다 (완료 여부 무관 — 사용자가 명시적으로 지정했으므로).
 - 존재하지 않으면: "지정된 경로에 워크플로우가 없습니다: `{$WORKFLOW_PATH}`" 출력 후 종료.
 
-`$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis-state.sh 사용):
+`$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis_cli.py state 사용):
 
 1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace`)
    완료된 워크플로우를 스크립트로 검색한다:
    ```bash
-   bash ~/.claude/scripts/jarfis-state.sh list-workflows "$JARFIS_WORKSPACE_DIR" --completed-only
+   python3 ~/.claude/scripts/jarfis_cli.py state list-workflows "$JARFIS_WORKSPACE_DIR" --completed-only
    ```
    JSON 출력의 `workflows` 배열에서 각 워크플로우의 `work_name`, `project_name`, `started_at`, `docs_dir`을 확인한다.
 
@@ -62,7 +62,7 @@
 
 6. **Pre-flight 검증** — 스크립트로 컨텍스트/프로필 존재 여부를 확인:
    ```bash
-   bash ~/.claude/scripts/jarfis-preflight.sh
+   python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
    JSON 출력의 `has_learnings`, `has_context`, `has_profile`로 각 파일을 로드한다. work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.8.3] - 2026-03-11
+
+- implement: 명령어 .md 파일 스크립트 참조를 .sh → Python CLI(jarfis_cli.py)로 일괄 전환
+
 ## [1.8.2] - 2026-03-11
 
 - implement: 스텝 강제 실행 규칙, 수정 위치 명시, 동기화 방향 경고, 스텝 간 흐름 연결 강화

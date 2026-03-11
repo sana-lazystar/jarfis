@@ -15,9 +15,9 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
    - 인덱스의 "파일 구조"와 "명령어 매핑"을 기반으로 제외 대상을 결정한다.
    - **인덱스에 새 명령어가 추가된 경우**: 역할을 확인하여 워크플로우 프롬프트인지 메타 도구인지 판단하고, 메타 도구는 제외 목록에 추가한다.
 
-1. **파일별 토큰 비용 측정** — `jarfis-measure.sh` 스크립트 사용 (LLM이 파일을 직접 읽지 않고 측정 결과만 받음)
+1. **파일별 토큰 비용 측정** — `jarfis_cli.py measure` 사용 (LLM이 파일을 직접 읽지 않고 측정 결과만 받음)
    ```bash
-   bash ~/.claude/scripts/jarfis-measure.sh \
+   python3 ~/.claude/scripts/jarfis_cli.py measure \
      --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md \
      --diagnostics
@@ -242,9 +242,9 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 ### D-4: 측정 (After) + 리포트
 
-1. **After 측정** — `jarfis-measure.sh`로 재측정 (D-0과 동일한 스크립트, `--diagnostics` 불필요):
+1. **After 측정** — `jarfis_cli.py measure`로 재측정 (D-0과 동일, `--diagnostics` 불필요):
    ```bash
-   bash ~/.claude/scripts/jarfis-measure.sh \
+   python3 ~/.claude/scripts/jarfis_cli.py measure \
      --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md
    ```
@@ -281,16 +281,16 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 3. **인덱스 갱신**: `jarfis-index.md`를 수정 결과에 맞게 갱신한다.
 
-4. **버전 범프 (PATCH)** — `jarfis-version-bump.sh` 사용:
+4. **버전 범프 (PATCH)** — `jarfis_cli.py version` 사용:
    ```bash
-   bash ~/.claude/scripts/jarfis-version-bump.sh patch "distill: 토큰 최적화 (증류 내역 요약)"
+   python3 ~/.claude/scripts/jarfis_cli.py version patch "distill: 토큰 최적화 (증류 내역 요약)"
    ```
    - 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
    - 출력 JSON의 `previous`/`new` 버전을 리포트에 포함한다.
 
 5. **Repo 동기화**: 반드시 sync 스크립트를 실행한다:
    ```bash
-   bash ~/.claude/scripts/jarfis-sync.sh
+   python3 ~/.claude/scripts/jarfis_cli.py sync
    ```
    파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
 
