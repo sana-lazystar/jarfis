@@ -1,6 +1,6 @@
 <p align="center">
   <strong>JARFIS</strong><br>
-  <em>Just Another Really Fantastic Integration System</em>
+  <em>Just A Rather Foolish Integration System</em>
 </p>
 
 <p align="center">
@@ -111,7 +111,7 @@ PO와 Tech Lead가 자유 토론을 벌이고, 필요하면 전문가(Security, 
 하나의 워크플로우가 만들어내는 산출물:
 
 ```
-jarfis/works/20260304/결제-리팩토링/
+.local/workspace/works/20260311-feat-결제-리팩토링/
 ├── .jarfis-state.json       # 워크플로우 상태 (중단 시 재개용)
 ├── press-release.md          # Working Backwards 프레스 릴리스
 ├── prd.md                    # 요구사항 정의서
@@ -224,7 +224,8 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 
 - [Claude Code](https://claude.ai/code) CLI
 - Git
-- jq (hook 등록에 필요)
+- Python 3 (상태 관리에 필요)
+- jq (선택 — 없으면 python3 fallback 사용)
 
 ### Install
 
@@ -289,7 +290,7 @@ bash install.sh --version 1.0.0
     ├── project-update.md          # 프로필 증분 갱신
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트
-    ├── version.md                 # 버전 관리/업데이트 (NEW)
+    ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -349,16 +350,23 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.3.5] - 2026-03-10
+## [1.7.0] - 2026-03-11
 
 ### Changed
-- **phase4.md**: BE/FE/DevOps 공통 구현 규칙(Git Auto-Commit 등)을 Common Implementation Rules 섹션으로 통합 — ~578tok 절감
-- **phase2.md**: API spec 형식 49줄→12줄 압축, 태스크 분해 형식 78줄→16줄 압축 — ~809tok 절감
-- **continue.md**: 5개 출력 포맷 코드블록을 1줄 설명으로 압축, 프로필/컨텍스트 로드 절차를 work.md Phase 0 참조로 간소화 — ~601tok 절감
-- **meeting.md**: 전문가 소환 프로토콜 47줄→7줄, 3개 출력 포맷 블록 1줄 압축 — ~1,100tok 절감
-- **phase1.md**: Required Roles/Workspace/Performance Budget 표를 1줄 지시로 압축, Completeness Check 30줄→5줄 — ~394tok 절감
-- **phase5.md**: BE/FE fix 프롬프트 공통화(2→1), 병리 패턴 감지 30줄→8줄 — ~484tok 절감
-- **work.md**: Phase 0 로드 절차 압축, Adaptive Skip 가이드 5줄→2줄 — ~130tok 절감
+- **Data 경로 통합**: workspace/learnings를 `{JARFIS_SOURCE}/.local/`로 이동 (기존 `~/.jarfis/` → `.local/workspace`, `.local/jarfis-learnings.md`)
+- **install.sh**: `.local/` 마이그레이션 로직 추가 (기존 `~/.jarfis/`, `~/.jarfis-workspace` 자동 감지 및 복사)
+- **jarfis-state.sh**: 모든 Python inline 코드를 환경변수 방식으로 변경 — single quote 인젝션 취약점 해결
+- **jarfis-pre-compact.sh**: jq → python3 → 기본값 3단계 fallback (jq 미설치 환경 대응)
+- **statusline-command.sh**: jq → python3 → 기본값 3단계 fallback
+- **jarfis-version-bump.sh**: `sed -i ''` → `sed -i.bak` + `rm *.bak` (macOS/Linux 크로스플랫폼)
+- **jarfis-sync.sh**: `claude-cleanup.sh`도 동기화 대상에 포함
+- **health.md**: 존재하지 않는 `/jarfis:pack` 참조 → `install.sh`/`/jarfis:version`으로 수정
+- **jarfis-index.md**: version.md의 (NEW) 태그 제거
+
+### Added
+- flat 디렉토리 구조 전환 + 미팅 선택 기능 + source_meeting 필드 (v1.5.0~v1.6.0 미커밋 변경 포함)
+- README.md 자동 갱신 기능 — jarfis-readme-update.sh + sync.sh 연동
+- Batch 1+2 스크립트: jarfis-measure.sh, jarfis-version-bump.sh, jarfis-preflight.sh, jarfis-state.sh, jarfis-detect-project.sh
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- implement: JARFIS 약어를 Just A Rather Foolish Integration System으로 확정 + README.md 현행화 (v1.7.0 상태 반영) (2026-03-11)
 ## [1.7.0] - 2026-03-11
 
 ### Changed
