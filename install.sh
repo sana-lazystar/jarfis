@@ -116,9 +116,13 @@ if [[ "$BACKUP_NEEDED" == "true" ]]; then
   # Backup scripts
   if [[ -d "$CLAUDE_DIR/scripts" ]]; then
     mkdir -p "$BACKUP_DIR/scripts"
-    for f in "$CLAUDE_DIR/scripts/"*.sh; do
+    for f in "$CLAUDE_DIR/scripts/"*.sh "$CLAUDE_DIR/scripts/jarfis_cli.py"; do
       [[ -f "$f" ]] && cp "$f" "$BACKUP_DIR/scripts/"
     done
+    # Backup Python package
+    if [[ -d "$CLAUDE_DIR/scripts/jarfis" ]]; then
+      cp -r "$CLAUDE_DIR/scripts/jarfis" "$BACKUP_DIR/scripts/"
+    fi
   fi
 
   # Backup statusline
@@ -219,6 +223,21 @@ for f in "$SCRIPT_DIR/scripts/"*.sh; do
   chmod +x "$CLAUDE_DIR/scripts/$filename"
   echo "  [OK] scripts/$filename"
 done
+
+# Install Python CLI dispatcher
+if [[ -f "$SCRIPT_DIR/scripts/jarfis_cli.py" ]]; then
+  cp "$SCRIPT_DIR/scripts/jarfis_cli.py" "$CLAUDE_DIR/scripts/jarfis_cli.py"
+  chmod +x "$CLAUDE_DIR/scripts/jarfis_cli.py"
+  echo "  [OK] scripts/jarfis_cli.py"
+fi
+
+# Install Python package (rm old __pycache__ first)
+if [[ -d "$SCRIPT_DIR/scripts/jarfis" ]]; then
+  rm -rf "$CLAUDE_DIR/scripts/jarfis"
+  cp -r "$SCRIPT_DIR/scripts/jarfis" "$CLAUDE_DIR/scripts/jarfis"
+  find "$CLAUDE_DIR/scripts/jarfis" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+  echo "  [OK] scripts/jarfis/ (Python package)"
+fi
 
 # Install statusline
 if [[ -f "$SCRIPT_DIR/statusline-command.sh" ]]; then

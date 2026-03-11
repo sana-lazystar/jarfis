@@ -16,3 +16,6 @@ jarfis-learnings.md
 *.swp
 *.swo
 *~
+# Python
+__pycache__/
+*.pyc
