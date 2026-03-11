@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.1] - 2026-03-11
+
+- implement: LICENSE 파일 추가 + README Philosophy 링크
+
 ## [1.9.0] - 2026-03-11
 
 - implement: Hook infrastructure (safety/quality-gate/session-start) + workflow handoff + learning candidates

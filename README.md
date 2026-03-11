@@ -4,20 +4,21 @@
 </p>
 
 <p align="center">
-  "결제 모듈 리팩토링해줘" 한 마디에<br>
-  PO가 역질문하고, Architect가 설계하고, 엔지니어가 구현하고, QA가 리뷰합니다.<br>
-  9명의 전문가가 한 팀처럼 움직이는 Claude Code 워크플로우 오케스트레이션.
+  완벽한 시스템은 아닙니다.<br>
+  더 나은 시스템이 되는 방향을 지향합니다.<br>
+  명령어 한번에 IT 팀을 움직일 수 있는, 누구나를 위한 IT 팀 오케스트레이션
 </p>
 
 <p align="center">
-  <sub>직접 써보면서 만들었고, 지금도 매일 쓰고 있습니다. by sanhalee</sub>
+  <sub>직접 써보면서 만들었고, 지금도 사용하면서 개선중입니다<br />by sanhalee</sub>
 </p>
 
 <p align="center">
   <a href="#quick-start">Quick Start</a> •
   <a href="#what-jarfis-does">What It Does</a> •
   <a href="#workflow">Workflow</a> •
-  <a href="#commands">Commands</a>
+  <a href="#commands">Commands</a> •
+  <a href="./PHILOSOPHY.md">Philosophy</a>
 </p>
 
 ---
@@ -36,7 +37,7 @@ Claude Code를 열고:
 /jarfis:work 게시판 CRUD + 댓글 기능 구현
 ```
 
-끝. JARFIS가 기획부터 구현, 리뷰까지 전체 워크플로우를 오케스트레이션합니다.
+JARFIS가 기획부터 구현, 리뷰까지 전체 워크플로우를 오케스트레이션하고, 더 나은 오케스트레이션을 위해 기록합니다.
 
 ---
 
@@ -44,7 +45,7 @@ Claude Code를 열고:
 
 Claude Code에 슬래시 명령어 하나를 치면, 진짜 IT 팀이 일하는 것과 같은 일이 벌어집니다.
 
-PO가 "이거 정말 필요한 거 맞아?" 하고 역질문을 쏟아내고, Architect가 "기존 시스템에 이렇게 얹으면 됩니다" 하고 설계를 그리고, Tech Lead가 태스크를 쪼개서 나누면, BE·FE·DevOps 엔지니어가 각자 구현에 들어갑니다. 다 끝나면 QA와 Security가 찬물을 끼얹고, 마지막으로 회고에서 "다음엔 이렇게 하자"를 기록합니다.
+PO가 "이거 정말 필요한 거 맞아?" 하고 역질문을 쏟아내고, Architect가 "기존 시스템에 이렇게 얹으면 됩니다" 하고 설계를 그리고, Tech Lead가 태스크를 쪼개서 나누면, BE·FE·DevOps 엔지니어가 각자 구현에 들어갑니다. 다 끝나면 QA와 Security가 엄격한 리뷰를해서 탄탄하게 만들고, 마지막으로 회고에서 "다음엔 이렇게 하자"를 기록합니다.
 
 이게 전부 **하나의 명령어 안에서** 일어납니다.
 
@@ -285,24 +286,12 @@ bash install.sh --version 1.0.0
 ## Architecture
 
 ```
-~/repos/jarfis/                    # Git repo (배포 소스)
-├── install.sh                     # 설치/업데이트 스크립트
-├── VERSION                        # 현재 버전
-├── CHANGELOG.md                   # 변경 이력
-├── PHILOSOPHY.md                  # JARFIS 9 Principles
-├── statusline-command.sh          # Claude Code statusLine 스크립트
-├── commands/                      # → ~/.claude/commands/로 설치됨
-├── agents/                        # → ~/.claude/agents/로 설치됨
-├── hooks/                         # → ~/.claude/hooks/로 설치됨
-├── scripts/                       # → ~/.claude/scripts/로 설치됨
-└── .local/                        # 런타임 데이터 (gitignored)
-
 ~/.claude/commands/
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력
 └── jarfis/
-    ├── jarfis-index.md            # JARFIS 시스템 현황
+    ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론)
+    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신
@@ -338,34 +327,12 @@ bash install.sh --version 1.0.0
 ├── senior-security-engineer.md    # 보안 리뷰 에이전트
 ├── senior-qa-engineer.md          # QA 리뷰 에이전트
 └── senior-ux-designer.md          # UX 리뷰 에이전트
-
-~/.claude/hooks/                   # Claude Code Hook 스크립트
-├── jarfis-pre-compact.sh          # PreCompact — 워크플로우 상태 백업
-├── jarfis-safety.sh               # PreToolUse — 위험 명령어 차단
-├── jarfis-quality-gate.sh         # PostToolUse — 코드 품질 검증
-└── jarfis-session-start.sh        # SessionStart — 컨텍스트 복원
-
-~/.claude/scripts/                 # CLI 인프라 (Python stdlib-only)
-├── jarfis_cli.py                  # CLI 디스패처
-├── jarfis/                        # Python 패키지
-│   ├── state.py                   # 워크플로우 상태 관리
-│   ├── detect.py                  # 프로젝트 감지
-│   ├── preflight.py               # Phase 0 Pre-flight
-│   ├── sync.py                    # README/CHANGELOG 동기화
-│   ├── measure.py                 # 프롬프트 토큰 측정
-│   ├── meetings.py                # 미팅 산출물 관리
-│   ├── quality_gate.py            # Quality Gate 로직
-│   ├── version.py                 # 버전 관리
-│   └── utils.py                   # 공통 유틸리티
-└── claude-cleanup.sh              # Claude 프로세스 정리
 ```
 
 **설계 원칙**:
 
 - **워크플로우 흐름**은 `work.md`에, **에이전트 프롬프트**는 `prompts/`에, **산출물 양식**은 `templates/`에 분리
 - 에이전트 역할 프롬프트(`agents/`)와 워크플로우 프롬프트(`prompts/`)는 별개 — 역할은 고정, 태스크는 Phase마다 다름
-- 스크립트는 Python stdlib-only — 외부 의존성 없이 Python 3만으로 동작
-- Hook 4종이 워크플로우 안정성을 보장 (상태 백업, 안전성, 품질, 컨텍스트 복원)
 - 학습 데이터는 로컬에만 존재 (Git repo에 포함되지 않음)
 <!-- JARFIS-ARCHITECTURE-END -->
 
@@ -390,19 +357,13 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-### [1.9.0] - 2026-03-11
+## [1.9.1] - 2026-03-11
 
-- Hook infrastructure: Safety(PreToolUse), Quality Gate(PostToolUse), Session Start + workflow handoff + learning candidates
-
-### [1.8.0] - 2026-03-11
-
-- Bash → Python 마이그레이션: 9개 Bash 스크립트 중 8개를 Python stdlib-only 패키지로 전환
-- `scripts/jarfis/` Python 패키지 + `jarfis_cli.py` CLI 디스패처 추가
-- `PHILOSOPHY.md` — JARFIS 9 Principles 문서 추가
+- implement: LICENSE 파일 추가 + README Philosophy 링크
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
 
 ## License
 
-MIT
+[MIT](./LICENSE)
