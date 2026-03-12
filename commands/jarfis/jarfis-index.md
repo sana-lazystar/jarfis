@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-12 | Version: 1.9.5 (commit hash change detection)
+> 수동 편집하지 마세요. Last updated: 2026-03-12 | Version: 1.9.6 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -45,7 +45,7 @@
 ├── technical-architect.md         # 아키텍처 설계 에이전트 (128줄)
 ├── senior-security-engineer.md    # 보안 리뷰 에이전트 (105줄)
 ├── senior-qa-engineer.md          # QA 리뷰 에이전트 (95줄)
-└── senior-ux-designer.md          # UX 리뷰 에이전트 (92줄)
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 제작 에이전트 (124줄)
 ```
 
 ## 명령어 매핑

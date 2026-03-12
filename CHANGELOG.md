@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.6] - 2026-03-12
+
+- implement: senior-ux-designer 전면 개편 (브랜드 디자인 + SVG 에셋 제작 + 디자인 토큰 + 비평 루프)
+
 ## [1.9.5] - 2026-03-12
 
 - implement: project-update 변경 감지를 commit hash 기반으로 개선

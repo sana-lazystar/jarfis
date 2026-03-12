@@ -326,7 +326,7 @@ bash install.sh --version 1.0.0
 ├── technical-architect.md         # 아키텍처 설계 에이전트
 ├── senior-security-engineer.md    # 보안 리뷰 에이전트
 ├── senior-qa-engineer.md          # QA 리뷰 에이전트
-└── senior-ux-designer.md          # UX 리뷰 에이전트
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 제작 에이전트
 ```
 
 **설계 원칙**:
@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.5] - 2026-03-12
+## [1.9.6] - 2026-03-12
 
-- implement: project-update 변경 감지를 commit hash 기반으로 개선
+- implement: senior-ux-designer 전면 개편 (브랜드 디자인 + SVG 에셋 제작 + 디자인 토큰 + 비평 루프)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
