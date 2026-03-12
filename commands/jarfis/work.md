@@ -21,6 +21,9 @@
 - admin 전용 / 내부 도구 피처에서는 Press Release 단계를 스킵하고 PRD의 "목표" 섹션으로 대체하라
 - Devil's Advocate(architecture.md Section 8)가 실질적 효과를 냄. 설계에서 "무엇이 잘못될 수 있는가"를 구조화하는 패턴 유지
 - JARFIS 시스템 파일(commands/jarfis/*, agents/jarfis/*, prompts/*, templates/*)을 수정할 때는 반드시 /jarfis:implement를 통해 실행하라
+- 코드 삭제 작업 유형: Phase 3 UX 스킵 + 3중 검증 파이프라인(정적 분석 + 텍스트 검색 + 교차 대조) + Preview E2E 스모크 테스트가 효과적
+- 대규모 삭제 PR의 E2E 스모크 테스트는 "삭제 검증"을 넘어 "코드베이스 건강 검진" 역할을 한다. 기존 버그, 미사용 라우트 등 부수적 발견 가능
+- depcheck은 npm 패키지 미사용 탐지에 유용하지만, 컴포넌트/유틸 삭제가 주 목적이면 knip의 unused dependencies 결과를 참조하는 것이 더 효율적
 
 ---
 

@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.3] - 2026-03-11
+## [1.9.4] - 2026-03-12
 
-- implement: agent model routing 통일 (UX/QA/Security → opus)
+- upgrade: 학습 적용 (FE 5건, TL 2건, WF 3건)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

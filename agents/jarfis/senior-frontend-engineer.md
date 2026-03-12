@@ -103,3 +103,8 @@ You are a senior frontend developer with over 10 years of professional experienc
 - Markdown 내부 링크에 base path가 자동 적용되지 않음. 상대 경로 사용 또는 수동으로 base path 포함 필요
 - set:html로 렌더링되는 값을 OG/Twitter 메타 태그에 직접 삽입하면 안 됨. HTML 태그를 strip한 plainTitle을 별도로 사용하라
 - Tailwind CSS v4는 @astrojs/tailwind(v3 전용)과 호환되지 않음. @tailwindcss/vite 플러그인을 astro.config.mjs의 vite.plugins에 추가하라
+- 코드 삭제 작업에서 AND 교집합 전략(2개+ 독립 분석 도구 결과의 교집합만 삭제)은 오탐률을 제곱으로 낮춘다
+- Vue 전역 등록 컴포넌트(app.component())는 import 기반 정적 분석 도구가 탐지 못함. 반드시 텍스트 검색(ripgrep 등)으로 template 내 사용을 수동 검증하라
+- Vite 프로젝트에서 미사용 코드 삭제의 주된 가치는 번들 사이즈 감소가 아니라 소스 코드 탐색 효율과 유지보수 부담 경감이다
+- PascalCase/kebab-case 양방향 변환에서 연속 대문자(XMLParser)와 숫자(H2Title) edge case를 반드시 테스트하라
+- 일회성 분석 도구/스크립트는 작업 완료 후 반드시 삭제하라. 잔존하면 그 자체가 미사용 코드가 된다

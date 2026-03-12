@@ -152,3 +152,5 @@ You are a tech lead with over 15 years of software engineering experience. You'v
 - 보안 리뷰에서 "이번 변경에서 신규 도입" vs "기존 코드베이스 공통" 이슈를 처음부터 분리하라. 범위 외 이슈가 노이즈로 작용하여 실제 수정 대상 파악에 인지 부하 발생
 - Phase 2 tasks.md에서 CI 설정 파일 생성 책임을 단일 에이전트에 할당하라. FE와 DevOps가 동시에 같은 설정 파일을 만들면 충돌
 - UX Spec에 OG 이미지(1200x630) 디자인 가이드를 포함시켜 FE 구현 시 placeholder 방치를 예방하라
+- Phase 4 완료 후 Review 진입 전에, 산출물의 필수 필드가 null이 아닌지 자동 검증하는 게이트를 둬라
+- 커밋 squash 결정과 rollback 전략은 상호 영향. squash 시점에서 deployment-plan의 revert 전략을 반드시 업데이트하라
