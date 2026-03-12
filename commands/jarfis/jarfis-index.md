@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-12 | Version: 1.9.4 (agent model routing)
+> 수동 편집하지 마세요. Last updated: 2026-03-12 | Version: 1.9.5 (commit hash change detection)
 
 ## 파일 구조
 ```
@@ -13,7 +13,7 @@
     ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (443줄, 프롬프트+템플릿 외부화 후)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
-    ├── project-update.md          # 프로필 증분 갱신 (133줄)
+    ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (371줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (305줄)
     ├── version.md                 # 버전 관리/업데이트
@@ -55,7 +55,7 @@
 | `/jarfis:meeting` | `jarfis/meeting.md` | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성) |
 | `/jarfis:work` | `jarfis/work.md` | 기획→설계→구현→리뷰 전체 워크플로우 |
 | `/jarfis:project-init` | `jarfis/project-init.md` | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성 |
-| `/jarfis:project-update` | `jarfis/project-update.md` | 기존 프로필 증분 갱신 (git diff 기반) |
+| `/jarfis:project-update` | `jarfis/project-update.md` | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback) |
 | `/jarfis:upgrade` | `jarfis/upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |

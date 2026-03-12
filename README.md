@@ -211,7 +211,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:meeting`        | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
 | `/jarfis:work`           | 기획→설계→구현→리뷰 전체 워크플로우                                   |
 | `/jarfis:project-init`   | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
-| `/jarfis:project-update` | 기존 프로필 증분 갱신 (git diff 기반)                             |
+| `/jarfis:project-update` | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
 | `/jarfis:upgrade`        | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
 | `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                   |
 | `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
@@ -294,7 +294,7 @@ bash install.sh --version 1.0.0
     ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
-    ├── project-update.md          # 프로필 증분 갱신
+    ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트
     ├── version.md                 # 버전 관리/업데이트
@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.4] - 2026-03-12
+## [1.9.5] - 2026-03-12
 
-- upgrade: 학습 적용 (FE 5건, TL 2건, WF 3건)
+- implement: project-update 변경 감지를 commit hash 기반으로 개선
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

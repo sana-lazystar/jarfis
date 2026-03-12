@@ -17,18 +17,40 @@
    ⚠️ 기존 프로필이 없습니다. `/jarfis:project-init`을 먼저 실행하세요.
    ```
 3. 파일이 있으면 **전체 내용을 읽어** 기존 프로필을 파악하세요.
-4. 프로필 헤더에서 기존 depth (`basic` / `medium` / `deep`)와 type (`BE` / `FE` / `Fullstack`)을 추출하세요.
+4. 프로필 헤더에서 기존 depth (`basic` / `medium` / `deep`), type (`BE` / `FE` / `Fullstack`), 그리고 `Last-Commit` hash를 추출하세요.
 
 ### Step 1: 변경 범위 감지
 
 다음 방법들을 **순서대로** 시도하여 마지막 프로필 생성 이후 변경된 파일 목록을 확보하세요:
 
-**방법 A: Git 기반 (우선)**
+**방법 A: Git commit hash 기반 (우선)**
+
+프로필 헤더에서 `Last-Commit` hash를 추출하고, 해당 커밋 이후의 변경만 정확히 감지:
+
+**A-1. Hash 유효성 검증** (hash가 있는 경우):
 ```bash
-# 프로필 생성일 이후 변경된 파일 (프로필 헤더의 날짜 활용)
+git rev-parse --verify <last-commit-hash>^{commit} 2>/dev/null
+```
+- 성공 → A-2로 진행
+- 실패 (rebase/force-push로 hash가 사라진 경우) → 경고를 출력하고 날짜 기반 fallback 사용:
+  ```
+  ⚠️ Last-Commit hash (<hash>)가 현재 히스토리에 없습니다 (rebase/force-push 가능성).
+     날짜 기반 fallback으로 전환합니다.
+  ```
+
+**A-2. Hash 기반 변경 감지**:
+```bash
+git log <last-commit-hash>..HEAD --name-only --pretty=format: | sort -u
+```
+
+**A-3. `Last-Commit` 헤더가 없는 경우** (기존 프로필 호환):
+```bash
+# 날짜 기반 fallback — 경고를 출력하여 사용자에게 인지시킴
+# ⚠️ Last-Commit 미기록 프로필입니다. 날짜 기반 감지를 사용합니다. 이번 갱신 후 hash가 기록됩니다.
 git log --since="YYYY-MM-DD" --name-only --pretty=format: | sort -u
 ```
-만약 git log 결과가 비어있으면 staged/unstaged 변경도 확인:
+
+어떤 방법이든 git log 결과가 비어있으면 staged/unstaged 변경도 확인:
 ```bash
 git diff --name-only HEAD
 git diff --name-only --cached
@@ -95,8 +117,13 @@ git diff --name-only --cached
    ```
    > Updated by `/jarfis:project-update` on YYYY-MM-DD (original: YYYY-MM-DD by `/jarfis:project-init`)
    ```
-3. 갱신 대상 섹션만 새 내용으로 교체
-4. 나머지 섹션은 기존 내용 유지
+3. `Last-Commit` 헤더를 현재 HEAD commit hash로 업데이트:
+   ```bash
+   git rev-parse --short HEAD
+   ```
+   결과를 `> Last-Commit: <short-hash>` 형태로 기록 (기존에 없으면 추가)
+4. 갱신 대상 섹션만 새 내용으로 교체
+5. 나머지 섹션은 기존 내용 유지
 
 **작성 원칙:**
 - `/jarfis:project-init`과 동일한 문서 형식 및 서술 스타일 유지

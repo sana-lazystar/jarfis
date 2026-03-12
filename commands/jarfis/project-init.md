@@ -139,6 +139,11 @@ JSON 출력을 분석한다:
 - 토큰 효율이 최우선: 코드를 그대로 복사하지 말고, 구조와 패턴을 **서술**
 - 해당 depth에서 분석하지 않은 섹션은 포함하지 말 것 (빈 섹션 금지)
 - 모든 파일 경로는 프로젝트 루트 기준 상대경로로 표기
+- 헤더에 현재 HEAD commit hash를 포함할 것:
+  ```bash
+  git rev-parse --short HEAD
+  ```
+  결과를 `> Last-Commit: <short-hash>` 형태로 기록
 
 ### Step 5: 결과 보고
 

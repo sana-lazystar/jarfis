@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.5] - 2026-03-12
+
+- implement: project-update 변경 감지를 commit hash 기반으로 개선
+
 ## [1.9.4] - 2026-03-12
 
 - upgrade: 학습 적용 (FE 5건, TL 2건, WF 3건)
