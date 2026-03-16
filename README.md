@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.6] - 2026-03-12
+## [1.9.7] - 2026-03-16
 
-- implement: senior-ux-designer 전면 개편 (브랜드 디자인 + SVG 에셋 제작 + 디자인 토큰 + 비평 루프)
+- upgrade: 학습 적용 — FE 7건(API 전환 패턴), WF 4건(전환 워크플로우)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

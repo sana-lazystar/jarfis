@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.7] - 2026-03-16
+
+- upgrade: 학습 적용 — FE 7건(API 전환 패턴), WF 4건(전환 워크플로우)
+
 ## [1.9.6] - 2026-03-12
 
 - implement: senior-ux-designer 전면 개편 (브랜드 디자인 + SVG 에셋 제작 + 디자인 토큰 + 비평 루프)

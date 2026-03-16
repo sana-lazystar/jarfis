@@ -108,3 +108,10 @@ You are a senior frontend developer with over 10 years of professional experienc
 - Vite 프로젝트에서 미사용 코드 삭제의 주된 가치는 번들 사이즈 감소가 아니라 소스 코드 탐색 효율과 유지보수 부담 경감이다
 - PascalCase/kebab-case 양방향 변환에서 연속 대문자(XMLParser)와 숫자(H2Title) edge case를 반드시 테스트하라
 - 일회성 분석 도구/스크립트는 작업 완료 후 반드시 삭제하라. 잔존하면 그 자체가 미사용 코드가 된다
+- API 전환(axios 인스턴스 → 래핑 함수) 시 반환값 언래핑 깊이가 정확히 1단계만 변경되는지 호출부마다 확인. 이중 destructuring(`const { data: { x } } = res.data`) → 1단계(`const { data: { x } } = res`)
+- import 제거 시 동일 import 문의 다른 named export 보존 필수. `import { target, other } from '...'`에서 target만 제거할 것
+- `return axiosInstance({...})` 패턴의 함수는 호출부가 AxiosResponse를 기대하므로, 래핑 함수 전환 시 호출부도 반드시 동시 수정
+- 대규모 패턴 전환 후 자동 검증 스크립트(grep `.data.data` 이중접근 탐지 등)를 Phase 4 완료 직후 실행
+- 전환(migration) 작업 시 원본에 없던 방어 코드(`!response?.success` 체크 등)를 신규 추가하지 않는다. 전환과 개선은 절대 동시에 수행하지 않는다 — Martin Fowler "Two Hats" 원칙
+- API URL 경로에 leading `/`가 있는지, trailing space가 없는지 grep 기반 자동 검증 스크립트로 Phase 4 완료 후 즉시 확인한다
+- 코드 리뷰(Phase 5) 시 "삭제된 것", "변경된 것", "추가된 것" 3관점을 체계적으로 적용한다. 특히 전환 작업에서 "추가된 것" 관점이 핵심 — 원본에 없던 로직이 추가되었으면 반드시 의도를 검증
