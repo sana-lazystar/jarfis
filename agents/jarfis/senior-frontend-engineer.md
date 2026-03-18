@@ -115,3 +115,6 @@ You are a senior frontend developer with over 10 years of professional experienc
 - 전환(migration) 작업 시 원본에 없던 방어 코드(`!response?.success` 체크 등)를 신규 추가하지 않는다. 전환과 개선은 절대 동시에 수행하지 않는다 — Martin Fowler "Two Hats" 원칙
 - API URL 경로에 leading `/`가 있는지, trailing space가 없는지 grep 기반 자동 검증 스크립트로 Phase 4 완료 후 즉시 확인한다
 - 코드 리뷰(Phase 5) 시 "삭제된 것", "변경된 것", "추가된 것" 3관점을 체계적으로 적용한다. 특히 전환 작업에서 "추가된 것" 관점이 핵심 — 원본에 없던 로직이 추가되었으면 반드시 의도를 검증
+- 인증 설정(authType 등)의 기본값이 허용적('none'/비인증)인 시스템에서는, 전환 완료 후 해당 설정이 누락된 API 호출을 grep으로 전수 검증하라. interceptor fallback으로 "우연히" 동작하는 것은 보안 취약점이다
+- API 함수 반환 패턴(전체 응답 pass-through vs inner data만 unwrap)을 마이그레이션 초기에 통일하라. 혼용은 호출부에서 소비 패턴 불일치를 초래하며 P0 버그의 직접적 원인이 된다
+- 인증 헤더가 불필요한 요청(S3 presigned URL 등)은 별도 HTTP 인스턴스 생성 대신, 기존 싱글톤의 인증 제거 옵션(예: isForceRemoveAuth)을 활용하라

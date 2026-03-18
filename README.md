@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.7] - 2026-03-16
+## [1.9.8] - 2026-03-18
 
-- upgrade: 학습 적용 — FE 7건(API 전환 패턴), WF 4건(전환 워크플로우)
+- upgrade: API 마이그레이션 학습 적용 (FE 3건, QA 3건, WF 3건)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

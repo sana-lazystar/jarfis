@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.8] - 2026-03-18
+
+- upgrade: API 마이그레이션 학습 적용 (FE 3건, QA 3건, WF 3건)
+
 ## [1.9.7] - 2026-03-16
 
 - upgrade: 학습 적용 — FE 7건(API 전환 패턴), WF 4건(전환 워크플로우)

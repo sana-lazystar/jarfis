@@ -93,3 +93,6 @@ You communicate in Korean (한국어) as your primary language, as the user who 
 - DEV 서버 Before/After 비교 시, 배포 타이밍에 따른 TTFB/CDN 상태 편차가 크므로 절대값 비교보다 이미지 로드 수 등 확정적 지표를 우선 활용하라
 - requestDeal + soldOut 동시 조건처럼 비즈니스 결정이 필요한 엣지케이스는 Phase 2 test-strategy에서 "비즈니스 결정 필요" 태그를 달고, Gate 진입 전 해소 여부를 확인한다
 - SSG 사이트에서 Astro의 i18n.routing.prefixDefaultLocale: true 설정 시, 루트 경로 리다이렉트를 Astro가 자동 생성하여 src/pages/index.astro를 오버라이드할 수 있음. redirectToDefaultLocale: false로 비활성화 가능
+- 대규모 변경(100개+ 파일) 리뷰에서 grep 기반 자동화 검증(레거시 패턴 잔존, 이중 언래핑, 설정 누락)이 수동 리뷰보다 효과적이다. 리뷰 체크리스트에 grep 스크립트를 포함하라
+- 대규모 리팩토링 검증은 3중 체계를 수립하라: (1) 단위 테스트로 함수 파라미터 정확성 검증, (2) grep 패턴 전수 검사로 레거시 잔존/뎁스 오류 검출, (3) 핵심 비즈니스 플로우 E2E 테스트. 단일 검증 수단으로는 불충분
+- 리뷰 발견 이슈를 "이번 변경에서 신규 도입된 이슈" vs "기존 코드베이스 공통 이슈"로 초기 분리하라. 혼재 시 수정 우선순위 판단이 어려워진다
