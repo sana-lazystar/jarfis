@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.11] - 2026-03-19
+
+- implement: work.md Learned Workflow Patterns 제거 (~500tok 절감, jarfis-learnings.md가 SSOT)
+
 ## [1.9.10] - 2026-03-19
 
 - implement: 에이전트 모델 frontmatter 통일 (QA/Security → opus) + 모델 라우팅 SSOT 강화

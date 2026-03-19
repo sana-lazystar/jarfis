@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.9.10 (senior-ux-designer overhaul)
+> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.9.11 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (215줄)
     ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (443줄, 프롬프트+템플릿 외부화 후)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (436줄, Learned Patterns→learnings.md SSOT)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
     ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (371줄)

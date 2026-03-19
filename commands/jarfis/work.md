@@ -6,34 +6,6 @@
 
 ---
 
-## Learned Workflow Patterns
-
-아래 패턴은 실제 워크플로우 실행에서 검증된 학습이다. Phase 진행 시 참고하라.
-
-- FE-only + HTML 속성 추가만 하는 작업은 BE/DevOps/UX SKIP이 적절함. API 변경 없으면 api-spec.md도 SKIP
-- 성능 측정 프로토콜(환경, 네트워크 조건, 캐시 정책, 인증, 측정 순서)은 Phase 2 test-strategy에서 사전 정의해야 Phase 5에서 반복 측정을 줄일 수 있음
-- Playwright + CDP로 네트워크 쓰로틀링(Slow 4G) + 캐시 비활성화 가능: Network.emulateNetworkConditions + Network.setCacheDisabled
-- 변경 규모가 작아도(1파일) 브라우저 동작 원리가 개입하는 작업(Resource Hints, Cache-Control 등)은 성능 측정을 생략하지 마라. 측정 없이는 효과 검증 불가능하고 기술 부채 우선순위 판단 근거도 사라진다
-- 참조 프로젝트(market-frontend 등)가 있는 작업에서는 Phase 2에서 참조 코드의 API 파라미터/폼 필드 구조를 스냅샷으로 기록해야 한다. Phase 4 구현 시작 전에 참조 코드 변경 여부를 재확인하는 체크포인트 필요
-- i18n이 있는 프로젝트에서 Phase 4 FE 구현 시 i18n 하드코딩 방지 제약조건을 에이전트 프롬프트에 명시적으로 전달하라
-- Phase 4.5에 자동화 pre-check(i18n 커버리지, base path 검증, 중복 ID 탐지)를 추가하면 Phase 5 리뷰 반복을 줄일 수 있음
-- SSG(Astro/Next.js static) 프로젝트에서는 deployment-plan.md의 대부분 항목이 N/A. Big Bang + Git Revert가 최적 배포 전략
-- admin 전용 / 내부 도구 피처에서는 Press Release 단계를 스킵하고 PRD의 "목표" 섹션으로 대체하라
-- Devil's Advocate(architecture.md Section 8)가 실질적 효과를 냄. 설계에서 "무엇이 잘못될 수 있는가"를 구조화하는 패턴 유지
-- JARFIS 시스템 파일(commands/jarfis/*, agents/jarfis/*, prompts/*, templates/*)을 수정할 때는 반드시 /jarfis:implement를 통해 실행하라
-- 코드 삭제 작업 유형: Phase 3 UX 스킵 + 3중 검증 파이프라인(정적 분석 + 텍스트 검색 + 교차 대조) + Preview E2E 스모크 테스트가 효과적
-- 대규모 삭제 PR의 E2E 스모크 테스트는 "삭제 검증"을 넘어 "코드베이스 건강 검진" 역할을 한다. 기존 버그, 미사용 라우트 등 부수적 발견 가능
-- depcheck은 npm 패키지 미사용 탐지에 유용하지만, 컴포넌트/유틸 삭제가 주 목적이면 knip의 unused dependencies 결과를 참조하는 것이 더 효율적
-- 대규모 패턴 전환(API 호출 패턴 변경 등) 시 전환 순서는 단순→복잡→고위험 최후(ADR-004 패턴). 단순 파일에서 "근육 기억" 형성 후 고위험 파일 진입
-- JS → TS 전환 태스크에 "타입 의존관계 사전 조사" 단계 포함. 전환 대상 파일이 사용하는 타입/인터페이스 정의 여부 확인 필수
-- 검증 태스크(E2E 스모크, Performance baseline)는 Phase 5 진입 게이트로 강제. 스킵 시 P0 버그가 프로덕션에서 발견될 위험
-- API 패턴 전환 작업의 architecture.md에 "전환 금지 사항" 섹션을 명시한다: (1) 새로운 방어 로직 추가 금지, (2) 원본의 에러 핸들링 패턴 변경 금지, (3) 동작 변경이 필요하면 별도 태스크로 분리
-- 일괄 마이그레이션에서 "기획 미팅 → 집중 구현 → 검증 미팅" 3단계가 효과적이다. 검증 미팅에서 실제 P0 버그를 발견한 사례가 있으므로 검증 미팅을 생략하지 마라
-- 사후 문서화 워크플로우는 정확도는 높지만 예방 효과가 낮다. 최소한 architecture.md(ADR)와 test-strategy.md는 가능하면 구현 전에 작성하라
-- Security/QA/TL 3개 병렬 리뷰의 교차 검증이 설정 누락 등 이슈의 수정 우선순위 결정에 효과적이다. 단일 리뷰만으로는 일부 누락 잔존 가능
-
----
-
 ## Phase T: Triage (요청 분류 — 워크플로우 진입 전 필수)
 
 **이 단계는 Phase 0보다 먼저, 워크플로우 진입 여부를 판단하는 게이트이다.**
