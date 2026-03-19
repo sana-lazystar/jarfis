@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.10.2 (senior-ux-designer overhaul)
+> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.11.0 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -83,8 +83,11 @@
   - `jarfis_cli.py state` — .jarfis-state.json CRUD (init/read/write/set/set-nested/validate/list-workflows, work/continue에서 사용)
   - `jarfis_cli.py detect` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
   - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
+  - `jarfis_cli.py validate` — 워크플로우 상태 + 산출물 + Git 검증 (수동 도구, A-3)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
+  - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + Git 상태)
+- `~/.claude/scripts/jarfis_check.sh` — grep 기반 JARFIS 구조 검증 스크립트 (Phase 헤딩, 프롬프트 파일, 버전 일치, 모델 정합성)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업, shell-only)
 - `~/.claude/hooks/jarfis-safety.sh` — PreToolUse 훅 (Bash 위험 명령 차단/경고, 100줄)
 - `~/.claude/hooks/jarfis-quality-gate.sh` — PostToolUse 훅 (Edit/Write 후 린트/타입체크, 85줄)

@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.10.2] - 2026-03-19
+## [1.11.0] - 2026-03-19
 
-- implement: health.md 외부 스크립트 가드 보강 + Hook 주석 영어 통일
+- implement: jarfis validate 명령어 + jarfis_check.sh 구조 검증 스크립트
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.0] - 2026-03-19
+
+- implement: jarfis validate 명령어 + jarfis_check.sh 구조 검증 스크립트
+
 ## [1.10.2] - 2026-03-19
 
 - implement: health.md 외부 스크립트 가드 보강 + Hook 주석 영어 통일
