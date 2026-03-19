@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.12] - 2026-03-19
+
+- implement: prompts Task prompt 레이블 통일 + install.sh TTY 자동 감지
+
 ## [1.9.11] - 2026-03-19
 
 - implement: work.md Learned Workflow Patterns 제거 (~500tok 절감, jarfis-learnings.md가 SSOT)

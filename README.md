@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.11] - 2026-03-19
+## [1.9.12] - 2026-03-19
 
-- implement: work.md Learned Workflow Patterns 제거 (~500tok 절감, jarfis-learnings.md가 SSOT)
+- implement: prompts Task prompt 레이블 통일 + install.sh TTY 자동 감지
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -290,14 +290,20 @@ if [[ -f "$WORKS_DIR_FILE" ]]; then
   fi
 else
   # Case 1: Fresh install
-  echo ""
-  echo "  JARFIS stores workflow artifacts (PRD, architecture, tasks, etc.)"
-  echo "  in a dedicated workspace directory."
-  echo ""
-  read -p "  Workspace directory [$DEFAULT_WORKSPACE]: " user_input
-  if [[ -n "$user_input" ]]; then
-    # Expand ~ to $HOME
-    WORKSPACE_DIR="${user_input/#\~/$HOME}"
+  if [ -t 0 ]; then
+    # Interactive: ask user for workspace path
+    echo ""
+    echo "  JARFIS stores workflow artifacts (PRD, architecture, tasks, etc.)"
+    echo "  in a dedicated workspace directory."
+    echo ""
+    read -p "  Workspace directory [$DEFAULT_WORKSPACE]: " user_input
+    if [[ -n "$user_input" ]]; then
+      # Expand ~ to $HOME
+      WORKSPACE_DIR="${user_input/#\~/$HOME}"
+    fi
+  else
+    # Non-interactive (CI/CD, pipe): use default
+    echo "  [INFO] Non-interactive mode detected, using default workspace: $DEFAULT_WORKSPACE"
   fi
 fi
 
