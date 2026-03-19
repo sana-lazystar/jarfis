@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.11.2] - 2026-03-19
+## [1.11.3] - 2026-03-19
 
-- implement: 9 Principles 검수 반영 — upgrade.md Workflow Patterns SSOT 변경, PHILOSOPHY.md Principle Zero + 트레이드오프 추가
+- implement: upgrade.md 잔존 Learned Workflow Patterns 참조 제거 (F-1)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -290,5 +290,5 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} &&
 - 섹션이 존재하지 않으면 새로 생성하라 (예: Security Engineer 섹션이 없는데 추가 요청 시).
 - 항목 삭제 후 빈 섹션이 되면 섹션 헤더는 유지하되 항목만 제거하라.
 - 파일 형식(마크다운 리스트, 날짜 형식 등)을 기존 형식과 일관되게 유지하라.
-- **적용 시 중복 체크**: 이미 대상 파일의 `Learned Rules`/`Learned Workflow Patterns` 섹션에 유사한 내용이 있으면 스킵하고 사용자에게 알려라.
+- **적용 시 중복 체크**: 이미 대상 파일의 `Learned Rules` 섹션에 유사한 내용이 있으면 스킵하고 사용자에게 알려라.
 - **적용 시 날짜 제거**: learnings의 날짜/확인 횟수 메타데이터는 프롬프트에 포함하지 마라.
