@@ -141,8 +141,8 @@ Extend 모드:
 
 ### Agent Model Routing
 
-> ※ work.md "Execution Rules > Agent Mapping" 테이블을 SSOT로 따른다.
-> 원칙: 추론·분석·설계·리뷰 = Opus, 코드 구현·실행 = Sonnet.
+> ※ 모든 에이전트의 모델은 work.md "Execution Rules > Agent Mapping" 테이블(SSOT)을 따른다.
+> 이 파일의 인라인 model 힌트는 가독성 보조이며, 불일치 시 work.md가 우선한다.
 
 ---
 

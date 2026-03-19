@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.9] - 2026-03-19
+## [1.9.10] - 2026-03-19
 
-- implement: version bump 시 __init__.py 버전도 함께 갱신하도록 개선
+- implement: 에이전트 모델 frontmatter 통일 (QA/Security → opus) + 모델 라우팅 SSOT 강화
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

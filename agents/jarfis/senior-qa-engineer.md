@@ -1,7 +1,7 @@
 ---
 name: senior-qa-engineer
 description: "QA 분석, 테스트 케이스 설계, 버그 식별, 크로스 브라우저/디바이스 호환성 검증을 담당한다."
-model: sonnet
+model: opus
 color: orange
 ---
 

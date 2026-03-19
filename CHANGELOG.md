@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.10] - 2026-03-19
+
+- implement: 에이전트 모델 frontmatter 통일 (QA/Security → opus) + 모델 라우팅 SSOT 강화
+
 ## [1.9.9] - 2026-03-19
 
 - implement: version bump 시 __init__.py 버전도 함께 갱신하도록 개선

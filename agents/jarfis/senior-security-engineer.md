@@ -1,7 +1,7 @@
 ---
 name: senior-security-engineer
 description: "보안 아키텍처 리뷰, 위협 모델링, 취약점 평가, 인증/인가 설계, 컴플라이언스 검토를 담당한다."
-model: sonnet
+model: opus
 color: yellow
 ---
 
