@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.2] - 2026-03-19
+
+- implement: health.md 외부 스크립트 가드 보강 + Hook 주석 영어 통일
+
 ## [1.10.1] - 2026-03-19
 
 - implement: upgrade.md 3블록 독립 분리 + Dialectic Review 정본 참조 패턴

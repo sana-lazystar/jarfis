@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.10.1] - 2026-03-19
+## [1.10.2] - 2026-03-19
 
-- implement: upgrade.md 3블록 독립 분리 + Dialectic Review 정본 참조 패턴
+- implement: health.md 외부 스크립트 가드 보강 + Hook 주석 영어 통일
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
