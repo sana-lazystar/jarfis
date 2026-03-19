@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.10.0 (senior-ux-designer overhaul)
+> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.10.1 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -14,8 +14,8 @@
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (436줄, Learned Patterns→learnings.md SSOT)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
-    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review (371줄)
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트 (305줄)
+    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조) (309줄)
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (261줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)

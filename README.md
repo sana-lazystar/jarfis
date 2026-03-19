@@ -295,8 +295,8 @@ bash install.sh --version 1.0.0
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
-    ├── upgrade.md                 # 학습 항목 관리 + Scope 분류 + Dialectic Review
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review 게이트
+    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review
+    ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조)
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing
     ├── health.md                  # 좀비 프로세스 진단
@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.10.0] - 2026-03-19
+## [1.10.1] - 2026-03-19
 
-- implement: state validate 서브커맨드 추가 + 미팅 라운드 카운터 상태 관리
+- implement: upgrade.md 3블록 독립 분리 + Dialectic Review 정본 참조 패턴
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

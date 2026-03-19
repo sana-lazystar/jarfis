@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.1] - 2026-03-19
+
+- implement: upgrade.md 3블록 독립 분리 + Dialectic Review 정본 참조 패턴
+
 ## [1.10.0] - 2026-03-19
 
 - implement: state validate 서브커맨드 추가 + 미팅 라운드 카운터 상태 관리
