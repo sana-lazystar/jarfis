@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.1] - 2026-03-19
+
+- implement: 미비점 수정 (정본 표기 통일, index 잔여 텍스트 제거, version.py regex 보강)
+
 ## [1.11.0] - 2026-03-19
 
 - implement: jarfis validate 명령어 + jarfis_check.sh 구조 검증 스크립트

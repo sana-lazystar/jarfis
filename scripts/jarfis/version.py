@@ -88,7 +88,7 @@ def main(args):
         with open(index_file) as f:
             content = f.read()
         content = re.sub(
-            r"Last updated: \d{4}-\d{2}-\d{2} \| Version: \d+\.\d+\.\d+",
+            r"Last updated: \d{4}-\d{2}-\d{2} \| Version: \d+\.\d+\.\d+[^\n]*",
             f"Last updated: {today} | Version: {new_version}",
             content,
         )
