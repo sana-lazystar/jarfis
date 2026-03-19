@@ -86,7 +86,7 @@ options:
 | `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/senior-ux-designer.md` |
 | `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/senior-product-owner.md` |
 | `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
-| `Workflow Patterns` | `~/.claude/commands/jarfis/work.md` |
+| `Workflow Patterns` | `jarfis-learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
 
 **1-2. Scope 자동 분류**
 
@@ -115,7 +115,7 @@ options:
 
 **2-1. 적용 계획 표시**
 
-scope별로 매핑하여 보여준다: Universal 적용 (에이전트 Learned Rules, work.md Workflow Patterns) + Project-Specific 적용 (.jarfis/project-context.md).
+scope별로 매핑하여 보여준다: Universal 적용 (에이전트 Learned Rules) + Project-Specific 적용 (.jarfis/project-context.md). Workflow Patterns는 jarfis-learnings.md에 유지되며 Phase 0에서 동적 로드된다.
 
 **2-2. 적용 범위 선택**
 
@@ -143,7 +143,7 @@ AskUserQuestion으로 "전체 적용" 또는 "선택 적용" (multiSelect: true)
 
 | 학습 scope | 적용 대상 |
 |-----------|----------|
-| `[universal]` Workflow Patterns | `work.md`의 `## Learned Workflow Patterns` (없으면 `## Phase T` 위에 생성) |
+| `[universal]` Workflow Patterns | `jarfis-learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
 | `[project]` Workflow Patterns | `./.jarfis/project-context.md`의 Workflow 섹션 |
 
 - 중복 체크. 날짜/확인 횟수 제거.

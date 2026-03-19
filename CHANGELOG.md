@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.11.2] - 2026-03-19
+
+- implement: 9 Principles 검수 반영 — upgrade.md Workflow Patterns SSOT 변경, PHILOSOPHY.md Principle Zero + 트레이드오프 추가
+
 ## [1.11.1] - 2026-03-19
 
 - implement: 미비점 수정 (정본 표기 통일, index 잔여 텍스트 제거, version.py regex 보강)

@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.11.1] - 2026-03-19
+## [1.11.2] - 2026-03-19
 
-- implement: 미비점 수정 (정본 표기 통일, index 잔여 텍스트 제거, version.py regex 보강)
+- implement: 9 Principles 검수 반영 — upgrade.md Workflow Patterns SSOT 변경, PHILOSOPHY.md Principle Zero + 트레이드오프 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
