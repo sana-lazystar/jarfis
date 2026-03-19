@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.9.8] - 2026-03-18
+## [1.9.9] - 2026-03-19
 
-- upgrade: API 마이그레이션 학습 적용 (FE 3건, QA 3건, WF 3건)
+- implement: version bump 시 __init__.py 버전도 함께 갱신하도록 개선
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

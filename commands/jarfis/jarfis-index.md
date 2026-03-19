@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-18 | Version: 1.9.8 (senior-ux-designer overhaul)
+> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.9.9 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -115,7 +115,7 @@
 - `upgrade.md` → 학습 적용 후 `jarfis_cli.py version patch` 호출
 - `implement.md` → 완료 후 `jarfis_cli.py version <type>` 호출 (사용자 선택)
 - `jarfis_cli.py measure` → distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
-- `jarfis_cli.py version` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG 자동 갱신
+- `jarfis_cli.py version` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG/__init__.py 자동 갱신
 - `jarfis_cli.py sync` → README 갱신 포함 (jarfis-index.md + CHANGELOG.md → README.md 섹션 갱신)
 - `jarfis_cli.py meetings` → work.md Phase 0에서 최근 미팅 N개 JSON 조회 (AskUserQuestion 미팅 선택용)
 - `jarfis_cli.py preflight` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
@@ -151,6 +151,6 @@
   - 산출물 템플릿 → `templates/*.md` 수정
   - Phase 추가/삭제 시 → work.md + 대응하는 prompts/ + templates/ 파일 동시 갱신
   - `agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
-- **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + jarfis-index.md Version + CHANGELOG 갱신
+- **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + __init__.py + jarfis-index.md Version + CHANGELOG 갱신
 - **Repo 동기화**: implement/distill/upgrade 완료 후 → `python3 ~/.claude/scripts/jarfis_cli.py sync` 실행 (수동 복사 금지)
 - **Git repo**: `~/.claude/.jarfis-source`에서 경로 확인 (기본: `~/repos/jarfis`)

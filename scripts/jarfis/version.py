@@ -2,7 +2,7 @@
 
 Usage: jarfis version <patch|minor|major> "changelog entry"
 
-Updates: VERSION, .jarfis-version, jarfis-index.md, CHANGELOG.md
+Updates: VERSION, .jarfis-version, __init__.py, jarfis-index.md, CHANGELOG.md
 """
 
 import os
@@ -70,6 +70,19 @@ def main(args):
     with open(jarfis_version_file, "w") as f:
         f.write(new_version + "\n")
 
+    # Update __init__.py version
+    init_file = os.path.join(os.path.dirname(__file__), "__init__.py")
+    if os.path.isfile(init_file):
+        with open(init_file) as f:
+            init_content = f.read()
+        init_content = re.sub(
+            r'__version__ = "[^"]*"',
+            f'__version__ = "{new_version}"',
+            init_content,
+        )
+        with open(init_file, "w") as f:
+            f.write(init_content)
+
     # Update jarfis-index.md
     if os.path.isfile(index_file):
         with open(index_file) as f:
@@ -128,7 +141,7 @@ def main(args):
                 with open(changelog_file, "w") as f:
                     f.write(content)
 
-    files_updated = [version_file, jarfis_version_file, index_file, changelog_file]
+    files_updated = [version_file, jarfis_version_file, init_file, index_file, changelog_file]
     json_output({
         "previous": current,
         "new": new_version,

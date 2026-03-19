@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.9.9] - 2026-03-19
+
+- implement: version bump 시 __init__.py 버전도 함께 갱신하도록 개선
+
 ## [1.9.8] - 2026-03-18
 
 - upgrade: API 마이그레이션 학습 적용 (FE 3건, QA 3건, WF 3건)
