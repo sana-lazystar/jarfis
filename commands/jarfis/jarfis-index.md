@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.9.12 (senior-ux-designer overhaul)
+> 수동 편집하지 마세요. Last updated: 2026-03-19 | Version: 1.10.0 (senior-ux-designer overhaul)
 
 ## 파일 구조
 ```
@@ -80,7 +80,7 @@
   - `jarfis_cli.py version` — semver 버전 범프 자동화 (implement/distill/upgrade에서 사용)
   - `jarfis_cli.py meetings` — 최근 미팅 N개 JSON 출력 (work.md Phase 0 미팅 선택에서 사용)
   - `jarfis_cli.py preflight` — 사전 검증 (프로필/학습/컨텍스트/git 상태 JSON 출력, work/continue/meeting에서 사용)
-  - `jarfis_cli.py state` — .jarfis-state.json CRUD (init/read/write/set/set-nested/list-workflows, work/continue에서 사용)
+  - `jarfis_cli.py state` — .jarfis-state.json CRUD (init/read/write/set/set-nested/validate/list-workflows, work/continue에서 사용)
   - `jarfis_cli.py detect` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
   - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)

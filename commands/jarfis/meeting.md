@@ -127,7 +127,11 @@ PO와 TL이 `$ARGUMENTS` (기획 주제)에 대한 첫인상을 각각 공유한
 
 미팅은 대화가 길어질 수 있으므로, auto-compact로 인한 컨텍스트 손실에 대비한다:
 
-1. **라운드 5회마다** (또는 "정리해줘" 실행 시) `$MEETING_DIR/meeting-notes.md`에 현재까지의 회의록을 **중간 저장**한다.
+1. **라운드 카운터 기반 중간 저장** (또는 "정리해줘" 실행 시) `$MEETING_DIR/meeting-notes.md`에 현재까지의 회의록을 **중간 저장**한다.
+   - 미팅 시작 시 `$MEETING_DIR/.round-count` 파일에 `0`을 기록한다.
+   - 각 라운드 종료 시 카운터를 1 증가시킨다: `echo $(($(cat $MEETING_DIR/.round-count) + 1)) > $MEETING_DIR/.round-count`
+   - 카운터를 읽어 5의 배수이면 중간 저장을 실행한다: `[ $(($(cat $MEETING_DIR/.round-count) % 5)) -eq 0 ]`
+   - LLM은 카운팅을 직접 하지 않고 파일에서 읽기만 한다 (Philosophy 7: Deterministic Foundation).
    - 파일이 이미 존재하면 덮어쓴다 (최신 상태 유지).
    - 이것은 M-3 최종 산출물과 별개로, compact 전 데이터 보존이 목적이다.
 

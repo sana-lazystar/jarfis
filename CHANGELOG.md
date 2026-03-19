@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.10.0] - 2026-03-19
+
+- implement: state validate 서브커맨드 추가 + 미팅 라운드 카운터 상태 관리
+
 ## [1.9.12] - 2026-03-19
 
 - implement: prompts Task prompt 레이블 통일 + install.sh TTY 자동 감지

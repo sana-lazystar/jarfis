@@ -6,6 +6,7 @@ Subcommands:
     set <state_file> <key> <value>
     set-nested <state_file> <path.to.key> <value>
     init <state_file> <project_name> <work_name> <docs_dir>
+    validate <state_file>
     list-workflows <workspace_dir> [--completed-only]
 """
 
@@ -191,9 +192,78 @@ def cmd_list_workflows(args):
     json_output({"workflows": results, "count": len(results)})
 
 
+def cmd_validate(args):
+    """Validate .jarfis-state.json structure against required schema."""
+    state_file = args[0] if args else ""
+    if not state_file:
+        json_error("Usage: jarfis state validate <state_file>")
+    if not os.path.isfile(state_file):
+        json_error("State file not found", path=state_file)
+
+    with open(state_file) as f:
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError as e:
+            json_error(f"Invalid JSON: {e}")
+            return
+
+    errors = []
+
+    # Required top-level string fields
+    for field in ("project_name", "work_name", "docs_dir", "started_at"):
+        if field not in data:
+            errors.append(f"Missing required field: {field}")
+        elif not isinstance(data[field], str):
+            errors.append(f"{field} must be string, got {type(data[field]).__name__}")
+
+    # current_phase: int, float, or "done"
+    cp = data.get("current_phase")
+    if cp is None:
+        errors.append("Missing required field: current_phase")
+    elif not isinstance(cp, (int, float, str)):
+        errors.append(f"current_phase must be int/float/string, got {type(cp).__name__}")
+
+    # phases: dict with known keys
+    phases = data.get("phases")
+    if phases is None:
+        errors.append("Missing required field: phases")
+    elif not isinstance(phases, dict):
+        errors.append(f"phases must be dict, got {type(phases).__name__}")
+    else:
+        valid_statuses = {"pending", "in_progress", "completed", "skipped"}
+        for phase_key, phase_val in phases.items():
+            if isinstance(phase_val, dict):
+                status = phase_val.get("status", "")
+                if status and status not in valid_statuses:
+                    errors.append(f"phases.{phase_key}.status invalid: {status}")
+
+    # required_roles: dict of booleans
+    roles = data.get("required_roles")
+    if roles is not None and not isinstance(roles, dict):
+        errors.append(f"required_roles must be dict, got {type(roles).__name__}")
+
+    # gate_results: dict
+    gates = data.get("gate_results")
+    if gates is not None and not isinstance(gates, dict):
+        errors.append(f"gate_results must be dict, got {type(gates).__name__}")
+
+    # last_checkpoint: dict with timestamp
+    lc = data.get("last_checkpoint")
+    if lc is not None:
+        if not isinstance(lc, dict):
+            errors.append(f"last_checkpoint must be dict, got {type(lc).__name__}")
+        elif "timestamp" not in lc:
+            errors.append("last_checkpoint missing timestamp")
+
+    if errors:
+        json_output({"valid": False, "errors": errors, "error_count": len(errors)})
+    else:
+        json_output({"valid": True, "errors": [], "error_count": 0})
+
+
 def main(args):
     if not args:
-        json_error("Usage: jarfis state <read|write|set|set-nested|init|list-workflows> <state_file> [args...]")
+        json_error("Usage: jarfis state <read|write|set|set-nested|init|validate|list-workflows> <state_file> [args...]")
 
     action = args[0]
     rest = args[1:]
@@ -204,10 +274,11 @@ def main(args):
         "set": cmd_set,
         "set-nested": cmd_set_nested,
         "init": cmd_init,
+        "validate": cmd_validate,
         "list-workflows": cmd_list_workflows,
     }
 
     if action not in commands:
-        json_error(f"Unknown action: {action}. Use read|write|set|set-nested|init|list-workflows.")
+        json_error(f"Unknown action: {action}. Use read|write|set|set-nested|init|validate|list-workflows.")
 
     commands[action](rest)
