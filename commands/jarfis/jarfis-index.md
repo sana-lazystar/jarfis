@@ -1,12 +1,12 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.0
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.1
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (59줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (61줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (233줄)
@@ -18,7 +18,8 @@
     ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review (310줄)
     ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
-    ├── org.md                     # Organization 관리 — 정보 확인 / --init 초기화 (112줄) [NEW]
+    ├── org.md                     # Organization 정보 확인 + 미등록 안내 (47줄)
+    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + --name 지원 (111줄) [NEW]
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
     ├── health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -68,7 +69,8 @@
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
 | `/jarfis:continue` | `jarfis/continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org` | `jarfis/org.md` | Organization 관리 (정보 확인 / --init 초기화) |
+| `/jarfis:org` | `jarfis/org.md` | Organization 정보 확인 (미등록 시 안내) |
+| `/jarfis:org-init` | `jarfis/org-init.md` | Organization 초기화 (스캔 + wiki 생성) |
 | `/jarfis:storyboard` | `jarfis/storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
 | `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
@@ -94,7 +96,7 @@
   - `jarfis_cli.py detect` — 프레임워크/언어 자동 감지 (파일 패턴 기반 JSON 출력, project-init/work에서 사용)
   - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
   - `jarfis_cli.py validate` — 워크플로우 상태 + 산출물 + Git 검증 (수동 도구, A-3)
-  - `jarfis_cli.py org` — Organization 관리 (init/scan/info, v2 신규)
+  - `jarfis_cli.py org` — Organization 관리 (init --name/scan/info, v2 신규. info는 미등록 시 exit 0 + registered:false 반환)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)

@@ -13,8 +13,10 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 
   사용 가능한 명령어:
 
-  /jarfis:org [--init]
-    Organization 정보 확인 / --init으로 신규 생성
+  /jarfis:org
+    Organization 정보 확인 (미등록 시 등록 안내)
+  /jarfis:org-init
+    Organization 신규 생성 (프로젝트 스캔 + wiki 구조)
     wiki 지식 누적 → 프로젝트 간 ADR·정책·디자인 자동 공유
   /jarfis:project-init [--depth basic|medium|deep]
     프로젝트 프로필 생성 (최초 1회, 각 프로젝트에서)
@@ -42,7 +44,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   예시 A — Organization 사용 (권장):
     cd ~/your-company-name
-    /jarfis:org --init                    ← Org 등록 (최초 1회)
+    /jarfis:org-init                      ← Org 등록 (최초 1회)
     cd ~/your-company-name/my-project
     /jarfis:project-init                  ← 프로젝트별 최초 1회
     /jarfis:meeting 결제 시스템 리뉴얼

@@ -68,12 +68,13 @@ def _scan_projects(org_root):
     return projects
 
 
-def _create_org_files(org_root, projects):
+def _create_org_files(org_root, projects, org_name=None):
     """Create Organization files: org-profile.md, wiki structure."""
     org_root = os.path.abspath(org_root)
     jarfis_dir = os.path.join(org_root, ".jarfis")
     wiki_dir = os.path.join(jarfis_dir, "wiki")
-    org_name = os.path.basename(org_root)
+    if not org_name:
+        org_name = os.path.basename(org_root)
     today = datetime.now().strftime("%Y-%m-%d")
 
     created_files = []
@@ -181,8 +182,15 @@ def cmd_init(args):
     org_root = args[0] if args else ""
     confirm = "--confirm" in args
 
+    # Parse --name option
+    org_name = None
+    for i, a in enumerate(args):
+        if a == "--name" and i + 1 < len(args):
+            org_name = args[i + 1]
+            break
+
     if not org_root:
-        json_error("Usage: jarfis org init <org_root> [--confirm]")
+        json_error("Usage: jarfis org init <org_root> [--confirm] [--name <name>]")
 
     if not os.path.isdir(org_root):
         json_error(f"Directory not found: {org_root}")
@@ -202,11 +210,12 @@ def cmd_init(args):
         return
 
     # Create files
-    created = _create_org_files(org_root, projects)
+    resolved_name = org_name or os.path.basename(os.path.abspath(org_root))
+    created = _create_org_files(org_root, projects, org_name=resolved_name)
     json_output({
         "action": "init",
         "org_root": os.path.abspath(org_root),
-        "org_name": os.path.basename(os.path.abspath(org_root)),
+        "org_name": resolved_name,
         "projects": projects,
         "project_count": len(projects),
         "created_files": created,
@@ -239,7 +248,12 @@ def cmd_info(args):
     profile_path = os.path.join(org_root, ".jarfis", "org-profile.md")
 
     if not os.path.isfile(profile_path):
-        json_error("org-profile.md not found. Run 'jarfis org init' first.", path=org_root)
+        json_output({
+            "registered": False,
+            "org_root": org_root,
+            "message": "Organization이 등록되지 않았습니다.",
+        })
+        return
 
     # Read profile
     with open(profile_path) as f:
@@ -260,6 +274,7 @@ def cmd_info(args):
     projects = _scan_projects(org_root)
 
     json_output({
+        "registered": True,
         "org_root": org_root,
         "org_name": org_name,
         "profile_path": profile_path,

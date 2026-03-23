@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-23
+
+- implement: org/org-init 분리 + org 미등록 UX 개선 + org-init 이름 입력
+
 ## [2.1.0] - 2026-03-23
 
 - implement: /jarfis:org 커맨드 신설 + jarfis.md 도움말 재구성 (예시 A/B 분리)

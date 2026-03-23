@@ -216,7 +216,8 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                   |
 | `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
 | `/jarfis:continue`       | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org`            | Organization 관리 (정보 확인 / --init 초기화)                   |
+| `/jarfis:org`            | Organization 정보 확인 (미등록 시 안내)                          |
+| `/jarfis:org-init`       | Organization 초기화 (스캔 + wiki 생성)                        |
 | `/jarfis:storyboard`     | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
 | `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
 | `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                    |
@@ -301,7 +302,8 @@ bash install.sh --version 1.0.0
     ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
-    ├── org.md                     # Organization 관리 — 정보 확인 / --init 초기화
+    ├── org.md                     # Organization 정보 확인 + 미등록 안내
+    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + --name 지원
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -367,9 +369,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.0] - 2026-03-23
+## [2.0.1] - 2026-03-23
 
-- implement: /jarfis:org 커맨드 신설 + jarfis.md 도움말 재구성 (예시 A/B 분리)
+- implement: org/org-init 분리 + org 미등록 UX 개선 + org-init 이름 입력
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
