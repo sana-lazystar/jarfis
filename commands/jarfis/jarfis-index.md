@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 1.12.1
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 1.12.2
 
 ## 파일 구조
 ```
@@ -41,8 +41,8 @@
 ├── senior-frontend-engineer.md    # FE 구현 에이전트 (105줄)
 ├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (92줄)
 ├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트 (136줄)
-├── tech-lead.md                   # TL 태스크 분해 에이전트 (154줄)
-├── technical-architect.md         # 아키텍처 설계 에이전트 (128줄)
+├── tech-lead.md                   # TL 코드베이스 건강 + 기술 판단 에이전트 (213줄)
+├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트 (162줄)
 ├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트 (191줄)
 ├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트 (183줄)
 └── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트 (231줄)
