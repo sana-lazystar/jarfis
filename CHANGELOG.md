@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.3] - 2026-03-23
+
+- implement: Batch B 템플릿 — state-schema/profile 수정 + org-profile/wiki-index/wiki-section-index/ux-direction/design-html-meta 신규
+
 ## [1.12.2] - 2026-03-23
 
 - implement: TL/TA 에이전트 v2 업그레이드 — 마인드셋, 판단 체계, 에스컬레이션 기준 추가
