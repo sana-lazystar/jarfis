@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.1] - 2026-03-23
+
+- implement: Wiki Semantic Search 문서화 — README Prerequisites 보강 + WIKI_SEARCH.md 신규
+
 ## [2.1.0] - 2026-03-23
 
 - implement: Wiki Semantic Search — sentence-transformers bge-m3 기반 시맨틱 검색 추가

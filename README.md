@@ -185,6 +185,22 @@ JARFIS는 자기 자신을 개선하는 도구를 내장하고 있습니다.
 
 ---
 
+## Wiki Semantic Search
+
+Organization 레벨의 Wiki가 커질수록, "어떤 파일이 지금 기획과 관련 있는가?"를 정확하게 찾는 것이 중요해집니다.
+
+JARFIS는 [sentence-transformers](https://sbert.net/)의 **BAAI/bge-m3** 모델을 사용하여 Wiki 문서를 임베딩하고, 코사인 유사도 기반 시맨틱 검색을 제공합니다. 한국어와 영어가 혼용된 마크다운 문서에서도 의미 기반으로 관련 문서를 찾아냅니다.
+
+```
+/jarfis:work 결제 환불 정책 변경
+  → Phase 0: Wiki 시맨틱 검색 → "refund", "payment cancellation" 관련 ADR 3건 자동 로드
+  → Phase 1: PO가 기존 환불 정책 ADR을 참조하여 역질문
+```
+
+자세한 내용: **[WIKI_SEARCH.md](./WIKI_SEARCH.md)**
+
+---
+
 ## Project Awareness
 
 JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
@@ -229,10 +245,17 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 
 ### Requirements
 
-- [Claude Code](https://claude.ai/code) CLI
-- Git
-- Python 3 (상태 관리, CLI, Hook 인프라)
-- jq (선택 — 없으면 hook 등록을 수동으로 설정)
+| Dependency | Version | Purpose | Required |
+|------------|---------|---------|----------|
+| [Claude Code](https://claude.ai/code) | Latest | CLI 런타임 | **필수** |
+| Git | 2.x+ | 브랜치 관리, 자동 커밋 | **필수** |
+| Python | 3.9+ | 상태 관리, CLI, Hook 인프라 | **필수** |
+| jq | Any | Hook 등록 자동화 | 선택 |
+| [sentence-transformers](https://sbert.net/) | Any | Wiki Semantic Search (bge-m3) | 선택 |
+
+> **sentence-transformers**는 [Wiki Semantic Search](./WIKI_SEARCH.md) 기능을 위한 선택적 의존성입니다.
+> 미설치 시에도 JARFIS는 정상 작동하며, Wiki 로딩 시 기존 LLM 판단 방식으로 폴백합니다.
+> 설치: `pip3 install sentence-transformers`
 
 ### Install
 
@@ -369,9 +392,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.0] - 2026-03-23
+## [2.1.1] - 2026-03-23
 
-- implement: Wiki Semantic Search — sentence-transformers bge-m3 기반 시맨틱 검색 추가
+- implement: Wiki Semantic Search 문서화 — README Prerequisites 보강 + WIKI_SEARCH.md 신규
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
