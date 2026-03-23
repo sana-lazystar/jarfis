@@ -309,11 +309,16 @@ bash install.sh --version 1.0.0
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + handoff 필드
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
-        ├── project-profile.md     # 프로젝트 프로필 템플릿
-        └── meeting-artifacts.md   # 미팅 산출물 4종 템플릿
+        ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
+        ├── meeting-artifacts.md   # 미팅 산출물 4종 템플릿
+        ├── org-profile.md         # Organization 프로필 템플릿
+        ├── wiki-index.md          # Wiki INDEX.md 초기 템플릿
+        ├── wiki-section-index.md  # Wiki 섹션 _index.md 템플릿
+        ├── ux-direction.md        # UX 방향서 템플릿
+        └── design-html-meta.md    # HTML 시안 메타 주석 템플릿
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트
@@ -357,9 +362,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.12.2] - 2026-03-23
+## [1.12.3] - 2026-03-23
 
-- implement: TL/TA 에이전트 v2 업그레이드 — 마인드셋, 판단 체계, 에스컬레이션 기준 추가
+- implement: Batch B 템플릿 — state-schema/profile 수정 + org-profile/wiki-index/wiki-section-index/ux-direction/design-html-meta 신규
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

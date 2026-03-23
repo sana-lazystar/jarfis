@@ -9,6 +9,8 @@
   "work_input": "feat/TICKET-123",
   "docs_dir": "{JARFIS_SOURCE}/.local/workspace/works/20250101-feat-TICKET-123",
   "branch": "feat/TICKET-123",
+  "status": "in-progress",
+  "key_decisions": ["REST over GraphQL — 기존 팀 경험", "PostgreSQL — 기존 인프라 활용"],
   "branches": {
     "backend": "feat/TICKET-123",
     "frontend": "feat/TICKET-123"
@@ -87,3 +89,27 @@
   }
 }
 ```
+
+## 필드 설명
+
+### 최상위 status
+워크플로우 전체 상태를 나타낸다.
+
+| 값 | 설명 |
+|---|------|
+| `in-progress` | 워크플로우 진행 중 |
+| `completed` | 모든 Phase 완료 |
+| `aborted` | 사용자에 의해 중단 |
+
+### key_decisions
+Gate 통과 시 핵심 결정사항을 누적 기록한다. `array<string>` 타입.
+
+### phases 내부 status
+각 Phase의 진행 상태를 나타낸다.
+
+| 값 | 설명 |
+|---|------|
+| `pending` | 아직 시작하지 않음 |
+| `in_progress` | 진행 중 |
+| `completed` | 완료 |
+| `skipped` | 건너뜀 (reason 필드 참조) |

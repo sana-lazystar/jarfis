@@ -10,6 +10,7 @@
 > Depth: basic | medium | deep
 > Type: BE | FE | Fullstack
 > Last-Commit: <short-hash>
+> org: {org_root_path}  <!-- 선택: Organization 등록 시 추가 -->
 
 ---
 

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 1.12.2
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 1.12.3
 
 ## 파일 구조
 ```
@@ -28,11 +28,16 @@
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings (57줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + handoff 필드 (89줄)
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions (115줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
         ├── project-context.md     # project-context.md 템플릿 (17줄)
-        ├── project-profile.md     # 프로젝트 프로필 템플릿 (66줄)
-        └── meeting-artifacts.md   # 미팅 산출물 4종 템플릿 (86줄)
+        ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조 (68줄)
+        ├── meeting-artifacts.md   # 미팅 산출물 4종 템플릿 (86줄)
+        ├── org-profile.md         # Organization 프로필 템플릿 (19줄) [NEW]
+        ├── wiki-index.md          # Wiki INDEX.md 초기 템플릿 (34줄) [NEW]
+        ├── wiki-section-index.md  # Wiki 섹션 _index.md 템플릿 (11줄) [NEW]
+        ├── ux-direction.md        # UX 방향서 템플릿 (36줄) [NEW]
+        └── design-html-meta.md    # HTML 시안 메타 주석 템플릿 (27줄) [NEW]
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄) [NEW]
@@ -104,7 +109,7 @@
 - `meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
 - `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis_cli.py meetings`로 워크스페이스 미팅 조회 + AskUserQuestion 선택) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
-- `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드)
+- `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드). v2 신규: org-profile, wiki-index, wiki-section-index, ux-direction, design-html-meta
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
 - `distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → `jarfis_cli.py measure`로 토큰 측정 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
