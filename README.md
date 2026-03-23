@@ -365,9 +365,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.0.1] - 2026-03-23
+## [2.0.2] - 2026-03-23
 
-- implement: Step 1-3 반응형 범위 분리 + Phase 5 UX 리뷰 dev 서버 URL 요청 절차 추가
+- implement: Gate 1/2/3 + Phase 3 UX Gate에 명시적 AskUserQuestion 블록 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
