@@ -126,6 +126,8 @@ def cmd_init(args):
         "branches": {},
         "source_meeting": None,
         "started_at": now,
+        "status": "in-progress",
+        "key_decisions": [],
         "current_phase": 0,
         "workspace": {},
         "phases": {
@@ -172,7 +174,14 @@ def cmd_list_workflows(args):
                     data = json.load(f)
                 cp = data.get("current_phase", "")
                 phases = data.get("phases", {})
-                is_done = str(cp) == "done" or phases.get("6", {}).get("status") == "completed"
+                status = data.get("status", "")
+                key_decisions = data.get("key_decisions", [])
+                # is_done: status == "completed" 우선, fallback으로 기존 로직
+                is_done = (
+                    status == "completed"
+                    or str(cp) == "done"
+                    or phases.get("6", {}).get("status") == "completed"
+                )
                 if completed_only and not is_done:
                     continue
                 results.append({
@@ -181,6 +190,8 @@ def cmd_list_workflows(args):
                     "project_name": data.get("project_name", ""),
                     "work_name": data.get("work_name", ""),
                     "current_phase": cp,
+                    "status": status,
+                    "key_decisions": key_decisions,
                     "is_completed": is_done,
                     "started_at": data.get("started_at", ""),
                     "docs_dir": data.get("docs_dir", ""),
@@ -215,6 +226,20 @@ def cmd_validate(args):
             errors.append(f"Missing required field: {field}")
         elif not isinstance(data[field], str):
             errors.append(f"{field} must be string, got {type(data[field]).__name__}")
+
+    # status: top-level workflow status
+    status = data.get("status")
+    if status is not None:
+        valid_top_statuses = {"in-progress", "completed", "aborted"}
+        if not isinstance(status, str):
+            errors.append(f"status must be string, got {type(status).__name__}")
+        elif status not in valid_top_statuses:
+            errors.append(f"status invalid: {status}. Valid: {', '.join(sorted(valid_top_statuses))}")
+
+    # key_decisions: list of strings
+    kd = data.get("key_decisions")
+    if kd is not None and not isinstance(kd, list):
+        errors.append(f"key_decisions must be list, got {type(kd).__name__}")
 
     # current_phase: int, float, or "done"
     cp = data.get("current_phase")

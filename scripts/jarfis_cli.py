@@ -14,6 +14,7 @@ Commands:
     sync          Repo sync + README update
     quality-gate  Run lint/typecheck on edited file
     validate      Workflow state + artifact validation
+    org           Organization management (init/scan/info)
 """
 
 import os
@@ -28,12 +29,17 @@ if SCRIPT_DIR not in sys.path:
 def main():
     if len(sys.argv) < 2:
         print(
-            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate> [args...]"}',
+            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org> [args...]"}',
             file=sys.stderr,
         )
         sys.exit(1)
 
     command = sys.argv[1]
+
+    if command in ("--help", "-h", "help"):
+        print(__doc__)
+        sys.exit(0)
+
     args = sys.argv[2:]
 
     commands = {
@@ -46,6 +52,7 @@ def main():
         "sync": "jarfis.sync",
         "quality-gate": "jarfis.quality_gate",
         "validate": "jarfis.validate",
+        "org": "jarfis.organization",
     }
 
     if command not in commands:
