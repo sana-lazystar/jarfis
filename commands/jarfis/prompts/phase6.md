@@ -93,6 +93,14 @@ status: active
 ---
 ```
 
+### 시맨틱 검색 인덱스 갱신
+
+Wiki 파일 추가/수정 후 시맨틱 검색 인덱스를 갱신한다:
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py wiki index {org_root}
+```
+실패해도 워크플로우를 중단하지 않는다 (best-effort). 에러 시 사용자에게 수동 실행 안내만 표시.
+
 ### 갱신 요약 사용자 표시
 ```
 ━━ Wiki 갱신 요약 ━━

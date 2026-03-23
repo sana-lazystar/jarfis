@@ -106,6 +106,9 @@ python3 ~/.claude/scripts/jarfis_cli.py org init "$ORG_ROOT" --confirm --name "$
    └── QA/_index.md
 
 다음 단계:
-  cd {project_path} && /jarfis:project-init
+  1. cd {project_path} && /jarfis:project-init
+  2. Wiki 시맨틱 검색 인덱스 생성 (선택):
+     python3 ~/.claude/scripts/jarfis_cli.py wiki index {$ORG_ROOT}
+     (sentence-transformers 필요: pip3 install sentence-transformers)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

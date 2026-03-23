@@ -16,14 +16,19 @@
    - 예: BE API 수정 → TA/_index.md + QA/_index.md
 
 > 2-Step은 INDEX.md + 관련 _index.md 최대 2개만 읽는다. 개별 파일은 읽지 않는다.
+> (선택적: `jarfis_cli.py wiki search --top-k 2`로 대체 가능하나, 기본은 _index.md 방식 유지)
 
 ## 4-Step 전체 로딩 (Work 모드, Extend 모드)
 
 1. **INDEX.md 읽기**: Quick Reference + Directory Map → 전체 wiki 구조 파악
 2. **모든 섹션 _index.md 읽기**: PO, DESIGN, TA, QA 4개 섹션의 `_index.md` 읽기
-3. **관련 파일 선택적 읽기**: _index.md의 Summary 기반으로 현재 기획과 관련 높은 파일만 선택하여 읽기
-   - 관련성 판단: 기획 키워드, 도메인, 기술 스택 매칭
-   - 최대 5개 파일로 제한 (토큰 효율)
+3. **시맨틱 검색으로 관련 파일 로딩**:
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py wiki search {org_root} "{현재 기획의 핵심 키워드/문장}" --top-k 5
+   ```
+   - 결과 JSON의 `results` 배열에서 `score` 0.5 이상인 파일만 읽기
+   - `stale_warning`이 있으면 사용자에게 표시 (인덱스 갱신 권고)
+   - **폴백**: 검색 실패 시(인덱스 없음/모듈 미설치) → 기존 방식(_index.md Summary 기반 LLM 판단)으로 관련 파일 최대 5개 선택
 4. **Cascading Specificity 적용**: 읽은 wiki 내용과 $DOCS_DIR 산출물 간 충돌 시 $DOCS_DIR 우선
 
 > 4-Step은 INDEX.md → 4개 _index.md → 관련 파일 최대 5개를 읽는다.

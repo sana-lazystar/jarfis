@@ -15,6 +15,7 @@ Commands:
     quality-gate  Run lint/typecheck on edited file
     validate      Workflow state + artifact validation
     org           Organization management (init/scan/info)
+    wiki          Wiki semantic search (index/search/status)
 """
 
 import os
@@ -29,7 +30,7 @@ if SCRIPT_DIR not in sys.path:
 def main():
     if len(sys.argv) < 2:
         print(
-            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org> [args...]"}',
+            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org|wiki> [args...]"}',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -53,6 +54,7 @@ def main():
         "quality-gate": "jarfis.quality_gate",
         "validate": "jarfis.validate",
         "org": "jarfis.organization",
+        "wiki": "jarfis.wiki_search",
     }
 
     if command not in commands:

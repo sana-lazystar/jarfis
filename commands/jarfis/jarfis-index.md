@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.1
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.1.0
 
 ## 파일 구조
 ```
@@ -19,7 +19,7 @@
     ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
     ├── org.md                     # Organization 정보 확인 + 미등록 안내 (47줄)
-    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + --name 지원 (111줄) [NEW]
+    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
     ├── health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -28,8 +28,8 @@
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 (115줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크 (37줄)
     │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰 (225줄)
-    │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 (107줄)
-    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step (39줄) [NEW]
+    │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (115줄)
+    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions (115줄)
@@ -97,10 +97,12 @@
   - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
   - `jarfis_cli.py validate` — 워크플로우 상태 + 산출물 + Git 검증 (수동 도구, A-3)
   - `jarfis_cli.py org` — Organization 관리 (init --name/scan/info, v2 신규. info는 미등록 시 exit 0 + registered:false 반환)
+  - `jarfis_cli.py wiki` — Wiki 시맨틱 검색 (index/search/status, sentence-transformers bge-m3 기반. 선택적 의존성 — 미설치 시 폴백 안내)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
+  - `wiki_search.py` — Wiki 시맨틱 검색 모듈 (sentence-transformers bge-m3, index/search/status, 351줄)
 - `~/.claude/scripts/jarfis_check.sh` — grep 기반 JARFIS 구조 검증 스크립트 (Phase 헤딩, 프롬프트 파일, 버전 일치, 모델 정합성)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업, shell-only)
 - `~/.claude/hooks/jarfis-safety.sh` — PreToolUse 훅 (Bash 위험 명령 차단/경고, 100줄)
@@ -145,7 +147,10 @@
 - `quality_gate.py` → jarfis-quality-gate.sh가 호출, biome/prettier + tsc 실행 (프로젝트 루트 자동 감지)
 - `phase4.md` → Phase 2 handoff 읽기/쓰기 지침 (key_decisions, warnings, unresolved)
 - `phase5.md` → Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
-- `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성)
+- `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성) + Wiki 갱신 후 `jarfis_cli.py wiki index` 리인덱싱 (best-effort)
+- `wiki-loading.md` → 4-Step Step 3에서 `jarfis_cli.py wiki search` 호출 (폴백: LLM 판단)
+- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성)
+- `org-init.md` → 생성 완료 후 wiki 시맨틱 인덱스 생성 안내 표시
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋

@@ -303,7 +303,7 @@ bash install.sh --version 1.0.0
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
     ├── org.md                     # Organization 정보 확인 + 미등록 안내
-    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + --name 지원
+    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
@@ -312,8 +312,8 @@ bash install.sh --version 1.0.0
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
     │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰
-    │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신
-    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step
+    │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
+    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions
@@ -369,9 +369,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.0.1] - 2026-03-23
+## [2.1.0] - 2026-03-23
 
-- implement: org/org-init 분리 + org 미등록 UX 개선 + org-init 이름 입력
+- implement: Wiki Semantic Search — sentence-transformers bge-m3 기반 시맨틱 검색 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
