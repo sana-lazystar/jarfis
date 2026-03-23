@@ -97,6 +97,31 @@ Task prompt:
 결과를 정리하세요."
 ```
 
+UX Designer (senior-ux-designer) — **FE 포함 + UX Designer required 시만 실행**:
+```
+Task prompt:
+"Phase 4에서 구현된 FE 코드와 HTML 시안을 시각적으로 비교 리뷰하세요.
+
+비교 프로세스:
+1. playwright로 $DOCS_DIR/design/{path} HTML 시안 스크린샷 촬영
+2. dev 서버에서 동일 라우트 FE 구현물 스크린샷 촬영
+3. 반응형 선택에 따라 뷰포트별 추가 촬영:
+   - PC만: 1920x1080
+   - PC + Mobile: 위 + 390x844
+   - PC + Mobile + Tablet: 위 + 768x1024
+4. 두 이미지 세트를 비교하여 시각적 차이 판단
+
+review.md에 아래 형식으로 UX Design Review 섹션을 추가하세요:
+
+## UX Design Review
+### 뷰포트: PC (1920x1080)
+- /{path}: [PASS] / [REVISION] 상세 설명
+### 뷰포트: Mobile (390x844) (해당 시)
+- /{path}: [PASS] / [REVISION] 상세 설명
+### 뷰포트: Tablet (768x1024) (해당 시)
+- /{path}: [PASS] / [REVISION] 상세 설명"
+```
+
 **Step 5-2 병리 패턴 감지** (오케스트레이터 직접 실행, 재리뷰 2회차 이상에서만)
 
 이전/현재 review.md를 비교하여 3가지 패턴을 감지한다:

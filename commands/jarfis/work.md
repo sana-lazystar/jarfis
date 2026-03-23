@@ -268,6 +268,12 @@ Phase 2와 Phase 3은 동시에 진행한다.
 
 ### Phase 2: Architecture & Planning
 
+**Step 2-(-1): TA/QA Wiki 참조** (Org 등록 시)
+- TA: TA/ wiki에서 decisions/, api-contracts/, data-models/ 확인
+- QA: QA/ wiki에서 test-standards.md, regression-checklist.md 확인
+> 📄 프롬프트: `prompts/phase2.md` Step 2-(-1) 섹션을 읽어서 에이전트에 전달한다.
+> Org 미등록 시 이 Step은 스킵한다.
+
 **Step 2-0: Impact Analysis** (technical-architect)
 > 📄 프롬프트: `prompts/phase2.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
@@ -290,18 +296,32 @@ Tech Lead (tech-lead) — api-spec.md 리뷰:
 **Step 2-3: 테스트 전략 수립** (senior-qa-engineer)
 > 📄 프롬프트: `prompts/phase2.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
-### Phase 3: UX Design (조건부 실행)
+### Phase 3: UX Design (조건부 실행 — FE 포함 + UX Designer 필요 시만)
 
-> **스킵 조건**: $DOCS_DIR/prd.md의 'Required Roles' 표에서 UX Designer가 '⬜ 불필요'이면 Phase 3 전체를 건너뛴다.
+> **스킵 조건**: PRD 'Required Roles'에서 Frontend Engineer가 '⬜ 불필요'이거나 UX Designer가 '⬜ 불필요'이면 Phase 3 전체를 건너뛴다.
+> Phase 2와 **병렬** 실행한다 (의도적 병렬).
 
-**Step 3-1: UX 화면 설계** (senior-ux-designer) — UX Designer 필요 시만 실행
-> 📄 프롬프트: `prompts/phase2.md` 해당 섹션을 읽어서 에이전트에 전달한다.
+**Step 3-(-1): 기존 시안 가져오기** (오케스트레이터)
+- Org 등록 시: `wiki/DESIGN/pages/{project}/` → `$DOCS_DIR/design/` 복사
+- 기존 시안이 없으면 빈 `$DOCS_DIR/design/` 디렉토리 생성
 
-**Step 3-2: PO 검증** (senior-product-owner) — UX Designer 필요 시만 실행
-> 📄 프롬프트: `prompts/phase2.md` 해당 섹션을 읽어서 에이전트에 전달한다.
+**Step 3-0: HTML 시안 제작/수정** (senior-ux-designer)
+- `$DOCS_DIR/ux-direction.md` 기반으로 HTML 시안 제작
+- URL → 파일 매핑: `/{path}` → `$DOCS_DIR/design/{path}/index.html` 또는 `{path}.html`
+- 각 HTML 파일 상단에 `templates/design-html-meta.md` 메타 주석 삽입
+- `$DOCS_DIR/design/_index.html` 자동 생성 (전체 시안 목차)
+> 📄 프롬프트: `prompts/phase2.md` Step 3-0 섹션을 읽어서 에이전트에 전달한다.
+
+**Step 3-1: PO ↔ Designer 피드백 루프** (최대 3회)
+1. PO (senior-product-owner): 시안 검토, PRD 대비 누락/불일치 피드백
+2. Designer (senior-ux-designer): 피드백 반영하여 시안 수정
+3. 3회 반복 후에도 미해결 시 → 사용자 Gate로 넘김
+> 📄 프롬프트: `prompts/phase2.md` Step 3-1 섹션을 읽어서 에이전트에 전달한다.
+
+**사용자 Gate**: `open $DOCS_DIR/design/_index.html` — 사용자가 시안 확인 후 승인/수정 지시
 
 ### 🔒 게이트 2: 사용자 컨펌
-산출물(`impact-analysis.md`, `architecture.md`, `api-spec.md`, `tasks.md`, `test-strategy.md`, `ux-spec.md`) 요약 + 실행 파트 표시 → 승인/수정/중단 선택
+산출물(`impact-analysis.md`, `architecture.md`, `api-spec.md`, `tasks.md`, `test-strategy.md`, `design/`) 요약 + 실행 파트 표시 → 승인/수정/중단 선택
 
 ---
 
@@ -348,10 +368,14 @@ Backend (senior-backend-engineer), Frontend (senior-frontend-engineer), DevOps (
 Tech Lead (tech-lead):
 > 📄 프롬프트: `prompts/phase5.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
-**Step 5-1: 병렬 리뷰** (3개 에이전트 동시 실행)
+**Step 5-1: 병렬 리뷰** (3~4개 에이전트 동시 실행)
 
 Tech Lead (tech-lead), QA (senior-qa-engineer), Security (senior-security-engineer):
 > 📄 프롬프트: `prompts/phase5.md` 해당 섹션을 읽어서 에이전트에 전달한다.
+
+UX Designer (senior-ux-designer) — **FE 포함 + UX Designer required 시만 참여**:
+> 📄 프롬프트: `prompts/phase5.md` UX Design Review 섹션을 읽어서 에이전트에 전달한다.
+> playwright로 HTML 시안 vs FE 구현물 시각적 비교 수행
 
 **결과 통합**: 실행된 에이전트의 리뷰 결과만 `$DOCS_DIR/review.md`에 통합 저장한다.
 
@@ -380,9 +404,9 @@ Backend/Frontend (해당 수정 지시가 있을 때만):
 ## Phase 6: Retrospective (자동 실행)
 
 ### 목표
-이번 워크플로우에서 얻은 학습을 **전역 학습 파일**과 **프로젝트 컨텍스트 파일**에 축적한다.
+이번 워크플로우에서 얻은 학습을 **전역 학습 파일**과 **프로젝트 컨텍스트 파일**에 축적하고, Org 등록 시 **wiki를 갱신**한다.
 
-### 실행 순서
+### 실행 순서 (순차: 학습 추출 먼저 → wiki 갱신 나중)
 
 **Step 6-1: 회고 작성** (tech-lead)
 > 📄 프롬프트: `prompts/phase6.md` 해당 섹션을 읽어서 에이전트에 전달한다.
@@ -400,6 +424,18 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 > 📄 템플릿: `templates/project-context.md`를 읽어서 산출물 양식으로 사용한다.
 
 관리 규칙: 기존 파일에 업데이트 (새 정보 추가, 오래된 정보 갱신)
+
+**Step 6-3: Wiki 갱신** (Org 등록 시만 실행, 오케스트레이터)
+> 📄 프롬프트: `prompts/phase6.md` Step 6-3 섹션을 읽어서 실행한다.
+- 트랙 A: 텍스트 Wiki (PO, TA, QA) — 산출물에서 누적 지식 추출 → wiki 갱신
+- 트랙 B: DESIGN HTML 동기화 (FE 포함 시만) — $DOCS_DIR/design/ → wiki/DESIGN/pages/{project}/
+- 갱신 요약을 사용자에게 표시
+
+**Step 6-4: 워크플로우 완료 상태 기록**
+```bash
+jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
+```
+- `key_decisions` 필드에 Gate 1/2/3에서 합의된 핵심 결정사항 최종 기록
 
 ---
 
