@@ -1,12 +1,12 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 1.12.3
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.0
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (98줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 + org-init 안내 (104줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (215줄)
@@ -15,7 +15,7 @@
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조) (309줄)
+    ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review (310줄)
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄) [NEW]

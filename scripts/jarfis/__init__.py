@@ -1,3 +1,3 @@
 """JARFIS — AI IT Team Workflow Orchestration (Python core)"""
 
-__version__ = "1.12.3"
+__version__ = "2.0.0"

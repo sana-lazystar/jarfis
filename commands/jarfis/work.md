@@ -76,7 +76,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 | 2 | `$DOCS_DIR/api-spec.md` | API 명세서 (엔드포인트, 파라미터, 응답 스키마) | BE+FE 모두 필요 시 |
 | 2 | `$DOCS_DIR/tasks.md` | 태스크 분해 (불필요 파트는 N/A) | 항상 |
 | 2 | `$DOCS_DIR/test-strategy.md` | 테스트 전략 (테스트 피라미드, 시나리오, 성능 기준) | 항상 |
-| 3 | `$DOCS_DIR/ux-spec.md` | UX 화면 설계서 | UI 필요 시만 |
+| 3 | `$DOCS_DIR/design/` | HTML 시안 디렉토리 (_index.html + URL별 시안) | FE + UX Designer 필요 시 |
 | 4 | `$DOCS_DIR/infra-runbook.md` | 수동 인프라 설정 가이드 (AWS 등 클라우드 작업) | DevOps 실행 시 |
 | 4.5 | `$DOCS_DIR/deployment-plan.md` | 배포 전략 + 롤백 계획 + 운영 준비도 체크리스트 | 항상 |
 | 5 | `$DOCS_DIR/api-contract-check.md` | BE-FE API Contract 자동 검증 결과 | api-spec.md 존재 시 |
