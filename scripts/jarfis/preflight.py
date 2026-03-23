@@ -12,7 +12,7 @@ import os
 import subprocess
 import sys
 
-from .utils import get_claude_dir, get_source_path, get_workspace_dir, json_output
+from .utils import find_org_root, get_claude_dir, get_source_path, get_workspace_dir, json_output
 
 
 def main(args):
@@ -113,6 +113,26 @@ def main(args):
     if not git_available and "Git 저장소가 아닙니다." not in warnings:
         warnings.append("Git 저장소가 아닙니다.")
 
+    # Org detection
+    org_root = find_org_root(project_dir)
+    org_profile = None
+    has_wiki = False
+    wiki_index = None
+
+    if org_root:
+        org_profile = os.path.join(org_root, ".jarfis", "org-profile.md")
+        if not os.path.isfile(org_profile):
+            org_profile = None
+        wiki_index_path = os.path.join(org_root, ".jarfis", "wiki", "INDEX.md")
+        if os.path.isfile(wiki_index_path):
+            has_wiki = True
+            wiki_index = wiki_index_path
+        else:
+            warnings.append("Organization이 등록되었으나 wiki/INDEX.md가 없습니다.")
+        log(f"Org: root={org_root}, wiki={has_wiki}")
+    else:
+        log("Org not found")
+
     # Meetings check
     has_meetings = False
     if check_meetings:
@@ -138,5 +158,9 @@ def main(args):
         "has_uncommitted": has_uncommitted,
         "workspace_dir": workspace_dir,
         "has_meetings": has_meetings,
+        "org_root": org_root,
+        "org_profile": org_profile,
+        "has_wiki": has_wiki,
+        "wiki_index": wiki_index,
         "warnings": warnings,
     })

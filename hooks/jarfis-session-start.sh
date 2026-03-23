@@ -70,6 +70,8 @@ for w in in_progress:
     name = w.get('work_name', 'unknown')
     phase = w.get('current_phase', '?')
     project = w.get('project_name', '')
+    status = w.get('status', '')
+    key_decisions = w.get('key_decisions', [])
     checkpoint = ''
 
     # Try to read last_checkpoint from state file
@@ -89,9 +91,61 @@ for w in in_progress:
     print(line)
     if checkpoint:
         print(f'  Last checkpoint: {checkpoint}')
+    if key_decisions:
+        kd_display = key_decisions[:3]
+        print(f'  Key decisions: {\" | \".join(kd_display)}')
 
 print()
 print('To continue: /jarfis:continue')
+" 2>/dev/null
+fi
+
+# Wiki update alert (v2): check if org exists and has in-progress workflows
+if command -v python3 >/dev/null 2>&1 && [[ -f "$SCRIPTS_DIR/jarfis_cli.py" ]]; then
+  python3 -c "
+import os, json, sys
+
+# Find org root by traversing up from CWD
+cwd = os.getcwd()
+org_root = None
+current = cwd
+for _ in range(5):
+    if os.path.isfile(os.path.join(current, '.jarfis', 'org-profile.md')):
+        org_root = current
+        break
+    parent = os.path.dirname(current)
+    if parent == current:
+        break
+    current = parent
+
+if not org_root:
+    sys.exit(0)
+
+# Check for in-progress workflows in workspace
+works_dir = '$WORKS_DIR'
+if not os.path.isdir(works_dir):
+    sys.exit(0)
+
+has_incomplete = False
+for entry in os.listdir(works_dir):
+    sf = os.path.join(works_dir, entry, '.jarfis-state.json')
+    if os.path.isfile(sf):
+        try:
+            with open(sf) as f:
+                data = json.load(f)
+            status = data.get('status', '')
+            if status != 'completed':
+                cp = data.get('current_phase', '')
+                phases = data.get('phases', {})
+                if str(cp) != 'done' and phases.get('6', {}).get('status') != 'completed':
+                    has_incomplete = True
+                    break
+        except:
+            pass
+
+if has_incomplete:
+    print()
+    print('> Wiki 미반영 워크플로우가 있습니다. /jarfis:work 실행 시 Phase 0에서 갱신 여부를 확인합니다.')
 " 2>/dev/null
 fi
 

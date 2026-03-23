@@ -68,3 +68,21 @@ def read_file_stripped(path):
     """Read a file and return stripped content."""
     with open(path) as f:
         return f.read().strip()
+
+
+def find_org_root(project_dir):
+    """Find Organization root by traversing up to 5 parent directories.
+
+    Looks for .jarfis/org-profile.md to identify the org root.
+    Returns the org root path or None if not found.
+    """
+    current = os.path.abspath(project_dir)
+    for _ in range(5):
+        org_profile = os.path.join(current, ".jarfis", "org-profile.md")
+        if os.path.isfile(org_profile):
+            return current
+        parent = os.path.dirname(current)
+        if parent == current:
+            break
+        current = parent
+    return None

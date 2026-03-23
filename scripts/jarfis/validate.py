@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 from .state import cmd_validate as state_validate
-from .utils import get_workspace_dir, json_output
+from .utils import find_org_root, get_workspace_dir, json_output
 
 
 # Artifacts expected after each phase
@@ -155,7 +155,56 @@ def main(args):
         all_errors.extend(errors)
         all_warnings.extend(warnings)
 
-    # 3. Git status
+    # 3. Conditional artifact validation (v2)
+    if os.path.isfile(state_file):
+        with open(state_file) as f:
+            data = json.load(f)
+        docs_dir = data.get("docs_dir", "")
+        phases = data.get("phases", {})
+        required_roles = data.get("required_roles", {})
+        ux_needed = required_roles.get("ux_designer", False)
+
+        # Phase 1 완료 + UX Designer 필요 → ux-direction.md 존재 확인
+        if phases.get("1", {}).get("status") == "completed" and ux_needed:
+            ux_dir_path = os.path.join(docs_dir, "ux-direction.md")
+            if docs_dir and not os.path.isfile(ux_dir_path):
+                all_warnings.append("Phase 1 완료 + UX Designer 필요이나 ux-direction.md 없음")
+
+        # Phase 3 완료 + UX Designer 필요 → design/ 디렉토리 존재 확인
+        if phases.get("3", {}).get("status") == "completed" and ux_needed:
+            design_dir = os.path.join(docs_dir, "design")
+            if docs_dir and not os.path.isdir(design_dir):
+                all_warnings.append("Phase 3 완료 + UX Designer 필요이나 design/ 디렉토리 없음")
+
+    # 4. Wiki structure validation (optional, warning only)
+    if os.path.isfile(state_file):
+        with open(state_file) as f:
+            data = json.load(f)
+        workspace = data.get("workspace", {})
+        projects = workspace.get("projects", {})
+        # Determine a project dir for org root lookup
+        check_dir = os.getcwd()
+        for proj in projects.values():
+            p = proj.get("path", "")
+            if p and p != "N/A" and os.path.isdir(p):
+                check_dir = os.path.abspath(p)
+                break
+        org_root = find_org_root(check_dir)
+        if org_root:
+            wiki_dir = os.path.join(org_root, ".jarfis", "wiki")
+            wiki_files = [
+                "INDEX.md",
+                os.path.join("PO", "_index.md"),
+                os.path.join("DESIGN", "_index.md"),
+                os.path.join("TA", "_index.md"),
+                os.path.join("QA", "_index.md"),
+            ]
+            for wf in wiki_files:
+                full_path = os.path.join(wiki_dir, wf)
+                if not os.path.isfile(full_path):
+                    all_warnings.append(f"Wiki 구조 누락: {wf}")
+
+    # 5. Git status
     if os.path.isfile(state_file):
         git_warnings = _check_git(state_file)
         all_warnings.extend(git_warnings)
