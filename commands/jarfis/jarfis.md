@@ -48,8 +48,6 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   Organization 초기화: 에이전트가 jarfis_cli.py org init <경로> 를 호출합니다.
     프로젝트 스캔 → org-profile.md + wiki 구조 자동 생성
     ※ 별도 slash command 없음 — 에이전트에게 "이 디렉토리를 Org으로 등록해줘"라고 요청
-    --mode: fix 또는 extend 명시 (생략 시 키워드 자동 분류 → 판단 불가 시 선택창)
-    이전 산출물(PRD, 설계, 태스크)과 브랜치를 자동 재활용
 
   /jarfis:upgrade
     JARFIS 학습 파일({JARFIS_SOURCE}/.local/jarfis-learnings.md)을 관리합니다.

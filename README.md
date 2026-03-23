@@ -365,9 +365,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.0.0] - 2026-03-23
+## [2.0.1] - 2026-03-23
 
-- v2.0.0: 에이전트 고도화(마인드셋/판단/에스컬레이션), Org Wiki, PO→Designer 핸드오프, Phase 5 UX 리뷰, 워크플로우 상태 관리 강화
+- implement: Step 1-3 반응형 범위 분리 + Phase 5 UX 리뷰 dev 서버 URL 요청 절차 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

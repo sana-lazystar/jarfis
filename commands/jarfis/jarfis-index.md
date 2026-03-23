@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.0
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.1
 
 ## 파일 구조
 ```
@@ -9,23 +9,23 @@
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 + org-init 안내 (104줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (215줄)
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (233줄)
     ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (523줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
-    ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
-    ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (541줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
+    ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
+    ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
     ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review (310줄)
-    ├── version.md                 # 버전 관리/업데이트
+    ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄) [NEW]
-    ├── health.md                  # 좀비 프로세스 진단 (67줄)
+    ├── health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 (115줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크 (37줄)
-    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰 (223줄)
+    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰 (225줄)
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 (107줄)
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step (39줄) [NEW]
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
@@ -42,17 +42,17 @@
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿 (27줄) [NEW]
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
-├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄) [NEW]
-├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄) [NEW]
+├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄)
+├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄)
 ├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
-├── senior-frontend-engineer.md    # FE 구현 에이전트 (105줄)
+├── senior-frontend-engineer.md    # FE 구현 에이전트 (120줄)
 ├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (92줄)
-├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트 (136줄)
+├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트 (142줄)
 ├── tech-lead.md                   # TL 코드베이스 건강 + 기술 판단 에이전트 (213줄)
-├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트 (162줄)
+├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트 (168줄)
 ├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트 (191줄)
 ├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트 (183줄)
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트 (231줄)
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트 (237줄)
 ```
 
 ## 명령어 매핑
