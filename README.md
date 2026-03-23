@@ -301,12 +301,13 @@ bash install.sh --version 1.0.0
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff 주입
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트
     │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 + Learning Candidate 감지
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings
+    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions

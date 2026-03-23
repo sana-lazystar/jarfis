@@ -70,6 +70,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 | — | `$DOCS_DIR/.jarfis-state.json` | **워크플로우 상태 파일 (컨텍스트 유실 방어)** | 항상 |
 | 1 | `$DOCS_DIR/press-release.md` | Working Backwards 가상 프레스 릴리스 + FAQ | 항상 |
 | 1 | `$DOCS_DIR/prd.md` | PRD + 실현가능성 평가 + **필요 역할 판단** + **Performance Budget** | 항상 |
+| 1 | `$DOCS_DIR/ux-direction.md` | UX 방향서 (IA, Tone & Voice, Pages + 인터랙션 패턴) | UX Designer 필요 시 |
 | 2 | `$DOCS_DIR/impact-analysis.md` | 기존 코드베이스 영향 범위 분석 | 항상 |
 | 2 | `$DOCS_DIR/architecture.md` | 시스템 아키텍처 설계서 + **ADR (Architecture Decision Records)** | 항상 |
 | 2 | `$DOCS_DIR/api-spec.md` | API 명세서 (엔드포인트, 파라미터, 응답 스키마) | BE+FE 모두 필요 시 |
@@ -153,23 +154,41 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - **multi-project**: BE/FE 각 경로에서 독립적으로 동일 과정 반복. `.jarfis-state.json`에 `branches: { backend, frontend }` 기록.
 
 1. **시스템 헬스체크** — `~/.claude/scripts/claude-cleanup.sh` 존재 시 진단 모드 실행. 좀비 5개↑ → AskUserQuestion, 1~4개 → 경고, 0개 → 무시.
-2. **Pre-flight 검증** — 스크립트로 프로필/학습/컨텍스트 존재 여부를 한번에 확인:
+2. **Pre-flight 검증** — 스크립트로 프로필/학습/컨텍스트/Org 존재 여부를 한번에 확인:
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight --check-meetings
    ```
-   JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `warnings`를 확인하여:
+   JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki`, `warnings`를 확인하여:
    - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
    - `has_context`=true → `context_path`에서 `$PROJECT_CONTEXT` 로드
    - `has_profile`=true → `profile_path`에서 프로필 로드
+   - `org_root` non-null → `$ORG_ROOT` 변수 설정
    - `warnings` 배열이 비어있지 않으면 사용자에게 경고 표시
    - 없는 파일은 빈 문자열로 치환
+
+   **2-1. 미완료 워크플로우 감지** (Org 등록된 경우 — `$ORG_ROOT` 존재 시)
+   - `jarfis_cli.py state list-workflows "$JARFIS_WORKSPACE_DIR"` 실행
+   - `status != "completed"` 워크플로우가 존재하면:
+     - 미완료 워크플로우 목록과 `key_decisions` 표시
+     - AskUserQuestion: "미완료 워크플로우가 있습니다. wiki에 미반영된 결정이 있을 수 있습니다." (계속 진행 / 확인 후 진행)
+
+   **2-2. Wiki 4-Step 로딩** (Org 등록된 경우 — `$ORG_ROOT` 존재 + `has_wiki`=true)
+   > 📄 프롬프트: `prompts/wiki-loading.md`의 "4-Step 전체 로딩" 절차를 실행한다.
+   - INDEX.md → 4개 _index.md → 관련 파일 최대 5개 읽기
+   - 읽은 wiki 내용을 `$WIKI_CONTEXT`로 저장
+
+   **2-3. Cascading Specificity 규칙 주입**
+   - Org 등록 시 모든 에이전트 프롬프트에 다음 규칙을 주입한다:
+   > 정보 우선순위: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
+   > 이번 태스크가 다루는 주제: $DOCS_DIR 우선. 안 다루는 주제: wiki 유효.
 3. 프로젝트 프로필 로드: `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4~5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
 
 **주입 규칙:**
-- Phase 1 (PO, Architect): `$LEARNINGS`의 Workflow Patterns + `$PROJECT_CONTEXT` 전체
-- Phase 2 (Architect — Impact Analysis, 설계): `$BE_PROJECT_PROFILE` + `$FE_PROJECT_PROFILE` (존재 시)
+- Phase 1 (PO, Architect): `$LEARNINGS`의 Workflow Patterns + `$PROJECT_CONTEXT` 전체 + `$WIKI_CONTEXT` (Org 등록 시)
+- Phase 2 (Architect — Impact Analysis, 설계): `$BE_PROJECT_PROFILE` + `$FE_PROJECT_PROFILE` (존재 시) + `$WIKI_CONTEXT` (Org 등록 시)
 - Phase 4 (BE/FE/DevOps): `$LEARNINGS`의 해당 역할 Agent Hints + `$PROJECT_CONTEXT` 전체 + **해당 역할의 `$PROJECT_PROFILE`**
 - Phase 5 (Tech Lead/QA/Security): `$LEARNINGS`의 해당 역할 Agent Hints
+- **Cascading Specificity**: Org 등록 시 모든 Phase에 우선순위 규칙 주입
 
 학습/프로필 파일이 없으면 빈 문자열로 치환한다.
 
@@ -181,6 +200,13 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 사용자의 기획 의도를 명확히 하고, 기술적 실현가능성을 동시에 검증한다.
 
 ### 실행 순서
+
+**Step 1-0: PO Wiki 참조** (Org 등록 시)
+- PO에게 PO/ wiki 컨텍스트를 주입한다: domain-map.md, policies/, business-rules/ 등
+- 기존 정책/규칙과 일관성을 유지하도록 가이드
+
+> 📄 프롬프트: `prompts/phase1.md` Step 1-0 섹션을 읽어서 에이전트에 전달한다.
+> Org 미등록 시 이 Step은 스킵한다.
 
 **Step 1-1: PO 역질문** (senior-product-owner)
 
@@ -208,6 +234,31 @@ Architect (technical-architect):
 
 ### 🔒 게이트 1: 사용자 컨펌
 산출물(`press-release.md`, `prd.md`) 요약 표시 → 승인/수정/중단 선택
+
+**Step 1-3: PO 추가 태스크** (Gate 1 승인 후, senior-product-owner)
+
+> Gate 1 통과 후, PO가 추가 태스크를 선택적으로 실행한다.
+
+AskUserQuestion:
+```
+question: "PO 추가 태스크를 선택하세요 (복수 선택 가능)"
+header: "PO Tasks"
+multiSelect: true
+options:
+  - label: "법무/컴플라이언스 체크"
+    description: "개인정보 수집/처리, 약관/결제/환불, 산업별 규제, GDPR 관련 확인"
+  - label: "UX 방향서 작성"
+    description: "ux-direction.md 작성 (UX Designer 필요 시 — IA, Tone, Pages 일괄)"
+  - label: "반응형 범위 설정"
+    description: "PC만 / PC+Mobile / PC+Mobile+Tablet"
+```
+
+- **법무/컴플라이언스**: PO가 PRD 기반으로 법적 고려사항을 prd.md에 추가
+- **UX 방향서**: PO가 `templates/ux-direction.md` 참조하여 `$DOCS_DIR/ux-direction.md` 작성. 인터랙션 패턴 필수 포함.
+- **반응형**: AskUserQuestion으로 3가지 중 선택 → `.jarfis-state.json`에 `responsive` 필드로 기록
+
+> 📄 프롬프트: `prompts/phase1.md` Step 1-3 섹션을 읽어서 에이전트에 전달한다.
+> 선택 없으면 이 Step은 스킵한다.
 
 ---
 

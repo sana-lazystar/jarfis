@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (215줄)
     ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (436줄, Workflow Patterns→learnings.md SSOT, Phase 0 동적 로드)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (487줄, v2: wiki 로딩, PO 추가 태스크, Cascading Specificity)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
@@ -20,12 +20,13 @@
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (261줄)
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 (143줄)
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 (170줄)
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff 주입 (109줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness 프롬프트 (35줄)
     │   ├── phase5.md              # Phase 5 Review & QA 프롬프트 + Learning Candidate 감지 (198줄)
     │   ├── phase6.md              # Phase 6 Retrospective 프롬프트 + Suggested Learnings (57줄)
+    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step (39줄) [NEW]
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions (115줄)
