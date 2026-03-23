@@ -288,7 +288,7 @@ bash install.sh --version 1.0.0
 
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 + org-init 안내
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
@@ -297,7 +297,7 @@ bash install.sh --version 1.0.0
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review
-    ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조)
+    ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
@@ -365,9 +365,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.12.3] - 2026-03-23
+## [2.0.0] - 2026-03-23
 
-- implement: Batch B 템플릿 — state-schema/profile 수정 + org-profile/wiki-index/wiki-section-index/ux-direction/design-html-meta 신규
+- v2.0.0: 에이전트 고도화(마인드셋/판단/에스컬레이션), Org Wiki, PO→Designer 핸드오프, Phase 5 UX 리뷰, 워크플로우 상태 관리 강화
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

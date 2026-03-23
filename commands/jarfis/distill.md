@@ -87,6 +87,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 #### 6. 에이전트 추상화 분석 (`agents/jarfis/*.md` 전용)
 - 이 진단은 `~/.claude/agents/jarfis/` 내 에이전트 파일에만 적용한다. 워크플로우 파일은 건너뛴다.
+- **⚠️ v2 보호 규칙**: 에이전트 파일의 `## Mindset & Disposition`, `## Judgment Framework`, `## Escalation Criteria` 섹션은 distill 대상에서 **완전 제외**한다. 이 섹션들은 v2에서 의도적으로 설계된 콘텐츠이며, condense/restructure/삭제하지 않는다. distill 분석/수정 대상은 `## Learned Rules` 섹션으로 한정한다.
 - **프로젝트 한정 규칙 탐지**: `## Learned Rules` 섹션의 각 규칙에 upgrade의 scope 분류 기준을 적용한다:
   - 특정 파일 경로/컴포넌트명/프로젝트명 언급 → `[project]`
   - 특정 프레임워크 버전/설정 + 한정 표현 → `[project]`

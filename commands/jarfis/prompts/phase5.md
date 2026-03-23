@@ -61,11 +61,11 @@ QA (senior-qa-engineer):
 Task prompt:
 "Phase 4에서 구현된 코드를 기반으로 QA를 수행하세요.
 ⚠️ $DOCS_DIR/tasks.md를 확인하여 N/A가 아닌 (실제 구현된) 파트만 테스트하세요.
-UX 설계($DOCS_DIR/ux-spec.md)가 존재하지 않으면 UI 관련 테스트는 제외하세요.
+UX 설계($DOCS_DIR/design/ 또는 $DOCS_DIR/ux-direction.md)가 존재하지 않으면 UI 관련 테스트는 제외하세요.
 
 참조 문서:
 - PRD: $DOCS_DIR/prd.md
-- UX 설계: $DOCS_DIR/ux-spec.md (존재하는 경우만)
+- UX 설계: $DOCS_DIR/design/ (HTML 시안, 존재하는 경우만)
 - 테스트 전략: $DOCS_DIR/test-strategy.md (이 전략 기준으로 검증)
 
 $LEARNINGS (QA Engineer 섹션)

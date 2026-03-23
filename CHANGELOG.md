@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.0] - 2026-03-23
+
+- v2.0.0: 에이전트 고도화(마인드셋/판단/에스컬레이션), Org Wiki, PO→Designer 핸드오프, Phase 5 UX 리뷰, 워크플로우 상태 관리 강화
+
 ## [1.12.3] - 2026-03-23
 
 - implement: Batch B 템플릿 — state-schema/profile 수정 + org-profile/wiki-index/wiki-section-index/ux-direction/design-html-meta 신규

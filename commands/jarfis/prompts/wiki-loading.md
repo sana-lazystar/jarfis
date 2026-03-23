@@ -8,7 +8,7 @@
 - `preflight` JSON의 `org_root`가 non-null
 - `{org_root}/.jarfis/wiki/INDEX.md` 존재
 
-## 2-Step 경량 로딩 (Fix 모드, Meeting)
+## 2-Step 경량 로딩 (Fix 모드용)
 
 1. **INDEX.md 읽기**: `{org_root}/.jarfis/wiki/INDEX.md`를 읽어 Quick Reference + Directory Map 파악
 2. **관련 섹션만 선택적 로딩**: 현재 태스크와 관련된 섹션의 `_index.md`만 읽기
