@@ -216,6 +216,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                   |
 | `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
 | `/jarfis:continue`       | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:storyboard`     | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
 | `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
 | `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
@@ -291,14 +292,15 @@ bash install.sh --version 1.0.0
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
+    ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조)
     ├── version.md                 # 버전 관리/업데이트
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
+    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
