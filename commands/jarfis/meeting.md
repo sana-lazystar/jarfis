@@ -39,12 +39,19 @@
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
-   JSON 출력의 `has_profile`, `has_learnings`, `has_context`를 확인하여:
+   JSON 출력의 `has_profile`, `has_learnings`, `has_context`, `org_root`, `has_wiki`를 확인하여:
    - `has_profile`=true → `profile_path`에서 `$PROJECT_PROFILE` 로드
    - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
    - `has_context`=true → `context_path`에서 `$PROJECT_CONTEXT` 로드
    - 세 파일 모두 없어도 미팅은 진행 가능 (로드 실패 시 빈 문자열)
    - `warnings` 배열의 내용은 정보성으로 표시 (미팅 진행을 차단하지 않음)
+
+   **Wiki 로딩** (Org 등록 시 — `org_root` non-null + `has_wiki`=true):
+   > 📄 프롬프트: `prompts/wiki-loading.md`의 "4-Step 전체 로딩" 참조
+   - PO 페르소나: PO/ wiki 참조 (domain-map, policies, business-rules)
+   - TL 페르소나: TA/ wiki 참조 (decisions, api-contracts, data-models)
+   - M-1~M-2 토론 중 wiki 기반 맥락 제공
+   - **⚠️ M-3 Wrap-up: wiki 갱신 안 함** (읽기 전용 — 미팅은 wiki를 수정하지 않음)
 
 4. **미팅 안내 출력**
    미팅명, 참석자(PO/TL), 명령어("정리해줘"→중간요약, "마무리"/"끝"→종료+산출물), 전문가 자동 소환 안내를 배너로 표시한다.

@@ -6,18 +6,19 @@
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (94줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 (98줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (215줄)
-    ├── meeting.md                 # 기획 킥오프 미팅 (PO/TL 토론, 188줄)
+    ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (523줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
     ├── project-init.md            # 프로젝트 프로필 생성 (157줄, 프로필 템플릿 외부화 후)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (148줄)
     ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
     ├── distill.md                 # 프롬프트 증류 + Dialectic Review (implement.md 참조) (309줄)
     ├── version.md                 # 버전 관리/업데이트
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend 모드 + Agent Model Routing (261줄)
+    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
+    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄) [NEW]
     ├── health.md                  # 좀비 프로세스 진단 (67줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
@@ -66,6 +67,7 @@
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
 | `/jarfis:continue` | `jarfis/continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:storyboard` | `jarfis/storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
 | `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
 

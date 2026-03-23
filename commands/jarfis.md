@@ -35,9 +35,13 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 
   /jarfis:continue [후속 작업 내용] [--workflow 경로] [--mode fix|extend]
     완료된 워크플로우를 이어서 작업합니다.
-    Fix 모드: 버그 수정/테스트 실패 대응 → Phase 4→5→6 경량 실행
-    Extend 모드: 기능 추가/확장 → Phase 1→2→4→5→6 경량 실행
+    Fix 모드: 버그 수정/테스트 실패 대응 → Phase 4→5→6 경량 실행 (wiki 2-Step)
+    Extend 모드: 기능 추가/확장 → Phase 1→2→4→5→6 경량 실행 (wiki 4-Step)
     --workflow: 워크플로우 디렉토리 직접 지정 (생략 시 자동 탐색)
+
+  /jarfis:storyboard
+    디자인 카탈로그를 브라우저에서 열어 확인합니다.
+    Org 등록 + Phase 3 완료 필요. wiki/DESIGN/pages/{project}/_index.html 열기
     --mode: fix 또는 extend 명시 (생략 시 키워드 자동 분류 → 판단 불가 시 선택창)
     이전 산출물(PRD, 설계, 태스크)과 브랜치를 자동 재활용
 

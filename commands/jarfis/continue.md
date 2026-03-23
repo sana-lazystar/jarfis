@@ -60,11 +60,17 @@
    - `$DOCS_DIR/tasks.md` — 태스크 분해 (완료된 항목 확인)
    - `$DOCS_DIR/architecture.md` — 아키텍처 (첫 50줄만, 개요 파악용)
 
-6. **Pre-flight 검증** — 스크립트로 컨텍스트/프로필 존재 여부를 확인:
+6. **Pre-flight 검증** — 스크립트로 컨텍스트/프로필/Org 존재 여부를 확인:
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
-   JSON 출력의 `has_learnings`, `has_context`, `has_profile`로 각 파일을 로드한다. work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
+   JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki`로 각 파일을 로드한다. work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
+
+   **0-0.5. Wiki 로딩** (Org 등록 시 — `org_root` non-null + `has_wiki`=true):
+   > 📄 프롬프트: `prompts/wiki-loading.md` 참조
+   - **Fix 모드** (`$FORCED_MODE`="fix" 또는 자동 분류 후): **2-Step 경량 로딩** — INDEX.md + 관련 _index.md만
+   - **Extend 모드** (`$FORCED_MODE`="extend" 또는 자동 분류 후): **4-Step 전체 로딩** — work.md와 동일
+   - 모드 미결정 시: Step 1 모드 분류 후 해당 모드의 wiki 로딩 실행
 
 ---
 
@@ -148,6 +154,8 @@ Extend 모드:
 
 ## Step 3: Fix 모드 실행
 
+> **Wiki 참조** (Org 등록 시): 2-Step 경량 로딩 완료 상태. 수정 시 wiki의 기존 결정(ADR, API 계약 등)과 일치하는 방향으로 수정한다.
+
 ### 3-1. 수정 사항 정리
 
 사용자의 수정 요청을 분석하여 수정 대상을 정리한다:
@@ -206,9 +214,14 @@ work.md의 Phase 5를 경량으로 실행한다:
 - 회고 결과를 `$DOCS_DIR/retrospective.md`에 `## Follow-up Retrospective (#N)` 섹션으로 추가
 - 학습 항목이 있으면 `jarfis-learnings.md`에 추가
 
+**Wiki 갱신** (Org 등록 시): 디폴트 "안 함". AskUserQuestion으로 사용자 선택 시에만 wiki 2-트랙 갱신 실행.
+
 ---
 
 ## Step 4: Extend 모드 실행
+
+> **Wiki 참조** (Org 등록 시): 4-Step 전체 로딩 완료 상태. 각 Phase에서 work.md와 동일 수준으로 wiki 참조.
+> Phase 6 회고: wiki **항상 갱신** (2-트랙, work.md와 동일).
 
 ### 4-1. PRD 보강 (Phase 1 경량)
 
