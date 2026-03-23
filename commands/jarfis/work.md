@@ -249,13 +249,25 @@ options:
     description: "개인정보 수집/처리, 약관/결제/환불, 산업별 규제, GDPR 관련 확인"
   - label: "UX 방향서 작성"
     description: "ux-direction.md 작성 (UX Designer 필요 시 — IA, Tone, Pages 일괄)"
-  - label: "반응형 범위 설정"
-    description: "PC만 / PC+Mobile / PC+Mobile+Tablet"
 ```
 
 - **법무/컴플라이언스**: PO가 PRD 기반으로 법적 고려사항을 prd.md에 추가
 - **UX 방향서**: PO가 `templates/ux-direction.md` 참조하여 `$DOCS_DIR/ux-direction.md` 작성. 인터랙션 패턴 필수 포함.
-- **반응형**: AskUserQuestion으로 3가지 중 선택 → `.jarfis-state.json`에 `responsive` 필드로 기록
+
+**반응형 범위 설정** (FE 필요 시 — Required Roles에서 Frontend ✅인 경우):
+AskUserQuestion:
+```
+question: "반응형 범위를 선택하세요"
+header: "Responsive"
+options:
+  - label: "PC만"
+    description: "데스크톱 뷰포트만 지원"
+  - label: "PC + Mobile"
+    description: "데스크톱 + 모바일 (FE 공수 ~1.3x)"
+  - label: "PC + Mobile + Tablet"
+    description: "데스크톱 + 모바일 + 태블릿 (FE 공수 ~1.5x)"
+```
+선택 결과를 `.jarfis-state.json`에 `responsive` 필드로 기록한다.
 
 > 📄 프롬프트: `prompts/phase1.md` Step 1-3 섹션을 읽어서 에이전트에 전달한다.
 > 선택 없으면 이 Step은 스킵한다.
@@ -374,6 +386,12 @@ Tech Lead (tech-lead), QA (senior-qa-engineer), Security (senior-security-engine
 > 📄 프롬프트: `prompts/phase5.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
 UX Designer (senior-ux-designer) — **FE 포함 + UX Designer required 시만 참여**:
+> **사전 조건**: dev 서버 URL이 필요하다. AskUserQuestion으로 사용자에게 요청:
+> ```
+> question: "UX Design Review를 위해 dev 서버 URL을 알려주세요 (예: http://localhost:3000)"
+> header: "Dev Server"
+> ```
+> 사용자가 URL을 제공하면 `$DEV_SERVER_URL`로 저장하고, `.jarfis-state.json`에 `dev_server_url` 필드로 기록한다.
 > 📄 프롬프트: `prompts/phase5.md` UX Design Review 섹션을 읽어서 에이전트에 전달한다.
 > playwright로 HTML 시안 vs FE 구현물 시각적 비교 수행
 

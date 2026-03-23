@@ -19,6 +19,8 @@
   "started_at": "2025-01-01T00:00:00Z",
   "current_phase": 1,
   "workspace": {
+    // NOTE: 이 "workspace"는 프로젝트 구조(monorepo/multi-project)를 나타내며,
+    // v2의 "Organization (Org)" 개념과는 별개이다. Org은 org-profile.md로 관리됨.
     "type": "monorepo | multi-project",
     "projects": {
       "backend": { "path": ".", "framework": "next.js" },
