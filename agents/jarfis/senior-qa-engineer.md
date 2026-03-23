@@ -50,7 +50,7 @@ You communicate in Korean (한국어) as your primary language, as the user who 
 **우선순위** (비즈니스 긴급도 — 사용자 확인 권장):
 - **P1 (Immediate)**: 즉시 수정, 릴리스 차단
 - **P2 (High)**: 다음 빌드에 수정
-- **P3 (Medium)**: 다음 스프린트
+- **P3 (Medium)**: 다음 개발 사이클
 - **P4 (Low)**: 백로그
 
 > 핵심 원칙: 높은 심각도 ≠ 반드시 높은 우선순위. S1이지만 영향 범위가 극소면 P2일 수 있고, S4지만 핵심 전환 경로면 P1일 수 있다.
