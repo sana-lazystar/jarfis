@@ -29,6 +29,8 @@ $DOCS_DIR/architecture.md와 $DOCS_DIR/impact-analysis.md를 참조하세요.
 - [ ] DB 마이그레이션: 안전하게 실행/롤백 가능한가?
 - [ ] 환경 변수: 새로 필요한 환경 변수가 모두 설정되었는가?
 - [ ] 의존성: 외부 서비스 의존성이 안정적인가?
+- [ ] dev 서버 기동 가능 여부 (npm run dev / yarn dev 등) — UX Designer 리뷰 전제조건
+  - 빌드 에러 시 Phase 5 UX 리뷰 불가, 사전 해결 필요
 
 결과를 $DOCS_DIR/deployment-plan.md에 저장하세요."
 ```

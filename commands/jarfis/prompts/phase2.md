@@ -3,6 +3,31 @@
 > 이 파일은 work.md에서 외부화된 에이전트 프롬프트입니다.
 > distill에 의해 자동 생성됨.
 
+**Step 2-(-1): TA/QA Wiki 참조** (Org 등록 시만)
+
+TA (technical-architect):
+```
+Wiki 참조 지침:
+"TA/ wiki에서 다음을 확인하세요:
+- decisions/ (기존 ADR — 기술 선택, 아키텍처 패턴)
+- api-contracts/ (기존 API 계약서)
+- data-models/ (기존 데이터 모델 정의)
+
+기존 ADR과 일관성을 유지하세요. 신규 ADR은 architecture.md 내에 인라인으로 작성하세요."
+```
+
+QA (senior-qa-engineer):
+```
+Wiki 참조 지침:
+"QA/ wiki에서 다음을 확인하세요:
+- test-standards.md (테스트 기준, 커버리지 목표)
+- regression-checklist.md (회귀 테스트 체크리스트)
+
+기존 테스트 기준과 일관성을 유지하며 테스트 전략을 수립하세요."
+```
+
+---
+
 **Step 2-0: Impact Analysis** (technical-architect)
 ```
 Task prompt:
@@ -102,6 +127,12 @@ Task prompt:
 - 예상 규모(S/M/L), UX 참조(FE만), 카테고리 A/B(DevOps만)
 
 추가 섹션: Shared/Cross-cutting + 의존관계 요약(Mermaid)
+
+반응형 공수 고려 (.jarfis-state.json의 responsive 필드 참조):
+- PC만 → 기본 공수
+- PC+Mobile → FE 공수 ~1.3x
+- PC+Mobile+Tablet → FE 공수 ~1.5x
+
 결과를 $DOCS_DIR/tasks.md에 저장하세요."
 ```
 
@@ -139,32 +170,45 @@ Task prompt:
 결과를 $DOCS_DIR/test-strategy.md에 저장하세요."
 ```
 
-**Step 3-1: UX 화면 설계** (senior-ux-designer) — UX Designer 필요 시만 실행
+**Step 3-0: HTML 시안 제작/수정** (senior-ux-designer) — FE + UX Designer 필요 시만
 ```
 Task prompt:
-"$DOCS_DIR/prd.md를 읽고 UX 화면 설계를 수행하세요.
+"$DOCS_DIR/ux-direction.md를 읽고 HTML 시안을 제작하세요.
 
-포함 항목:
-1. 정보 구조 (Information Architecture)
-2. 사용자 흐름도 (User Flow — Mermaid)
-3. 주요 화면별 와이어프레임 (ASCII 또는 상세 설명)
-4. 인터랙션 패턴 정의
-5. 접근성 고려사항
-6. 반응형 전략
+URL → 파일 매핑:
+- /{path} → $DOCS_DIR/design/{path}/index.html 또는 {path}.html
 
-결과를 $DOCS_DIR/ux-spec.md에 저장하세요."
+각 HTML 파일 요구사항:
+- 상단에 templates/design-html-meta.md 메타 주석 삽입
+- 단독 실행 가능 (외부 CDN만 허용, 로컬 의존성 금지)
+- ux-direction.md의 인터랙션 패턴을 시각적으로 표현
+- 반응형 범위: .jarfis-state.json의 responsive 필드 참조
+
+최종 산출물:
+- $DOCS_DIR/design/_index.html (전체 시안 목차 페이지)
+- 각 URL별 HTML 시안 파일"
 ```
 
-**Step 3-2: PO 검증** (senior-product-owner) — UX Designer 필요 시만 실행
+**Step 3-1: PO ↔ Designer 피드백 루프** (최대 3회)
+
+PO (senior-product-owner):
 ```
 Task prompt:
-"$DOCS_DIR/ux-spec.md를 읽고 프로덕트 관점에서 검증하세요.
+"$DOCS_DIR/design/ 디렉토리의 HTML 시안을 검토하세요.
+$DOCS_DIR/prd.md와 $DOCS_DIR/ux-direction.md 대비 확인 항목:
+- PRD의 유저 스토리가 모두 반영되었는가
+- ux-direction.md의 인터랙션 패턴이 구현되었는가
+- 비즈니스 목표 달성에 적합한 UX인가
+- 빠진 화면이나 엣지 케이스가 없는가
 
-검증 항목:
-- PRD의 유저 스토리가 모두 반영되었는지
-- 사용자 흐름에 빠진 엣지 케이스가 없는지
-- 비즈니스 목표 달성에 적합한 UX인지
+피드백이 있으면 구체적으로 기술하세요 (페이지별)."
+```
 
-피드백이 있으면 $DOCS_DIR/ux-spec.md에 '## PO 피드백' 섹션을 추가하세요."
+Designer (senior-ux-designer) — PO 피드백 반영:
+```
+Task prompt:
+"PO의 피드백을 반영하여 HTML 시안을 수정하세요.
+피드백: [PO 피드백 내용]
+수정 후 변경 사항을 요약하세요."
 ```
 

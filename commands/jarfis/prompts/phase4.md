@@ -85,7 +85,13 @@ Task prompt:
 
 📂 작업 디렉토리: $FRONTEND_PROJECT_DIR
 
-참조: tasks.md(태스크+UX 참조), api-spec.md(타입 정의/API 호출 기준, 존재 시), ux-spec.md(화면 구조, 존재 시)
+참조: tasks.md(태스크+UX 참조), api-spec.md(타입 정의/API 호출 기준, 존재 시)
+
+FE 디자인 참조 (design/ 존재 시):
+$DOCS_DIR/design/ 디렉토리의 HTML 시안을 시각적 계약서(Visual Contract)로 참조.
+- URL → 시안 매핑: /{path} → $DOCS_DIR/design/{path}/index.html 또는 {path}.html
+- HTML/CSS를 그대로 복붙하지 않음 — 프로젝트의 기술 스택(React, Tailwind 등)으로 구현
+- 반응형: HTML 시안이 반응형이면 동일한 breakpoint 적용
 
 $LEARNINGS (Frontend Engineer 섹션)
 $PROJECT_CONTEXT

@@ -55,3 +55,53 @@ learning_candidates가 없으면 이 섹션을 생략하세요.
 결과를 $DOCS_DIR/retrospective.md에 저장하세요."
 ```
 
+**Step 6-3: Wiki 2-트랙 갱신** (Org 등록 시만 실행, 오케스트레이터)
+
+> 핵심 원칙: learning = JARFIS 에이전트/워크플로우 개선, wiki = Org 누적 지식 — 목적이 다르므로 독립
+
+실행 순서: **학습 추출 (Step 6-1~6-2 먼저) → wiki 갱신 (이 Step 나중)**
+
+### 트랙 A: 텍스트 Wiki (PO, TA, QA)
+
+1. **산출물 스캔**: $DOCS_DIR/ 내 산출물에서 누적 지식 추출
+2. **추출 기준 체크리스트 적용**:
+   - ✅ 누적 대상: 비즈니스 규칙, 기술 선택(ADR), API 계약, 데이터 모델, 디자인 토큰, 정책 변경, 아키텍처 결정
+   - ❌ 누적 제외: 일정 관련, 구현 세부사항, 리뷰 코멘트, 진행 상태, 에이전트 간 토론
+3. **"6개월 테스트" 적용**: "6개월 후에도 유용한 정보인가?" → No면 제외
+4. **기존 파일 매칭**: INDEX.md Summary 기반으로 기존 wiki 파일과 매칭 → 병합 or 신규 생성
+5. **갱신**: 해당 wiki 파일 갱신 + _index.md + INDEX.md 갱신
+
+### 트랙 B: DESIGN HTML 동기화 (FE 포함 시만)
+
+1. `$DOCS_DIR/design/` → `wiki/DESIGN/pages/{project}/` 동기화
+2. 규칙: 기존 파일 덮어쓰기, 신규 추가, wiki에만 있는 파일은 보존
+3. `wiki/DESIGN/pages/{project}/_index.html` 자동 재생성
+4. `wiki/DESIGN/_index.md` + `wiki/INDEX.md` 갱신
+
+### Wiki 파일 프론트매터 가이드
+
+신규/수정 wiki 파일에 아래 프론트매터를 포함:
+```
+---
+owner: {PO|TA|QA|DESIGN}
+projects: [{project_name}]
+created: {date}
+created_by: {work_name}
+last_updated: {date}
+last_updated_by: {work_name}
+status: active
+---
+```
+
+### 갱신 요약 사용자 표시
+```
+━━ Wiki 갱신 요약 ━━
+트랙 A (텍스트):
+  - PO/: +1 신규 (domain-map.md), 1 갱신 (policies/refund.md)
+  - TA/: +1 신규 (decisions/adr-003.md)
+  - QA/: 변경 없음
+트랙 B (DESIGN):
+  - pages/{project}/: 4 파일 동기화
+━━━━━━━━━━━━━━━━━━
+```
+
