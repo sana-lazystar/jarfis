@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.12.1] - 2026-03-23
+
+- implement: QA/Security 에이전트 v2 업그레이드 — 마인드셋, 판단 체계, 에스컬레이션 기준 추가
+
 ## [1.12.0] - 2026-03-23
 
 - implement: PO/UX 에이전트 v2 업그레이드 — 마인드셋, 판단 체계, 에스컬레이션 기준 추가
