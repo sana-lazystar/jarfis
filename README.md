@@ -321,12 +321,12 @@ bash install.sh --version 1.0.0
 ├── senior-backend-engineer.md     # BE 구현 에이전트
 ├── senior-frontend-engineer.md    # FE 구현 에이전트
 ├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트
-├── senior-product-owner.md        # PO 역질문/PRD 에이전트
+├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트
 ├── tech-lead.md                   # TL 태스크 분해 에이전트
 ├── technical-architect.md         # 아키텍처 설계 에이전트
 ├── senior-security-engineer.md    # 보안 리뷰 에이전트
 ├── senior-qa-engineer.md          # QA 리뷰 에이전트
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 제작 에이전트
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트
 ```
 
 **설계 원칙**:
@@ -357,9 +357,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [1.11.3] - 2026-03-19
+## [1.12.0] - 2026-03-23
 
-- implement: upgrade.md 잔존 Learned Workflow Patterns 참조 제거 (F-1)
+- implement: PO/UX 에이전트 v2 업그레이드 — 마인드셋, 판단 체계, 에스컬레이션 기준 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
