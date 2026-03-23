@@ -13,90 +13,47 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
 
   사용 가능한 명령어:
 
+  /jarfis:org [--init]
+    Organization 정보 확인 / --init으로 신규 생성
+    wiki 지식 누적 → 프로젝트 간 ADR·정책·디자인 자동 공유
   /jarfis:project-init [--depth basic|medium|deep]
-    현재 프로젝트 디렉토리를 분석하여 프로필을 생성합니다.
-    기본 깊이: deep. 산출물: ./.jarfis/project-profile.md
-    /jarfis:work 시 서브에이전트가 자동 참조 → 토큰 절약 + 컨벤션 준수
-
+    프로젝트 프로필 생성 (최초 1회, 각 프로젝트에서)
   /jarfis:project-update
-    기존 프로필을 기반으로 변경된 부분만 감지하여 증분 갱신합니다.
-    Git 이력 기반으로 변경 섹션만 재분석 → init 대비 토큰 대폭 절약
-    ※ 프로필이 없으면 /jarfis:project-init을 먼저 실행하라고 안내
-
+    프로필 증분 갱신 (Git 이력 기반, 수시)
   /jarfis:meeting [기획 주제]
-    아이디어 탐색을 위한 기획 킥오프 미팅을 시작합니다.
-    PO와 Tech Lead가 사용자와 자유롭게 토론하며 아이디어를 구체화합니다.
-    산출물: ./.jarfis/meetings/{기획명}/ (summary, 회의록, 결정사항, 기술조사)
-    ※ /jarfis:work 실행 시 미팅 산출물을 자동으로 감지/참조합니다.
-
+    PO+TL 기획 킥오프 미팅 (아이디어 탐색, 선택)
   /jarfis:work [기획 내용]
-    기획을 입력하면 전체 개발 워크플로우를 자동 실행합니다.
-    Phase 0~6: 학습 로드 → 기획 구체화 → 설계 → UX → 구현 → 리뷰 → 회고
+    전체 워크플로우 실행 (기획→설계→구현→리뷰→회고)
+  /jarfis:continue [후속 작업] [--mode fix|extend]
+    완료된 워크플로우 이어서 작업 (버그 수정 / 기능 확장)
+  /jarfis:storyboard                              [Org]
+    서비스 전체 디자인 카탈로그 브라우저 확인
 
-  /jarfis:continue [후속 작업 내용] [--workflow 경로] [--mode fix|extend]
-    완료된 워크플로우를 이어서 작업합니다.
-    Fix 모드: 버그 수정/테스트 실패 대응 → Phase 4→5→6 경량 실행 (wiki 2-Step)
-    Extend 모드: 기능 추가/확장 → Phase 1→2→4→5→6 경량 실행 (wiki 4-Step)
-    --workflow: 워크플로우 디렉토리 직접 지정 (생략 시 자동 탐색)
+  /jarfis:upgrade     학습 항목 관리 + 에이전트 적용
+  /jarfis:distill     토큰 효율 분석 + 최적화
+  /jarfis:implement   JARFIS 시스템 자체 수정
+  /jarfis:version     버전 확인 + 업데이트
+  /jarfis:health      좀비 프로세스 진단/정리
 
-  /jarfis:storyboard
-    디자인 카탈로그를 브라우저에서 열어 확인합니다.
-    Org 등록 + Phase 3 완료 필요. wiki/DESIGN/pages/{project}/_index.html 열기
-
-  ── Organization (v2) ──
-
-  Organization 초기화: 에이전트가 jarfis_cli.py org init <경로> 를 호출합니다.
-    프로젝트 스캔 → org-profile.md + wiki 구조 자동 생성
-    ※ 별도 slash command 없음 — 에이전트에게 "이 디렉토리를 Org으로 등록해줘"라고 요청
-
-  /jarfis:upgrade
-    JARFIS 학습 파일({JARFIS_SOURCE}/.local/jarfis-learnings.md)을 관리합니다.
-    학습 항목 CRUD + universal/project scope 자동 분류 + 에이전트 적용
-    [universal] → agent Learned Rules, [project] → .jarfis/context.md
-    애매한 항목은 Advocate/Critic 토론으로 scope 확정
-
-  /jarfis:health [--clean]
-    시스템 헬스체크: 좀비 Claude 프로세스 진단 및 정리
-    --clean: 바로 정리 실행 (좀비 없으면 알림, 있으면 정리 후 결과 표시)
-
-  /jarfis:distill [파일명]
-    JARFIS 프롬프트 파일의 토큰 효율을 분석하고 최적화합니다.
-    중복 제거 + 템플릿 외부화 + 규칙 통합 → Before/After 리포트
-    파일명 생략 시 토큰 비용 상위 3개 파일을 자동 선택
-    절감률 30%↑ 시 Advocate/Critic Dialectic Review 자동 실행
-
-  /jarfis:version
-    JARFIS 버전 확인, 업데이트 체크, 업데이트 실행, 특정 버전 설치
-    Git 기반 배포 관리
-
-  /jarfis:implement [수정 내용] [--review=major|minor|patch]
-    JARFIS 시스템 자체를 수정/기능 추가합니다.
-    인덱스 파일을 읽고 → 수정 → 인덱스 자동 갱신 → 버전 범프
-    --review 플래그로 Advocate/Critic Dialectic Review 수준 지정
+  [Org] = Organization 등록 필요
+    Org 등록 시 work/continue/meeting에 wiki 지식 자동 주입,
+    Phase 6 회고에서 산출물이 wiki에 자동 누적됩니다.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  권장 순서:
-    1. cd my-project && /jarfis:project-init     ← 프로젝트 프로필 생성 (최초 1회)
-    2. /jarfis:project-update                    ← 변경사항 반영 (수시)
-    3. /jarfis:meeting 결제 시스템 리뉴얼  ← 아이디어 탐색 (선택)
-    4. /jarfis:work 결제 시스템 리뉴얼    ← 워크플로우 실행
-    5. /jarfis:continue 카드 결제 버그 수정  ← 후속 작업 (선택)
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  예시:
-    /jarfis:project-init
-    /jarfis:project-init --depth medium
-    /jarfis:project-update
+  예시 A — Organization 사용 (권장):
+    cd ~/your-company-name
+    /jarfis:org --init                    ← Org 등록 (최초 1회)
+    cd ~/your-company-name/my-project
+    /jarfis:project-init                  ← 프로젝트별 최초 1회
     /jarfis:meeting 결제 시스템 리뉴얼
     /jarfis:work 결제 시스템 리뉴얼
-    /jarfis:work 결제 시스템 리뉴얼 --meeting 결제-시스템-리뉴얼
     /jarfis:continue 카드 결제 오류 수정
-    /jarfis:continue 소셜 로그인 기능 추가
-    /jarfis:continue 버그 수정 --workflow .jarfis/works/20260310/결제-시스템
-    /jarfis:continue 기능 추가 --mode extend
-    /jarfis:upgrade
-    /jarfis:distill
-    /jarfis:distill work.md
-    /jarfis:version
-    /jarfis:health
+    /jarfis:storyboard                    ← 디자인 카탈로그 확인
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  예시 B — Org 없이 바로 시작:
+    cd ~/my-project
+    /jarfis:project-init
+    /jarfis:work 게시판 CRUD + 댓글
+    /jarfis:continue 댓글 알림 기능 추가 --mode extend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

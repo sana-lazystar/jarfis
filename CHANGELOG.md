@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.0] - 2026-03-23
+
+- implement: /jarfis:org 커맨드 신설 + jarfis.md 도움말 재구성 (예시 A/B 분리)
+
 ## [2.0.2] - 2026-03-23
 
 - implement: Gate 1/2/3 + Phase 3 UX Gate에 명시적 AskUserQuestion 블록 추가

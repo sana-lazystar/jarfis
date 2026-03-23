@@ -1,12 +1,12 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.2
+> 수동 편집하지 마세요. Last updated: 2026-03-23 | Version: 2.0.0
 
 ## 파일 구조
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 출력 + org-init 안내 (104줄)
+├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (59줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (233줄)
@@ -18,7 +18,8 @@
     ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review (310줄)
     ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
-    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄) [NEW]
+    ├── org.md                     # Organization 관리 — 정보 확인 / --init 초기화 (112줄) [NEW]
+    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
     ├── health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
@@ -67,6 +68,7 @@
 | `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
 | `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
 | `/jarfis:continue` | `jarfis/continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:org` | `jarfis/org.md` | Organization 관리 (정보 확인 / --init 초기화) |
 | `/jarfis:storyboard` | `jarfis/storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
 | `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
