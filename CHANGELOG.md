@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-03-24
+
+- 커맨드 리네이밍 Part 1 — resource-verb 패턴 통일 (continue→work-continue, meeting→work-meeting, implement→sys-implement, upgrade→sys-upgrade, distill→sys-distill, version→sys-version, health→sys-health, wiki-search-setup→wiki-setup, storyboard→wiki-storyboard)
+
 ## [2.3.6] - 2026-03-24
 
 - get_workspace_dir→get_org_dir, JARFIS_WORKSPACE_DIR→JARFIS_ORG_DIR 전체 리네이밍 (Python 5+테스트 3+커맨드 4 = 44건)

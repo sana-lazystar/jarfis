@@ -222,22 +222,22 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 <!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                     | Description                                            |
-| --------------------------- | ------------------------------------------------------ |
-| `/jarfis:meeting`           | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
-| `/jarfis:work`              | 기획→설계→구현→리뷰 전체 워크플로우                                   |
-| `/jarfis:project-init`      | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
-| `/jarfis:project-update`    | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
-| `/jarfis:upgrade`           | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
-| `/jarfis:health`            | 좀비 Claude 프로세스 진단/정리                                   |
-| `/jarfis:distill`           | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
-| `/jarfis:continue`          | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org`               | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트)                |
-| `/jarfis:org-init`          | Organization 초기화 (스캔 + wiki 생성)                        |
-| `/jarfis:storyboard`        | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
-| `/jarfis:wiki-search-setup` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)      |
-| `/jarfis:implement`         | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
-| `/jarfis:version`           | 버전 확인/업데이트/특정 버전 설치                                    |
+| Command                   | Description                                            |
+| ------------------------- | ------------------------------------------------------ |
+| `/jarfis:work-meeting`    | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
+| `/jarfis:work`            | 기획→설계→구현→리뷰 전체 워크플로우                                   |
+| `/jarfis:project-init`    | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
+| `/jarfis:project-update`  | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
+| `/jarfis:sys-upgrade`     | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
+| `/jarfis:sys-health`      | 좀비 Claude 프로세스 진단/정리                                   |
+| `/jarfis:sys-distill`     | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
+| `/jarfis:work-continue`   | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:org`             | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트)                |
+| `/jarfis:org-init`        | Organization 초기화 (스캔 + wiki 생성)                        |
+| `/jarfis:wiki-storyboard` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
+| `/jarfis:wiki-setup`      | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)      |
+| `/jarfis:sys-implement`   | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
+| `/jarfis:sys-version`     | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -317,20 +317,20 @@ bash install.sh --version 1.0.0
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
-    ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
+    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
+    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
-    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
-    ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
-    ├── version.md                 # 버전 관리/업데이트
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
+    ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
+    ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
+    ├── sys-version.md                 # 버전 관리/업데이트
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
-    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
-    ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
-    ├── health.md                  # 좀비 프로세스 진단
+    ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
+    ├── wiki-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
+    ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.6] - 2026-03-24
+## [2.4.0] - 2026-03-24
 
-- get_workspace_dir→get_org_dir, JARFIS_WORKSPACE_DIR→JARFIS_ORG_DIR 전체 리네이밍 (Python 5+테스트 3+커맨드 4 = 44건)
+- 커맨드 리네이밍 Part 1 — resource-verb 패턴 통일 (continue→work-continue, meeting→work-meeting, implement→sys-implement, upgrade→sys-upgrade, distill→sys-distill, version→sys-version, health→sys-health, wiki-search-setup→wiki-setup, storyboard→wiki-storyboard)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

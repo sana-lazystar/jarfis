@@ -1,4 +1,4 @@
-# /jarfis:storyboard — 디자인 카탈로그 브라우징
+# /jarfis:wiki-storyboard — 디자인 카탈로그 브라우징
 
 사용자가 디자인 카탈로그를 열려고 합니다: $ARGUMENTS
 

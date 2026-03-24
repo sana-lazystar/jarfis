@@ -1,7 +1,7 @@
 # JARFIS System Index
 
-> 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.6
+> 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.4.0
 
 ## 파일 구조
 ```
@@ -9,20 +9,20 @@
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (61줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
-    ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
+    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
+    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (587줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
-    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
-    ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
-    ├── version.md                 # 버전 관리/업데이트 (158줄)
-    ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
+    ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
+    ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
+    ├── sys-version.md                 # 버전 관리/업데이트 (158줄)
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
-    ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
-    ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (45줄) [NEW]
-    ├── health.md                  # 좀비 프로세스 진단 (70줄)
+    ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
+    ├── wiki-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (45줄) [NEW]
+    ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
@@ -62,20 +62,20 @@
 | 명령어 | 파일 | 역할 |
 |--------|------|------|
 | `/jarfis` | `jarfis.md` | 명령어 목록 출력 |
-| `/jarfis:meeting` | `jarfis/meeting.md` | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성) |
+| `/jarfis:work-meeting` | `jarfis/work-meeting.md` | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성) |
 | `/jarfis:work` | `jarfis/work.md` | 기획→설계→구현→리뷰 전체 워크플로우 |
 | `/jarfis:project-init` | `jarfis/project-init.md` | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성 |
 | `/jarfis:project-update` | `jarfis/project-update.md` | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback) |
-| `/jarfis:upgrade` | `jarfis/upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
-| `/jarfis:health` | `jarfis/health.md` | 좀비 Claude 프로세스 진단/정리 |
-| `/jarfis:distill` | `jarfis/distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
-| `/jarfis:continue` | `jarfis/continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:sys-upgrade` | `jarfis/sys-upgrade.md` | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용 |
+| `/jarfis:sys-health` | `jarfis/sys-health.md` | 좀비 Claude 프로세스 진단/정리 |
+| `/jarfis:sys-distill` | `jarfis/sys-distill.md` | 프롬프트 증류 — 토큰 효율 분석/최적화 |
+| `/jarfis:work-continue` | `jarfis/work-continue.md` | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
 | `/jarfis:org` | `jarfis/org.md` | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트) |
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization 초기화 (스캔 + wiki 생성) |
-| `/jarfis:storyboard` | `jarfis/storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
-| `/jarfis:wiki-search-setup` | `jarfis/wiki-search-setup.md` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
-| `/jarfis:implement` | `jarfis/implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
-| `/jarfis:version` | `jarfis/version.md` | 버전 확인/업데이트/특정 버전 설치 |
+| `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
+| `/jarfis:wiki-setup` | `jarfis/wiki-setup.md` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
+| `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
+| `/jarfis:sys-version` | `jarfis/sys-version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
 ## 산출물/데이터 파일
 - `{프로젝트경로}/.jarfis/project-profile.md` — project-init이 생성, work이 참조 (각 프로젝트 내부)
@@ -137,28 +137,28 @@
 
 ## 내부 참조 관계
 - `jarfis.md` → 모든 명령어 참조 (도우미 텍스트)
-- `meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
+- `work-meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
 - `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis_cli.py meetings`로 워크스페이스 미팅 조회 + AskUserQuestion 선택) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
-- `templates/*.md` → work.md/meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드). v2 신규: org-profile, wiki-index, wiki-section-index, ux-direction, design-html-meta
+- `templates/*.md` → work.md/work-meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드). v2 신규: org-profile, wiki-index, wiki-section-index, ux-direction, design-html-meta
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
-- `distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → `jarfis_cli.py measure`로 토큰 측정 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
+- `sys-distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → `jarfis_cli.py measure`로 토큰 측정 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
 - `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
-- `agents/jarfis/jarfis-advocate.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 옹호)
-- `agents/jarfis/jarfis-critic.md` → implement.md/upgrade.md/distill.md에서 Dialectic Review 시 참조 (변경 비판)
-- `continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조 + `prompts/continue-extend.md` 참조 (Extend 모드) + work.md Agent Mapping 참조 (모델 라우팅 SSOT) + project-profile.md/project-context.md 로드 (work.md Phase 0과 동일)
-- `implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
-- `version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
-- `distill.md` → 완료 후 `jarfis_cli.py version patch` 호출
-- `upgrade.md` → 학습 적용 후 `jarfis_cli.py version patch` 호출
-- `implement.md` → 완료 후 `jarfis_cli.py version <type>` 호출 (사용자 선택)
-- `jarfis_cli.py measure` → distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
-- `jarfis_cli.py version` → implement.md/distill.md/upgrade.md에서 VERSION/CHANGELOG/__init__.py 자동 갱신
+- `agents/jarfis/jarfis-advocate.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 옹호)
+- `agents/jarfis/jarfis-critic.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 비판)
+- `work-continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조 + `prompts/continue-extend.md` 참조 (Extend 모드) + work.md Agent Mapping 참조 (모델 라우팅 SSOT) + project-profile.md/project-context.md 로드 (work.md Phase 0과 동일)
+- `sys-implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
+- `sys-version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
+- `sys-distill.md` → 완료 후 `jarfis_cli.py version patch` 호출
+- `sys-upgrade.md` → 학습 적용 후 `jarfis_cli.py version patch` 호출
+- `sys-implement.md` → 완료 후 `jarfis_cli.py version <type>` 호출 (사용자 선택)
+- `jarfis_cli.py measure` → sys-distill.md D-0/D-1/D-4에서 파일 토큰 측정 + 진단 데이터 수집
+- `jarfis_cli.py version` → sys-implement.md/sys-distill.md/sys-upgrade.md에서 VERSION/CHANGELOG/__init__.py 자동 갱신
 - `jarfis_cli.py sync` → README 갱신 포함 (jarfis-index.md + CHANGELOG.md → README.md 섹션 갱신)
 - `jarfis_cli.py meetings` → work.md Phase 0에서 최근 미팅 N개 JSON 조회 (AskUserQuestion 미팅 선택용)
-- `jarfis_cli.py preflight` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
-- `jarfis_cli.py state` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
+- `jarfis_cli.py preflight` → work.md Phase 0 / work-continue.md Step 0 / work-meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
+- `jarfis_cli.py state` → work.md 전체 Phase / work-continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis_cli.py detect` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지
 - `jarfis-pre-compact.sh` → `$JARFIS_ORG_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행, shell-only hook)
 - `jarfis-safety.sh` → PreToolUse(Bash) 차단: force push, --no-verify, main/master 직접 커밋 | 경고: .env, rm -rf, credentials, curl|bash (킬 스위치: JARFIS_SAFETY_HOOK=0)
@@ -169,10 +169,10 @@
 - `phase5.md` → Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
 - `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성) + Wiki 갱신 후 `jarfis_cli.py wiki index` 리인덱싱 (best-effort)
 - `wiki-loading.md` → 4-Step Step 3에서 `jarfis_cli.py wiki search` 호출 (폴백: LLM 판단)
-- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:wiki-search-setup` 안내)
-- `wiki-search-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
-- `org-init.md` → 생성 완료 후 `/jarfis:wiki-search-setup` 안내 표시
-- `tests/` → implement.md Step 2 Python TDD 규칙에서 참조 (148개 테스트, 전 Python 모듈 커버). `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 실행
+- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:wiki-setup` 안내)
+- `wiki-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
+- `org-init.md` → 생성 완료 후 `/jarfis:wiki-setup` 안내 표시
+- `tests/` → sys-implement.md Step 2 Python TDD 규칙에서 참조 (148개 테스트, 전 Python 모듈 커버). `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 실행
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋

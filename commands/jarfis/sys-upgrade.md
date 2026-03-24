@@ -100,7 +100,7 @@ options:
 
 **1-3. Dialectic Review (ambiguous 항목만)**
 
-> ※ Dialectic Review 절차는 implement.md §Step 1.5를 따른다 (정본).
+> ※ Dialectic Review 절차는 sys-implement.md §Step 1.5를 따른다 (정본).
 > **Delta**: upgrade에서는 ambiguous 항목의 scope 판단에만 적용한다.
 > - Advocate prompt: "이 학습 항목이 범용 원칙인 이유를 논증하세요"
 > - Critic prompt: "이 학습 항목이 프로젝트 종속인 이유를 논증하세요"

@@ -18,12 +18,12 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 1. **파일별 토큰 비용 측정** — `jarfis_cli.py measure` 사용 (LLM이 파일을 직접 읽지 않고 측정 결과만 받음)
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py measure \
-     --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
+     --exclude sys-distill.md,sys-sys-implement.md,jarfis-index.md,sys-health.md,sys-upgrade.md,sys-version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md \
      --diagnostics
    ```
    - 스크립트가 스캔하는 범위: `commands/jarfis/`, `agents/jarfis/`, `commands/jarfis.md` (재귀, `.distill-backup/` 제외)
-   - 제외 대상: 메타 도구 (`distill.md`, `implement.md`, `jarfis-index.md`, `health.md`, `upgrade.md`, `version.md`)
+   - 제외 대상: 메타 도구 (`sys-distill.md`, `sys-sys-implement.md`, `jarfis-index.md`, `sys-health.md`, `sys-upgrade.md`, `sys-version.md`)
    - 출력 JSON에서 `files[].{name, lines, tokens_est}` + `total` + `index_mismatches`를 파싱하여 테이블로 표시
    - `index_mismatches`가 있으면 경고를 출력한다
    - `--diagnostics` 옵션으로 D-1 진단에 필요한 코드블록/헤더/프롬프트 패턴 정보도 함께 수집
@@ -34,7 +34,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      파일명              줄수    토큰추정
      work.md              427    4,558
-     meeting.md           183    1,872
+     work-meeting.md           183    1,872
      ...
      ─────────────────────────────────────────
      TOTAL               3330   40,549
@@ -48,7 +48,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
      ```
      "다음 파일을 증류 대상으로 분석합니다:
       1. work.md (16,527tok)
-      2. meeting.md (2,972tok)
+      2. work-meeting.md (2,972tok)
       진행할까요?"
      ```
 
@@ -129,7 +129,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 ### D-2: 증류 계획 수립
 
-> **⚠️ 커맨드 파일 보호 규칙**: `commands/jarfis/*.md` 및 `commands/jarfis/prompts/*.md`는 distill의 **분석/측정 대상이지만, 수정 대상이 아니다**. 커맨드 파일의 Step/Phase/Gate 구조, 배너 포맷, 실행 로직은 워크플로우 정확성에 직결되므로, condense-section/compress-expression 등 어떤 축약 액션도 적용하지 않는다. 커맨드 파일에 토큰 절약이 필요하면, distill은 제안만 하고 실제 수정은 `/jarfis:implement`를 통해서만 수행한다.
+> **⚠️ 커맨드 파일 보호 규칙**: `commands/jarfis/*.md` 및 `commands/jarfis/prompts/*.md`는 distill의 **분석/측정 대상이지만, 수정 대상이 아니다**. 커맨드 파일의 Step/Phase/Gate 구조, 배너 포맷, 실행 로직은 워크플로우 정확성에 직결되므로, condense-section/compress-expression 등 어떤 축약 액션도 적용하지 않는다. 커맨드 파일에 토큰 절약이 필요하면, distill은 제안만 하고 실제 수정은 `/jarfis:sys-implement`를 통해서만 수행한다.
 
 진단 결과를 기반으로 증류 액션 목록을 생성한다:
 
@@ -167,7 +167,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 ### D-2.5: Dialectic Review (토론 게이트)
 
-> ※ Dialectic Review 절차는 implement.md §Step 1.5를 따른다 (정본).
+> ※ Dialectic Review 절차는 sys-implement.md §Step 1.5를 따른다 (정본).
 > **Delta**: distill에서는 예상 토큰 절감률로 게이트 진입을 판단한다.
 
 **게이트 진입 조건**:
@@ -236,7 +236,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 1. **After 측정** — `jarfis_cli.py measure`로 재측정 (D-0과 동일, `--diagnostics` 불필요):
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py measure \
-     --exclude distill.md,implement.md,jarfis-index.md,health.md,upgrade.md,version.md \
+     --exclude sys-distill.md,sys-sys-implement.md,jarfis-index.md,sys-health.md,sys-upgrade.md,sys-version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md
    ```
    - D-0의 Before 데이터와 After 데이터를 `files[].{name, tokens_est}`로 비교한다.

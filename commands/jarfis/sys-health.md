@@ -60,7 +60,7 @@ Bash로 `~/.claude/scripts/claude-cleanup.sh`를 실행하세요 (인자 없이,
 **진단 모드** (인자 없음):
 - 좀비가 있으면 안내 메시지를 추가로 표시:
   ```
-  정리하려면: /jarfis:health --clean
+  정리하려면: /jarfis:sys-health --clean
   ```
 - 좀비가 없으면 그대로 종료
 

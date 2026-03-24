@@ -108,6 +108,6 @@ python3 ~/.claude/scripts/jarfis_cli.py org init "$ORG_ROOT" --confirm --name "$
 다음 단계:
   1. cd {project_path} && /jarfis:project-init
   2. Wiki 시맨틱 검색 활성화 (선택):
-     /jarfis:wiki-search-setup
+     /jarfis:wiki-setup
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

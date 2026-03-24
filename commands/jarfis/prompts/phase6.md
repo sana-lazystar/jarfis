@@ -49,7 +49,7 @@ $DOCS_DIR/ 내의 모든 산출물과 .jarfis-state.json을 참조하세요.
 |----------|----------|------|----------|
 (learning_candidates 각 항목을 표로 정리하고, 각각에 대해 구체적인 학습 규칙을 제안)
 
-사용자가 /jarfis:upgrade로 명시적 승격할 수 있도록 후보 형태로 제시합니다.
+사용자가 /jarfis:sys-upgrade로 명시적 승격할 수 있도록 후보 형태로 제시합니다.
 learning_candidates가 없으면 이 섹션을 생략하세요.
 
 결과를 $DOCS_DIR/retrospective.md에 저장하세요."
