@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.4.0] - 2026-03-24
+## [2.4.1] - 2026-03-24
 
-- 커맨드 리네이밍 Part 1 — resource-verb 패턴 통일 (continue→work-continue, meeting→work-meeting, implement→sys-implement, upgrade→sys-upgrade, distill→sys-distill, version→sys-version, health→sys-health, wiki-search-setup→wiki-setup, storyboard→wiki-storyboard)
+- 커맨드 리네이밍 Part 2 — hooks, Python, install.sh 참조 갱신
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

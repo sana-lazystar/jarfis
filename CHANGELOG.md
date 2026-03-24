@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-03-24
+
+- 커맨드 리네이밍 Part 2 — hooks, Python, install.sh 참조 갱신
+
 ## [2.4.0] - 2026-03-24
 
 - 커맨드 리네이밍 Part 1 — resource-verb 패턴 통일 (continue→work-continue, meeting→work-meeting, implement→sys-implement, upgrade→sys-upgrade, distill→sys-distill, version→sys-version, health→sys-health, wiki-search-setup→wiki-setup, storyboard→wiki-storyboard)

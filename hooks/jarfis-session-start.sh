@@ -96,7 +96,7 @@ for w in in_progress:
         print(f'  Key decisions: {\" | \".join(kd_display)}')
 
 print()
-print('To continue: /jarfis:continue')
+print('To continue: /jarfis:work-continue')
 " 2>/dev/null
 fi
 

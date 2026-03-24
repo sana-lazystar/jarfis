@@ -334,7 +334,7 @@ elif [[ -f "$CLAUDE_DIR/jarfis-learnings.md" ]] && [[ ! -f "$STANDALONE_LEARNING
 elif [[ -f "$STANDALONE_LEARNINGS" ]]; then
   echo "  [OK] Learnings already at .personal/orgs/_standalone/"
 else
-  echo "  (learnings file will be created on first /jarfis:upgrade)"
+  echo "  (learnings file will be created on first /jarfis:sys-upgrade)"
 fi
 
 # Post-migration notice
@@ -473,7 +473,7 @@ echo "━━━━━━━━━━━━━━━━━━━━━━━━�
 echo ""
 echo "  /jarfis          — 명령어 도움말"
 echo "  /jarfis:work     — 워크플로우 실행"
-echo "  /jarfis:version  — 버전 확인/업데이트"
+echo "  /jarfis:sys-version  — 버전 확인/업데이트"
 echo ""
 echo "  Personal dir: $PERSONAL_DIR"
 if [[ "$BACKUP_NEEDED" == "true" ]]; then
@@ -482,5 +482,5 @@ fi
 if [[ $reapplied -gt 0 ]]; then
   echo "  Learned Rules: $reapplied agent(s) preserved"
 fi
-echo "  Wiki Search: /jarfis:wiki-search-setup (Org 등록 후)"
+echo "  Wiki Search: /jarfis:wiki-setup (Org 등록 후)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
