@@ -322,8 +322,8 @@ bash install.sh --version 1.0.0
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
-    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review
-    ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review
+    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
+    ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
     ├── org.md                     # Organization 정보 확인 + 미등록 안내
@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.2.1] - 2026-03-24
+## [2.2.2] - 2026-03-24
 
-- Python 전 모듈 pytest 테스트 추가 (148 tests) + implement.md TDD 규칙 삽입
+- 에이전트 화이트리스트 보호 + 커맨드 분석 전용 규칙 강화 (upgrade/distill 구조 파괴 방지)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

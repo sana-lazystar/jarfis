@@ -87,7 +87,7 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 
 #### 6. 에이전트 추상화 분석 (`agents/jarfis/*.md` 전용)
 - 이 진단은 `~/.claude/agents/jarfis/` 내 에이전트 파일에만 적용한다. 워크플로우 파일은 건너뛴다.
-- **⚠️ v2 보호 규칙**: 에이전트 파일의 `## Mindset & Disposition`, `## Judgment Framework`, `## Escalation Criteria` 섹션은 distill 대상에서 **완전 제외**한다. 이 섹션들은 v2에서 의도적으로 설계된 콘텐츠이며, condense/restructure/삭제하지 않는다. distill 분석/수정 대상은 `## Learned Rules` 섹션으로 한정한다.
+- **⚠️ 에이전트 보호 규칙 (화이트리스트)**: 에이전트 파일에서 distill이 분석/수정할 수 있는 대상은 **`## Learned Rules` 섹션만**이다. 그 외 모든 섹션(Core Identity, Mindset & Disposition, Judgment Framework, Escalation Criteria, Behavioral Guidelines, Communication Style, Self-Verification, Output Format, 역할별 전문 섹션 등)은 **전체 읽기 전용**이다. condense/restructure/삭제/이동하지 않는다.
 - **프로젝트 한정 규칙 탐지**: `## Learned Rules` 섹션의 각 규칙에 upgrade의 scope 분류 기준을 적용한다:
   - 특정 파일 경로/컴포넌트명/프로젝트명 언급 → `[project]`
   - 특정 프레임워크 버전/설정 + 한정 표현 → `[project]`
@@ -128,6 +128,8 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
 ```
 
 ### D-2: 증류 계획 수립
+
+> **⚠️ 커맨드 파일 보호 규칙**: `commands/jarfis/*.md` 및 `commands/jarfis/prompts/*.md`는 distill의 **분석/측정 대상이지만, 수정 대상이 아니다**. 커맨드 파일의 Step/Phase/Gate 구조, 배너 포맷, 실행 로직은 워크플로우 정확성에 직결되므로, condense-section/compress-expression 등 어떤 축약 액션도 적용하지 않는다. 커맨드 파일에 토큰 절약이 필요하면, distill은 제안만 하고 실제 수정은 `/jarfis:implement`를 통해서만 수행한다.
 
 진단 결과를 기반으로 증류 액션 목록을 생성한다:
 

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.2] - 2026-03-24
+
+- 에이전트 화이트리스트 보호 + 커맨드 분석 전용 규칙 강화 (upgrade/distill 구조 파괴 방지)
+
 ## [2.2.1] - 2026-03-24
 
 - Python 전 모듈 pytest 테스트 추가 (148 tests) + implement.md TDD 규칙 삽입

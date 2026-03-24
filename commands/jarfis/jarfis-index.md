@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.2.1
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.2.2
 
 ## 파일 구조
 ```
@@ -14,8 +14,8 @@
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (587줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
-    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review (294줄)
-    ├── distill.md                 # 프롬프트 증류 + v2 보호 규칙 + Dialectic Review (310줄)
+    ├── upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
+    ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
     ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
     ├── org.md                     # Organization 정보 확인 + 미등록 안내 (47줄)

@@ -130,6 +130,8 @@ AskUserQuestion으로 "전체 적용" 또는 "선택 적용" (multiSelect: true)
 
 **3-1. 에이전트 파일 적용**
 
+> **⚠️ 에이전트 보호 규칙 (화이트리스트)**: 에이전트 파일에서 upgrade가 수정할 수 있는 대상은 **`## Learned Rules` 섹션만**이다. 그 외 모든 섹션(Core Identity, Mindset, Judgment, Escalation, Behavioral Guidelines, Output Format, 역할별 전문 섹션 등)은 **읽기 전용**이다. 다른 섹션에 학습 항목을 삽입하거나, 기존 섹션의 내용을 수정하지 않는다.
+
 | 학습 scope | 적용 대상 |
 |-----------|----------|
 | `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md`의 `## Learned Rules` |
