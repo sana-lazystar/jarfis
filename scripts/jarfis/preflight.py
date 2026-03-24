@@ -12,7 +12,8 @@ import os
 import subprocess
 import sys
 
-from .utils import find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_workspace_dir, json_output
+from .organization import read_orgs, register_org
+from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_workspace_dir, json_output, STANDALONE_ORG
 
 
 def main(args):
@@ -118,6 +119,9 @@ def main(args):
     has_wiki = False
     wiki_index = None
 
+    org_name = None
+    org_auto_registered = False
+
     if org_root:
         org_profile = os.path.join(org_root, ".jarfis", "org-profile.md")
         if not os.path.isfile(org_profile):
@@ -128,7 +132,15 @@ def main(args):
             wiki_index = wiki_index_path
         else:
             warnings.append("Organization이 등록되었으나 wiki/INDEX.md가 없습니다.")
-        log(f"Org: root={org_root}, wiki={has_wiki}")
+
+        # Resolve org name and auto-register if needed
+        org_name = _resolve_org_name(project_dir)
+        if org_name and org_name != STANDALONE_ORG:
+            org_auto_registered = register_org(org_name, org_root)
+            if org_auto_registered:
+                log(f"Org auto-registered: {org_name}")
+
+        log(f"Org: root={org_root}, name={org_name}, wiki={has_wiki}")
     else:
         log("Org not found")
 
@@ -158,6 +170,8 @@ def main(args):
         "workspace_dir": workspace_dir,
         "has_meetings": has_meetings,
         "org_root": org_root,
+        "org_name": org_name,
+        "org_auto_registered": org_auto_registered,
         "org_profile": org_profile,
         "has_wiki": has_wiki,
         "wiki_index": wiki_index,

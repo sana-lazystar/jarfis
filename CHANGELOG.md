@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.2] - 2026-03-24
+
+- preflight Org 자동 등록 — 감지된 Org가 orgs.json 미등록 시 자동 등록 + 워크스페이스 생성
+
 ## [2.3.1] - 2026-03-24
 
 - install.sh .personal 구조 마이그레이션 + .jarfis-personal-dir 전환 + .gitignore 갱신

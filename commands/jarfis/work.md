@@ -162,7 +162,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - `has_learnings`=true → `learnings_path`에서 `$LEARNINGS` 로드
    - `has_context`=true → `context_path`에서 `$PROJECT_CONTEXT` 로드
    - `has_profile`=true → `profile_path`에서 프로필 로드
-   - `org_root` non-null → `$ORG_ROOT` 변수 설정
+   - `org_root` non-null → `$ORG_ROOT` 변수 설정. `org_name`으로 Org 이름 확인. `org_auto_registered`=true이면 "Org '{org_name}' 자동 등록됨" 출력
    - `warnings` 배열이 비어있지 않으면 사용자에게 경고 표시
    - 없는 파일은 빈 문자열로 치환
 

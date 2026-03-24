@@ -74,3 +74,53 @@ class TestPreflight:
         main(["--workspace-dir", custom_ws, str(tmp_path)])
         output = json.loads(capsys.readouterr().out)
         assert output["workspace_dir"] == custom_ws
+
+    def test_org_auto_register(self, jarfis_env, tmp_path, capsys):
+        """Org detected but not in orgs.json → auto-register."""
+        org_root = tmp_path / "new-org"
+        project = org_root / "project1"
+        project.mkdir(parents=True)
+        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir.mkdir()
+        (jarfis_dir / "org-profile.md").write_text("---\norg: NewAutoOrg\n---\n")
+        wiki_dir = jarfis_dir / "wiki"
+        wiki_dir.mkdir()
+        (wiki_dir / "INDEX.md").write_text("# Wiki")
+
+        main([str(project)])
+        output = json.loads(capsys.readouterr().out)
+        assert output["org_root"] == str(org_root)
+        assert output["org_name"] == "NewAutoOrg"
+        assert output["org_auto_registered"] is True
+
+        # Verify orgs.json was updated
+        from jarfis.organization import read_orgs
+        data = read_orgs()
+        names = [o["name"] for o in data["orgs"]]
+        assert "NewAutoOrg" in names
+
+        # Verify workspace dirs were created
+        personal = jarfis_env["personal_dir"]
+        assert os.path.isdir(os.path.join(personal, "orgs", "NewAutoOrg", "works"))
+        assert os.path.isdir(os.path.join(personal, "orgs", "NewAutoOrg", "meetings"))
+
+    def test_org_already_registered_no_duplicate(self, jarfis_env, tmp_path, capsys):
+        """Org detected and already in orgs.json → no duplicate."""
+        org_root = tmp_path / "existing-org"
+        project = org_root / "project1"
+        project.mkdir(parents=True)
+        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir.mkdir()
+        (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
+
+        main([str(project)])
+        output = json.loads(capsys.readouterr().out)
+        assert output["org_name"] == "TestOrg"
+        assert output["org_auto_registered"] is False
+
+    def test_no_org_no_registration(self, jarfis_env, tmp_path, capsys):
+        """No org detected → no registration attempt."""
+        main([str(tmp_path)])
+        output = json.loads(capsys.readouterr().out)
+        assert output["org_root"] is None
+        assert output["org_auto_registered"] is False
