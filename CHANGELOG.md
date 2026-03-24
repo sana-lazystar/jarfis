@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-03-24
+
+- /jarfis:org 전체 Org 목록 표시로 변경 — CWD 단일 조회 → orgs.json 기반 전체 목록 + CWD 하이라이트
+
 ## [2.3.3] - 2026-03-24
 
 - preflight org-profile.md 프로젝트 테이블 자동 추가 — Org 내 미등록 프로젝트 감지 시 행 자동 삽입

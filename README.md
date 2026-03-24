@@ -232,7 +232,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:health`            | 좀비 Claude 프로세스 진단/정리                                   |
 | `/jarfis:distill`           | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
 | `/jarfis:continue`          | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org`               | Organization 정보 확인 (미등록 시 안내)                          |
+| `/jarfis:org`               | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트)                |
 | `/jarfis:org-init`          | Organization 초기화 (스캔 + wiki 생성)                        |
 | `/jarfis:storyboard`        | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
 | `/jarfis:wiki-search-setup` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)      |
@@ -326,7 +326,7 @@ bash install.sh --version 1.0.0
     ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
-    ├── org.md                     # Organization 정보 확인 + 미등록 안내
+    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.3] - 2026-03-24
+## [2.3.4] - 2026-03-24
 
-- preflight org-profile.md 프로젝트 테이블 자동 추가 — Org 내 미등록 프로젝트 감지 시 행 자동 삽입
+- /jarfis:org 전체 Org 목록 표시로 변경 — CWD 단일 조회 → orgs.json 기반 전체 목록 + CWD 하이라이트
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
