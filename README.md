@@ -394,9 +394,50 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.4.1] - 2026-03-24
+## [2.0.0] - 2026-03-24
 
-- 커맨드 리네이밍 Part 2 — hooks, Python, install.sh 참조 갱신
+JARFIS v2 LTS — v1.11.3에서 전면 재설계된 AI IT Team Workflow Orchestration 시스템.
+
+### Agent 고도화
+- 6개 에이전트(PO, UX, QA, Security, TL, Architect) v2 업그레이드 — Mindset & Disposition, Judgment Framework, Escalation Criteria 섹션 추가
+- 에이전트 보호 규칙: 화이트리스트 방식 (`## Learned Rules`만 수정 가능, 나머지 전체 읽기 전용)
+- Dialectic Review 시스템: Advocate/Critic 에이전트 토론 게이트 (implement, upgrade, distill)
+- Learning 2-Layer 분리: `[universal]` → agent Learned Rules, `[project]` → project-context.md
+
+### Organization & Wiki
+- Org 개념 도입: org-profile.md, wiki/ 구조, 프로젝트 횡단 지식 관리
+- Wiki Semantic Search: sentence-transformers bge-m3 기반 시맨틱 검색
+- Org 자동 등록: preflight 시 Org 감지 → orgs.json 자동 등록 + 프로젝트 테이블 자동 추가
+- Org 자동 발견: /jarfis:org 실행 시 등록된 Org의 형제 디렉토리 스캔
+
+### 산출물 디렉토리 재구조화
+- `.local/workspace` → `.personal/orgs/{org_name}/` Org별 워크스페이스 분리
+- orgs.json 레지스트리 + `_standalone` 폴더 (Org 미등록 사용자)
+- Org별 learnings.md 분리
+- `.jarfis-works-dir` → `.jarfis-personal-dir` 설정 파일 변경
+
+### 커맨드 체계
+- resource-verb 패턴 통일: continue→work-continue, meeting→work-meeting, implement→sys-implement, upgrade→sys-upgrade, distill→sys-distill, version→sys-version, health→sys-health, wiki-search-setup→wiki-setup, storyboard→wiki-storyboard
+- 커맨드 보호 규칙: distill은 커맨드 파일 분석만, 수정은 sys-implement만 가능
+- /jarfis:org 전체 Org 목록 표시 (orgs.json 기반 + CWD 하이라이트)
+- /jarfis:wiki-setup 원스텝 설치 커맨드
+
+### 워크플로우 강화
+- Phase 3 PO→Designer 핸드오프: ux-direction.md → HTML 시안 → 피드백 루프
+- Phase 5 UX Designer 리뷰: playwright 시각적 비교 기반 디자인 QA
+- Gate 1/2/3 명시적 AskUserQuestion 블록
+- `.jarfis-state.json`에 status + key_decisions 필드 추가
+
+### Python CLI & 테스트
+- Bash → Python 마이그레이션: 8개 모듈 + jarfis_cli.py 디스패처
+- pytest 테스트 176개 (전 모듈 커버, TDD 규칙 enforce)
+- `get_workspace_dir` → `get_org_dir` 의미론적 리네이밍
+- install.sh .personal 구조 마이그레이션 지원
+
+### Infrastructure
+- 4개 Hook 인프라: PreCompact, Safety(PreToolUse), Quality Gate(PostToolUse), SessionStart
+- 9 Principles 문서 (PHILOSOPHY.md)
+- Git-based versioning + Semantic Versioning
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
