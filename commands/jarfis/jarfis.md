@@ -34,7 +34,7 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   /jarfis:search-setup                              [Org]
     시맨틱 검색 활성화 (sentence-transformers 설치)
   /jarfis:search-index                              [Org]
-    Org wiki 시맨틱 인덱스 생성/갱신
+    전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신
 
   /jarfis:sys-upgrade     학습 항목 관리 + 에이전트 적용
   /jarfis:sys-distill     토큰 효율 분석 + 최적화

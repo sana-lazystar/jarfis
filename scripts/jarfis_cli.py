@@ -29,17 +29,34 @@ if SCRIPT_DIR not in sys.path:
 VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
 
 
+def _needs_venv_reexec(venv_dir=None):
+    """Check if we need to re-exec in JARFIS venv.
+
+    Returns True if venv exists but we're not running in it.
+    Uses site-packages presence in sys.path instead of realpath comparison,
+    because homebrew symlinks can make system python and venv python
+    resolve to the same binary.
+    """
+    if venv_dir is None:
+        venv_dir = VENV_DIR
+    venv_python = os.path.join(venv_dir, "bin", "python3")
+    if not os.path.isfile(venv_python):
+        return False
+    # Check if any venv site-packages directory is in sys.path
+    venv_lib = os.path.join(venv_dir, "lib")
+    for p in sys.path:
+        if p.startswith(venv_lib) and "site-packages" in p:
+            return False
+    return True
+
+
 def _maybe_reexec_in_venv(command):
     """For wiki command, re-execute in JARFIS venv if available."""
     if command != "wiki":
         return
+    if not _needs_venv_reexec():
+        return
     venv_python = os.path.join(VENV_DIR, "bin", "python3")
-    if not os.path.isfile(venv_python):
-        return
-    # Already running in venv — skip
-    if os.path.realpath(sys.executable) == os.path.realpath(venv_python):
-        return
-    # Re-exec with venv python
     os.execv(venv_python, [venv_python] + sys.argv)
 
 

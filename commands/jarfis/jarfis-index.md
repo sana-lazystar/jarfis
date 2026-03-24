@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.1.0
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.1.1
 
 ## 파일 구조
 ```
@@ -22,7 +22,7 @@
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (57줄)
-    ├── search-index.md    # Org wiki 시맨틱 인덱스 생성/갱신 (129줄)
+    ├── search-index.md    # 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신 (101줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
@@ -75,7 +75,7 @@
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization 초기화 (스캔 + wiki 생성) |
 | `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
 | `/jarfis:search-setup` | `jarfis/search-setup.md` | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
-| `/jarfis:search-index` | `jarfis/search-index.md` | Org wiki 시맨틱 인덱스 생성/갱신 |
+| `/jarfis:search-index` | `jarfis/search-index.md` | 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신 |
 | `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:sys-version` | `jarfis/sys-version.md` | 버전 확인/업데이트/특정 버전 설치 |
 

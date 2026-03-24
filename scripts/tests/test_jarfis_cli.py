@@ -51,6 +51,57 @@ class TestCLIDispatcher:
         output = json.loads(stdout)
         assert output["confidence"] == "low"
 
+    def test_wiki_venv_reexec_needed_when_not_in_venv(self, tmp_path):
+        """When running outside venv and venv exists, should need re-exec."""
+        # Create a fake venv structure
+        venv_dir = tmp_path / ".claude" / ".jarfis-venv"
+        venv_bin = venv_dir / "bin"
+        venv_bin.mkdir(parents=True)
+        fake_python = venv_bin / "python3"
+        fake_python.write_text("#!/bin/sh\n")
+        fake_python.chmod(0o755)
+
+        # Import the function
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        from jarfis_cli import _needs_venv_reexec
+
+        # System python should need re-exec (not in venv)
+        result = _needs_venv_reexec(str(venv_dir))
+        assert result is True
+
+    def test_wiki_venv_reexec_not_needed_when_in_venv(self, tmp_path):
+        """When venv site-packages is already in sys.path, no re-exec needed."""
+        venv_dir = tmp_path / ".claude" / ".jarfis-venv"
+        site_pkg = venv_dir / "lib" / "python3.14" / "site-packages"
+        site_pkg.mkdir(parents=True)
+        venv_bin = venv_dir / "bin"
+        venv_bin.mkdir(parents=True)
+        fake_python = venv_bin / "python3"
+        fake_python.write_text("#!/bin/sh\n")
+        fake_python.chmod(0o755)
+
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        from jarfis_cli import _needs_venv_reexec
+
+        # Simulate being in venv by adding site-packages to sys.path
+        original_path = sys.path[:]
+        sys.path.append(str(site_pkg))
+        try:
+            result = _needs_venv_reexec(str(venv_dir))
+            assert result is False
+        finally:
+            sys.path[:] = original_path
+
+    def test_wiki_venv_reexec_not_needed_when_no_venv(self, tmp_path):
+        """When venv doesn't exist, no re-exec needed."""
+        venv_dir = tmp_path / "nonexistent-venv"
+
+        sys.path.insert(0, os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+        from jarfis_cli import _needs_venv_reexec
+
+        result = _needs_venv_reexec(str(venv_dir))
+        assert result is False
+
     def test_state_no_subcommand(self):
         rc, stdout, stderr = self._run_cli("state")
         assert rc == 1

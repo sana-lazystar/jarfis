@@ -1,6 +1,6 @@
 # JARFIS Search Index
 
-> 등록된 Org의 wiki 시맨틱 인덱스를 생성/갱신합니다.
+> 등록된 전체 Org의 wiki 시맨틱 인덱스를 일괄 생성/갱신합니다.
 
 사용자 요청: $ARGUMENTS
 
@@ -51,79 +51,51 @@ else:
 "
 ```
 
-### 3. Org 선택
-
 **Org가 0개인 경우** — 안내하고 중단:
 ```
 등록된 Organization이 없습니다.
 먼저 /jarfis:org-init 으로 Org을 등록하세요.
 ```
 
-**Org가 1개인 경우** — 자동 선택 (확인만 표시):
-```
-📂 {org_name} ({root}) — 자동 선택
-```
+### 3. 전체 Org 일괄 인덱싱
 
-**Org가 2개 이상인 경우** — AskUserQuestion으로 선택:
-```
-question: "어떤 Organization의 wiki를 인덱싱할까요?"
-header: "Org"
-options:
-  - label: "{org1_name}"
-    description: "{org1_root}"
-  - label: "{org2_name}"
-    description: "{org2_root}"
-  ...
-```
+모든 Org에 대해 순차 실행한다. 각 Org마다:
 
-### 4. 인덱스 상태 확인
-
-선택된 Org에 대해 기존 인덱스 상태를 확인한다:
+**3-1. 인덱스 상태 확인**:
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py wiki status {org_root}
 ```
 
-결과에서 `indexed: true`이고 `stale_files: 0`이면:
-```
-✅ {org_name} 인덱스가 최신 상태입니다. (파일: N개, 청크: M개)
-   마지막 인덱싱: {indexed_at}
-```
-이 경우에도 AskUserQuestion으로 재인덱싱 여부를 확인:
-```
-question: "인덱스가 최신입니다. 재인덱싱하시겠어요?"
-header: "Reindex"
-options:
-  - label: "스킵 (Recommended)"
-    description: "현재 인덱스를 유지합니다"
-  - label: "재인덱싱"
-    description: "인덱스를 처음부터 다시 빌드합니다"
-```
+- `indexed: true`이고 `stale_files: 0` → 스킵 (최신 상태)
+- `indexed: false` 또는 `stale_files > 0` → 인덱싱 실행
 
-`indexed: false`이거나 `stale_files > 0`이면 바로 인덱싱 진행.
-
-### 5. 인덱싱 실행
-
+**3-2. 인덱싱 실행** (필요한 Org만):
 ```
-⏳ {org_name} wiki 인덱싱을 시작합니다...
-   최초 실행 시 bge-m3 모델 다운로드로 수 분 소요될 수 있습니다.
+⏳ {org_name} wiki 인덱싱 중...
 ```
 
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py wiki index {org_root}
 ```
 
-### 6. 결과 보고
+최초 실행 시 bge-m3 모델 다운로드 안내:
+```
+Note: 최초 실행 시 bge-m3 모델이 자동 다운로드됩니다 (~2GB).
+```
 
-성공 시:
+### 4. 결과 보고
+
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Wiki Index 완료
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Org: {org_name}
-  📂 {org_root}
-  📄 파일: {total_files}개
-  🔖 청크: {total_chunks}개
+  ✅ {org1_name} — {files}파일, {chunks}청크
+  ✅ {org2_name} — {files}파일, {chunks}청크
+  ⏭️ {org3_name} — 최신 (스킵)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-실패 시: 에러 메시지를 그대로 사용자에게 보여준다.
+실패한 Org이 있으면 에러 메시지를 함께 표시:
+```
+  ❌ {org_name} — {에러 메시지}
+```
