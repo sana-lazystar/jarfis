@@ -41,10 +41,10 @@ python3 -m venv ~/.claude/.jarfis-venv && ~/.claude/.jarfis-venv/bin/pip install
   패키지: sentence-transformers
 
   다음 단계:
-    Wiki 인덱스 생성 (Org 등록 후):
-    python3 ~/.claude/scripts/jarfis_cli.py wiki index {org_root}
+    /jarfis:search-index
+    Org을 선택하여 wiki 인덱스를 생성합니다.
 
-  Note: 최초 wiki index 실행 시 bge-m3 모델이
+  Note: 최초 인덱싱 시 bge-m3 모델이
   자동 다운로드됩니다 (~2GB).
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

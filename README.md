@@ -236,6 +236,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:org-init`        | Organization 초기화 (스캔 + wiki 생성)                        |
 | `/jarfis:wiki-storyboard` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
 | `/jarfis:search-setup`    | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)           |
+| `/jarfis:search-index`    | Org wiki 시맨틱 인덱스 생성/갱신                                 |
 | `/jarfis:sys-implement`   | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
 | `/jarfis:sys-version`     | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
@@ -330,6 +331,7 @@ bash install.sh --version 1.0.0
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
+    ├── search-index.md    # Org wiki 시맨틱 인덱스 생성/갱신
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
@@ -394,9 +396,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.0.1] - 2026-03-24
+## [2.1.0] - 2026-03-24
 
-- implement: rename wiki-setup → search-setup
+- implement: add /jarfis:search-index command
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
