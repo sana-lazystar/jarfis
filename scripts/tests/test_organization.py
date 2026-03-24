@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, ensure_project_in_org_profile, main, read_orgs, register_org
+from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, discover_unregistered_orgs, ensure_project_in_org_profile, main, read_orgs, register_org
 
 
 class TestScanProjects:
@@ -162,6 +162,57 @@ class TestOrgsJson:
         data = read_orgs()
         names = [o["name"] for o in data["orgs"]]
         assert "AutoRegOrg" in names
+
+
+class TestDiscoverUnregisteredOrgs:
+    def test_discovers_sibling_org(self, jarfis_env, tmp_path):
+        """Registered org at parent/OrgA → discovers parent/OrgB."""
+        parent = tmp_path / "Integration"
+        # OrgA: registered
+        org_a = parent / "OrgA" / "Projects"
+        org_a_jarfis = org_a / ".jarfis"
+        org_a_jarfis.mkdir(parents=True)
+        (org_a_jarfis / "org-profile.md").write_text("---\norg: OrgA\n---\n")
+        register_org("OrgA", str(org_a))
+
+        # OrgB: exists but NOT registered
+        org_b = parent / "OrgB" / "Projects"
+        org_b_jarfis = org_b / ".jarfis"
+        org_b_jarfis.mkdir(parents=True)
+        (org_b_jarfis / "org-profile.md").write_text("---\norg: OrgB\n---\n")
+
+        discovered = discover_unregistered_orgs()
+        assert len(discovered) >= 1
+        names = [d["name"] for d in discovered]
+        assert "OrgB" in names
+
+        # Verify auto-registered
+        data = read_orgs()
+        registered_names = [o["name"] for o in data["orgs"]]
+        assert "OrgB" in registered_names
+
+    def test_no_duplicates(self, jarfis_env, tmp_path):
+        """Already registered orgs are not re-discovered."""
+        parent = tmp_path / "Integration"
+        org_a = parent / "OrgA" / "Projects"
+        org_a_jarfis = org_a / ".jarfis"
+        org_a_jarfis.mkdir(parents=True)
+        (org_a_jarfis / "org-profile.md").write_text("---\norg: OrgA\n---\n")
+        register_org("OrgA", str(org_a))
+
+        discovered = discover_unregistered_orgs()
+        names = [d["name"] for d in discovered]
+        assert "OrgA" not in names
+
+    def test_no_orgs_registered(self, jarfis_env):
+        """No registered orgs → nothing to scan → empty result."""
+        # Remove all orgs
+        import json
+        orgs_path = os.path.join(jarfis_env["orgs_dir"], "orgs.json")
+        with open(orgs_path, "w") as f:
+            json.dump({"orgs": []}, f)
+        discovered = discover_unregistered_orgs()
+        assert discovered == []
 
 
 class TestEnsureProjectInOrgProfile:

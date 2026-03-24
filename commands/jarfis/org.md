@@ -8,6 +8,20 @@
 
 ## 실행
 
+0. 미등록 Org 자동 발견 — 등록된 Org의 부모 디렉토리에서 형제 Org을 스캔한다:
+```bash
+python3 -c "
+import sys, os
+sys.path.insert(0, os.path.expanduser('~/.claude/scripts'))
+from jarfis.organization import discover_unregistered_orgs
+discovered = discover_unregistered_orgs()
+if discovered:
+    for d in discovered:
+        print(f'  [AUTO] {d[\"name\"]} 발견 → 자동 등록 ({d[\"root\"]})')
+"
+```
+발견된 Org이 있으면 결과를 출력한다.
+
 1. orgs.json에서 등록된 Org 목록을 읽는다:
 ```bash
 python3 -c "

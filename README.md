@@ -326,7 +326,7 @@ bash install.sh --version 1.0.0
     ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── version.md                 # 버전 관리/업데이트
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
-    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + CWD 하이라이트
+    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
     ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.4] - 2026-03-24
+## [2.3.5] - 2026-03-24
 
-- /jarfis:org 전체 Org 목록 표시로 변경 — CWD 단일 조회 → orgs.json 기반 전체 목록 + CWD 하이라이트
+- /jarfis:org 미등록 Org 자동 발견 — 등록된 Org의 형제 디렉토리에서 org-profile.md 스캔 후 자동 등록
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

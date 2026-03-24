@@ -225,6 +225,73 @@ def register_org(name, root):
     return True
 
 
+def discover_unregistered_orgs():
+    """Scan parent directories of registered orgs for unregistered sibling orgs.
+
+    For each registered org, goes up to the grandparent directory and scans
+    all descendants (up to 4 levels) for .jarfis/org-profile.md files.
+    Any found org not in orgs.json is auto-registered.
+
+    Returns list of newly discovered orgs: [{"name": ..., "root": ...}, ...]
+    """
+    data = read_orgs()
+    if not data["orgs"]:
+        return []
+
+    registered_roots = {os.path.abspath(o["root"]) for o in data["orgs"]}
+    registered_names = {o["name"] for o in data["orgs"]}
+
+    # Collect unique grandparent directories to scan
+    scan_dirs = set()
+    for org in data["orgs"]:
+        root = os.path.abspath(org["root"])
+        # Go up 2 levels to find the common parent
+        # e.g., /Integration/Medistream/Projects/Bitbucket → /Integration/
+        parent = os.path.dirname(root)
+        grandparent = os.path.dirname(parent)
+        if os.path.isdir(grandparent):
+            scan_dirs.add(grandparent)
+
+    discovered = []
+    for scan_dir in scan_dirs:
+        for root, dirs, files in os.walk(scan_dir):
+            # Limit depth to 4 levels from scan_dir
+            depth = root[len(scan_dir):].count(os.sep)
+            if depth > 4:
+                dirs.clear()
+                continue
+            dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
+
+            profile_path = os.path.join(root, ".jarfis", "org-profile.md")
+            if os.path.isfile(profile_path):
+                abs_root = os.path.abspath(root)
+                if abs_root in registered_roots:
+                    dirs.clear()  # Don't descend into known orgs
+                    continue
+
+                # Extract org name
+                org_name = os.path.basename(root)
+                try:
+                    with open(profile_path) as f:
+                        for line in f:
+                            if line.strip().startswith("org:"):
+                                org_name = line.split(":", 1)[1].strip()
+                                break
+                except Exception:
+                    pass
+
+                if org_name in registered_names or org_name.startswith("_"):
+                    dirs.clear()
+                    continue
+
+                if register_org(org_name, abs_root):
+                    discovered.append({"name": org_name, "root": abs_root})
+
+                dirs.clear()  # Don't descend further
+
+    return discovered
+
+
 def ensure_project_in_org_profile(org_root, project_dir):
     """Ensure a project is listed in org-profile.md's Projects table.
 

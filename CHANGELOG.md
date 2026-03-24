@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.5] - 2026-03-24
+
+- /jarfis:org 미등록 Org 자동 발견 — 등록된 Org의 형제 디렉토리에서 org-profile.md 스캔 후 자동 등록
+
 ## [2.3.4] - 2026-03-24
 
 - /jarfis:org 전체 Org 목록 표시로 변경 — CWD 단일 조회 → orgs.json 기반 전체 목록 + CWD 하이라이트

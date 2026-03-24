@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.4
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.5
 
 ## 파일 구조
 ```
@@ -18,7 +18,7 @@
     ├── distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
     ├── version.md                 # 버전 관리/업데이트 (158줄)
     ├── continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
-    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + CWD 하이라이트 (82줄)
+    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
     ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (45줄) [NEW]
