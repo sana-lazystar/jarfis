@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.6] - 2026-03-24
+
+- get_workspace_dir→get_org_dir, JARFIS_WORKSPACE_DIR→JARFIS_ORG_DIR 전체 리네이밍 (Python 5+테스트 3+커맨드 4 = 44건)
+
 ## [2.3.5] - 2026-03-24
 
 - /jarfis:org 미등록 Org 자동 발견 — 등록된 Org의 형제 디렉토리에서 org-profile.md 스캔 후 자동 등록

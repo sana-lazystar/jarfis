@@ -7,7 +7,7 @@ Subcommands:
     set-nested <state_file> <path.to.key> <value>
     init <state_file> <project_name> <work_name> <docs_dir>
     validate <state_file>
-    list-workflows <workspace_dir> [--completed-only]
+    list-workflows <org_dir> [--completed-only]
 """
 
 import json
@@ -156,13 +156,13 @@ def cmd_init(args):
 def cmd_list_workflows(args):
     completed_only = "--completed-only" in args
     remaining = [a for a in args if a != "--completed-only"]
-    workspace_dir = remaining[0] if remaining else ""
+    org_dir = remaining[0] if remaining else ""
 
     # Collect works directories to scan
     works_dirs = []
-    if workspace_dir:
+    if org_dir:
         # Explicit workspace: scan its works/ subdir (backward compat)
-        wd = os.path.join(workspace_dir, "works")
+        wd = os.path.join(org_dir, "works")
         if os.path.isdir(wd):
             works_dirs.append(wd)
     else:

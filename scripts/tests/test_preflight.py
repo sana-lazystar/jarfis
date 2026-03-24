@@ -68,12 +68,12 @@ class TestPreflight:
         assert output["org_root"] == str(org_root)
         assert output["has_wiki"] is True
 
-    def test_workspace_dir_override(self, jarfis_env, tmp_path, capsys):
+    def test_org_dir_override(self, jarfis_env, tmp_path, capsys):
         custom_ws = str(tmp_path / "custom-workspace")
         os.makedirs(custom_ws)
-        main(["--workspace-dir", custom_ws, str(tmp_path)])
+        main(["--org-dir", custom_ws, str(tmp_path)])
         output = json.loads(capsys.readouterr().out)
-        assert output["workspace_dir"] == custom_ws
+        assert output["org_dir"] == custom_ws
 
     def test_org_auto_register(self, jarfis_env, tmp_path, capsys):
         """Org detected but not in orgs.json → auto-register."""

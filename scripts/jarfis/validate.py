@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 from .state import cmd_validate as state_validate
-from .utils import find_org_root, get_all_workspaces, get_workspace_dir, json_output
+from .utils import find_org_root, get_all_workspaces, get_org_dir, json_output
 
 
 # Artifacts expected after each phase

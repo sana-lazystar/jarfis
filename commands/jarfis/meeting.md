@@ -25,10 +25,10 @@
      - "이름 변경" 선택 시 새 이름 입력받아 `$MEETING_NAME` 갱신
 
 2. **디렉토리 생성**
-   - `$JARFIS_WORKSPACE_DIR` = Org-aware 워크스페이스 (`jarfis_cli.py preflight`의 org 감지 결과 기반. `.personal/orgs/{org}/` 또는 `.personal/orgs/_standalone/`)
-   - `$MEETING_DIR` = `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-$MEETING_NAME/` (YYYYMMDD: 미팅 시작 날짜)
+   - `$JARFIS_ORG_DIR` = Org-aware 워크스페이스 (`jarfis_cli.py preflight`의 org 감지 결과 기반. `.personal/orgs/{org}/` 또는 `.personal/orgs/_standalone/`)
+   - `$MEETING_DIR` = `$JARFIS_ORG_DIR/meetings/{YYYYMMDD}-$MEETING_NAME/` (YYYYMMDD: 미팅 시작 날짜)
    - 디렉토리를 생성한다: `mkdir -p $MEETING_DIR`
-   - 동일 `$MEETING_NAME`을 포함하는 디렉토리가 `$JARFIS_WORKSPACE_DIR/meetings/` 하위에 이미 존재하면 AskUserQuestion:
+   - 동일 `$MEETING_NAME`을 포함하는 디렉토리가 `$JARFIS_ORG_DIR/meetings/` 하위에 이미 존재하면 AskUserQuestion:
      ```
      "이미 '$MEETING_NAME' 미팅 기록이 있습니다.
       1. 기존 기록 위에 이어서 진행

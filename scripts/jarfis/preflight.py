@@ -3,7 +3,7 @@
 Usage: jarfis preflight [options] [project_dir]
 
 Options:
-    --workspace-dir path   Workspace directory override
+    --org-dir path   Org directory override
     --check-meetings       Check meetings directory
     --verbose              Verbose output to stderr
 """
@@ -13,19 +13,19 @@ import subprocess
 import sys
 
 from .organization import ensure_project_in_org_profile, read_orgs, register_org
-from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_workspace_dir, json_output, STANDALONE_ORG
+from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_org_dir, json_output, STANDALONE_ORG
 
 
 def main(args):
     project_dir = ""
-    workspace_dir = ""
+    org_dir = ""
     check_meetings = False
     verbose = False
 
     i = 0
     while i < len(args):
-        if args[i] == "--workspace-dir" and i + 1 < len(args):
-            workspace_dir = args[i + 1]
+        if args[i] == "--org-dir" and i + 1 < len(args):
+            org_dir = args[i + 1]
             i += 2
         elif args[i] == "--check-meetings":
             check_meetings = True
@@ -44,8 +44,8 @@ def main(args):
     if not project_dir:
         project_dir = os.getcwd()
 
-    if not workspace_dir:
-        workspace_dir = get_workspace_dir(project_dir)
+    if not org_dir:
+        org_dir = get_org_dir(project_dir)
 
     warnings = []
 
@@ -173,7 +173,7 @@ def main(args):
         "branch": branch,
         "uncommitted": uncommitted,
         "has_uncommitted": has_uncommitted,
-        "workspace_dir": workspace_dir,
+        "org_dir": org_dir,
         "has_meetings": has_meetings,
         "org_root": org_root,
         "org_name": org_name,

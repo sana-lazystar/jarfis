@@ -14,7 +14,7 @@ from jarfis.utils import (
     get_learnings_path,
     get_personal_dir,
     get_source_path,
-    get_workspace_dir,
+    get_org_dir,
     json_error,
     json_output,
     parse_json_value,
@@ -85,9 +85,9 @@ class TestResolveOrgName:
         assert _resolve_org_name(str(project)) == "FallbackName"
 
 
-class TestGetWorkspaceDir:
+class TestGetOrgDir:
     def test_returns_standalone_without_project_dir(self, jarfis_env):
-        result = get_workspace_dir()
+        result = get_org_dir()
         assert result.endswith(os.path.join("orgs", "_standalone"))
 
     def test_returns_org_workspace_with_project_dir(self, jarfis_env, tmp_path):
@@ -97,7 +97,7 @@ class TestGetWorkspaceDir:
         jarfis_dir = org_root / ".jarfis"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
-        result = get_workspace_dir(str(project))
+        result = get_org_dir(str(project))
         assert result.endswith(os.path.join("orgs", "TestOrg"))
 
 

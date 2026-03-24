@@ -203,7 +203,7 @@ class TestCmdListWorkflows:
         assert output["workflows"][0]["status"] == "completed"
 
     def test_scans_all_orgs_without_args(self, jarfis_env, capsys):
-        """When no workspace_dir arg, scan all org workspaces."""
+        """When no org_dir arg, scan all org workspaces."""
         # Create a workflow in standalone
         work = os.path.join(jarfis_env["standalone_works"], "20260324-test")
         os.makedirs(work)

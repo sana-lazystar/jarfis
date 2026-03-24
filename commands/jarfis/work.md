@@ -59,8 +59,8 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 ### 산출물 디렉토리 규칙
 
-산출물은 `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` 디렉토리에 저장한다 (`$DOCS_DIR`).
-> ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Personal Dir Resolution" 참조.
+산출물은 `$JARFIS_ORG_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` 디렉토리에 저장한다 (`$DOCS_DIR`).
+> ※ `$JARFIS_ORG_DIR` 결정 규칙은 "Execution Rules > Org Dir Resolution" 참조.
 
 - 워크플로우 시작 시 `$DOCS_DIR` 값을 결정하고, `.jarfis-state.json`의 `docs_dir` 필드에 **절대경로**로 저장한다.
 - **프로젝트별 파일** (`project-profile.md`, `project-context.md`)은 각 프로젝트의 `.jarfis/`에 저장한다.
@@ -88,7 +88,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 | 파일 | 위치 | 설명 |
 |------|------|------|
-| `learnings.md` | `$JARFIS_WORKSPACE_DIR/learnings.md` | **Org별** — Agent Hints + Workflow Patterns |
+| `learnings.md` | `$JARFIS_ORG_DIR/learnings.md` | **Org별** — Agent Hints + Workflow Patterns |
 | `project-context.md` | `./.jarfis/project-context.md` | **프로젝트별** — 이 코드베이스 고유 지식 |
 
 ---
@@ -106,13 +106,13 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - AskUserQuestion으로 작업물명(`$WORK_INPUT`)을 입력받는다 (예: `feat/TICKET-123`, `fix/BUG-456`).
    - `$WORK_DIR_NAME` = `{YYYYMMDD}-{$WORK_INPUT의 / → - 변환}` (예: `20260311-feat-TICKET-123`)
    - `$BRANCH` = `$WORK_INPUT` (Git 브랜치명은 원본 유지, 예: `feat/TICKET-123`)
-   - `$DOCS_DIR` = `$JARFIS_WORKSPACE_DIR/works/$WORK_DIR_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
+   - `$DOCS_DIR` = `$JARFIS_ORG_DIR/works/$WORK_DIR_NAME` (절대경로). 디렉토리 생성 후 상태 초기화:
      ```bash
      python3 ~/.claude/scripts/jarfis_cli.py state init "$DOCS_DIR/.jarfis-state.json" "$PROJECT_NAME" "$WORK_DIR_NAME" "$DOCS_DIR"
      ```
    - 상태 파일에 원본 입력값 보존: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "work_input" "$WORK_INPUT"`
    - 브랜치명 기록: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
-   > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Personal Dir Resolution" 참조.
+   > ※ `$JARFIS_ORG_DIR` 결정 규칙은 "Execution Rules > Org Dir Resolution" 참조.
 
    **0-a-2. Meeting 선택 (jarfis_cli.py meetings)**
    - 스크립트를 실행하여 최근 미팅 목록을 조회한다:
@@ -126,7 +126,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - `$ARGUMENTS`에 `--meeting {기획명}` 플래그가 있으면 → 스크립트 결과에서 해당 기획명과 매칭하여 자동 선택 (AskUserQuestion 스킵)
 
    **0-a-3. Meeting 컨텍스트 로드**
-   - 미팅이 선택되면: `$JARFIS_WORKSPACE_DIR/{선택된 미팅 path}/`의 `summary.md`, `decisions.md`를 읽어 변수 저장.
+   - 미팅이 선택되면: `$JARFIS_ORG_DIR/{선택된 미팅 path}/`의 `summary.md`, `decisions.md`를 읽어 변수 저장.
      - `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
    - 미팅 없음 선택 시: `source_meeting` = `null`, 모든 `$MEETING_*` 변수 = 빈 문자열
 
@@ -478,7 +478,7 @@ Backend/Frontend (해당 수정 지시가 있을 때만):
 
 retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
-**1. 전역 학습 — `$JARFIS_WORKSPACE_DIR/learnings.md`**
+**1. 전역 학습 — `$JARFIS_ORG_DIR/learnings.md`**
 > 📄 템플릿: `templates/learnings.md`를 읽어서 산출물 양식으로 사용한다.
 
 관리 규칙: 기존 파일에 추가 (중복이면 업데이트), 오래된 항목 제거, 날짜 기록
@@ -521,10 +521,10 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 
 **`api_spec_required` 판단**: `required_roles.backend == true AND frontend == true` → `true`, 그 외 → `false`
 
-### Personal Dir Resolution
+### Org Dir Resolution
 
 `$JARFIS_PERSONAL_DIR` = `~/.claude/.jarfis-personal-dir` 파일 내용 (없으면 `{JARFIS_SOURCE}/.personal` 기본값). `{JARFIS_SOURCE}`는 `~/.claude/.jarfis-source` 파일에서 읽는다.
-`$JARFIS_WORKSPACE_DIR` = `$JARFIS_PERSONAL_DIR/orgs/{org_name}/` (Org 감지 시) 또는 `$JARFIS_PERSONAL_DIR/orgs/_standalone/` (Org 없을 때). `jarfis_cli.py preflight`의 `org_root` 결과로 결정한다.
+`$JARFIS_ORG_DIR` = `$JARFIS_PERSONAL_DIR/orgs/{org_name}/` (Org 감지 시) 또는 `$JARFIS_PERSONAL_DIR/orgs/_standalone/` (Org 없을 때). `jarfis_cli.py preflight`의 `org_root` 결과로 결정한다.
 
 ### Agent Mapping
 | Role | Agent (subagent_type) | Model |
@@ -581,7 +581,7 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 각 Phase 시작 시 `.jarfis-state.json`을 읽고 진행 상태 바 + 활성 역할 + 학습 로드 상태를 표시한다.
 
 ### Resume After Context Compression
-1. `$DOCS_DIR/.jarfis-state.json` 읽기 (`$DOCS_DIR` 모르면 `$JARFIS_WORKSPACE_DIR/works/`에서 최근 파일 탐색)
+1. `$DOCS_DIR/.jarfis-state.json` 읽기 (`$DOCS_DIR` 모르면 `$JARFIS_ORG_DIR/works/`에서 최근 파일 탐색)
 2. `docs_dir`, `current_phase`, `last_checkpoint` 확인
 3. `in_progress` Phase부터 이어서 진행. `completed` Phase는 절대 재실행하지 않음.
 4. **Compact 백업**: `$DOCS_DIR/.compact-backups/` 디렉토리에서 상태 파일 복구 가능 (PreCompact 훅 연동)

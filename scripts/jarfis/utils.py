@@ -60,7 +60,7 @@ def _resolve_org_name(project_dir=None):
     return STANDALONE_ORG
 
 
-def get_workspace_dir(project_dir=None):
+def get_org_dir(project_dir=None):
     """Resolve org-aware workspace directory.
 
     Returns .personal/orgs/{org_name}/ for org projects,
@@ -99,7 +99,7 @@ def get_learnings_path(project_dir=None):
     Returns .personal/orgs/{org}/learnings.md or
     .personal/orgs/_standalone/learnings.md.
     """
-    ws = get_workspace_dir(project_dir)
+    ws = get_org_dir(project_dir)
     return os.path.join(ws, "learnings.md")
 
 

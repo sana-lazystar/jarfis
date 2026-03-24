@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.5
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.6
 
 ## 파일 구조
 ```
@@ -80,10 +80,10 @@
 ## 산출물/데이터 파일
 - `{프로젝트경로}/.jarfis/project-profile.md` — project-init이 생성, work이 참조 (각 프로젝트 내부)
 - `{프로젝트경로}/.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (각 프로젝트 내부, 선택적)
-- `$JARFIS_WORKSPACE_DIR/learnings.md` — Org별 학습 항목 (upgrade가 관리, work이 참조. `.personal/orgs/{org}/learnings.md`)
+- `$JARFIS_ORG_DIR/learnings.md` — Org별 학습 항목 (upgrade가 관리, work이 참조. `.personal/orgs/{org}/learnings.md`)
 - `~/.claude/.jarfis-personal-dir` — .personal 디렉토리 경로 설정 파일 (install.sh가 생성)
-- `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR, flat 구조)
-- `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리 (flat 구조):
+- `$JARFIS_ORG_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR, flat 구조)
+- `$JARFIS_ORG_DIR/meetings/{YYYYMMDD}-{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리 (flat 구조):
   - `summary.md` — YAML frontmatter + 미팅 요약 (work.md 자동 감지용)
   - `meeting-notes.md` — 토픽별 정리된 회의록
   - `decisions.md` — 의사결정 표 + 근거 + 대안
@@ -160,7 +160,7 @@
 - `jarfis_cli.py preflight` → work.md Phase 0 / continue.md Step 0 / meeting.md M-0에서 프로필/학습/컨텍스트/git 상태 사전 검증
 - `jarfis_cli.py state` → work.md 전체 Phase / continue.md Step 0에서 .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis_cli.py detect` → project-init.md Step 0 / work.md Phase 0에서 프레임워크/언어 자동 감지
-- `jarfis-pre-compact.sh` → `$JARFIS_WORKSPACE_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행, shell-only hook)
+- `jarfis-pre-compact.sh` → `$JARFIS_ORG_DIR`에서 `.jarfis-state.json` 백업 + meeting 파일 백업 (auto-compact 시 자동 실행, shell-only hook)
 - `jarfis-safety.sh` → PreToolUse(Bash) 차단: force push, --no-verify, main/master 직접 커밋 | 경고: .env, rm -rf, credentials, curl|bash (킬 스위치: JARFIS_SAFETY_HOOK=0)
 - `jarfis-quality-gate.sh` → PostToolUse(Edit/Write/MultiEdit) 린트/타입체크 경고 (절대 차단 안함, 킬 스위치: JARFIS_QUALITY_GATE=0)
 - `jarfis-session-start.sh` → SessionStart에서 in-progress 워크플로우 탐색 → stdout 컨텍스트 주입 (킬 스위치: JARFIS_SESSION_RESTORE=0)
