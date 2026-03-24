@@ -24,6 +24,9 @@ SCORE_THRESHOLD = 0.5
 MODEL_NAME = "BAAI/bge-m3"
 
 
+VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
+
+
 def _ensure_dependencies():
     """Check that sentence-transformers and numpy are available."""
     try:
@@ -32,8 +35,8 @@ def _ensure_dependencies():
     except ImportError:
         json_error(
             "sentence-transformers is not installed. "
-            "Run: pip3 install sentence-transformers",
-            hint="pip3 install sentence-transformers",
+            "Run /jarfis:wiki-search-setup to install.",
+            hint="/jarfis:wiki-search-setup",
         )
 
 

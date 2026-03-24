@@ -181,9 +181,16 @@ YAML frontmatter는 메타데이터로 추출되며 임베딩에는 포함되지
 
 ## Installation
 
-```bash
-pip3 install sentence-transformers
+Claude Code에서 슬래시 커맨드로 원스텝 설치:
+
 ```
+/jarfis:wiki-search-setup
+```
+
+이 커맨드가 venv 생성(`~/.claude/.jarfis-venv/`) + sentence-transformers 설치를 자동으로 수행합니다.
+JARFIS는 해당 venv를 자동 감지하여 wiki 명령어 실행 시 사용합니다.
+
+> **Note**: macOS Homebrew Python 3.12+에서는 시스템 pip 설치가 PEP 668에 의해 차단되므로 venv가 필수입니다.
 
 최초 `wiki index` 실행 시 bge-m3 모델이 자동 다운로드됩니다 (~2GB).
 이후에는 로컬 캐시에서 로드됩니다.
@@ -192,8 +199,8 @@ pip3 install sentence-transformers
 
 sentence-transformers가 설치되지 않은 환경에서도 JARFIS는 정상 작동합니다:
 
-1. `wiki search` 호출 시 → 미설치 안내 메시지 + `pip install` 명령어 제공
-2. `wiki-loading.md` Step 3 → 기존 방식 (LLM이 `_index.md` Summary 기반으로 판단)으로 자동 폴백
+1. `wiki search` 호출 시 → `/jarfis:wiki-search-setup` 안내 메시지 제공
+2. `wiki-loading.md` Step 3 → 기존 방식 (LLM이 `_index.md` Summary 기반으로 판단)으로 자동 폴백 + `/jarfis:wiki-search-setup` 안내
 3. 워크플로우 중단 없음 — 검색 품질만 차이
 
 **시맨틱 검색은 선택적 강화(optional enhancement)이며, 필수 의존성이 아닙니다.**

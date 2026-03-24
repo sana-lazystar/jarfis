@@ -26,6 +26,22 @@ SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
+VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
+
+
+def _maybe_reexec_in_venv(command):
+    """For wiki command, re-execute in JARFIS venv if available."""
+    if command != "wiki":
+        return
+    venv_python = os.path.join(VENV_DIR, "bin", "python3")
+    if not os.path.isfile(venv_python):
+        return
+    # Already running in venv — skip
+    if os.path.realpath(sys.executable) == os.path.realpath(venv_python):
+        return
+    # Re-exec with venv python
+    os.execv(venv_python, [venv_python] + sys.argv)
+
 
 def main():
     if len(sys.argv) < 2:
@@ -63,6 +79,8 @@ def main():
             file=sys.stderr,
         )
         sys.exit(1)
+
+    _maybe_reexec_in_venv(command)
 
     module = __import__(commands[command], fromlist=["main"])
     module.main(args)

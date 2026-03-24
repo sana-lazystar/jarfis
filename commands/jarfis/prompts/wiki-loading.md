@@ -28,7 +28,7 @@
    ```
    - 결과 JSON의 `results` 배열에서 `score` 0.5 이상인 파일만 읽기
    - `stale_warning`이 있으면 사용자에게 표시 (인덱스 갱신 권고)
-   - **폴백**: 검색 실패 시(인덱스 없음/모듈 미설치) → 기존 방식(_index.md Summary 기반 LLM 판단)으로 관련 파일 최대 5개 선택
+   - **폴백**: 검색 실패 시(인덱스 없음/모듈 미설치) → 기존 방식(_index.md Summary 기반 LLM 판단)으로 관련 파일 최대 5개 선택. 미설치 시 사용자에게 `/jarfis:wiki-search-setup`으로 활성화 가능함을 안내
 4. **Cascading Specificity 적용**: 읽은 wiki 내용과 $DOCS_DIR 산출물 간 충돌 시 $DOCS_DIR 우선
 
 > 4-Step은 INDEX.md → 4개 _index.md → 관련 파일 최대 5개를 읽는다.

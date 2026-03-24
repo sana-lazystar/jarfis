@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-24
+
+- implement: /jarfis:wiki-search-setup 커맨드 추가 — sentence-transformers 원스텝 설치
+
+## [2.1.2] - 2026-03-24
+
+- implement: venv 기반 wiki search 설치 가이드 + jarfis_cli.py venv 자동 감지
+
 ## [2.1.1] - 2026-03-23
 
 - implement: Wiki Semantic Search 문서화 — README Prerequisites 보강 + WIKI_SEARCH.md 신규

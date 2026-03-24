@@ -479,4 +479,5 @@ fi
 if [[ $reapplied -gt 0 ]]; then
   echo "  Learned Rules: $reapplied agent(s) preserved"
 fi
+echo "  Wiki Search: /jarfis:wiki-search-setup (Org 등록 후)"
 echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"

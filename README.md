@@ -222,21 +222,22 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 <!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                  | Description                                            |
-| ------------------------ | ------------------------------------------------------ |
-| `/jarfis:meeting`        | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
-| `/jarfis:work`           | 기획→설계→구현→리뷰 전체 워크플로우                                   |
-| `/jarfis:project-init`   | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
-| `/jarfis:project-update` | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
-| `/jarfis:upgrade`        | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
-| `/jarfis:health`         | 좀비 Claude 프로세스 진단/정리                                   |
-| `/jarfis:distill`        | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
-| `/jarfis:continue`       | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org`            | Organization 정보 확인 (미등록 시 안내)                          |
-| `/jarfis:org-init`       | Organization 초기화 (스캔 + wiki 생성)                        |
-| `/jarfis:storyboard`     | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
-| `/jarfis:implement`      | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
-| `/jarfis:version`        | 버전 확인/업데이트/특정 버전 설치                                    |
+| Command                     | Description                                            |
+| --------------------------- | ------------------------------------------------------ |
+| `/jarfis:meeting`           | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
+| `/jarfis:work`              | 기획→설계→구현→리뷰 전체 워크플로우                                   |
+| `/jarfis:project-init`      | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
+| `/jarfis:project-update`    | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
+| `/jarfis:upgrade`           | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
+| `/jarfis:health`            | 좀비 Claude 프로세스 진단/정리                                   |
+| `/jarfis:distill`           | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
+| `/jarfis:continue`          | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
+| `/jarfis:org`               | Organization 정보 확인 (미등록 시 안내)                          |
+| `/jarfis:org-init`          | Organization 초기화 (스캔 + wiki 생성)                        |
+| `/jarfis:storyboard`        | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
+| `/jarfis:wiki-search-setup` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)      |
+| `/jarfis:implement`         | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
+| `/jarfis:version`           | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -328,6 +329,7 @@ bash install.sh --version 1.0.0
     ├── org.md                     # Organization 정보 확인 + 미등록 안내
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── storyboard.md              # 디자인 카탈로그 브라우징 명령어
+    ├── wiki-search-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
     ├── health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
@@ -392,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.1] - 2026-03-23
+## [2.2.0] - 2026-03-24
 
-- implement: Wiki Semantic Search 문서화 — README Prerequisites 보강 + WIKI_SEARCH.md 신규
+- implement: /jarfis:wiki-search-setup 커맨드 추가 — sentence-transformers 원스텝 설치
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
