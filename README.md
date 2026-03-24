@@ -396,9 +396,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.2] - 2026-03-24
+## [2.1.3] - 2026-03-24
 
-- implement: fix sync to include scripts/tests/ directory
+- implement: fix test isolation leak — TestOrg cleanup + jarfis_env usage
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

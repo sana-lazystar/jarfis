@@ -53,23 +53,26 @@ class TestCmdInit:
         # No files should be created
         assert not os.path.isfile(os.path.join(str(tmp_path), ".jarfis", "org-profile.md"))
 
-    def test_creates_org_files_with_confirm(self, tmp_path, capsys):
-        proj = tmp_path / "project1" / ".jarfis"
-        proj.mkdir(parents=True)
-        (proj / "project-profile.md").write_text(
-            "# Project Profile: P1\n\n> Type: backend\n> Last-Commit: abc123\n"
-        )
-        cmd_init([str(tmp_path), "--confirm", "--name", "TestOrg"])
+    def test_creates_org_files_with_confirm(self, jarfis_env, capsys):
+        # Use jarfis_env to isolate HOME — prevents writing to real orgs.json
+        base = os.path.dirname(jarfis_env["claude_dir"])  # tmp root
+        org_root = os.path.join(base, "test-org-root")
+        proj = os.path.join(org_root, "project1", ".jarfis")
+        os.makedirs(proj, exist_ok=True)
+        with open(os.path.join(proj, "project-profile.md"), "w") as f:
+            f.write("# Project Profile: P1\n\n> Type: backend\n> Last-Commit: abc123\n")
+
+        cmd_init([org_root, "--confirm", "--name", "TestInitOrg"])
         output = json.loads(capsys.readouterr().out)
         assert output["action"] == "init"
-        assert output["org_name"] == "TestOrg"
+        assert output["org_name"] == "TestInitOrg"
 
         # Verify created files
-        assert os.path.isfile(os.path.join(str(tmp_path), ".jarfis", "org-profile.md"))
-        assert os.path.isfile(os.path.join(str(tmp_path), ".jarfis", "wiki", "INDEX.md"))
+        assert os.path.isfile(os.path.join(org_root, ".jarfis", "org-profile.md"))
+        assert os.path.isfile(os.path.join(org_root, ".jarfis", "wiki", "INDEX.md"))
         for section in ["PO", "DESIGN", "TA", "QA"]:
             assert os.path.isfile(
-                os.path.join(str(tmp_path), ".jarfis", "wiki", section, "_index.md")
+                os.path.join(org_root, ".jarfis", "wiki", section, "_index.md")
             )
 
     def test_error_on_missing_dir(self):
