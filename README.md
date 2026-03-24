@@ -98,7 +98,7 @@ PO가 "이거 정말 필요한 거 맞아?" 하고 역질문을 쏟아내고, Ar
 코딩 전에 기획부터 잡고 싶을 때:
 
 ```
-/jarfis:meeting 실시간 채팅 기능 도입 검토
+/jarfis:work-meeting 실시간 채팅 기능 도입 검토
 ```
 
 PO와 Tech Lead가 자유 토론을 벌이고, 필요하면 전문가(Security, DevOps 등)를 소환합니다.
@@ -144,7 +144,7 @@ Phase 6 회고
   → Phase 0에서 학습 로드
   → QA 에이전트가 해당 지식을 활용
 
-/jarfis:upgrade
+/jarfis:sys-upgrade
   → 학습 항목을 에이전트 프롬프트에 영구 적용
   → QA 에이전트가 항상 CDP 기반 테스트를 고려
 ```
@@ -177,9 +177,9 @@ JARFIS는 자기 자신을 개선하는 도구를 내장하고 있습니다.
 
 | Command             | What it does                                                    |
 | ------------------- | --------------------------------------------------------------- |
-| `/jarfis:upgrade`   | 축적된 학습을 에이전트 프롬프트에 영구 반영                     |
-| `/jarfis:distill`   | 프롬프트 토큰 효율을 측정하고 최적화 (중복 제거, 템플릿 외부화) |
-| `/jarfis:implement` | JARFIS 자체의 명령어/구조를 수정                                |
+| `/jarfis:sys-upgrade`   | 축적된 학습을 에이전트 프롬프트에 영구 반영                     |
+| `/jarfis:sys-distill`   | 프롬프트 토큰 효율을 측정하고 최적화 (중복 제거, 템플릿 외부화) |
+| `/jarfis:sys-implement` | JARFIS 자체의 명령어/구조를 수정                                |
 
 프롬프트를 사용할수록 학습이 쌓이고, 학습이 프롬프트에 반영되고, 프롬프트가 다시 최적화됩니다.
 
@@ -298,7 +298,7 @@ cd ~/repos/jarfis && git pull && bash install.sh
 또는 Claude Code 안에서:
 
 ```
-/jarfis:version
+/jarfis:sys-version
 ```
 
 ### Install Specific Version
@@ -385,7 +385,7 @@ Semantic Versioning을 따릅니다.
 | 새 명령어/에이전트 추가 | MINOR |
 | Phase 구조 변경         | MAJOR |
 
-`/jarfis:implement`, `/jarfis:upgrade`, `/jarfis:distill` 실행 시 자동으로 버전이 범프되고 CHANGELOG에 기록됩니다.
+`/jarfis:sys-implement`, `/jarfis:sys-upgrade`, `/jarfis:sys-distill` 실행 시 자동으로 버전이 범프되고 CHANGELOG에 기록됩니다.
 
 ---
 
