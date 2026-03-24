@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.0] - 2026-03-24
+## [2.3.1] - 2026-03-24
 
-- 산출물 디렉토리 .local→.personal 재구조화: Org별 워크스페이스 분리, orgs.json 레지스트리, _standalone 폴더, Org-aware learnings, .jarfis-personal-dir 설정 파일
+- install.sh .personal 구조 마이그레이션 + .jarfis-personal-dir 전환 + .gitignore 갱신
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

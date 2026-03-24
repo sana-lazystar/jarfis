@@ -1,5 +1,6 @@
 # Local runtime data
 .local/
+.personal/
 
 # User data (local only)
 jarfis-learnings.md

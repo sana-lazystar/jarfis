@@ -11,8 +11,9 @@ CLAUDE_DIR="$HOME/.claude"
 VERSION_FILE="$SCRIPT_DIR/VERSION"
 INSTALLED_VERSION_FILE="$CLAUDE_DIR/.jarfis-version"
 SOURCE_FILE="$CLAUDE_DIR/.jarfis-source"
-WORKS_DIR_FILE="$CLAUDE_DIR/.jarfis-works-dir"
-DEFAULT_WORKSPACE="$SCRIPT_DIR/.local/workspace"
+PERSONAL_DIR_FILE="$CLAUDE_DIR/.jarfis-personal-dir"
+OLD_WORKS_DIR_FILE="$CLAUDE_DIR/.jarfis-works-dir"
+DEFAULT_PERSONAL="$SCRIPT_DIR/.personal"
 
 # Parse arguments
 TARGET_VERSION=""
@@ -253,93 +254,95 @@ if [[ -f "$SCRIPT_DIR/statusline-command.sh" ]]; then
   echo "  [OK] statusline-command.sh"
 fi
 
-# ── Step 4: Workspace directory setup ────
-echo "[4/7] Setting up workspace directory..."
+# ── Step 4: Personal directory setup ────
+echo "[4/7] Setting up .personal directory..."
 
-WORKSPACE_DIR="$DEFAULT_WORKSPACE"
+PERSONAL_DIR="$DEFAULT_PERSONAL"
 MIGRATION_NEEDED=false
 OLD_JARFIS_DIR="$HOME/.jarfis"
 
-if [[ -f "$WORKS_DIR_FILE" ]]; then
-  EXISTING_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
+# Check for existing .jarfis-personal-dir
+if [[ -f "$PERSONAL_DIR_FILE" ]]; then
+  EXISTING_DIR=$(cat "$PERSONAL_DIR_FILE" | tr -d '[:space:]')
   if [[ -n "$EXISTING_DIR" ]]; then
-    # Case 2: Already migrated to .local/workspace
-    if [[ "$EXISTING_DIR" == "$SCRIPT_DIR/.local/workspace" ]]; then
-      echo "  [OK] Workspace already at new location: $EXISTING_DIR"
-      WORKSPACE_DIR="$EXISTING_DIR"
-    # Case 3: Migrate from ~/.jarfis/workspace
-    elif [[ "$EXISTING_DIR" == "$HOME/.jarfis/workspace" ]] && [[ -d "$EXISTING_DIR" ]]; then
-      echo "  Migrating workspace: $EXISTING_DIR → $DEFAULT_WORKSPACE"
-      mkdir -p "$DEFAULT_WORKSPACE"
-      cp -a "$EXISTING_DIR/." "$DEFAULT_WORKSPACE/"
-      WORKSPACE_DIR="$DEFAULT_WORKSPACE"
-      MIGRATION_NEEDED=true
-      echo "  [OK] Workspace copied (original preserved)"
-    # Case 4: Migrate from ~/.jarfis-workspace (legacy)
-    elif [[ "$EXISTING_DIR" == "$HOME/.jarfis-workspace" ]] && [[ -d "$EXISTING_DIR" ]]; then
-      echo "  Migrating workspace: $EXISTING_DIR → $DEFAULT_WORKSPACE"
-      mkdir -p "$DEFAULT_WORKSPACE"
-      cp -a "$EXISTING_DIR/." "$DEFAULT_WORKSPACE/"
-      WORKSPACE_DIR="$DEFAULT_WORKSPACE"
-      echo "  [OK] Workspace copied from legacy location (original preserved)"
-    # Case 5: Custom path — keep as-is
-    else
-      echo "  Existing workspace (custom): $EXISTING_DIR"
-      WORKSPACE_DIR="$EXISTING_DIR"
+    echo "  [OK] Personal dir already configured: $EXISTING_DIR"
+    PERSONAL_DIR="$EXISTING_DIR"
+  fi
+# Migrate from old .jarfis-works-dir
+elif [[ -f "$OLD_WORKS_DIR_FILE" ]]; then
+  OLD_WS=$(cat "$OLD_WORKS_DIR_FILE" | tr -d '[:space:]')
+  if [[ -n "$OLD_WS" ]]; then
+    echo "  Migrating from .jarfis-works-dir → .jarfis-personal-dir"
+    # Old format: {repo}/.local/workspace → new: {repo}/.personal
+    if [[ "$OLD_WS" == *"/.local/workspace" ]]; then
+      PERSONAL_DIR="${OLD_WS%/.local/workspace}/.personal"
     fi
+    MIGRATION_NEEDED=true
+    rm -f "$OLD_WORKS_DIR_FILE"
+    echo "  [OK] Removed old .jarfis-works-dir"
   fi
 else
-  # Case 1: Fresh install
+  # Fresh install
   if [ -t 0 ]; then
-    # Interactive: ask user for workspace path
     echo ""
     echo "  JARFIS stores workflow artifacts (PRD, architecture, tasks, etc.)"
-    echo "  in a dedicated workspace directory."
+    echo "  in a dedicated .personal directory per Org."
     echo ""
-    read -p "  Workspace directory [$DEFAULT_WORKSPACE]: " user_input
+    read -p "  Personal directory [$DEFAULT_PERSONAL]: " user_input
     if [[ -n "$user_input" ]]; then
-      # Expand ~ to $HOME
-      WORKSPACE_DIR="${user_input/#\~/$HOME}"
+      PERSONAL_DIR="${user_input/#\~/$HOME}"
     fi
   else
-    # Non-interactive (CI/CD, pipe): use default
-    echo "  [INFO] Non-interactive mode detected, using default workspace: $DEFAULT_WORKSPACE"
+    echo "  [INFO] Non-interactive mode, using default: $DEFAULT_PERSONAL"
   fi
 fi
 
-# Create workspace directory structure
-mkdir -p "$WORKSPACE_DIR/works"
-mkdir -p "$WORKSPACE_DIR/meetings"
+# Create .personal directory structure
+STANDALONE_DIR="$PERSONAL_DIR/orgs/_standalone"
+mkdir -p "$STANDALONE_DIR/works"
+mkdir -p "$STANDALONE_DIR/meetings"
 
-# Save workspace path
-echo "$WORKSPACE_DIR" > "$WORKS_DIR_FILE"
-echo "  [OK] Workspace → $WORKSPACE_DIR"
+# Create orgs.json if not exists
+ORGS_JSON="$PERSONAL_DIR/orgs/orgs.json"
+if [[ ! -f "$ORGS_JSON" ]]; then
+  echo '{"orgs": []}' > "$ORGS_JSON"
+  echo "  [OK] Created orgs.json"
+fi
+
+# Save personal dir path
+echo "$PERSONAL_DIR" > "$PERSONAL_DIR_FILE"
+echo "  [OK] Personal dir → $PERSONAL_DIR"
 
 # ── Learnings migration ──
-LOCAL_DIR="$SCRIPT_DIR/.local"
-NEW_LEARNINGS="$LOCAL_DIR/jarfis-learnings.md"
-mkdir -p "$LOCAL_DIR"
+STANDALONE_LEARNINGS="$STANDALONE_DIR/learnings.md"
 
-# Migrate from ~/.jarfis/jarfis-learnings.md
-if [[ -f "$OLD_JARFIS_DIR/jarfis-learnings.md" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
-  cp -a "$OLD_JARFIS_DIR/jarfis-learnings.md" "$NEW_LEARNINGS"
+# Migrate from .local/jarfis-learnings.md (v2.2.x)
+OLD_LOCAL_LEARNINGS="$SCRIPT_DIR/.local/jarfis-learnings.md"
+if [[ -f "$OLD_LOCAL_LEARNINGS" ]] && [[ ! -f "$STANDALONE_LEARNINGS" ]]; then
+  cp -a "$OLD_LOCAL_LEARNINGS" "$STANDALONE_LEARNINGS"
   MIGRATION_NEEDED=true
-  echo "  [OK] Learnings copied: ~/.jarfis/jarfis-learnings.md → .local/"
+  echo "  [OK] Learnings migrated: .local/jarfis-learnings.md → .personal/orgs/_standalone/learnings.md"
+# Migrate from ~/.jarfis/jarfis-learnings.md (legacy)
+elif [[ -f "$OLD_JARFIS_DIR/jarfis-learnings.md" ]] && [[ ! -f "$STANDALONE_LEARNINGS" ]]; then
+  cp -a "$OLD_JARFIS_DIR/jarfis-learnings.md" "$STANDALONE_LEARNINGS"
+  MIGRATION_NEEDED=true
+  echo "  [OK] Learnings migrated: ~/.jarfis/jarfis-learnings.md → .personal/orgs/_standalone/"
 # Migrate from ~/.claude/jarfis-learnings.md (legacy)
-elif [[ -f "$CLAUDE_DIR/jarfis-learnings.md" ]] && [[ ! -f "$NEW_LEARNINGS" ]]; then
-  cp -a "$CLAUDE_DIR/jarfis-learnings.md" "$NEW_LEARNINGS"
-  echo "  [OK] Learnings copied: ~/.claude/jarfis-learnings.md → .local/"
-elif [[ -f "$NEW_LEARNINGS" ]]; then
-  echo "  [OK] Learnings already at .local/"
+elif [[ -f "$CLAUDE_DIR/jarfis-learnings.md" ]] && [[ ! -f "$STANDALONE_LEARNINGS" ]]; then
+  cp -a "$CLAUDE_DIR/jarfis-learnings.md" "$STANDALONE_LEARNINGS"
+  echo "  [OK] Learnings migrated: ~/.claude/jarfis-learnings.md → .personal/orgs/_standalone/"
+elif [[ -f "$STANDALONE_LEARNINGS" ]]; then
+  echo "  [OK] Learnings already at .personal/orgs/_standalone/"
 else
   echo "  (learnings file will be created on first /jarfis:upgrade)"
 fi
 
 # Post-migration notice
-if [[ "$MIGRATION_NEEDED" == "true" ]] && [[ -d "$OLD_JARFIS_DIR" ]]; then
+if [[ "$MIGRATION_NEEDED" == "true" ]]; then
   echo ""
-  echo "  [NOTE] Old ~/.jarfis/ directory still exists."
-  echo "         After verifying everything works: rm -rf ~/.jarfis"
+  echo "  [NOTE] Data migrated to .personal/ structure."
+  [[ -d "$OLD_JARFIS_DIR" ]] && echo "         Old ~/.jarfis/ can be removed: rm -rf ~/.jarfis"
+  [[ -d "$SCRIPT_DIR/.local" ]] && echo "         Old .local/ can be removed after verifying .personal/ is correct."
 fi
 
 # ── Step 5: Re-apply Learned Rules ────────
@@ -472,7 +475,7 @@ echo "  /jarfis          — 명령어 도움말"
 echo "  /jarfis:work     — 워크플로우 실행"
 echo "  /jarfis:version  — 버전 확인/업데이트"
 echo ""
-echo "  Workspace: $WORKSPACE_DIR"
+echo "  Personal dir: $PERSONAL_DIR"
 if [[ "$BACKUP_NEEDED" == "true" ]]; then
   echo "  Backup: $BACKUP_DIR"
 fi
