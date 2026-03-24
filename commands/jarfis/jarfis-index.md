@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.2.0
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.2.1
 
 ## 파일 구조
 ```
@@ -9,7 +9,7 @@
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (61줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 (233줄)
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
     ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (587줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
@@ -105,6 +105,21 @@
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
   - `wiki_search.py` — Wiki 시맨틱 검색 모듈 (sentence-transformers bge-m3, index/search/status, venv 감지 에러 메시지, 358줄)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (148 tests, 1500줄)
+  - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
+  - `test_utils.py` — utils.py 인터페이스 테스트
+  - `test_state.py` — state.py CRUD + validate 테스트
+  - `test_detect.py` — detect.py 프레임워크/언어 감지 테스트
+  - `test_meetings.py` — meetings.py 미팅 목록 테스트
+  - `test_quality_gate.py` — quality_gate.py 린트/타입체크 테스트
+  - `test_version.py` — version.py 시맨틱 버전 범프 테스트
+  - `test_preflight.py` — preflight.py 사전 검증 테스트
+  - `test_measure.py` — measure.py 토큰 측정 테스트
+  - `test_sync.py` — sync.py 파일 동기화 테스트
+  - `test_validate.py` — validate.py 워크플로우 검증 테스트
+  - `test_organization.py` — organization.py Org 관리 테스트
+  - `test_wiki_search.py` — wiki_search.py 유틸리티 함수 테스트 (임베딩 제외)
+  - `test_jarfis_cli.py` — jarfis_cli.py 디스패처 테스트 (subprocess)
 - `~/.claude/scripts/jarfis_check.sh` — grep 기반 JARFIS 구조 검증 스크립트 (Phase 헤딩, 프롬프트 파일, 버전 일치, 모델 정합성)
 - `~/.claude/hooks/jarfis-pre-compact.sh` — PreCompact 훅 (auto-compact 전 상태 백업, shell-only)
 - `~/.claude/hooks/jarfis-safety.sh` — PreToolUse 훅 (Bash 위험 명령 차단/경고, 100줄)
@@ -154,6 +169,7 @@
 - `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:wiki-search-setup` 안내)
 - `wiki-search-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
 - `org-init.md` → 생성 완료 후 `/jarfis:wiki-search-setup` 안내 표시
+- `tests/` → implement.md Step 2 Python TDD 규칙에서 참조 (148개 테스트, 전 Python 모듈 커버). `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 실행
 
 ## Git Auto-Commit 기능
 - Phase 4 (구현): BE/FE/DevOps 각 agent가 태스크 완료 시마다 자동 커밋
@@ -178,4 +194,5 @@
   - `agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
 - **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + __init__.py + jarfis-index.md Version + CHANGELOG 갱신
 - **Repo 동기화**: implement/distill/upgrade 완료 후 → `python3 ~/.claude/scripts/jarfis_cli.py sync` 실행 (수동 복사 금지)
+- **Python TDD**: `scripts/jarfis/*.py` 수정 시 → 테스트 먼저 작성/수정 → 코드 수정 → `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short` 전체 통과 확인
 - **Git repo**: `~/.claude/.jarfis-source`에서 경로 확인 (기본: `~/repos/jarfis`)

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.1] - 2026-03-24
+
+- Python 전 모듈 pytest 테스트 추가 (148 tests) + implement.md TDD 규칙 삽입
+
 ## [2.2.0] - 2026-03-24
 
 - implement: /jarfis:wiki-search-setup 커맨드 추가 — sentence-transformers 원스텝 설치

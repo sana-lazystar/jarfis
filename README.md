@@ -317,7 +317,7 @@ bash install.sh --version 1.0.0
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트
+    ├── implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션
     ├── project-init.md            # 프로젝트 프로필 생성
@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.2.0] - 2026-03-24
+## [2.2.1] - 2026-03-24
 
-- implement: /jarfis:wiki-search-setup 커맨드 추가 — sentence-transformers 원스텝 설치
+- Python 전 모듈 pytest 테스트 추가 (148 tests) + implement.md TDD 규칙 삽입
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
