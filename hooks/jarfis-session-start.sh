@@ -10,22 +10,22 @@ if [[ "${JARFIS_SESSION_RESTORE:-1}" == "0" ]]; then
   exit 0
 fi
 
-# Workspace directory resolution (same logic as pre-compact)
-WORKS_DIR_FILE="$HOME/.claude/.jarfis-works-dir"
-if [[ -f "$WORKS_DIR_FILE" ]]; then
-  JARFIS_WORKSPACE_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
+# Personal directory resolution
+PERSONAL_DIR_FILE="$HOME/.claude/.jarfis-personal-dir"
+if [[ -f "$PERSONAL_DIR_FILE" ]]; then
+  JARFIS_PERSONAL_DIR=$(cat "$PERSONAL_DIR_FILE" | tr -d '[:space:]')
 else
   SOURCE_FILE="$HOME/.claude/.jarfis-source"
   if [[ -f "$SOURCE_FILE" ]]; then
-    JARFIS_WORKSPACE_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.local/workspace"
+    JARFIS_PERSONAL_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.personal"
   else
-    JARFIS_WORKSPACE_DIR="$HOME/repos/jarfis/.local/workspace"
+    JARFIS_PERSONAL_DIR="$HOME/repos/jarfis/.personal"
   fi
 fi
 
-WORKS_DIR="$JARFIS_WORKSPACE_DIR/works"
+ORGS_DIR="$JARFIS_PERSONAL_DIR/orgs"
 
-if [[ ! -d "$WORKS_DIR" ]]; then
+if [[ ! -d "$ORGS_DIR" ]]; then
   exit 0
 fi
 
@@ -38,9 +38,9 @@ if [[ ! -f "$SCRIPTS_DIR/jarfis_cli.py" ]]; then
   fi
 fi
 
-# Use jarfis_cli.py to list workflows
+# Use jarfis_cli.py to list workflows (scans all orgs automatically)
 if command -v python3 >/dev/null 2>&1 && [[ -f "$SCRIPTS_DIR/jarfis_cli.py" ]]; then
-  WORKFLOW_JSON=$(python3 "$SCRIPTS_DIR/jarfis_cli.py" state list-workflows "$JARFIS_WORKSPACE_DIR" 2>/dev/null)
+  WORKFLOW_JSON=$(python3 "$SCRIPTS_DIR/jarfis_cli.py" state list-workflows 2>/dev/null)
 else
   # Fallback: manual scan
   WORKFLOW_JSON=""
@@ -121,27 +121,33 @@ for _ in range(5):
 if not org_root:
     sys.exit(0)
 
-# Check for in-progress workflows in workspace
-works_dir = '$WORKS_DIR'
-if not os.path.isdir(works_dir):
+# Scan all org workspaces for incomplete workflows
+orgs_dir = '$ORGS_DIR'
+if not os.path.isdir(orgs_dir):
     sys.exit(0)
 
 has_incomplete = False
-for entry in os.listdir(works_dir):
-    sf = os.path.join(works_dir, entry, '.jarfis-state.json')
-    if os.path.isfile(sf):
-        try:
-            with open(sf) as f:
-                data = json.load(f)
-            status = data.get('status', '')
-            if status != 'completed':
-                cp = data.get('current_phase', '')
-                phases = data.get('phases', {})
-                if str(cp) != 'done' and phases.get('6', {}).get('status') != 'completed':
-                    has_incomplete = True
-                    break
-        except:
-            pass
+for org_entry in os.listdir(orgs_dir):
+    works_dir = os.path.join(orgs_dir, org_entry, 'works')
+    if not os.path.isdir(works_dir):
+        continue
+    for entry in os.listdir(works_dir):
+        sf = os.path.join(works_dir, entry, '.jarfis-state.json')
+        if os.path.isfile(sf):
+            try:
+                with open(sf) as f:
+                    data = json.load(f)
+                status = data.get('status', '')
+                if status != 'completed':
+                    cp = data.get('current_phase', '')
+                    phases = data.get('phases', {})
+                    if str(cp) != 'done' and phases.get('6', {}).get('status') != 'completed':
+                        has_incomplete = True
+                        break
+            except:
+                pass
+    if has_incomplete:
+        break
 
 if has_incomplete:
     print()

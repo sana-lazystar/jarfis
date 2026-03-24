@@ -13,7 +13,8 @@ from .utils import get_workspace_dir, json_output
 def main(args):
     count = int(args[0]) if args else 3
 
-    workspace_dir = get_workspace_dir()
+    # Use CWD as project context for org-aware resolution
+    workspace_dir = get_workspace_dir(os.getcwd())
     meetings_dir = os.path.join(workspace_dir, "meetings")
 
     if not os.path.isdir(meetings_dir):

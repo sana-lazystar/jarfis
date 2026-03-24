@@ -202,6 +202,22 @@ class TestCmdListWorkflows:
         assert output["count"] == 1
         assert output["workflows"][0]["status"] == "completed"
 
+    def test_scans_all_orgs_without_args(self, jarfis_env, capsys):
+        """When no workspace_dir arg, scan all org workspaces."""
+        # Create a workflow in standalone
+        work = os.path.join(jarfis_env["standalone_works"], "20260324-test")
+        os.makedirs(work)
+        with open(os.path.join(work, ".jarfis-state.json"), "w") as f:
+            json.dump({
+                "project_name": "p", "work_name": "20260324-test",
+                "current_phase": 1, "status": "in-progress",
+                "key_decisions": [], "started_at": "2026-03-24",
+                "docs_dir": work, "phases": {},
+            }, f)
+        cmd_list_workflows([])
+        output = json.loads(capsys.readouterr().out)
+        assert output["count"] >= 1
+
 
 class TestMain:
     def test_unknown_action_exits(self):

@@ -21,26 +21,35 @@ def jarfis_env(tmp_path, monkeypatch):
 
     Structure:
         tmp_path/
-        ├── claude/               (~/.claude equivalent)
-        │   ├── .jarfis-source    (points to repo/)
+        ├── .claude/                      (~/.claude equivalent)
+        │   ├── .jarfis-source            (points to repo/)
         │   ├── .jarfis-version
-        │   ├── .jarfis-works-dir (points to repo/.local/workspace)
+        │   ├── .jarfis-personal-dir      (points to repo/.personal)
         │   ├── commands/jarfis/jarfis-index.md
         │   └── scripts/jarfis/__init__.py
-        └── repo/                 (JARFIS repo equivalent)
+        └── repo/                         (JARFIS repo equivalent)
             ├── VERSION
             ├── CHANGELOG.md
-            └── .local/workspace/
-                ├── works/
-                └── meetings/
+            └── .personal/
+                └── orgs/
+                    ├── orgs.json
+                    ├── _standalone/
+                    │   ├── works/
+                    │   ├── meetings/
+                    │   └── learnings.md
+                    └── TestOrg/
+                        ├── works/
+                        ├── meetings/
+                        └── learnings.md
 
     Returns a dict with key paths.
     """
     claude_dir = tmp_path / "claude"
     repo_dir = tmp_path / "repo"
-    workspace_dir = repo_dir / ".local" / "workspace"
-    works_dir = workspace_dir / "works"
-    meetings_dir = workspace_dir / "meetings"
+    personal_dir = repo_dir / ".personal"
+    orgs_dir = personal_dir / "orgs"
+    standalone_dir = orgs_dir / "_standalone"
+    testorg_dir = orgs_dir / "TestOrg"
 
     # Create directories
     for d in [
@@ -52,25 +61,35 @@ def jarfis_env(tmp_path, monkeypatch):
         repo_dir / "commands" / "jarfis",
         repo_dir / "agents" / "jarfis",
         repo_dir / "hooks",
-        works_dir,
-        meetings_dir,
+        standalone_dir / "works",
+        standalone_dir / "meetings",
+        testorg_dir / "works",
+        testorg_dir / "meetings",
     ]:
         d.mkdir(parents=True, exist_ok=True)
 
     # Write config files
     (claude_dir / ".jarfis-source").write_text(str(repo_dir))
-    (claude_dir / ".jarfis-version").write_text("2.2.0\n")
-    (claude_dir / ".jarfis-works-dir").write_text(str(workspace_dir))
-    (repo_dir / "VERSION").write_text("2.2.0\n")
+    (claude_dir / ".jarfis-version").write_text("2.2.2\n")
+    (claude_dir / ".jarfis-personal-dir").write_text(str(personal_dir))
+    (repo_dir / "VERSION").write_text("2.2.2\n")
     (repo_dir / "CHANGELOG.md").write_text(
-        "# Changelog\n\n## [Unreleased]\n\n## [2.2.0] - 2026-03-24\n\n- Test entry\n"
+        "# Changelog\n\n## [Unreleased]\n\n## [2.2.2] - 2026-03-24\n\n- Test entry\n"
     )
     (claude_dir / "scripts" / "jarfis" / "__init__.py").write_text(
-        '__version__ = "2.2.0"\n'
+        '__version__ = "2.2.2"\n'
     )
     (claude_dir / "commands" / "jarfis" / "jarfis-index.md").write_text(
-        "> Last updated: 2026-03-24 | Version: 2.2.0\n"
+        "> Last updated: 2026-03-24 | Version: 2.2.2\n"
     )
+
+    # Create orgs.json
+    orgs_json = {"orgs": [{"name": "TestOrg", "root": str(tmp_path / "org-root")}]}
+    (orgs_dir / "orgs.json").write_text(json.dumps(orgs_json, indent=2))
+
+    # Create standalone learnings
+    (standalone_dir / "learnings.md").write_text("# Learnings\n")
+    (testorg_dir / "learnings.md").write_text("# TestOrg Learnings\n")
 
     # Monkeypatch HOME so get_claude_dir returns our tmp claude dir
     monkeypatch.setenv("HOME", str(tmp_path))
@@ -79,16 +98,21 @@ def jarfis_env(tmp_path, monkeypatch):
     claude_dir.rename(real_claude)
     claude_dir = real_claude
 
-    # Update .jarfis-source to point to repo
+    # Update config files with renamed path
     (claude_dir / ".jarfis-source").write_text(str(repo_dir))
-    (claude_dir / ".jarfis-works-dir").write_text(str(workspace_dir))
+    (claude_dir / ".jarfis-personal-dir").write_text(str(personal_dir))
 
     return {
         "claude_dir": str(claude_dir),
         "repo_dir": str(repo_dir),
-        "workspace_dir": str(workspace_dir),
-        "works_dir": str(works_dir),
-        "meetings_dir": str(meetings_dir),
+        "personal_dir": str(personal_dir),
+        "orgs_dir": str(orgs_dir),
+        "standalone_dir": str(standalone_dir),
+        "standalone_works": str(standalone_dir / "works"),
+        "standalone_meetings": str(standalone_dir / "meetings"),
+        "testorg_dir": str(testorg_dir),
+        "testorg_works": str(testorg_dir / "works"),
+        "testorg_meetings": str(testorg_dir / "meetings"),
         "tmp_path": str(tmp_path),
     }
 

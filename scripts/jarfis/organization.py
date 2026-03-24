@@ -12,7 +12,7 @@ import re
 import sys
 from datetime import datetime
 
-from .utils import json_error, json_output
+from .utils import get_personal_dir, json_error, json_output
 
 # Directories to exclude during project scanning
 EXCLUDE_DIRS = {
@@ -177,6 +177,54 @@ created: {today}
     return created_files
 
 
+def _get_orgs_json_path():
+    """Return path to orgs.json."""
+    return os.path.join(get_personal_dir(), "orgs", "orgs.json")
+
+
+def read_orgs():
+    """Read orgs.json. Returns {"orgs": [...]} or empty structure."""
+    path = _get_orgs_json_path()
+    if os.path.isfile(path):
+        try:
+            with open(path) as f:
+                return json.load(f)
+        except (json.JSONDecodeError, OSError):
+            pass
+    return {"orgs": []}
+
+
+def _write_orgs(data):
+    """Write orgs.json."""
+    path = _get_orgs_json_path()
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, ensure_ascii=False, indent=2)
+
+
+def register_org(name, root):
+    """Register org in orgs.json + create workspace dirs.
+
+    Returns True if newly added, False if already exists.
+    Rejects names starting with '_' (reserved prefix).
+    """
+    if name.startswith("_"):
+        return False
+    data = read_orgs()
+    for org in data["orgs"]:
+        if org["name"] == name:
+            return False
+    data["orgs"].append({"name": name, "root": os.path.abspath(root)})
+    _write_orgs(data)
+
+    # Create org workspace directories
+    personal = get_personal_dir()
+    org_ws = os.path.join(personal, "orgs", name)
+    os.makedirs(os.path.join(org_ws, "works"), exist_ok=True)
+    os.makedirs(os.path.join(org_ws, "meetings"), exist_ok=True)
+    return True
+
+
 def cmd_init(args):
     """Initialize Organization."""
     org_root = args[0] if args else ""
@@ -212,6 +260,10 @@ def cmd_init(args):
     # Create files
     resolved_name = org_name or os.path.basename(os.path.abspath(org_root))
     created = _create_org_files(org_root, projects, org_name=resolved_name)
+
+    # Auto-register in orgs.json
+    registered = register_org(resolved_name, org_root)
+
     json_output({
         "action": "init",
         "org_root": os.path.abspath(org_root),
@@ -220,6 +272,7 @@ def cmd_init(args):
         "project_count": len(projects),
         "created_files": created,
         "created_count": len(created),
+        "orgs_json_registered": registered,
     })
 
 

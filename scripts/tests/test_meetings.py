@@ -16,13 +16,13 @@ class TestMain:
 
     def test_no_meetings_dir(self, jarfis_env, capsys):
         # Remove meetings dir
-        os.rmdir(jarfis_env["meetings_dir"])
+        os.rmdir(jarfis_env["standalone_meetings"])
         main([])
         output = json.loads(capsys.readouterr().out)
         assert output == []
 
     def test_lists_meetings_with_summary(self, jarfis_env, capsys):
-        meeting_dir = os.path.join(jarfis_env["meetings_dir"], "20260324-test-meeting")
+        meeting_dir = os.path.join(jarfis_env["standalone_meetings"], "20260324-test-meeting")
         os.makedirs(meeting_dir)
         summary = (
             "---\n"
@@ -42,7 +42,7 @@ class TestMain:
         assert output[0]["summary"] == "API migration discussion"
 
     def test_date_fallback_from_dirname(self, jarfis_env, capsys):
-        meeting_dir = os.path.join(jarfis_env["meetings_dir"], "20260315-no-frontmatter")
+        meeting_dir = os.path.join(jarfis_env["standalone_meetings"], "20260315-no-frontmatter")
         os.makedirs(meeting_dir)
         with open(os.path.join(meeting_dir, "summary.md"), "w") as f:
             f.write("# Just a heading\n\nSome content")
@@ -54,7 +54,7 @@ class TestMain:
 
     def test_count_limits_results(self, jarfis_env, capsys):
         for i in range(5):
-            d = os.path.join(jarfis_env["meetings_dir"], f"2026032{i}-meeting-{i}")
+            d = os.path.join(jarfis_env["standalone_meetings"], f"2026032{i}-meeting-{i}")
             os.makedirs(d)
             with open(os.path.join(d, "summary.md"), "w") as f:
                 f.write(f"---\ndate: 2026-03-2{i}\n---\n# M{i}")

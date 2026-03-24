@@ -5,7 +5,7 @@
 이전 워크플로우의 산출물과 브랜치를 재활용하여 효율적으로 후속 작업을 수행합니다.
 
 **플래그 옵션:**
-- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `{JARFIS_SOURCE}/.local/workspace/works/20260310-feat-결제-시스템`)
+- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `{JARFIS_SOURCE}/.personal/orgs/Medistream/works/20260310-feat-결제-시스템`)
 - `--mode fix|extend` — 모드를 명시적으로 지정 (자동 분류 없이 바로 해당 모드 실행)
 
 ---
@@ -26,10 +26,9 @@
 
 `$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis_cli.py state 사용):
 
-1. `$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일의 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace`)
-   완료된 워크플로우를 스크립트로 검색한다:
+1. 완료된 워크플로우를 스크립트로 검색한다 (전체 Org 워크스페이스 자동 스캔):
    ```bash
-   python3 ~/.claude/scripts/jarfis_cli.py state list-workflows "$JARFIS_WORKSPACE_DIR" --completed-only
+   python3 ~/.claude/scripts/jarfis_cli.py state list-workflows --completed-only
    ```
    JSON 출력의 `workflows` 배열에서 각 워크플로우의 `work_name`, `project_name`, `started_at`, `docs_dir`을 확인한다.
 
@@ -212,7 +211,7 @@ work.md의 Phase 5를 경량으로 실행한다:
 `prompts/phase6.md`를 참조하되 (tech-lead, model: **opus**), 회고 범위를 fix 작업으로 한정한다:
 - "이번 Fix에서 어떤 문제가 있었고, 원본 워크플로우에서 어떻게 예방할 수 있었을까?"
 - 회고 결과를 `$DOCS_DIR/retrospective.md`에 `## Follow-up Retrospective (#N)` 섹션으로 추가
-- 학습 항목이 있으면 `jarfis-learnings.md`에 추가
+- 학습 항목이 있으면 `learnings.md`에 추가
 
 **Wiki 갱신** (Org 등록 시): 디폴트 "안 함". AskUserQuestion으로 사용자 선택 시에만 wiki 2-트랙 갱신 실행.
 

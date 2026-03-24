@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, main
+from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, main, read_orgs, register_org
 
 
 class TestScanProjects:
@@ -116,6 +116,52 @@ class TestMain:
     def test_no_args_exits(self):
         with pytest.raises(SystemExit):
             main([])
+
+
+class TestOrgsJson:
+    def test_read_orgs_empty(self, jarfis_env):
+        # Remove existing orgs.json
+        orgs_path = os.path.join(jarfis_env["orgs_dir"], "orgs.json")
+        os.remove(orgs_path)
+        data = read_orgs()
+        assert data == {"orgs": []}
+
+    def test_read_orgs_existing(self, jarfis_env):
+        data = read_orgs()
+        assert len(data["orgs"]) == 1
+        assert data["orgs"][0]["name"] == "TestOrg"
+
+    def test_register_org(self, jarfis_env):
+        result = register_org("NewOrg", "/path/to/new")
+        assert result is True
+        data = read_orgs()
+        names = [o["name"] for o in data["orgs"]]
+        assert "NewOrg" in names
+        # Verify workspace dirs created
+        personal = jarfis_env["personal_dir"]
+        assert os.path.isdir(os.path.join(personal, "orgs", "NewOrg", "works"))
+        assert os.path.isdir(os.path.join(personal, "orgs", "NewOrg", "meetings"))
+
+    def test_register_org_duplicate(self, jarfis_env):
+        result = register_org("TestOrg", "/path")
+        assert result is False
+
+    def test_register_org_reserved_prefix(self, jarfis_env):
+        result = register_org("_reserved", "/path")
+        assert result is False
+
+    def test_cmd_init_registers_org(self, jarfis_env, tmp_path, capsys):
+        proj = tmp_path / "project1" / ".jarfis"
+        proj.mkdir(parents=True)
+        (proj / "project-profile.md").write_text(
+            "# Project Profile: P1\n\n> Type: backend\n> Last-Commit: abc\n"
+        )
+        cmd_init([str(tmp_path), "--confirm", "--name", "AutoRegOrg"])
+        output = json.loads(capsys.readouterr().out)
+        assert output["orgs_json_registered"] is True
+        data = read_orgs()
+        names = [o["name"] for o in data["orgs"]]
+        assert "AutoRegOrg" in names
 
 
 class TestExcludeDirs:

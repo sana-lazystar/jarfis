@@ -12,7 +12,7 @@ import os
 import subprocess
 import sys
 
-from .utils import find_org_root, get_claude_dir, get_source_path, get_workspace_dir, json_output
+from .utils import find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_workspace_dir, json_output
 
 
 def main(args):
@@ -44,7 +44,7 @@ def main(args):
         project_dir = os.getcwd()
 
     if not workspace_dir:
-        workspace_dir = get_workspace_dir()
+        workspace_dir = get_workspace_dir(project_dir)
 
     warnings = []
 
@@ -59,8 +59,7 @@ def main(args):
         log("Profile not found")
 
     # Learnings check
-    source_path = get_source_path()
-    learnings_path = os.path.join(source_path, ".local", "jarfis-learnings.md")
+    learnings_path = get_learnings_path(project_dir)
     has_learnings = os.path.isfile(learnings_path)
     if has_learnings:
         log(f"Learnings found: {learnings_path}")

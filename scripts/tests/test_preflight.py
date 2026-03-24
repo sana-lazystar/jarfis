@@ -42,11 +42,8 @@ class TestPreflight:
         assert output["has_context"] is True
 
     def test_learnings_found(self, jarfis_env, capsys, tmp_path):
-        repo = jarfis_env["repo_dir"]
-        learnings_dir = os.path.join(repo, ".local")
-        os.makedirs(learnings_dir, exist_ok=True)
-        with open(os.path.join(learnings_dir, "jarfis-learnings.md"), "w") as f:
-            f.write("# Learnings")
+        # Learnings are now at .personal/orgs/_standalone/learnings.md
+        # The fixture already creates this file
         main([str(tmp_path)])
         output = json.loads(capsys.readouterr().out)
         assert output["has_learnings"] is True

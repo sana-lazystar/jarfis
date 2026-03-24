@@ -4,6 +4,8 @@ import json
 import os
 import sys
 
+STANDALONE_ORG = "_standalone"
+
 
 def get_claude_dir():
     """Return ~/.claude path."""
@@ -19,28 +21,86 @@ def get_source_path():
     return os.path.join(os.path.expanduser("~"), "repos", "jarfis")
 
 
-def get_workspace_dir():
-    """Resolve workspace directory.
+def get_personal_dir():
+    """Resolve .personal base directory.
 
     Priority:
-    1. ~/.claude/.jarfis-works-dir content
-    2. {source_path}/.local/workspace
-    3. ~/repos/jarfis/.local/workspace
+    1. ~/.claude/.jarfis-personal-dir content
+    2. {source_path}/.personal
+    3. ~/repos/jarfis/.personal
     """
     claude_dir = get_claude_dir()
-    works_dir_file = os.path.join(claude_dir, ".jarfis-works-dir")
-    if os.path.isfile(works_dir_file):
-        with open(works_dir_file) as f:
+    personal_file = os.path.join(claude_dir, ".jarfis-personal-dir")
+    if os.path.isfile(personal_file):
+        with open(personal_file) as f:
             val = f.read().strip()
             if val:
                 return val
 
-    source_file = os.path.join(claude_dir, ".jarfis-source")
-    if os.path.isfile(source_file):
-        with open(source_file) as f:
-            return os.path.join(f.read().strip(), ".local", "workspace")
+    return os.path.join(get_source_path(), ".personal")
 
-    return os.path.join(os.path.expanduser("~"), "repos", "jarfis", ".local", "workspace")
+
+def _resolve_org_name(project_dir=None):
+    """Determine org name from project context.
+
+    Returns org name string or STANDALONE_ORG if no org found.
+    """
+    if project_dir:
+        org_root = find_org_root(project_dir)
+        if org_root:
+            profile = os.path.join(org_root, ".jarfis", "org-profile.md")
+            if os.path.isfile(profile):
+                with open(profile) as f:
+                    for line in f:
+                        if line.strip().startswith("org:"):
+                            name = line.split(":", 1)[1].strip()
+                            if name:
+                                return name
+            return os.path.basename(org_root)
+    return STANDALONE_ORG
+
+
+def get_workspace_dir(project_dir=None):
+    """Resolve org-aware workspace directory.
+
+    Returns .personal/orgs/{org_name}/ for org projects,
+    .personal/orgs/_standalone/ for standalone projects.
+
+    Args:
+        project_dir: Project directory to determine org context.
+                     If None, uses _standalone.
+    """
+    personal = get_personal_dir()
+    org_name = _resolve_org_name(project_dir)
+    return os.path.join(personal, "orgs", org_name)
+
+
+def get_all_workspaces():
+    """List all org workspace directories for cross-org scanning.
+
+    Returns list of absolute paths to each org workspace dir
+    (e.g., ['.personal/orgs/Medistream', '.personal/orgs/_standalone']).
+    """
+    personal = get_personal_dir()
+    orgs_dir = os.path.join(personal, "orgs")
+    if not os.path.isdir(orgs_dir):
+        return []
+    result = []
+    for entry in sorted(os.listdir(orgs_dir)):
+        full = os.path.join(orgs_dir, entry)
+        if os.path.isdir(full):
+            result.append(full)
+    return result
+
+
+def get_learnings_path(project_dir=None):
+    """Resolve org-aware learnings.md path.
+
+    Returns .personal/orgs/{org}/learnings.md or
+    .personal/orgs/_standalone/learnings.md.
+    """
+    ws = get_workspace_dir(project_dir)
+    return os.path.join(ws, "learnings.md")
 
 
 def json_output(data):

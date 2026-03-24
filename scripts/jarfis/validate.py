@@ -16,7 +16,7 @@ import subprocess
 import sys
 
 from .state import cmd_validate as state_validate
-from .utils import find_org_root, get_workspace_dir, json_output
+from .utils import find_org_root, get_all_workspaces, get_workspace_dir, json_output
 
 
 # Artifacts expected after each phase
@@ -123,15 +123,18 @@ def main(args):
             state_file = args[idx + 1]
 
     if not state_file:
-        # Auto-find: look in workspace
-        workspace_dir = get_workspace_dir()
-        works_dir = os.path.join(workspace_dir, "works")
-        if os.path.isdir(works_dir):
-            for entry in sorted(os.listdir(works_dir), reverse=True):
-                candidate = os.path.join(works_dir, entry, ".jarfis-state.json")
-                if os.path.isfile(candidate):
-                    state_file = candidate
-                    break
+        # Auto-find: scan all org workspaces for latest state file
+        all_candidates = []
+        for ws in get_all_workspaces():
+            works_dir = os.path.join(ws, "works")
+            if os.path.isdir(works_dir):
+                for entry in os.listdir(works_dir):
+                    candidate = os.path.join(works_dir, entry, ".jarfis-state.json")
+                    if os.path.isfile(candidate):
+                        all_candidates.append(candidate)
+        if all_candidates:
+            all_candidates.sort(reverse=True)
+            state_file = all_candidates[0]
 
     if not state_file:
         json_output({

@@ -1,6 +1,6 @@
 # JARFIS Upgrade — 학습 항목 관리 및 시스템 적용
 
-`{JARFIS_SOURCE}/.local/jarfis-learnings.md`의 학습 항목을 관리하고, 실제 에이전트/워크플로우 프롬프트에 적용합니다.
+`$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 학습 항목을 관리하고, 실제 에이전트/워크플로우 프롬프트에 적용합니다.
 
 > **`{JARFIS_SOURCE}` 결정**: `~/.claude/.jarfis-source` 파일을 읽어 JARFIS Git repo 경로를 확인한다. 없으면 `~/repos/jarfis`를 기본값으로 사용한다.
 
@@ -10,7 +10,7 @@
 
 ### Step 1: 학습 파일 로드
 
-`{JARFIS_SOURCE}/.local/jarfis-learnings.md` 파일을 읽어라.
+`$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) 파일을 읽어라.
 파일이 없으면 "학습 파일이 아직 없습니다. `/jarfis` 워크플로우를 먼저 실행하세요."라고 안내하고 종료하라.
 
 파일이 존재하면, 섹션별로 파싱하여 현재 학습 목록을 사용자에게 보여줘라:
@@ -68,7 +68,7 @@ options:
 
 ##### 블록 1: 분석 (Scope 분류 + Dialectic Review)
 
-> 입력: jarfis-learnings.md 학습 항목
+> 입력: learnings.md 학습 항목
 > 출력: 각 항목에 `[universal]`/`[project]` scope 태깅 완료
 
 **1-1. 적용 대상 매핑**
@@ -86,7 +86,7 @@ options:
 | `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/senior-ux-designer.md` |
 | `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/senior-product-owner.md` |
 | `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
-| `Workflow Patterns` | `jarfis-learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
+| `Workflow Patterns` | `learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
 
 **1-2. Scope 자동 분류**
 
@@ -115,7 +115,7 @@ options:
 
 **2-1. 적용 계획 표시**
 
-scope별로 매핑하여 보여준다: Universal 적용 (에이전트 Learned Rules) + Project-Specific 적용 (.jarfis/project-context.md). Workflow Patterns는 jarfis-learnings.md에 유지되며 Phase 0에서 동적 로드된다.
+scope별로 매핑하여 보여준다: Universal 적용 (에이전트 Learned Rules) + Project-Specific 적용 (.jarfis/project-context.md). Workflow Patterns는 learnings.md에 유지되며 Phase 0에서 동적 로드된다.
 
 **2-2. 적용 범위 선택**
 
@@ -145,7 +145,7 @@ AskUserQuestion으로 "전체 적용" 또는 "선택 적용" (multiSelect: true)
 
 | 학습 scope | 적용 대상 |
 |-----------|----------|
-| `[universal]` Workflow Patterns | `jarfis-learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
+| `[universal]` Workflow Patterns | `learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
 | `[project]` Workflow Patterns | `./.jarfis/project-context.md`의 Workflow 섹션 |
 
 - 중복 체크. 날짜/확인 횟수 제거.
@@ -194,7 +194,7 @@ options:
 2. AskUserQuestion의 **multiSelect: true**를 사용하여 삭제할 항목들을 선택하게 하라.
    - 각 option의 label은 항목 번호와 내용 요약 (예: "[FE-1] img 태그 인덴테이션 검증")
    - description은 전체 항목 내용
-3. 선택된 항목들을 `{JARFIS_SOURCE}/.local/jarfis-learnings.md`에서 제거하라.
+3. 선택된 항목들을 `$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)에서 제거하라.
 4. 삭제 결과를 보여주고 Step 2로 돌아가라.
 
 ##### [수정]
@@ -204,7 +204,7 @@ options:
 3. 선택된 항목의 현재 내용을 보여주고, AskUserQuestion으로 새 내용을 입력받아라.
    - question: "새로운 내용을 입력해주세요 (현재: [현재 내용 요약])"
    - "Other"를 통해 자유 입력
-4. 입력받은 내용으로 `{JARFIS_SOURCE}/.local/jarfis-learnings.md`의 해당 항목을 교체하라.
+4. 입력받은 내용으로 `$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 해당 항목을 교체하라.
 5. 수정 결과를 보여주고 Step 2로 돌아가라.
 
 ##### [추가]
@@ -227,7 +227,7 @@ options:
 2. AskUserQuestion으로 학습 내용을 입력받아라.
    - question: "추가할 학습 내용을 입력해주세요"
    - "Other"를 통해 자유 입력
-3. 오늘 날짜를 자동 추가하여 `{JARFIS_SOURCE}/.local/jarfis-learnings.md`의 해당 섹션에 항목을 추가하라.
+3. 오늘 날짜를 자동 추가하여 `$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 해당 섹션에 항목을 추가하라.
    - 형식: `- (입력 내용) (YYYY-MM-DD)`
    - Workflow Patterns의 경우: `- (입력 내용) (YYYY-MM-DD, 확인 1회)`
 4. 추가 결과를 보여주고 Step 2로 돌아가라.
@@ -246,7 +246,7 @@ options:
      - label: "취소"
        description: "아무것도 하지 않고 돌아갑니다"
    ```
-2. "비우기 실행" 선택 시: `{JARFIS_SOURCE}/.local/jarfis-learnings.md`에서 모든 항목(`-`로 시작하는 줄)을 제거하라. 섹션 헤더(`#`, `##`, `###`)는 유지하라.
+2. "비우기 실행" 선택 시: `$JARFIS_WORKSPACE_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)에서 모든 항목(`-`로 시작하는 줄)을 제거하라. 섹션 헤더(`#`, `##`, `###`)는 유지하라.
 3. 결과를 보여주고 Step 2로 돌아가라.
 
 ---

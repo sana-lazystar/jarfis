@@ -15,7 +15,7 @@ import os
 import sys
 from datetime import datetime, timezone
 
-from .utils import json_error, json_output, parse_json_value
+from .utils import get_all_workspaces, json_error, json_output, parse_json_value
 
 
 def cmd_read(args):
@@ -154,50 +154,61 @@ def cmd_init(args):
 
 
 def cmd_list_workflows(args):
-    workspace_dir = args[0] if args else ""
     completed_only = "--completed-only" in args
+    remaining = [a for a in args if a != "--completed-only"]
+    workspace_dir = remaining[0] if remaining else ""
 
-    if not workspace_dir:
-        json_error("list-workflows requires workspace_dir")
+    # Collect works directories to scan
+    works_dirs = []
+    if workspace_dir:
+        # Explicit workspace: scan its works/ subdir (backward compat)
+        wd = os.path.join(workspace_dir, "works")
+        if os.path.isdir(wd):
+            works_dirs.append(wd)
+    else:
+        # No arg: scan all org workspaces
+        for ws in get_all_workspaces():
+            wd = os.path.join(ws, "works")
+            if os.path.isdir(wd):
+                works_dirs.append(wd)
 
-    works_dir = os.path.join(workspace_dir, "works")
-    if not os.path.isdir(works_dir):
+    if not works_dirs:
         json_output({"workflows": [], "count": 0})
         return
 
     results = []
-    for root, dirs, files in os.walk(works_dir):
-        if ".jarfis-state.json" in files:
-            sf = os.path.join(root, ".jarfis-state.json")
-            try:
-                with open(sf) as f:
-                    data = json.load(f)
-                cp = data.get("current_phase", "")
-                phases = data.get("phases", {})
-                status = data.get("status", "")
-                key_decisions = data.get("key_decisions", [])
-                # is_done: status == "completed" 우선, fallback으로 기존 로직
-                is_done = (
-                    status == "completed"
-                    or str(cp) == "done"
-                    or phases.get("6", {}).get("status") == "completed"
-                )
-                if completed_only and not is_done:
-                    continue
-                results.append({
-                    "path": os.path.dirname(sf),
-                    "state_file": sf,
-                    "project_name": data.get("project_name", ""),
-                    "work_name": data.get("work_name", ""),
-                    "current_phase": cp,
-                    "status": status,
-                    "key_decisions": key_decisions,
-                    "is_completed": is_done,
-                    "started_at": data.get("started_at", ""),
-                    "docs_dir": data.get("docs_dir", ""),
-                })
-            except Exception:
-                pass
+    for works_dir in works_dirs:
+        for root, dirs, files in os.walk(works_dir):
+            if ".jarfis-state.json" in files:
+                sf = os.path.join(root, ".jarfis-state.json")
+                try:
+                    with open(sf) as f:
+                        data = json.load(f)
+                    cp = data.get("current_phase", "")
+                    phases = data.get("phases", {})
+                    status = data.get("status", "")
+                    key_decisions = data.get("key_decisions", [])
+                    is_done = (
+                        status == "completed"
+                        or str(cp) == "done"
+                        or phases.get("6", {}).get("status") == "completed"
+                    )
+                    if completed_only and not is_done:
+                        continue
+                    results.append({
+                        "path": os.path.dirname(sf),
+                        "state_file": sf,
+                        "project_name": data.get("project_name", ""),
+                        "work_name": data.get("work_name", ""),
+                        "current_phase": cp,
+                        "status": status,
+                        "key_decisions": key_decisions,
+                        "is_completed": is_done,
+                        "started_at": data.get("started_at", ""),
+                        "docs_dir": data.get("docs_dir", ""),
+                    })
+                except Exception:
+                    pass
 
     results.sort(key=lambda x: x.get("started_at", ""), reverse=True)
     json_output({"workflows": results, "count": len(results)})

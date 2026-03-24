@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.2.2
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.3.0
 
 ## 파일 구조
 ```
@@ -80,8 +80,8 @@
 ## 산출물/데이터 파일
 - `{프로젝트경로}/.jarfis/project-profile.md` — project-init이 생성, work이 참조 (각 프로젝트 내부)
 - `{프로젝트경로}/.jarfis/project-context.md` — work 실행 시 참조하는 컨텍스트 (각 프로젝트 내부, 선택적)
-- `{JARFIS_SOURCE}/.local/jarfis-learnings.md` — 학습 항목 (upgrade가 관리, work이 참조)
-- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 설정 파일 (install.sh가 생성)
+- `$JARFIS_WORKSPACE_DIR/learnings.md` — Org별 학습 항목 (upgrade가 관리, work이 참조. `.personal/orgs/{org}/learnings.md`)
+- `~/.claude/.jarfis-personal-dir` — .personal 디렉토리 경로 설정 파일 (install.sh가 생성)
 - `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` — work이 생성하는 워크플로우 산출물 디렉토리 ($DOCS_DIR, flat 구조)
 - `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-{기획명}/` — meeting이 생성하는 미팅 산출물 디렉토리 (flat 구조):
   - `summary.md` — YAML frontmatter + 미팅 요약 (work.md 자동 감지용)
@@ -128,7 +128,10 @@
 - `$DOCS_DIR/.compact-backups/` — PreCompact 훅이 생성하는 상태 백업 디렉토리
 - `~/.claude/.jarfis-version` — 설치된 버전 기록 (install.sh가 생성)
 - `~/.claude/.jarfis-source` — Git repo 경로 기록 (install.sh가 생성)
-- `~/.claude/.jarfis-works-dir` — 워크스페이스 디렉토리 경로 (install.sh가 생성, 기본: `{JARFIS_SOURCE}/.local/workspace`)
+- `~/.claude/.jarfis-personal-dir` — .personal 디렉토리 경로 (install.sh가 생성, 기본: `{JARFIS_SOURCE}/.personal`)
+- `{JARFIS_SOURCE}/.personal/orgs/orgs.json` — Org 레지스트리 (org-init 시 자동 등록)
+- `{JARFIS_SOURCE}/.personal/orgs/{org_name}/` — Org별 워크스페이스 (works/, meetings/, learnings.md)
+- `{JARFIS_SOURCE}/.personal/orgs/_standalone/` — Org 미등록 사용자 워크스페이스
 - `{JARFIS_SOURCE}/VERSION` — Git repo의 semver 버전
 - `{JARFIS_SOURCE}/CHANGELOG.md` — Keep-a-Changelog 형식 변경 이력
 

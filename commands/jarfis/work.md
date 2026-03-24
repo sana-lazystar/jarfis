@@ -60,7 +60,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 ### 산출물 디렉토리 규칙
 
 산출물은 `$JARFIS_WORKSPACE_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/` 디렉토리에 저장한다 (`$DOCS_DIR`).
-> ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
+> ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Personal Dir Resolution" 참조.
 
 - 워크플로우 시작 시 `$DOCS_DIR` 값을 결정하고, `.jarfis-state.json`의 `docs_dir` 필드에 **절대경로**로 저장한다.
 - **프로젝트별 파일** (`project-profile.md`, `project-context.md`)은 각 프로젝트의 `.jarfis/`에 저장한다.
@@ -88,7 +88,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 | 파일 | 위치 | 설명 |
 |------|------|------|
-| `jarfis-learnings.md` | `{JARFIS_SOURCE}/.local/jarfis-learnings.md` | **전역** — Agent Hints + Workflow Patterns |
+| `learnings.md` | `$JARFIS_WORKSPACE_DIR/learnings.md` | **Org별** — Agent Hints + Workflow Patterns |
 | `project-context.md` | `./.jarfis/project-context.md` | **프로젝트별** — 이 코드베이스 고유 지식 |
 
 ---
@@ -112,7 +112,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
      ```
    - 상태 파일에 원본 입력값 보존: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "work_input" "$WORK_INPUT"`
    - 브랜치명 기록: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
-   > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Workspace Dir Resolution" 참조.
+   > ※ `$JARFIS_WORKSPACE_DIR` 결정 규칙은 "Execution Rules > Personal Dir Resolution" 참조.
 
    **0-a-2. Meeting 선택 (jarfis_cli.py meetings)**
    - 스크립트를 실행하여 최근 미팅 목록을 조회한다:
@@ -167,7 +167,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - 없는 파일은 빈 문자열로 치환
 
    **2-1. 미완료 워크플로우 감지** (Org 등록된 경우 — `$ORG_ROOT` 존재 시)
-   - `jarfis_cli.py state list-workflows "$JARFIS_WORKSPACE_DIR"` 실행
+   - `jarfis_cli.py state list-workflows` 실행 (전체 Org 워크스페이스 자동 스캔)
    - `status != "completed"` 워크플로우가 존재하면:
      - 미완료 워크플로우 목록과 `key_decisions` 표시
      - AskUserQuestion: "미완료 워크플로우가 있습니다. wiki에 미반영된 결정이 있을 수 있습니다." (계속 진행 / 확인 후 진행)
@@ -478,7 +478,7 @@ Backend/Frontend (해당 수정 지시가 있을 때만):
 
 retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
-**1. 전역 학습 — `{JARFIS_SOURCE}/.local/jarfis-learnings.md`**
+**1. 전역 학습 — `$JARFIS_WORKSPACE_DIR/learnings.md`**
 > 📄 템플릿: `templates/learnings.md`를 읽어서 산출물 양식으로 사용한다.
 
 관리 규칙: 기존 파일에 추가 (중복이면 업데이트), 오래된 항목 제거, 날짜 기록
@@ -521,9 +521,10 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 
 **`api_spec_required` 판단**: `required_roles.backend == true AND frontend == true` → `true`, 그 외 → `false`
 
-### Workspace Dir Resolution
+### Personal Dir Resolution
 
-`$JARFIS_WORKSPACE_DIR` = `~/.claude/.jarfis-works-dir` 파일 내용 (없으면 `{JARFIS_SOURCE}/.local/workspace` 기본값, 자동 생성). `{JARFIS_SOURCE}`는 `~/.claude/.jarfis-source` 파일에서 읽는다.
+`$JARFIS_PERSONAL_DIR` = `~/.claude/.jarfis-personal-dir` 파일 내용 (없으면 `{JARFIS_SOURCE}/.personal` 기본값). `{JARFIS_SOURCE}`는 `~/.claude/.jarfis-source` 파일에서 읽는다.
+`$JARFIS_WORKSPACE_DIR` = `$JARFIS_PERSONAL_DIR/orgs/{org_name}/` (Org 감지 시) 또는 `$JARFIS_PERSONAL_DIR/orgs/_standalone/` (Org 없을 때). `jarfis_cli.py preflight`의 `org_root` 결과로 결정한다.
 
 ### Agent Mapping
 | Role | Agent (subagent_type) | Model |

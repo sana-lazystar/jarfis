@@ -23,17 +23,17 @@ class TestVersionBump:
         self._setup_version_env(jarfis_env)
         main(["patch", "test change"])
         output = json.loads(capsys.readouterr().out)
-        assert output["previous"] == "2.2.0"
-        assert output["new"] == "2.2.1"
+        assert output["previous"] == "2.2.2"
+        assert output["new"] == "2.2.3"
         assert output["bump_type"] == "patch"
 
         # Verify VERSION file
         with open(os.path.join(jarfis_env["repo_dir"], "VERSION")) as f:
-            assert f.read().strip() == "2.2.1"
+            assert f.read().strip() == "2.2.3"
 
         # Verify .jarfis-version
         with open(os.path.join(jarfis_env["claude_dir"], ".jarfis-version")) as f:
-            assert f.read().strip() == "2.2.1"
+            assert f.read().strip() == "2.2.3"
 
     def test_minor_bump(self, jarfis_env, capsys):
         self._setup_version_env(jarfis_env)
@@ -62,7 +62,7 @@ class TestVersionBump:
         with open(changelog) as f:
             content = f.read()
         assert "changelog test entry" in content
-        assert "[2.2.1]" in content
+        assert "[2.2.3]" in content
 
     def test_index_version_updated(self, jarfis_env, capsys):
         self._setup_version_env(jarfis_env)
@@ -70,4 +70,4 @@ class TestVersionBump:
         index = os.path.join(jarfis_env["claude_dir"], "commands", "jarfis", "jarfis-index.md")
         with open(index) as f:
             content = f.read()
-        assert "Version: 2.2.1" in content
+        assert "Version: 2.2.3" in content

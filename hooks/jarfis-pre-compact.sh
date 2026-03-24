@@ -22,22 +22,26 @@ CWD=$(_json_get "$INPUT" "cwd" ".")
 SESSION_ID=$(_json_get "$INPUT" "session_id" "unknown")
 TIMESTAMP=$(date +%Y%m%d_%H%M%S)
 
-# Workspace directory resolution
-WORKS_DIR_FILE="$HOME/.claude/.jarfis-works-dir"
-if [ -f "$WORKS_DIR_FILE" ]; then
-  JARFIS_WORKSPACE_DIR=$(cat "$WORKS_DIR_FILE" | tr -d '[:space:]')
+# Personal directory resolution
+PERSONAL_DIR_FILE="$HOME/.claude/.jarfis-personal-dir"
+if [ -f "$PERSONAL_DIR_FILE" ]; then
+  JARFIS_PERSONAL_DIR=$(cat "$PERSONAL_DIR_FILE" | tr -d '[:space:]')
 else
   SOURCE_FILE="$HOME/.claude/.jarfis-source"
   if [ -f "$SOURCE_FILE" ]; then
-    JARFIS_WORKSPACE_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.local/workspace"
+    JARFIS_PERSONAL_DIR="$(cat "$SOURCE_FILE" | tr -d '[:space:]')/.personal"
   else
-    JARFIS_WORKSPACE_DIR="$HOME/repos/jarfis/.local/workspace"
+    JARFIS_PERSONAL_DIR="$HOME/repos/jarfis/.personal"
   fi
 fi
 
-# 1. Back up jarfis-state.json (for work workflows)
-#    Find the most recent .jarfis-state.json under $JARFIS_WORKSPACE_DIR/works/.
-STATE_FILE=$(find "$JARFIS_WORKSPACE_DIR/works" -name ".jarfis-state.json" -maxdepth 2 2>/dev/null | head -1)
+ORGS_DIR="$JARFIS_PERSONAL_DIR/orgs"
+
+# 1. Back up jarfis-state.json (scan all org workspaces)
+STATE_FILE=""
+if [ -d "$ORGS_DIR" ]; then
+  STATE_FILE=$(find "$ORGS_DIR" -path "*/works/*/.jarfis-state.json" -maxdepth 4 2>/dev/null | head -1)
+fi
 
 if [ -n "$STATE_FILE" ]; then
   STATE_DIR=$(dirname "$STATE_FILE")
@@ -55,13 +59,15 @@ if [ -n "$STATE_FILE" ]; then
     > "$BACKUP_DIR/last_compact.json"
 fi
 
-# 2. Back up in-progress meeting notes
-#    Check recently modified directories under $JARFIS_WORKSPACE_DIR/meetings/
-MEETING_DIR=$(find "$JARFIS_WORKSPACE_DIR/meetings" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | while read d; do
-  if [ -f "$d/summary.md" ]; then
-    echo "$d"
-  fi
-done | tail -1)
+# 2. Back up in-progress meeting notes (scan all org workspaces)
+MEETING_DIR=""
+if [ -d "$ORGS_DIR" ]; then
+  MEETING_DIR=$(find "$ORGS_DIR" -path "*/meetings/*" -mindepth 3 -maxdepth 3 -type d 2>/dev/null | while read d; do
+    if [ -f "$d/summary.md" ]; then
+      echo "$d"
+    fi
+  done | tail -1)
+fi
 
 if [ -n "$MEETING_DIR" ]; then
   MEETING_BACKUP="$MEETING_DIR/.compact-backups"

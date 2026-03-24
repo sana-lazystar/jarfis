@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-03-24
+
+- 산출물 디렉토리 .local→.personal 재구조화: Org별 워크스페이스 분리, orgs.json 레지스트리, _standalone 폴더, Org-aware learnings, .jarfis-personal-dir 설정 파일
+
 ## [2.2.2] - 2026-03-24
 
 - 에이전트 화이트리스트 보호 + 커맨드 분석 전용 규칙 강화 (upgrade/distill 구조 파괴 방지)
