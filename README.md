@@ -394,9 +394,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.2] - 2026-03-24
+## [2.3.3] - 2026-03-24
 
-- preflight Org 자동 등록 — 감지된 Org가 orgs.json 미등록 시 자동 등록 + 워크스페이스 생성
+- preflight org-profile.md 프로젝트 테이블 자동 추가 — Org 내 미등록 프로젝트 감지 시 행 자동 삽입
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

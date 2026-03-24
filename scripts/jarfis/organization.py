@@ -225,6 +225,64 @@ def register_org(name, root):
     return True
 
 
+def ensure_project_in_org_profile(org_root, project_dir):
+    """Ensure a project is listed in org-profile.md's Projects table.
+
+    If the project has a .jarfis/project-profile.md but is not in the
+    org-profile.md table, adds a new row. Returns True if added, False if
+    already present or not applicable.
+    """
+    org_root = os.path.abspath(org_root)
+    project_dir = os.path.abspath(project_dir)
+    profile_path = os.path.join(org_root, ".jarfis", "org-profile.md")
+
+    if not os.path.isfile(profile_path):
+        return False
+
+    # Check project has its own profile
+    proj_profile = os.path.join(project_dir, ".jarfis", "project-profile.md")
+    if not os.path.isfile(proj_profile):
+        return False
+
+    rel_path = os.path.relpath(project_dir, org_root)
+
+    # Read org-profile and check if project is already in table
+    with open(profile_path) as f:
+        content = f.read()
+
+    if rel_path in content or os.path.basename(project_dir) in content:
+        return False
+
+    # Extract project metadata
+    name = os.path.basename(project_dir)
+    proj_type = "unknown"
+    try:
+        with open(proj_profile) as f:
+            for line in f:
+                line = line.strip()
+                if line.startswith("# Project Profile:"):
+                    name = line.replace("# Project Profile:", "").strip()
+                elif line.startswith("> Type:"):
+                    proj_type = line.replace("> Type:", "").strip()
+    except Exception:
+        pass
+
+    # Add row to table
+    new_row = f"| {name} | {rel_path} | {proj_type} | {rel_path}/.jarfis/project-profile.md |"
+    # Remove empty placeholder row if present
+    content = content.replace("| (없음) | | | |", "")
+    # Insert before the last line or at end of table
+    if content.rstrip().endswith("|"):
+        content = content.rstrip() + "\n" + new_row + "\n"
+    else:
+        content = content + new_row + "\n"
+
+    with open(profile_path, "w") as f:
+        f.write(content)
+
+    return True
+
+
 def cmd_init(args):
     """Initialize Organization."""
     org_root = args[0] if args else ""

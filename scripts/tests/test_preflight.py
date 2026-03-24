@@ -118,6 +118,32 @@ class TestPreflight:
         assert output["org_name"] == "TestOrg"
         assert output["org_auto_registered"] is False
 
+    def test_org_auto_adds_project_to_profile(self, jarfis_env, tmp_path, capsys):
+        """Org detected, project has profile but not in org-profile.md table → auto-add."""
+        org_root = tmp_path / "org"
+        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir.mkdir(parents=True)
+        (jarfis_dir / "org-profile.md").write_text(
+            "---\norg: AutoAddOrg\n---\n\n# Organization Profile\n\n## Projects\n\n"
+            "| Name | Path | Type | Profile |\n|------|------|------|---------|"
+            "\n| (없음) | | | |\n"
+        )
+        wiki = jarfis_dir / "wiki"
+        wiki.mkdir()
+        (wiki / "INDEX.md").write_text("# Wiki")
+        # Create project with profile
+        proj = org_root / "my-project"
+        proj_jarfis = proj / ".jarfis"
+        proj_jarfis.mkdir(parents=True)
+        (proj_jarfis / "project-profile.md").write_text("# Project Profile: my-project\n\n> Type: frontend\n")
+
+        main([str(proj)])
+        output = json.loads(capsys.readouterr().out)
+        assert output["org_project_added"] is True
+        # Verify org-profile.md was updated
+        profile_content = (jarfis_dir / "org-profile.md").read_text()
+        assert "my-project" in profile_content
+
     def test_no_org_no_registration(self, jarfis_env, tmp_path, capsys):
         """No org detected → no registration attempt."""
         main([str(tmp_path)])

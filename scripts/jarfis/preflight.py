@@ -12,7 +12,7 @@ import os
 import subprocess
 import sys
 
-from .organization import read_orgs, register_org
+from .organization import ensure_project_in_org_profile, read_orgs, register_org
 from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_workspace_dir, json_output, STANDALONE_ORG
 
 
@@ -140,8 +140,14 @@ def main(args):
             if org_auto_registered:
                 log(f"Org auto-registered: {org_name}")
 
+        # Auto-add project to org-profile.md table if missing
+        org_project_added = ensure_project_in_org_profile(org_root, project_dir)
+        if org_project_added:
+            log(f"Project auto-added to org-profile.md: {project_dir}")
+
         log(f"Org: root={org_root}, name={org_name}, wiki={has_wiki}")
     else:
+        org_project_added = False
         log("Org not found")
 
     # Meetings check
@@ -172,6 +178,7 @@ def main(args):
         "org_root": org_root,
         "org_name": org_name,
         "org_auto_registered": org_auto_registered,
+        "org_project_added": org_project_added,
         "org_profile": org_profile,
         "has_wiki": has_wiki,
         "wiki_index": wiki_index,

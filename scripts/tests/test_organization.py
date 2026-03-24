@@ -5,7 +5,7 @@ import os
 
 import pytest
 
-from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, main, read_orgs, register_org
+from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info, cmd_scan, ensure_project_in_org_profile, main, read_orgs, register_org
 
 
 class TestScanProjects:
@@ -162,6 +162,66 @@ class TestOrgsJson:
         data = read_orgs()
         names = [o["name"] for o in data["orgs"]]
         assert "AutoRegOrg" in names
+
+
+class TestEnsureProjectInOrgProfile:
+    def _make_org_with_profile(self, tmp_path, org_name="TestOrg", projects=None):
+        """Helper: create org-profile.md with a project table."""
+        org_root = tmp_path / "org"
+        jarfis = org_root / ".jarfis"
+        jarfis.mkdir(parents=True)
+        rows = ""
+        if projects:
+            for p in projects:
+                rows += f"| {p} | {p} | unknown | {p}/.jarfis/project-profile.md |\n"
+        else:
+            rows = "| (없음) | | | |\n"
+        (jarfis / "org-profile.md").write_text(
+            f"---\norg: {org_name}\nroot: {org_root}\n---\n\n"
+            f"# Organization Profile\n\n## Projects\n\n"
+            f"| Name | Path | Type | Profile |\n"
+            f"|------|------|------|---------|"
+            f"\n{rows}"
+        )
+        return org_root
+
+    def test_adds_missing_project(self, tmp_path):
+        org_root = self._make_org_with_profile(tmp_path, projects=["proj-a"])
+        # Create new project with profile
+        new_proj = org_root / "proj-b"
+        new_jarfis = new_proj / ".jarfis"
+        new_jarfis.mkdir(parents=True)
+        (new_jarfis / "project-profile.md").write_text(
+            "# Project Profile: proj-b\n\n> Type: frontend\n"
+        )
+        result = ensure_project_in_org_profile(str(org_root), str(new_proj))
+        assert result is True
+        # Verify table now contains proj-b
+        profile = (org_root / ".jarfis" / "org-profile.md").read_text()
+        assert "proj-b" in profile
+
+    def test_skips_already_registered(self, tmp_path):
+        org_root = self._make_org_with_profile(tmp_path, projects=["proj-a"])
+        proj = org_root / "proj-a"
+        proj.mkdir(exist_ok=True)
+        result = ensure_project_in_org_profile(str(org_root), str(proj))
+        assert result is False
+
+    def test_skips_no_project_profile(self, tmp_path):
+        org_root = self._make_org_with_profile(tmp_path)
+        proj = org_root / "proj-no-profile"
+        proj.mkdir(parents=True)
+        # No .jarfis/project-profile.md
+        result = ensure_project_in_org_profile(str(org_root), str(proj))
+        assert result is False
+
+    def test_skips_no_org_profile(self, tmp_path):
+        org_root = tmp_path / "no-org"
+        org_root.mkdir()
+        proj = org_root / "proj"
+        proj.mkdir()
+        result = ensure_project_in_org_profile(str(org_root), str(proj))
+        assert result is False
 
 
 class TestExcludeDirs:
