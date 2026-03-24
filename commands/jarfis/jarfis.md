@@ -31,8 +31,8 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   /jarfis:wiki-storyboard                          [Org]
     서비스 전체 디자인 카탈로그 브라우저 확인
 
-  /jarfis:wiki-setup                               [Org]
-    Wiki 시맨틱 검색 활성화 (sentence-transformers 설치)
+  /jarfis:search-setup                              [Org]
+    시맨틱 검색 활성화 (sentence-transformers 설치)
 
   /jarfis:sys-upgrade     학습 항목 관리 + 에이전트 적용
   /jarfis:sys-distill     토큰 효율 분석 + 최적화

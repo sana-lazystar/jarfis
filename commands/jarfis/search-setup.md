@@ -1,6 +1,6 @@
-# JARFIS Wiki Search Setup
+# JARFIS Search Setup
 
-> Wiki 시맨틱 검색을 위한 sentence-transformers 원스텝 설치
+> 시맨틱 검색을 위한 sentence-transformers 원스텝 설치
 
 ## 실행 흐름
 

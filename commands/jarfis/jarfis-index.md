@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.0.0
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.0.1
 
 ## 파일 구조
 ```
@@ -21,7 +21,7 @@
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
-    ├── wiki-setup.md       # Wiki 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (45줄) [NEW]
+    ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (45줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
@@ -73,7 +73,7 @@
 | `/jarfis:org` | `jarfis/org.md` | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트) |
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization 초기화 (스캔 + wiki 생성) |
 | `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
-| `/jarfis:wiki-setup` | `jarfis/wiki-setup.md` | Wiki 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
+| `/jarfis:search-setup` | `jarfis/search-setup.md` | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
 | `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:sys-version` | `jarfis/sys-version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
@@ -169,9 +169,9 @@
 - `phase5.md` → Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
 - `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성) + Wiki 갱신 후 `jarfis_cli.py wiki index` 리인덱싱 (best-effort)
 - `wiki-loading.md` → 4-Step Step 3에서 `jarfis_cli.py wiki search` 호출 (폴백: LLM 판단)
-- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:wiki-setup` 안내)
-- `wiki-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
-- `org-init.md` → 생성 완료 후 `/jarfis:wiki-setup` 안내 표시
+- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:search-setup` 안내)
+- `search-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
+- `org-init.md` → 생성 완료 후 `/jarfis:search-setup` 안내 표시
 - `tests/` → sys-implement.md Step 2 Python TDD 규칙에서 참조 (148개 테스트, 전 Python 모듈 커버). `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 실행
 
 ## Git Auto-Commit 기능

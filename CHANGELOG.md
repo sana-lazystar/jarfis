@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.0.1] - 2026-03-24
+
+- implement: rename wiki-setup → search-setup
+
 ## [2.0.0] - 2026-03-24
 
 JARFIS v2 LTS — v1.11.3에서 전면 재설계된 AI IT Team Workflow Orchestration 시스템.

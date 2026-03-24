@@ -35,8 +35,8 @@ def _ensure_dependencies():
     except ImportError:
         json_error(
             "sentence-transformers is not installed. "
-            "Run /jarfis:wiki-setup to install.",
-            hint="/jarfis:wiki-setup",
+            "Run /jarfis:search-setup to install.",
+            hint="/jarfis:search-setup",
         )
 
 
