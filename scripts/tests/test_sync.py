@@ -113,3 +113,34 @@ class TestSyncFiles:
 
         synced, changes = sync_files(repo, claude)
         assert not os.path.isfile(os.path.join(repo, "hooks", "other-hook.sh"))
+
+    def test_syncs_test_files(self, jarfis_env):
+        claude = jarfis_env["claude_dir"]
+        repo = jarfis_env["repo_dir"]
+
+        # Create tests dir and a test file
+        tests_dir = os.path.join(claude, "scripts", "tests")
+        os.makedirs(tests_dir, exist_ok=True)
+        test_file = os.path.join(tests_dir, "test_example.py")
+        with open(test_file, "w") as f:
+            f.write("def test_foo(): pass")
+
+        synced, changes = sync_files(repo, claude)
+        repo_test = os.path.join(repo, "scripts", "tests", "test_example.py")
+        assert os.path.isfile(repo_test)
+        with open(repo_test) as f:
+            assert f.read() == "def test_foo(): pass"
+
+    def test_syncs_conftest(self, jarfis_env):
+        claude = jarfis_env["claude_dir"]
+        repo = jarfis_env["repo_dir"]
+
+        tests_dir = os.path.join(claude, "scripts", "tests")
+        os.makedirs(tests_dir, exist_ok=True)
+        conftest = os.path.join(tests_dir, "conftest.py")
+        with open(conftest, "w") as f:
+            f.write("import pytest")
+
+        synced, changes = sync_files(repo, claude)
+        repo_conftest = os.path.join(repo, "scripts", "tests", "conftest.py")
+        assert os.path.isfile(repo_conftest)

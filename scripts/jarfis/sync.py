@@ -98,6 +98,14 @@ def sync_files(repo_path, claude_dir):
             rel = f[len(src_pkg) + 1:]
             synced += _sync_file(f, os.path.join(dst_pkg, rel), claude_dir, changes)
 
+    # 5c. scripts/tests/ pytest tests
+    src_tests = os.path.join(claude_dir, "scripts", "tests")
+    dst_tests = os.path.join(repo_path, "scripts", "tests")
+    if os.path.isdir(src_tests):
+        for f in _find_files(src_tests, ".py"):
+            rel = f[len(src_tests) + 1:]
+            synced += _sync_file(f, os.path.join(dst_tests, rel), claude_dir, changes)
+
     # 6. statusline-command.sh
     synced += _sync_file(
         os.path.join(claude_dir, "statusline-command.sh"),

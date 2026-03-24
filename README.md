@@ -396,9 +396,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.1] - 2026-03-24
+## [2.1.2] - 2026-03-24
 
-- implement: fix venv detection bug + search-index batch all orgs
+- implement: fix sync to include scripts/tests/ directory
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.1.2] - 2026-03-24
+
+- implement: fix sync to include scripts/tests/ directory
+
 ## [2.1.1] - 2026-03-24
 
 - implement: fix venv detection bug + search-index batch all orgs

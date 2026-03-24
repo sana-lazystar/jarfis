@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.1.1
+> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.1.2
 
 ## 파일 구조
 ```
@@ -91,7 +91,7 @@
   - `decisions.md` — 의사결정 표 + 근거 + 대안
   - `tech-research.md` — 전문가 조사 결과 (전문가 소환 시에만 생성)
 - `~/.claude/scripts/jarfis_cli.py` — Python CLI 진입점 (아래 모든 명령어의 단일 인터페이스)
-  - `jarfis_cli.py sync` — Repo 동기화 (`~/.claude/` → `{repo_path}/` 자동 diff+복사 + README 갱신)
+  - `jarfis_cli.py sync` — Repo 동기화 (`~/.claude/` → `{repo_path}/` 자동 diff+복사 + README 갱신 + tests/ 동기화 포함)
   - `jarfis_cli.py measure` — 프롬프트 파일 토큰 측정 + 구조 진단 (distill D-0/D-1/D-4에서 사용)
   - `jarfis_cli.py version` — semver 버전 범프 자동화 (implement/distill/upgrade에서 사용)
   - `jarfis_cli.py meetings` — 최근 미팅 N개 JSON 출력 (work.md Phase 0 미팅 선택에서 사용)
@@ -107,7 +107,7 @@
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
   - `wiki_search.py` — Wiki 시맨틱 검색 모듈 (sentence-transformers bge-m3, index/search/status, venv 감지 에러 메시지, 358줄)
-- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (148 tests, 1500줄)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (181 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
   - `test_utils.py` — utils.py 인터페이스 테스트
   - `test_state.py` — state.py CRUD + validate 테스트
