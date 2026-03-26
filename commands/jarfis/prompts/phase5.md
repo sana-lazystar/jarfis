@@ -113,6 +113,12 @@ dev 서버 URL: $DEV_SERVER_URL
    - PC + Mobile + Tablet: 위 + 768x1024
 4. 두 이미지 세트를 비교하여 시각적 차이 판단
 
+Figma-driven 추가 비교 (state phases.3.mode === 'figma' 일 때만):
+5. $DOCS_DIR/design/reference.png (Figma 원본 스크린샷)와 FE 구현 스크린샷 비교
+6. HTML 시안 vs FE 구현의 차이가 있을 때:
+   - Figma reference에 더 가까운 쪽이 정답
+   - HTML 시안이 Figma와 다른 경우 → FE가 Figma를 따르도록 지시
+
 review.md에 아래 형식으로 UX Design Review 섹션을 추가하세요:
 
 ## UX Design Review
@@ -121,6 +127,8 @@ review.md에 아래 형식으로 UX Design Review 섹션을 추가하세요:
 ### 뷰포트: Mobile (390x844) (해당 시)
 - /{path}: [PASS] / [REVISION] 상세 설명
 ### 뷰포트: Tablet (768x1024) (해당 시)
+- /{path}: [PASS] / [REVISION] 상세 설명
+### Figma Reference 비교 (figma 모드 시)
 - /{path}: [PASS] / [REVISION] 상세 설명"
 ```
 

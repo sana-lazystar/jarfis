@@ -38,7 +38,17 @@
         "unresolved": ["캐시 전략 미확정"]
       }
     },
-    "3": { "status": "skipped", "reason": "UX Designer 불필요" },
+    "3": {
+      "status": "skipped",
+      "reason": "UX Designer 불필요",
+      "mode": "text | figma",
+      "figma_url": "(figma 모드 시) Figma URL",
+      "figma_node_id": "(figma 모드 시) 노드 ID",
+      "common_components_skip": ["(figma 모드 시) 스킵할 공통 컴포넌트 이름 목록"],
+      "token_map_generated": false,
+      "figma_iterations": 0,
+      "figma_max_iterations": 20
+    },
     "4": { "status": "in_progress" },
     "4.5": { "status": "pending" },
     "5": { "status": "pending" },

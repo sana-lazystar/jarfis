@@ -328,14 +328,22 @@ Tech Lead (tech-lead) — api-spec.md 리뷰:
 - Org 등록 시: `wiki/DESIGN/pages/{project}/` → `$DOCS_DIR/design/` 복사
 - 기존 시안이 없으면 빈 `$DOCS_DIR/design/` 디렉토리 생성
 
-**Step 3-0: HTML 시안 제작/수정** (senior-ux-designer)
+#### 🔀 분기: Figma URL 유무 (작업 단위)
+
+Figma URL이 제공된 경우 → **Figma-Driven Path** (Step 3-F0~3-F4)
+Figma URL 없음 → **텍스트 경로** (Step 3-0~3-1, 기존)
+
+> 📄 Figma-Driven Path 프롬프트: `prompts/phase3-figma.md` 전체를 읽어서 순서대로 실행한다.
+> `.jarfis-state.json`에 `phases.3.mode: "figma" | "text"` 저장.
+
+**[텍스트 경로] Step 3-0: HTML 시안 제작/수정** (senior-ux-designer)
 - `$DOCS_DIR/ux-direction.md` 기반으로 HTML 시안 제작
 - URL → 파일 매핑: `/{path}` → `$DOCS_DIR/design/{path}/index.html` 또는 `{path}.html`
 - 각 HTML 파일 상단에 `templates/design-html-meta.md` 메타 주석 삽입
 - `$DOCS_DIR/design/_index.html` 자동 생성 (전체 시안 목차)
 > 📄 프롬프트: `prompts/phase2.md` Step 3-0 섹션을 읽어서 에이전트에 전달한다.
 
-**Step 3-1: PO ↔ Designer 피드백 루프** (최대 3회)
+**[텍스트 경로] Step 3-1: PO ↔ Designer 피드백 루프** (최대 3회)
 1. PO (senior-product-owner): 시안 검토, PRD 대비 누락/불일치 피드백
 2. Designer (senior-ux-designer): 피드백 반영하여 시안 수정
 3. 3회 반복 후에도 미해결 시 → 사용자 Gate로 넘김

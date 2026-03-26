@@ -93,6 +93,13 @@ $DOCS_DIR/design/ 디렉토리의 HTML 시안을 시각적 계약서(Visual Cont
 - HTML/CSS를 그대로 복붙하지 않음 — 프로젝트의 기술 스택(React, Tailwind 등)으로 구현
 - 반응형: HTML 시안이 반응형이면 동일한 breakpoint 적용
 
+Figma-driven 디자인 추가 참조 (state phases.3.mode === 'figma' 일 때만):
+- $DOCS_DIR/design/token-map.json: Figma 값 → 프로젝트 CSS/SCSS 변수 매핑.
+  HTML 시안의 CSS variable은 이 매핑으로 프로젝트 실제 변수로 변환.
+  unmapped 값은 가장 가까운 프로젝트 변수를 찾거나, 없으면 raw 값 사용.
+- $DOCS_DIR/design/assets/: 이미지 에셋. 프로젝트의 적절한 위치에 복사하여 사용.
+- <!-- COMMON: {name} --> 주석: 프로젝트의 기존 공통 컴포넌트를 사용.
+
 $LEARNINGS (Frontend Engineer 섹션)
 $PROJECT_CONTEXT
 $FE_PROJECT_PROFILE

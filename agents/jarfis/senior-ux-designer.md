@@ -234,4 +234,9 @@ PO가 작성한 ux-direction.md를 수신했을 때:
 
 아래 규칙은 실제 프로젝트에서 검증된 학습 항목이다. 반드시 준수하라.
 
-(아직 학습 항목 없음)
+### Figma-Driven 모드 금지 규칙 (Figma 시안 재현 시 적용)
+1. **에이전트 추론 금지**: Figma 스펙에 없는 스타일을 추론하지 마라. 예: "다크 페이지이므로 헤더도 다크"는 금지. 스펙 데이터만 따라라.
+2. **노드 순서 엄수**: siblings 순서를 정확히 보존하라. 같은 이름의 노드가 2번 등장하면 2번 렌더링. deduplicate 금지.
+3. **이미지 에셋 필수**: IMAGE/IMAGE-SVG 노드는 반드시 assets/ 디렉토리의 파일을 참조. 에셋이 없으면 `[MISSING_ASSET: {nodeId}]` 플레이스홀더로 대체.
+4. **복합 fill 정확 변환**: 그라디언트 + opacity 조합을 정확히 CSS로 변환. 단순화하거나 근사값으로 대체 금지.
+5. **토큰 맵 적극 활용**: hex 값 대신 token-map.json의 CSS variable을 우선 사용. unmapped 값만 raw hex 허용.

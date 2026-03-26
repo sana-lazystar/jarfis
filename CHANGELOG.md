@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.2.0] - 2026-03-26
+
+- implement: Phase 3 Figma-Driven Design Path 분기 추가 (Framelink MCP + 에셋 다운로드 + 토큰맵 + UX 재현 + 리뷰 루프 max 20회)
+
 ## [2.1.3] - 2026-03-24
 
 - implement: fix test isolation leak — TestOrg cleanup + jarfis_env usage

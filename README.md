@@ -336,7 +336,8 @@ bash install.sh --version 1.0.0
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조
+    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (Step 3-F0~3-F4, Framelink MCP + 에셋 다운로드 + 토큰맵 + 재현 + 리뷰 루프)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 + Figma 조건부 참조
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
     │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
@@ -396,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.1.3] - 2026-03-24
+## [2.2.0] - 2026-03-26
 
-- implement: fix test isolation leak — TestOrg cleanup + jarfis_env usage
+- implement: Phase 3 Figma-Driven Design Path 분기 추가 (Framelink MCP + 에셋 다운로드 + 토큰맵 + UX 재현 + 리뷰 루프 max 20회)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-24 | Version: 2.1.3
+> 수동 편집하지 마세요. Last updated: 2026-03-26 | Version: 2.2.0
 
 ## 파일 구조
 ```
@@ -27,7 +27,8 @@
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 (115줄)
+    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (Step 3-F0~3-F4, Framelink MCP + 에셋 다운로드 + 토큰맵 + 재현 + 리뷰 루프)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 + Figma 조건부 참조 (122줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크 (37줄)
     │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰 (225줄)
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (115줄)
@@ -142,6 +143,7 @@
 - `work-meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
 - `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis_cli.py meetings`로 워크스페이스 미팅 조회 + AskUserQuestion 선택) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
+- `prompts/phase3-figma.md` → work.md Phase 3 Figma 분기에서 로드 (Framelink MCP + 에셋 다운로드 + token-map + UX Designer 재현 + PO/UX 리뷰 루프)
 - `templates/*.md` → work.md/work-meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드). v2 신규: org-profile, wiki-index, wiki-section-index, ux-direction, design-html-meta
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
