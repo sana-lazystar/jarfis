@@ -356,6 +356,41 @@ Tech Lead (tech-lead) — api-spec.md 리뷰:
 > **스킵 조건**: PRD 'Required Roles'에서 Frontend Engineer가 '⬜ 불필요'이거나 UX Designer가 '⬜ 불필요'이면 Phase 3 전체를 건너뛴다.
 > Phase 2와 **병렬** 실행한다 (의도적 병렬).
 
+**Step 3-(-2): MCP 도구 가용성 체크** (오케스트레이터)
+
+> Phase 3 실행에 필요한 MCP 서버가 설치되어 있는지 확인한다.
+> `.jarfis-state.json`의 `phases.3.mode`에 따라 필요 도구가 다르다.
+
+```
+mode === "figma" 필요 도구:
+  [필수] Framelink (get_figma_data, download_figma_images) — Figma 데이터 추출/에셋 다운로드
+  [필수] Playwright (browser_navigate, browser_take_screenshot 등) — 스크린샷 촬영/검증
+  [권장] mcp-design-comparison (compare_design) — pixel-diff 수치 비교
+
+mode === "text" 필요 도구:
+  [필수] Playwright — reference.png 생성 + Phase 5 UX Review 스크린샷
+  [권장] mcp-design-comparison — Phase 5 pixel-diff 비교
+```
+
+체크 방법: 각 MCP 도구를 가볍게 호출 시도하여 응답 여부로 판단.
+- Framelink: `get_figma_data` 도구 존재 확인
+- Playwright: `browser_take_screenshot` 도구 존재 확인
+- compare_design: `compare_design` 도구 존재 확인
+
+누락 시 처리:
+- **필수 도구 누락** → 설치 안내 메시지 표시 + AskUserQuestion:
+  ```
+  question: "Phase 3에 필요한 MCP 서버가 누락되었습니다:\n- {누락 목록}\n\n설치 후 계속하시겠어요?"
+  header: "MCP Check"
+  options:
+    - label: "설치 완료 — 계속 진행"
+      description: "MCP 서버를 설치한 후 이 옵션을 선택하세요"
+    - label: "없이 진행 (비권장)"
+      description: "해당 기능이 제한됩니다 (Figma 추출 불가 등)"
+  ```
+- **권장 도구(compare_design) 누락** → 경고만 표시, 자동 진행:
+  "⚠️ mcp-design-comparison이 없습니다. pixel-diff 수치 비교 대신 시각적 비교로 폴백합니다."
+
 **Step 3-(-1): 기존 시안 가져오기** (오케스트레이터)
 - Org 등록 시: `wiki/DESIGN/pages/{project}/` → `$DOCS_DIR/design/` 복사
 - 기존 시안이 없으면 빈 `$DOCS_DIR/design/` 디렉토리 생성

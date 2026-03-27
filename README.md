@@ -320,7 +320,7 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~620줄, v2.3: 디자이너 유무 분기, 복수 Figma 페이지, reference.png 통일, Design Contract, Phase 5 이중 비교)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~650줄, v2.3: 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.0] - 2026-03-27
+## [2.3.1] - 2026-03-27
 
-- implement: 디자이너 유무 분기, 복수 Figma 페이지 병렬, reference.png 통일, FE Design Contract, Phase 5 이중 비교
+- implement: Phase 3 MCP 도구 가용성 체크 Step 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

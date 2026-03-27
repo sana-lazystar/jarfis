@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.1] - 2026-03-27
+
+- implement: Phase 3 MCP 도구 가용성 체크 Step 추가
+
 ## [2.3.0] - 2026-03-27
 
 - implement: 디자이너 유무 분기, 복수 Figma 페이지 병렬, reference.png 통일, FE Design Contract, Phase 5 이중 비교
