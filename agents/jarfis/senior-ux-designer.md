@@ -234,9 +234,18 @@ PO가 작성한 ux-direction.md를 수신했을 때:
 
 아래 규칙은 실제 프로젝트에서 검증된 학습 항목이다. 반드시 준수하라.
 
+### reference.png 생성 규칙 (A/B 테스트 검증, 2026-03-27)
+- **HTML 시안은 FE 구현의 품질에 필수**: YAML→HTML→React이 YAML→React 직접보다 레이아웃 정확도 확연히 우위 (A/B 테스트 확인).
+- **Text Path 시안 승인 시**: Playwright MCP로 각 HTML 페이지를 fullPage 스크린샷 촬영하여 `design/{path}/reference.png`로 저장. Phase 5 UX Review에서 비교 기준으로 사용.
+- **Figma Path**: Figma에서 추출한 reference.png가 이미 존재. 추가 생성 불필요.
+- **이름 통일**: 어떤 경로든 `design/{path}/reference.png`로 동일 이름. Phase 4/5에서 경로 분기 없이 참조 가능.
+
 ### Figma-Driven 모드 금지 규칙 (Figma 시안 재현 시 적용)
 1. **에이전트 추론 금지**: Figma 스펙에 없는 스타일을 추론하지 마라. 예: "다크 페이지이므로 헤더도 다크"는 금지. 스펙 데이터만 따라라.
 2. **노드 순서 엄수**: siblings 순서를 정확히 보존하라. 같은 이름의 노드가 2번 등장하면 2번 렌더링. deduplicate 금지.
 3. **이미지 에셋 필수**: IMAGE/IMAGE-SVG 노드는 반드시 assets/ 디렉토리의 파일을 참조. 에셋이 없으면 `[MISSING_ASSET: {nodeId}]` 플레이스홀더로 대체.
 4. **복합 fill 정확 변환**: 그라디언트 + opacity 조합을 정확히 CSS로 변환. 단순화하거나 근사값으로 대체 금지.
 5. **토큰 맵 적극 활용**: hex 값 대신 token-map.json의 CSS variable을 우선 사용. unmapped 값만 raw hex 허용.
+6. **YAML layout 1:1 매핑**: mode→flex-direction, gap→gap, padding→padding 그대로 사용. 임의 변경 금지.
+7. **벡터/아이콘 placeholder**: SVG 근사 금지. `.placeholder-icon` (dimensions 유지)으로 대체.
+8. **복합 fill placeholder**: 다중 fill CSS 재현 금지. `.placeholder-bg` (첫 번째 단색)으로 대체.

@@ -320,7 +320,7 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~620줄, v2.3: 디자이너 유무 분기, 복수 Figma 페이지, reference.png 통일, Design Contract, Phase 5 이중 비교)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -336,10 +336,10 @@ bash install.sh --version 1.0.0
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
-    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (Step 3-F0~3-F4, Framelink MCP + 에셋 다운로드 + 토큰맵 + 재현 + 리뷰 루프)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 + Figma 조건부 참조
+    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + Design Contract (reference.png, token-map, assets, figma-spec, section-map)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
-    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰
+    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer 이중 비교 (reference.png pixel-diff + HTML 보조)
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
@@ -366,7 +366,7 @@ bash install.sh --version 1.0.0
 ├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트
 ├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트
 ├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 + reference.png 생성 규칙 + Figma 8규칙 에이전트
 ```
 
 **설계 원칙**:
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.2.0] - 2026-03-26
+## [2.3.0] - 2026-03-27
 
-- implement: Phase 3 Figma-Driven Design Path 분기 추가 (Framelink MCP + 에셋 다운로드 + 토큰맵 + UX 재현 + 리뷰 루프 max 20회)
+- implement: 디자이너 유무 분기, 복수 Figma 페이지 병렬, reference.png 통일, FE Design Contract, Phase 5 이중 비교
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-26 | Version: 2.2.0
+> 수동 편집하지 마세요. Last updated: 2026-03-27 | Version: 2.3.0
 
 ## 파일 구조
 ```
@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (587줄, v2: wiki, PO 추가 태스크, Phase 3 HTML 시안, Phase 5 UX 리뷰, Phase 6 wiki 갱신)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~620줄, v2.3: 디자이너 유무 분기, 복수 Figma 페이지, reference.png 통일, Design Contract, Phase 5 이중 비교)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
@@ -27,10 +27,10 @@
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
-    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (Step 3-F0~3-F4, Framelink MCP + 에셋 다운로드 + 토큰맵 + 재현 + 리뷰 루프)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + design/ 참조 + Figma 조건부 참조 (122줄)
+    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + Design Contract (reference.png, token-map, assets, figma-spec, section-map)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크 (37줄)
-    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer playwright 리뷰 (225줄)
+    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer 이중 비교 (reference.png pixel-diff + HTML 보조)
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (115줄)
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
@@ -57,7 +57,7 @@
 ├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트 (168줄)
 ├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트 (191줄)
 ├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트 (183줄)
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 에이전트 (237줄)
+└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 + reference.png 생성 규칙 + Figma 8규칙 에이전트
 ```
 
 ## 명령어 매핑

@@ -250,6 +250,38 @@ options:
 
 > Gate 1 통과 후, PO가 추가 태스크를 선택적으로 실행한다.
 
+**Step 1-3-pre: 디자이너 유무 확인** (Required Roles에서 UX Designer ✅일 때만)
+
+> PRD에서 UX Designer가 필요로 판단된 경우, 팀 내 디자이너 존재 여부를 확인한다.
+
+AskUserQuestion:
+```
+question: "팀에 UX 디자이너가 있나요?"
+header: "Design Path"
+options:
+  - label: "예 — Figma 디자인이 있습니다"
+    description: "디자이너가 Figma로 전달한 디자인 시안이 있습니다"
+  - label: "아니오 — AI 에이전트가 디자인합니다"
+    description: "UX Designer 에이전트가 ux-direction.md 기반으로 직접 디자인합니다"
+```
+
+- "예" 선택 시:
+  - `.jarfis-state.json`에 `phases.3.has_designer: true` 기록
+  - AskUserQuestion으로 Figma 페이지 목록 입력:
+    ```
+    question: "Figma 페이지 URL을 JSON 배열로 입력해주세요.\n예: [{\"title\": \"혜택 소개\", \"url\": \"https://figma.com/design/...?node-id=123-456\"}, ...]"
+    header: "Figma Pages"
+    ```
+  - 입력된 JSON 배열을 `.jarfis-state.json`에 `phases.3.figma_pages` 저장
+  - `phases.3.mode: "figma"` 기록
+  - 페이지 5개 초과 시 경고: "5개 이상의 페이지는 토큰 소비가 많습니다. 우선순위 기준으로 축소를 권장합니다."
+
+- "아니오" 선택 시:
+  - `.jarfis-state.json`에 `phases.3.has_designer: false`, `phases.3.mode: "text"` 기록
+  - `phases.3.figma_pages: []` 기록
+
+> PRD에서 UX Designer가 ⬜ 불필요이면 이 Step을 스킵하고 `has_designer: null` 유지.
+
 AskUserQuestion:
 ```
 question: "PO 추가 태스크를 선택하세요 (복수 선택 가능)"
@@ -328,13 +360,19 @@ Tech Lead (tech-lead) — api-spec.md 리뷰:
 - Org 등록 시: `wiki/DESIGN/pages/{project}/` → `$DOCS_DIR/design/` 복사
 - 기존 시안이 없으면 빈 `$DOCS_DIR/design/` 디렉토리 생성
 
-#### 🔀 분기: Figma URL 유무 (작업 단위)
+#### 🔀 분기: 디자이너 유무에 따른 경로 선택
 
-Figma URL이 제공된 경우 → **Figma-Driven Path** (Step 3-F0~3-F4)
-Figma URL 없음 → **텍스트 경로** (Step 3-0~3-1, 기존)
+> `.jarfis-state.json`의 `phases.3.has_designer`와 `phases.3.mode`로 경로를 결정한다.
+> 이 값은 Phase 1 Step 1-3-pre에서 이미 설정되어 있다.
+
+`phases.3.mode === "figma"` (디자이너 있음, Figma 제공) → **Figma-Driven Path** (Step 3-F0~3-F4)
+- `phases.3.figma_pages` 배열의 **각 페이지를 병렬로** 3-F0~3-F3 실행
+- 각 페이지별 독립 디렉토리: `design/{title의 kebab-case}/` (예: `design/benefits-signup/`)
+- 3-F4 리뷰는 전체 페이지를 한번에 수행
+
+`phases.3.mode === "text"` (디자이너 없음) → **텍스트 경로** (Step 3-0~3-1, 기존)
 
 > 📄 Figma-Driven Path 프롬프트: `prompts/phase3-figma.md` 전체를 읽어서 순서대로 실행한다.
-> `.jarfis-state.json`에 `phases.3.mode: "figma" | "text"` 저장.
 
 **[텍스트 경로] Step 3-0: HTML 시안 제작/수정** (senior-ux-designer)
 - `$DOCS_DIR/ux-direction.md` 기반으로 HTML 시안 제작
@@ -360,6 +398,17 @@ options:
     description: "피드백을 입력하면 Designer가 수정합니다"
   - label: "Phase 2 완료 후 재검토"
     description: "아키텍처 설계와 함께 다시 확인합니다"
+```
+
+**[텍스트 경로] Step 3-2: reference.png 생성** (승인 시 자동 실행)
+
+> 시안 승인 후, Phase 5 UX Review에서 비교 기준으로 사용할 reference.png를 생성한다.
+> Figma Path의 reference.png와 이름을 통일하여, Phase 4/5에서 경로 분기 없이 동일하게 참조 가능.
+
+```
+각 design/{path}/index.html에 대해:
+1. Playwright MCP로 HTML 스크린샷 촬영 (fullPage: true, DPR: 2)
+2. design/{path}/reference.png로 저장
 ```
 
 ### 🔒 게이트 2: 사용자 컨펌

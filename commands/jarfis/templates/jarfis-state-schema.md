@@ -41,9 +41,13 @@
     "3": {
       "status": "skipped",
       "reason": "UX Designer 불필요",
+      "has_designer": null,
       "mode": "text | figma",
-      "figma_url": "(figma 모드 시) Figma URL",
-      "figma_node_id": "(figma 모드 시) 노드 ID",
+      "figma_pages": [
+        {"title": "페이지 제목", "url": "https://figma.com/design/...?node-id=123-456"}
+      ],
+      "figma_url": "(레거시 — 단일 URL 호환용)",
+      "figma_node_id": "(레거시 — 단일 노드 ID 호환용)",
       "common_components_skip": ["(figma 모드 시) 스킵할 공통 컴포넌트 이름 목록"],
       "token_map_generated": false,
       "figma_iterations": 0,

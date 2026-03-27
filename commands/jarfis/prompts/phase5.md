@@ -100,35 +100,58 @@ Task prompt:
 UX Designer (senior-ux-designer) — **FE 포함 + UX Designer required 시만 실행**:
 ```
 Task prompt:
-"Phase 4에서 구현된 FE 코드와 HTML 시안을 시각적으로 비교 리뷰하세요.
+"Phase 4에서 구현된 FE 코드를 디자인 시안과 비교 리뷰하세요.
 
 dev 서버 URL: $DEV_SERVER_URL
 
-비교 프로세스:
-1. playwright로 $DOCS_DIR/design/{path} HTML 시안 스크린샷 촬영
-2. $DEV_SERVER_URL 에서 동일 라우트 FE 구현물 스크린샷 촬영
-3. 반응형 선택에 따라 뷰포트별 추가 촬영:
+─── 비교 프로세스 (이중 비교) ───
+
+**1차 비교 (주 기준): reference.png vs FE 구현물**
+reference.png는 Figma 원본 스크린샷 또는 Text Path에서 승인된 시안 스크린샷이다.
+이것이 디자인의 최종 진실(source of truth)이다.
+
+1. $DOCS_DIR/design/{path}/reference.png 확인 (반드시 존재해야 함)
+2. Playwright MCP로 $DEV_SERVER_URL에서 FE 구현물 스크린샷 촬영 (fullPage: true)
+3. mcp-design-comparison의 compare_design으로 pixel-diff 수치 측정:
+   - design_path: reference.png
+   - implementation_path: FE 스크린샷
+   - output_diff_path: $DOCS_DIR/design/{path}/review-diff-p5.png
+4. diff_percentage 판정:
+   - ≤ 5% → PASS
+   - 5-15% → MINOR_REVISION (diff 이미지에서 차이 영역 특정)
+   - > 15% → MAJOR_REVISION (구조적 문제 가능성)
+
+**2차 비교 (보조): HTML 시안 vs FE 구현물**
+5. Playwright MCP로 $DOCS_DIR/design/{path}/index.html 스크린샷 촬영
+6. FE 구현물 스크린샷과 시각적 비교 (레이아웃 구조, 컴포넌트 배치 확인)
+7. HTML과 FE가 다르고 reference.png에 더 가까운 쪽이 있으면:
+   - reference.png에 가까운 쪽이 정답
+   - FE가 reference와 다르면 수정 지시
+
+**반응형 검증** (state.responsive에 따라):
+8. 뷰포트별 추가 촬영 및 비교:
    - PC만: 1920x1080
    - PC + Mobile: 위 + 390x844
    - PC + Mobile + Tablet: 위 + 768x1024
-4. 두 이미지 세트를 비교하여 시각적 차이 판단
+   각 뷰포트에서 reference.png 비교 수행 (가능한 경우)
 
-Figma-driven 추가 비교 (state phases.3.mode === 'figma' 일 때만):
-5. $DOCS_DIR/design/reference.png (Figma 원본 스크린샷)와 FE 구현 스크린샷 비교
-6. HTML 시안 vs FE 구현의 차이가 있을 때:
-   - Figma reference에 더 가까운 쪽이 정답
-   - HTML 시안이 Figma와 다른 경우 → FE가 Figma를 따르도록 지시
+**reference.png가 없는 경우** (레거시 워크플로우 호환):
+- HTML 시안 vs FE 구현물 비교만 수행 (2차 비교가 주 기준이 됨)
+- compare_design 사용 불가 시 시각적 판단으로 대체
+───────────────────────────────
 
 review.md에 아래 형식으로 UX Design Review 섹션을 추가하세요:
 
 ## UX Design Review
+### reference.png 비교 (주 기준)
+- /{path}: [PASS] / [REVISION] — diff: {N}% — 상세 설명
+### HTML 시안 비교 (보조)
+- /{path}: [PASS] / [REVISION] 상세 설명
 ### 뷰포트: PC (1920x1080)
 - /{path}: [PASS] / [REVISION] 상세 설명
 ### 뷰포트: Mobile (390x844) (해당 시)
 - /{path}: [PASS] / [REVISION] 상세 설명
 ### 뷰포트: Tablet (768x1024) (해당 시)
-- /{path}: [PASS] / [REVISION] 상세 설명
-### Figma Reference 비교 (figma 모드 시)
 - /{path}: [PASS] / [REVISION] 상세 설명"
 ```
 

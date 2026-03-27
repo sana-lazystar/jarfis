@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.0] - 2026-03-27
+
+- implement: 디자이너 유무 분기, 복수 Figma 페이지 병렬, reference.png 통일, FE Design Contract, Phase 5 이중 비교
+
 ## [2.2.0] - 2026-03-26
 
 - implement: Phase 3 Figma-Driven Design Path 분기 추가 (Framelink MCP + 에셋 다운로드 + 토큰맵 + UX 재현 + 리뷰 루프 max 20회)

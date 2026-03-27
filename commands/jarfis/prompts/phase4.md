@@ -87,18 +87,28 @@ Task prompt:
 
 참조: tasks.md(태스크+UX 참조), api-spec.md(타입 정의/API 호출 기준, 존재 시)
 
-FE 디자인 참조 (design/ 존재 시):
-$DOCS_DIR/design/ 디렉토리의 HTML 시안을 시각적 계약서(Visual Contract)로 참조.
-- URL → 시안 매핑: /{path} → $DOCS_DIR/design/{path}/index.html 또는 {path}.html
-- HTML/CSS를 그대로 복붙하지 않음 — 프로젝트의 기술 스택(React, Tailwind 등)으로 구현
-- 반응형: HTML 시안이 반응형이면 동일한 breakpoint 적용
+─── Design Contract (디자인 시안 참조 규칙) ───
+$DOCS_DIR/design/ 디렉토리의 산출물을 시각적 계약서(Visual Contract)로 참조.
 
-Figma-driven 디자인 추가 참조 (state phases.3.mode === 'figma' 일 때만):
-- $DOCS_DIR/design/token-map.json: Figma 값 → 프로젝트 CSS/SCSS 변수 매핑.
-  HTML 시안의 CSS variable은 이 매핑으로 프로젝트 실제 변수로 변환.
-  unmapped 값은 가장 가까운 프로젝트 변수를 찾거나, 없으면 raw 값 사용.
-- $DOCS_DIR/design/assets/: 이미지 에셋. 프로젝트의 적절한 위치에 복사하여 사용.
-- <!-- COMMON: {name} --> 주석: 프로젝트의 기존 공통 컴포넌트를 사용.
+필수 참조 파일 (존재 시):
+- $DOCS_DIR/design/{path}/index.html — HTML 시안 (pixel-perfect 레이아웃/인터랙션 참조)
+- $DOCS_DIR/design/{path}/reference.png — 비교 기준 스크린샷 (Figma 원본 또는 Text Path 촬영)
+  ⚠️ reference.png가 최종 시각 기준이다. HTML과 reference.png가 다르면 reference.png를 따른다.
+
+조건부 참조 파일 (Figma-driven: state phases.3.mode === 'figma'):
+- $DOCS_DIR/design/token-map.json — Figma hex → 프로젝트 CSS/SCSS 변수 매핑
+  HTML 시안의 CSS variable을 프로젝트 실제 변수로 변환. unmapped는 raw 값 사용.
+- $DOCS_DIR/design/assets/ — 이미지 에셋 (photos/, icons/, illustrations/, backgrounds/)
+  프로젝트의 적절한 위치(public/, assets/ 등)에 복사하여 사용.
+- $DOCS_DIR/design/{path}/figma-spec.yaml — Figma YAML 원본 (상세 스펙 확인 필요 시)
+- $DOCS_DIR/design/{path}/section-map.json — 섹션 구조 (레이아웃 의도 파악 시)
+
+공통 규칙:
+- URL → 시안 매핑: /{path} → $DOCS_DIR/design/{path}/index.html
+- HTML/CSS를 그대로 복붙하지 않음 — 프로젝트의 기술 스택(Vue, React, SCSS 등)으로 구현
+- 반응형: HTML 시안이 반응형이면 동일한 breakpoint 적용
+- <!-- COMMON: {name} --> 주석: 프로젝트의 기존 공통 컴포넌트를 사용
+───────────────────────────────
 
 $LEARNINGS (Frontend Engineer 섹션)
 $PROJECT_CONTEXT
