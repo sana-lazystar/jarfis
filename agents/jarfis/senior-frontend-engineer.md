@@ -121,3 +121,24 @@ You are a senior frontend developer with over 10 years of professional experienc
 - Drawer/Modal 신규 구현 시 닫힘 조건 5가지를 반드시 검증하라: (1) 내부 링크 클릭, (2) Escape 키, (3) 외부 영역 클릭, (4) 뒤로가기, (5) SPA route 변경 감지. 하나라도 누락하면 Phase 5에서 반드시 잡힌다
 - 공유 hook/유틸리티를 여러 컴포넌트에 적용할 때, tasks.md에 "대칭 구현 체크리스트"를 명시하여 양쪽 동작 일관성을 확보하라
 - RSC/RCC 구분을 태스크 작성 시점에 명시하라. 이벤트 핸들러, useState, useEffect를 사용하는 컴포넌트는 반드시 Client Component로 표시. 혼용 시 빌드 실패 또는 런타임 에러 발생
+- API 마이그레이션 시 단위 테스트는 Input(호출 파라미터)뿐 아니라 Output(반환값 소비 패턴)도 반드시 검증하라. 호출부 시뮬레이션 assertion 필수: Type A → `toHaveProperty('data')`, Type B → `not.toHaveProperty('success')`, Type D → `toBeUndefined()`. 이것이 뎁스 불일치를 잡는 핵심 방어선이다
+- mock 데이터는 실제 BE 응답에 기반해야 한다. `baseApi<any>` 타입 + 코드 역추론만으로는 mock 필드 정확성을 보장할 수 없다. GET API는 dev 환경에서 실제 호출하여 응답을 캡처하고, 그 응답을 mock과 대조하는 과정이 필수이다
+- 실제 API 응답 캡처 시 임시 페이지에서 API 함수를 직접 import하여 호출하라. URL+baseApi 직접 조합 방식은 필수 파라미터 누락, 응답 가공 로직 미반영 등으로 대량 실패한다
+- POST/PUT/DELETE API의 응답 타입은 main 브랜치의 호출부 코드에서 추론하라. `mediAxios.post(...).then(res => res.data.data.XXX)` 패턴에서 XXX 필드가 응답 구조임을 역추론
+- 캡처된 응답 데이터(captured-responses.json)는 작업 완료 후에도 workspace에 보존하라. 향후 타입 업데이트/mock 재검증 시 ground truth로 재활용
+- Type C(조건부/가공 반환) 함수의 테스트 작성 시, 반드시 함수 본문을 직접 열어 return문과 분기 조건을 확인한 후 mock을 작성하라. grep/패턴매칭으로 자동 분류 불가
+- 셸 스크립트 작성 시 `shellcheck` 정적 분석 + 샘플 데이터로 사전 테스트 필수. macOS/Linux 호환성(md5/md5sum, sed 차이) 반드시 확인
+- E2E 테스트에서 `waitForTimeout` 사용 금지. `waitForResponse`(API 응답 대기), `waitForSelector`(UI 피드백 대기), `waitForLoadState`(페이지 상태 대기) 중 적절한 전략 사용. 태스크 설계 시 각 시나리오의 대기 전략을 사전 명시
+- Playwright stdout/stderr 리다이렉션: `> file 2>&1` (올바름) vs `2>&1 > file` (stderr가 터미널로 빠짐). JSON 리포터 파싱 시 반드시 stderr 분리
+- jq로 Playwright JSON 리포트 파싱 시 `.. | .specs[]?` recursive descent 사용. `test.describe` 블록은 nested suites에 위치하므로 1단계 탐색으로는 누락됨
+- 테스트 인프라 추가 시 보안 체크리스트: (1) 결과 디렉토리 .gitignore 등록, (2) credentials 하드코딩 금지, (3) 기본값에 내부 도메인 미노출, (4) CI에서 인증 상태 파일 cleanup
+- API 전환(useQuery 등) 시 develop에서 호출하지 않던 API를 새로 추가하면 절대 안 된다. 반드시 `git show develop:{파일경로}`로 원본 호출 목록을 먼저 확인하고, 그 목록에 있는 것만 전환하라. 조건부 호출(if문)은 동일 조건을 enabled로 유지
+- Options API → defineComponent() + setup() 하이브리드 전환 시: (1) 파일 끝 `}` → `})` 확인 필수, (2) setup() 내에서 useQuery의 enabled에 참조하는 변수는 useQuery보다 먼저 선언할 것 (TDZ 에러 방지)
+- Vuex bridge(watch → commit) 패턴에서 TanStack Query 캐시 데이터를 직접 변이하지 말 것. `c.field = ...` 대신 `{ ...c, field: ... }` 불변 spread 사용. 캐시 변이 시 다른 구독자에게 예기치 않은 부작용 발생
+- API 호출 패턴 전환 시 기존 에러 핸들링(try/catch → 토스트/모달, Sentry 리포팅)을 반드시 보존하라. useQuery 전환 시 error ref를 watch하여 기존과 동등한 사용자 피드백 및 모니터링을 유지
+- TanStack Query 도입 시 queryClient.clear()는 모든 토큰 정리 경로(정상 로그아웃, 강제 로그아웃, 인증 실패)에서 호출되도록 clearTokens mutation에 배치하라
+- 마이그레이션 시 Vuex 액션 내부의 후처리 로직(filter/map/reduce)을 API 호출과 분리하여 사전 목록화하라. 액션에 매립된 비즈니스 로직이 useQuery bridge로 옮길 때 누락된다
+- 마이그레이션 시 조건식의 truthiness 의미를 변경하지 마라. `!!data`(truthy)와 `!!(data?.list?.length)`(length>0)는 빈 배열에서 다르게 동작한다. 원본 조건식의 의미를 그대로 보존할 것
+- useQuery 전환 시 Promise 체인의 `.catch().then()` 패턴(항상 실행되는 finally 역할)을 놓치지 마라. error watch에서 loading/상태 복원 로직을 반드시 추가할 것
+- 마이그레이션에서 이슈 1건 발견 = 동일 패턴 전수 검증 트리거로 취급하라. `grep -rn 'commit.*setXxx'`으로 소비자를 전수 스캔하고, 모든 소비자가 동일 비즈니스 로직을 적용하는지 확인
+- 중앙 로직(Vuex action, 미들웨어)을 분산 패턴(useQuery bridge 등)으로 전환할 때, 비즈니스 로직은 여전히 단일 지점(mutation, select, 공통 헬퍼)에 유지하라. 분산 소비자 각각에 복제하면 누락/불일치가 필연적이다

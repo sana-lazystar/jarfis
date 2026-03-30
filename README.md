@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.2] - 2026-03-30
+## [2.3.3] - 2026-03-30
 
-- upgrade: JarfisOrg 학습 적용 — FE 3건, PO 2건, Architect 2건, project-context 2건
+- upgrade: Medistream 학습 적용 — FE 21건, TL 4건
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

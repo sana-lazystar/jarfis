@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.3] - 2026-03-30
+
+- upgrade: Medistream 학습 적용 — FE 21건, TL 4건
+
 ## [2.3.2] - 2026-03-30
 
 - upgrade: JarfisOrg 학습 적용 — FE 3건, PO 2건, Architect 2건, project-context 2건
