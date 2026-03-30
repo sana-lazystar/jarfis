@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.0] - 2026-03-30
+
+- implement: Phase 4 TDD 도입 — Step 4-0.5 테스트 선행 작성 + BE/FE Green Phase + Phase 5 경량화
+
 ## [2.3.4] - 2026-03-30
 
 - implement: harness 품질 개선 — Phase 4 Agent Status 주입, Fix 원설계 참조, Extend QA 전략, Artifact Loading Checklist

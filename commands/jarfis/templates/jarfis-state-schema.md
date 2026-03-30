@@ -53,7 +53,7 @@
       "figma_iterations": 0,
       "figma_max_iterations": 20
     },
-    "4": { "status": "in_progress" },
+    "4": { "status": "in_progress", "tdd_enabled": false },
     "4.5": { "status": "pending" },
     "5": { "status": "pending" },
     "6": { "status": "pending" }
@@ -107,6 +107,9 @@
 ```
 
 ## 필드 설명
+
+### phases.4.tdd_enabled
+Step 4-0.5 TDD 테스트 선행 작성 활성화 여부. `true`이면 QA(Opus)가 test-strategy.md 기반 테스트 코드를 선행 작성했음을 의미. Phase 5 QA 리뷰 시 경량화 힌트로 활용.
 
 ### 최상위 status
 워크플로우 전체 상태를 나타낸다.

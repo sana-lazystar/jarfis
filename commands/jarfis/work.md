@@ -473,7 +473,14 @@ options:
 **Step 4-0: 보안 사전 리뷰** (senior-security-engineer)
 > 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
+**Step 4-0.5: 테스트 선행 작성 (TDD Red Phase)** (senior-qa-engineer) — **조건부**
+> 실행 조건: `$DOCS_DIR/test-strategy.md` 존재 + P0 테스트 시나리오 3개 이상 + 프로젝트에 단위 테스트 프레임워크 존재.
+> 활성화 시 `.jarfis-state.json`에 `phases.4.tdd_enabled: true` 기록.
+> 스킵 시 `phases.4.tdd_enabled: false` 기록.
+> 📄 프롬프트: `prompts/phase4.md` Step 4-0.5 섹션을 읽어서 에이전트에 전달한다.
+
 **Step 4-1: 병렬 구현** (tasks.md에 태스크가 있는 파트만 동시 실행)
+> Step 4-0.5에서 TDD가 활성화된 경우, 각 구현 에이전트에게 TDD Green Phase 블록이 추가된다.
 
 Backend (senior-backend-engineer), Frontend (senior-frontend-engineer), DevOps (senior-devops-sre-engineer):
 > 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
@@ -636,6 +643,7 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 **핵심 원칙**: 에이전트는 할 일이 있을 때만 실행한다.
 
 **Phase 4 스킵**: `tasks.md`의 각 섹션이 "N/A"이면 해당 에이전트 SKIP. 단, 최소 1개 파트는 반드시 실행한다 (전체 N/A 불가).
+**Step 4-0.5 스킵**: test-strategy.md가 없거나, P0 테스트 시나리오가 3개 미만이거나, 프로젝트에 단위 테스트 프레임워크가 없으면 SKIP. DevOps 전용 태스크에는 적용하지 않는다.
 **Phase 5 스킵**: Phase 4에서 SKIP된 파트는 리뷰에서도 제외. UX SKIP이면 UI 테스트 제외.
 **Phase 3 스킵**: PRD의 Required Roles에서 UX Designer '⬜ 불필요'이면 전체 SKIP
 **Phase 2-1.5 스킵**: BE+FE 모두 필요하지 않으면 api-spec.md SKIP

@@ -320,7 +320,7 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~650줄, v2.3: 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~688줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -337,14 +337,14 @@ bash install.sh --version 1.0.0
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Artifact Loading Checklist + Handoff + Design Contract
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Artifact Loading Checklist + Handoff + Design Contract
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
-    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + Fix 원설계 참조 + UX Designer 이중 비교
+    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + TDD 경량화 + Fix 원설계 참조 + UX Designer 이중 비교
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions + tdd_enabled
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
         ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.4] - 2026-03-30
+## [2.4.0] - 2026-03-30
 
-- implement: harness 품질 개선 — Phase 4 Agent Status 주입, Fix 원설계 참조, Extend QA 전략, Artifact Loading Checklist
+- implement: Phase 4 TDD 도입 — Step 4-0.5 테스트 선행 작성 + BE/FE Green Phase + Phase 5 경량화
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

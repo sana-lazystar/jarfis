@@ -86,6 +86,58 @@ Task prompt:
 이 가이드라인을 BE/FE/DevOps 구현 시 참조할 수 있도록 정리하세요."
 ```
 
+**Step 4-0.5: 테스트 선행 작성 (TDD Red Phase)** (senior-qa-engineer) — **조건부 실행**
+
+> 실행 조건: 아래 **모두** 충족 시 실행한다.
+> 1. `$DOCS_DIR/test-strategy.md`가 존재
+> 2. test-strategy.md에 P0 테스트 시나리오가 3개 이상
+> 3. 프로젝트에 단위 테스트 프레임워크가 존재 (프로젝트 프로필 또는 package.json/requirements.txt 등에서 확인)
+>
+> 조건 미충족 시 이 Step을 스킵하고 Step 4-1로 진행한다.
+> `.jarfis-state.json`에 `phases.4.tdd_enabled: true|false`를 기록한다.
+
+```
+Task prompt:
+"$DOCS_DIR/test-strategy.md의 P0/P1 테스트 시나리오를 실행 가능한 테스트 코드로 변환하세요.
+
+📂 BE 테스트 디렉토리: $BACKEND_PROJECT_DIR (프로젝트 테스트 컨벤션 준수)
+📂 FE 테스트 디렉토리: $FRONTEND_PROJECT_DIR (프로젝트 테스트 컨벤션 준수)
+⚠️ tasks.md에서 N/A인 파트의 테스트는 작성하지 마세요.
+
+참조:
+- $DOCS_DIR/test-strategy.md — 테스트 시나리오 원본 (이 문서의 시나리오를 코드로 변환)
+- $DOCS_DIR/api-spec.md — API 계약 (BE 테스트의 요청/응답 기대값, 존재 시)
+- $DOCS_DIR/architecture.md — 데이터 모델, 비즈니스 규칙 (엣지 케이스 추론 근거)
+- $DOCS_DIR/tasks.md — 각 태스크의 '대상 파일' (import 경로 설정 기준)
+- $BE_PROJECT_PROFILE / $FE_PROJECT_PROFILE — 테스트 프레임워크, 디렉토리 구조, 컨벤션
+
+$LEARNINGS (QA Engineer 섹션)
+
+테스트 작성 규칙:
+1. 구현이 아직 없으므로 모든 테스트는 FAIL하거나 import error가 정상이다 (RED 상태).
+   - 다만 테스트 파일 자체의 문법 오류는 없어야 한다.
+2. import 경로는 tasks.md의 '대상 파일'을 기준으로 설정한다.
+   - 예: tasks.md에 'src/services/payment.ts' → import { PaymentService } from '...'
+3. 각 테스트 함수에 비즈니스 의도를 docstring/주석으로 기록한다.
+4. 엣지 케이스를 적극적으로 포함한다:
+   - 빈 입력, null/undefined, 경계값, 권한 없음, 동시성, 타임아웃
+   - 특히 test-strategy.md에 명시되지 않았더라도 architecture.md의 비즈니스 규칙에서 추론 가능한 엣지 케이스
+5. 구현에 결합하지 않고 행동(behavior)을 테스트한다.
+   - 내부 구현 상세(private 메서드, 내부 상태)가 아닌 공개 인터페이스 기준
+6. 프로젝트의 기존 테스트 패턴을 따른다.
+   - 프로젝트 프로필에 테스트 컨벤션이 있으면 그것을 따른다.
+   - 기존 테스트 파일이 있으면 그 스타일(fixture, 명명 규칙 등)을 참조한다.
+
+산출물:
+- BE 테스트: 프로젝트의 테스트 디렉토리에 파일 생성
+- FE 테스트: 프로젝트의 테스트 디렉토리에 파일 생성
+- 각 파일 상단에 주석: // [JARFIS TDD] Phase 4-0.5에서 자동 생성 — 구현 에이전트는 이 테스트를 수정하지 마세요
+
+Git Auto-Commit: jarfis(QA-test): test-strategy.md 기반 테스트 코드 선행 작성"
+```
+
+---
+
 Backend (senior-backend-engineer) — **Backend Tasks가 N/A이면 SKIP**:
 ```
 Task prompt:
@@ -98,6 +150,21 @@ Task prompt:
 $LEARNINGS (Backend Engineer 섹션)
 $PROJECT_CONTEXT
 $BE_PROJECT_PROFILE
+
+─── TDD Green Phase (Step 4-0.5 실행 시) ───
+Phase 4-0.5에서 QA가 작성한 테스트 코드가 존재합니다.
+1. 각 태스크 구현 전, 해당 테스트를 실행하여 RED(실패) 상태를 확인하세요.
+2. 태스크를 구현합니다.
+3. 구현 후 테스트를 실행하여 GREEN(통과) 상태를 확인하세요.
+4. 테스트가 통과하지 않으면 구현을 수정하세요.
+
+⚠️ 테스트 코드 수정 금지 — 테스트가 잘못되었다고 판단되면
+   [TEST_ISSUE: {테스트명} — {이유}] 형식으로 보고하세요.
+   반드시 '왜 테스트가 틀렸는지' 근거를 구체적으로 첨부하세요.
+   오케스트레이터가 QA에게 재검토를 요청합니다.
+
+※ Step 4-0.5가 스킵된 경우(tdd_enabled=false) 이 블록을 무시하세요.
+───────────────────────────────
 
 위 Common Implementation Rules를 준수하세요. 커밋 형식: jarfis(BE-N):"
 ```
@@ -137,6 +204,21 @@ $DOCS_DIR/design/ 디렉토리의 산출물을 시각적 계약서(Visual Contra
 $LEARNINGS (Frontend Engineer 섹션)
 $PROJECT_CONTEXT
 $FE_PROJECT_PROFILE
+
+─── TDD Green Phase (Step 4-0.5 실행 시) ───
+Phase 4-0.5에서 QA가 작성한 테스트 코드가 존재합니다.
+1. 각 태스크 구현 전, 해당 테스트를 실행하여 RED(실패) 상태를 확인하세요.
+2. 태스크를 구현합니다.
+3. 구현 후 테스트를 실행하여 GREEN(통과) 상태를 확인하세요.
+4. 테스트가 통과하지 않으면 구현을 수정하세요.
+
+⚠️ 테스트 코드 수정 금지 — 테스트가 잘못되었다고 판단되면
+   [TEST_ISSUE: {테스트명} — {이유}] 형식으로 보고하세요.
+   반드시 '왜 테스트가 틀렸는지' 근거를 구체적으로 첨부하세요.
+   오케스트레이터가 QA에게 재검토를 요청합니다.
+
+※ Step 4-0.5가 스킵된 경우(tdd_enabled=false) 이 블록을 무시하세요.
+───────────────────────────────
 
 위 Common Implementation Rules를 준수하세요. 커밋 형식: jarfis(FE-N):"
 ```
