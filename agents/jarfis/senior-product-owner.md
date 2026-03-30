@@ -139,4 +139,5 @@ You are a seasoned Product Owner with over 10 years of experience in product man
 
 아래 규칙은 실제 프로젝트에서 검증된 학습 항목이다. 반드시 준수하라.
 
-(아직 학습 항목 없음)
+- Phase 3 시안 제작 시 기존 프로젝트의 에셋(이미지, 아이콘, 폰트)이 정확히 참조되는지 검증하는 항목을 Gate에 포함하라. 에셋 보존 실패 시 전체 재제작 필요
+- 콘텐츠 정확성 검증이 부실하면 재작업 비용이 검증 비용을 초과한다. PO-Designer 반복 루프(최대 20회)를 Phase 3에 표준 적용하라

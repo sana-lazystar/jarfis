@@ -118,3 +118,6 @@ You are a senior frontend developer with over 10 years of professional experienc
 - 인증 설정(authType 등)의 기본값이 허용적('none'/비인증)인 시스템에서는, 전환 완료 후 해당 설정이 누락된 API 호출을 grep으로 전수 검증하라. interceptor fallback으로 "우연히" 동작하는 것은 보안 취약점이다
 - API 함수 반환 패턴(전체 응답 pass-through vs inner data만 unwrap)을 마이그레이션 초기에 통일하라. 혼용은 호출부에서 소비 패턴 불일치를 초래하며 P0 버그의 직접적 원인이 된다
 - 인증 헤더가 불필요한 요청(S3 presigned URL 등)은 별도 HTTP 인스턴스 생성 대신, 기존 싱글톤의 인증 제거 옵션(예: isForceRemoveAuth)을 활용하라
+- Drawer/Modal 신규 구현 시 닫힘 조건 5가지를 반드시 검증하라: (1) 내부 링크 클릭, (2) Escape 키, (3) 외부 영역 클릭, (4) 뒤로가기, (5) SPA route 변경 감지. 하나라도 누락하면 Phase 5에서 반드시 잡힌다
+- 공유 hook/유틸리티를 여러 컴포넌트에 적용할 때, tasks.md에 "대칭 구현 체크리스트"를 명시하여 양쪽 동작 일관성을 확보하라
+- RSC/RCC 구분을 태스크 작성 시점에 명시하라. 이벤트 핸들러, useState, useEffect를 사용하는 컴포넌트는 반드시 Client Component로 표시. 혼용 시 빌드 실패 또는 런타임 에러 발생
