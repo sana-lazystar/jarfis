@@ -326,7 +326,7 @@ bash install.sh --version 1.0.0
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── sys-version.md                 # 버전 관리/업데이트
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
@@ -337,12 +337,12 @@ bash install.sh --version 1.0.0
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + Design Contract (reference.png, token-map, assets, figma-spec, section-map)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Artifact Loading Checklist + Handoff + Design Contract
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
-    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer 이중 비교 (reference.png pixel-diff + HTML 보조)
+    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + Fix 원설계 참조 + UX Designer 이중 비교
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
-    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트
+    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.3.3] - 2026-03-30
+## [2.3.4] - 2026-03-30
 
-- upgrade: Medistream 학습 적용 — FE 21건, TL 4건
+- implement: harness 품질 개선 — Phase 4 Agent Status 주입, Fix 원설계 참조, Extend QA 전략, Artifact Loading Checklist
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -27,6 +27,30 @@ Unresolved: $HANDOFF.unresolved (각 항목 — 구현 시 주의)
 
 ---
 
+## Artifact Loading Checklist (오케스트레이터 → 에이전트 공통 지침)
+
+> 각 구현 에이전트는 작업 시작 전 아래 파일을 로딩한다.
+> 오케스트레이터가 이 체크리스트를 Common Implementation Rules와 함께 전달한다.
+
+```
+필수 (반드시 존재):
+- ✅ $DOCS_DIR/tasks.md — 태스크 목록 (없으면 오케스트레이터 오류)
+- ✅ $DOCS_DIR/architecture.md — 시스템 설계 (없으면 오케스트레이터 오류)
+
+조건부 (없으면 대안 사용):
+- ❓ $DOCS_DIR/api-spec.md — BE+FE 모두 필요 시 생성됨
+  → 없으면: architecture.md의 "API 설계" 섹션을 API 계약 기준으로 사용
+- ❓ $DOCS_DIR/design/ — FE + UX Designer 필요 시 생성됨
+  → 없으면: tasks.md의 UX 참조 + 프로젝트 기존 컴포넌트 스타일로 구현 (text-only mode)
+- ❓ token-map.json — Figma 모드(phases.3.mode === 'figma')일 때만 존재
+  → 없거나 파싱 불가 시: HTML 시안의 raw hex 값 사용, 불일치 사항을 커밋 메시지에 기록
+
+※ 이 목록은 표준 워크플로우 기준이며, 프로젝트별 추가 산출물이 있을 수 있다.
+  .jarfis-state.json과 $DOCS_DIR의 실제 파일을 우선 참조하라.
+```
+
+---
+
 ## Common Implementation Rules
 
 > 아래 규칙은 BE/FE/DevOps 모든 구현 에이전트 프롬프트에 공통 적용한다.

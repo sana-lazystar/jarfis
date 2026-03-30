@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.3.4] - 2026-03-30
+
+- implement: harness 품질 개선 — Phase 4 Agent Status 주입, Fix 원설계 참조, Extend QA 전략, Artifact Loading Checklist
+
 ## [2.3.3] - 2026-03-30
 
 - upgrade: Medistream 학습 적용 — FE 21건, TL 4건

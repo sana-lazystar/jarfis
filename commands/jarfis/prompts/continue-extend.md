@@ -70,3 +70,26 @@ $FE_PROJECT_PROFILE
 3. 기존과 동일한 형식(BE/FE/DevOps 분류, 체크박스)을 따르세요.
 4. 프로젝트 프로필이 존재하면 디렉토리 구조와 컨벤션을 참조하여 대상 파일을 구체적으로 명시하세요."
 ```
+
+## QA Prompt (테스트 전략 보강) — test-strategy.md 존재 시만 실행
+
+```
+Task prompt:
+"기존 테스트 전략을 참조하여 확장 기능의 테스트 전략을 추가해주세요.
+
+## 기존 테스트 전략
+{$DOCS_DIR/test-strategy.md 내용}
+
+## 확장 태스크
+{tasks.md의 Extension Tasks 섹션}
+
+## 확장 PRD
+{prd.md의 Extension 섹션}
+
+## 지시사항
+1. test-strategy.md에 "## Extension Test Strategy (#N)" 섹션을 추가하세요.
+2. 확장 기능에 대한 Unit/Integration/E2E 테스트 시나리오를 기존과 동일한 형식으로 작성하세요.
+3. 기존 테스트와의 영향 관계를 분석하세요 (기존 테스트가 깨질 가능성이 있는지).
+4. 확장 기능의 엣지 케이스를 나열하세요.
+5. 성능 테스트 기준이 변경되는 경우 명시하세요."
+```

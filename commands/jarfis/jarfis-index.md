@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-30 | Version: 2.3.3
+> 수동 편집하지 마세요. Last updated: 2026-03-30 | Version: 2.3.4
 
 ## 파일 구조
 ```
@@ -17,7 +17,7 @@
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
     ├── sys-version.md                 # 버전 관리/업데이트 (158줄)
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step (274줄)
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 (275줄)
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
@@ -28,12 +28,12 @@
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Handoff + Design Contract (reference.png, token-map, assets, figma-spec, section-map)
+    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + Artifact Loading Checklist + Handoff + Design Contract (156줄)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크 (37줄)
-    │   ├── phase5.md              # Phase 5 Review & QA + UX Designer 이중 비교 (reference.png pixel-diff + HTML 보조)
+    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + Fix 원설계 참조 + UX Designer 이중 비교 (284줄)
     │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (115줄)
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
-    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL 프롬프트 (69줄)
+    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트 (95줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions (115줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
@@ -169,8 +169,9 @@
 - `jarfis-quality-gate.sh` → PostToolUse(Edit/Write/MultiEdit) 린트/타입체크 경고 (절대 차단 안함, 킬 스위치: JARFIS_QUALITY_GATE=0)
 - `jarfis-session-start.sh` → SessionStart에서 in-progress 워크플로우 탐색 → stdout 컨텍스트 주입 (킬 스위치: JARFIS_SESSION_RESTORE=0)
 - `quality_gate.py` → jarfis-quality-gate.sh가 호출, biome/prettier + tsc 실행 (프로젝트 루트 자동 감지)
-- `phase4.md` → Phase 2 handoff 읽기/쓰기 지침 (key_decisions, warnings, unresolved)
-- `phase5.md` → Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
+- `phase4.md` → Phase 2 handoff 읽기/쓰기 지침 (key_decisions, warnings, unresolved) + Artifact Loading Checklist (필수/조건부 파일 구분)
+- `phase5.md` → Phase 4 Agent Status 주입 (phase4_agents 상태 전달) + Fix 에이전트 원설계 참조 (architecture.md, tasks.md) + Learning Candidate Detection (동일 fix 카테고리 2건+ 반복 시 learning_candidates 기록)
+- `continue-extend.md` → QA Prompt 추가 (test-strategy.md 존재 시 Extension Test Strategy 갱신)
 - `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성) + Wiki 갱신 후 `jarfis_cli.py wiki index` 리인덱싱 (best-effort)
 - `wiki-loading.md` → 4-Step Step 3에서 `jarfis_cli.py wiki search` 호출 (폴백: LLM 판단)
 - `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:search-setup` 안내)
