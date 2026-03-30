@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.1] - 2026-03-30
+
+- implement: MIT → AGPL-3.0 라이선스 변경
+
 ## [2.4.0] - 2026-03-30
 
 - implement: Phase 4 TDD 도입 — Step 4-0.5 테스트 선행 작성 + BE/FE Green Phase + Phase 5 경량화

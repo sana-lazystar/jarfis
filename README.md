@@ -397,13 +397,13 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.4.0] - 2026-03-30
+## [2.4.1] - 2026-03-30
 
-- implement: Phase 4 TDD 도입 — Step 4-0.5 테스트 선행 작성 + BE/FE Green Phase + Phase 5 경량화
+- implement: MIT → AGPL-3.0 라이선스 변경
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
 
 ## License
 
-[MIT](./LICENSE)
+[AGPL-3.0](./LICENSE)
