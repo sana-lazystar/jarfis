@@ -144,6 +144,15 @@ Extend 모드:
 
 ## Execution Rules
 
+### Prompt & Template Path Resolution
+
+| 참조 패턴 | 절대 경로 |
+|-----------|----------|
+| `prompts/*.md` | `~/.claude/commands/jarfis/prompts/*.md` |
+| `templates/*.md` | `~/.claude/commands/jarfis/templates/*.md` |
+
+> ⚠️ `$JARFIS_SOURCE`(Git repo)가 아닌 `~/.claude/`가 기준이다.
+
 ### Agent Model Routing
 
 > ※ 모든 에이전트의 모델은 work.md "Execution Rules > Agent Mapping" 테이블(SSOT)을 따른다.

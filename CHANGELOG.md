@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.2] - 2026-03-31
+
+- implement: prompts/templates/agents 경로 해석 규칙 명시 (work, work-continue, work-meeting, jarfis-index)
+
 ## [2.4.1] - 2026-03-30
 
 - implement: MIT → AGPL-3.0 라이선스 변경

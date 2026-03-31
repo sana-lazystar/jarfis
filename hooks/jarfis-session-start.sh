@@ -10,6 +10,16 @@ if [[ "${JARFIS_SESSION_RESTORE:-1}" == "0" ]]; then
   exit 0
 fi
 
+# ASCII art banner (stderr → terminal only, zero tokens)
+cat >&2 << 'BANNER'
+
+  ╦╔═╗╦═╗╔═╗╦╔═╗
+  ║╠═╣╠╦╝╠╣ ║╚═╗
+╚═╝╩ ╩╩╚═╚  ╩╚═╝
+  IT Workflow Orchestration
+
+BANNER
+
 # Personal directory resolution
 PERSONAL_DIR_FILE="$HOME/.claude/.jarfis-personal-dir"
 if [[ -f "$PERSONAL_DIR_FILE" ]]; then

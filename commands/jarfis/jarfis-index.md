@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-03-30 | Version: 2.4.1
+> 수동 편집하지 마세요. Last updated: 2026-03-31 | Version: 2.4.2
 
 ## 파일 구조
 ```
@@ -10,14 +10,14 @@
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
-    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 201줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~688줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크)
+    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 203줄)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~701줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
     ├── sys-version.md                 # 버전 관리/업데이트 (158줄)
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 (275줄)
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 (283줄)
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
@@ -148,9 +148,9 @@
 - `project-update.md` → `/jarfis:project-init` 참조 (프로필 없을 때 안내, 분석 기준 참조)
 - `project-init.md` → `templates/project-profile.md` 참조 (프로필 산출물 양식)
 - `sys-distill.md` → `jarfis-index.md` 먼저 읽어 현황 파악 → `jarfis_cli.py measure`로 토큰 측정 → commands/jarfis/*.md + agents/jarfis/*.md 분석, jarfis-index.md 갱신
-- `agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
-- `agents/jarfis/jarfis-advocate.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 옹호)
-- `agents/jarfis/jarfis-critic.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 비판)
+- `~/.claude/agents/jarfis/*.md` → work.md에서 Agent 도구로 참조 (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
+- `~/.claude/agents/jarfis/jarfis-advocate.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 옹호)
+- `~/.claude/agents/jarfis/jarfis-critic.md` → sys-implement.md/sys-upgrade.md/sys-distill.md에서 Dialectic Review 시 참조 (변경 비판)
 - `work-continue.md` → `.jarfis-state.json` 읽기 (이전 워크플로우 탐색) + work.md의 Phase 4/5/6 재활용 + `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` 참조 + `prompts/continue-extend.md` 참조 (Extend 모드) + work.md Agent Mapping 참조 (모델 라우팅 SSOT) + project-profile.md/project-context.md 로드 (work.md Phase 0과 동일)
 - `sys-implement.md` → `jarfis-index.md` 읽기/갱신 + VERSION/CHANGELOG 범프
 - `sys-version.md` → `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG 참조
@@ -200,7 +200,7 @@
   - 에이전트 Task prompt → `prompts/phase{N}.md` 수정
   - 산출물 템플릿 → `templates/*.md` 수정
   - Phase 추가/삭제 시 → work.md + 대응하는 prompts/ + templates/ 파일 동시 갱신
-  - `agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
+  - `~/.claude/agents/jarfis/*.md`는 Agent 도구의 역할 프롬프트 (work.md와 별개)
 - **버전 관리**: implement/distill/upgrade 완료 후 → VERSION + .jarfis-version + __init__.py + jarfis-index.md Version + CHANGELOG 갱신
 - **Repo 동기화**: implement/distill/upgrade 완료 후 → `python3 ~/.claude/scripts/jarfis_cli.py sync` 실행 (수동 복사 금지)
 - **Python TDD**: `scripts/jarfis/*.py` 수정 시 → 테스트 먼저 작성/수정 → 코드 수정 → `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short` 전체 통과 확인

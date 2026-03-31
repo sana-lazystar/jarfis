@@ -7,6 +7,8 @@
 
 ---
 
+> **경로 해석 규칙**: `prompts/*.md` → `~/.claude/commands/jarfis/prompts/*.md`, `templates/*.md` → `~/.claude/commands/jarfis/templates/*.md`. `$JARFIS_SOURCE`(Git repo)가 아닌 `~/.claude/`가 기준.
+
 ## M-0: Setup (미팅 준비)
 
 ### 실행 순서

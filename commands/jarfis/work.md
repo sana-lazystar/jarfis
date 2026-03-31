@@ -603,6 +603,19 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 
 ## Execution Rules
 
+### Prompt & Template Path Resolution
+
+이 문서에서 참조하는 상대 경로의 기준 디렉토리(base path):
+
+| 참조 패턴 | 절대 경로 |
+|-----------|----------|
+| `prompts/*.md` | `~/.claude/commands/jarfis/prompts/*.md` |
+| `templates/*.md` | `~/.claude/commands/jarfis/templates/*.md` |
+| `agents/jarfis/*.md` | `~/.claude/agents/jarfis/*.md` |
+
+> ⚠️ `$JARFIS_SOURCE`(Git repo)가 아닌 `~/.claude/`가 기준이다.
+> 프롬프트/템플릿을 읽을 때 반드시 위 절대 경로를 사용하라.
+
 ### Workflow State Management (컨텍스트 유실 방어)
 
 **`$DOCS_DIR/.jarfis-state.json`**을 워크플로우의 단일 진실 공급원(SSOT)으로 사용한다.
