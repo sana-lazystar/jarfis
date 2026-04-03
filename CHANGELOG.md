@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.5] - 2026-04-03
+
+- implement: work-meeting --prev-meeting flag for referencing previous meetings
+
 ## [2.4.4] - 2026-04-03
 
 - implement: meeting context dynamic scan — load all .md files from meeting directory

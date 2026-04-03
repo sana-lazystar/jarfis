@@ -13,8 +13,12 @@
 
 ### 실행 순서
 
-1. **기획명 결정**
-   - `$ARGUMENTS`에서 기획명을 추출한다.
+1. **기획명 결정 + 플래그 파싱**
+   - `$ARGUMENTS`에서 `--prev-meeting {이전미팅명}` 플래그가 있으면 파싱하여 `$PREV_MEETING_NAME`에 저장하고, 플래그를 제거한 나머지를 기획명으로 사용한다.
+     - 예: `메디마켓 웹교환반품 온보딩 3 --prev-meeting 메디마켓-웹교환반품-온보딩-2`
+       → `$MEETING_NAME` = `메디마켓-웹교환반품-온보딩-3`, `$PREV_MEETING_NAME` = `메디마켓-웹교환반품-온보딩-2`
+   - 플래그가 없으면 `$PREV_MEETING_NAME` = 빈 문자열 (기존 동작과 100% 동일)
+   - `$ARGUMENTS`(플래그 제거 후)에서 기획명을 추출한다.
    - 기획명을 kebab-case로 변환하여 `$MEETING_NAME`으로 저장한다.
      - 예: "결제 시스템 리뉴얼" → `결제-시스템-리뉴얼`
    - AskUserQuestion으로 확인:
@@ -37,7 +41,28 @@
       2. 기존 기록 삭제하고 새로 시작"
      ```
 
-3. **컨텍스트 로드 (jarfis_cli.py preflight)**
+3. **이전 미팅 로드** (`$PREV_MEETING_NAME`이 비어있지 않을 때만 실행)
+   - `$JARFIS_ORG_DIR/meetings/` 하위에서 `$PREV_MEETING_NAME`을 포함하는 디렉토리를 찾는다 (날짜 prefix 무시, 부분 매칭):
+     ```bash
+     ls -d $JARFIS_ORG_DIR/meetings/*$PREV_MEETING_NAME* 2>/dev/null | head -1
+     ```
+   - 찾으면 `$PREV_MEETING_DIR`에 저장하고 다음 파일을 읽어 변수에 저장:
+     - `summary.md` → `$PREV_MEETING_SUMMARY`
+     - `decisions.md` → `$PREV_MEETING_DECISIONS`
+     - `tech-research.md` → `$PREV_MEETING_RESEARCH` (존재 시, 없으면 빈 문자열)
+     - 디렉토리 내 기타 .md 파일 목록 → `$PREV_MEETING_FILES` (파일명만, `ls *.md`)
+   - 못 찾으면 경고 표시하고 미팅은 진행:
+     ```
+     ⚠️ 이전 미팅 '$PREV_MEETING_NAME'을 찾을 수 없습니다. 새 미팅으로 진행합니다.
+     ```
+   - 로드 성공 시 안내 표시:
+     ```
+     📂 이전 미팅 로드 완료: $PREV_MEETING_DIR
+        summary.md ✅ | decisions.md ✅ | tech-research.md ✅/❌
+        추가 산출물: [파일명 목록]
+     ```
+
+4. **컨텍스트 로드 (jarfis_cli.py preflight)**
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
@@ -55,8 +80,9 @@
    - M-1~M-2 토론 중 wiki 기반 맥락 제공
    - **⚠️ M-3 Wrap-up: wiki 갱신 안 함** (읽기 전용 — 미팅은 wiki를 수정하지 않음)
 
-4. **미팅 안내 출력**
+5. **미팅 안내 출력**
    미팅명, 참석자(PO/TL), 명령어("정리해줘"→중간요약, "마무리"/"끝"→종료+산출물), 전문가 자동 소환 안내를 배너로 표시한다.
+   - `$PREV_MEETING_NAME`이 있으면 "📂 이전 미팅 참조: $PREV_MEETING_NAME"도 배너에 포함한다.
 
 ---
 
@@ -94,6 +120,11 @@
 
 ### Opening Round 실행
 
+**이전 미팅 참조 시 조건부 동작**: `$PREV_MEETING_SUMMARY`가 비어있지 않으면:
+- PO/TL은 이전 미팅의 결정사항(`$PREV_MEETING_DECISIONS`)과 미결 사항을 숙지한 상태에서 발언한다.
+- "이전 미팅에서 결정된 사항"과 "이번 미팅에서 추가로 다룰 사항"을 명확히 구분하여 발언한다.
+- 이전 미팅의 미결 사항을 자연스럽게 언급하여 후속 논의를 유도한다.
+
 PO와 TL이 `$ARGUMENTS` (기획 주제)에 대한 첫인상을 각각 공유한다:
 
 ```
@@ -127,6 +158,13 @@ PO와 TL이 `$ARGUMENTS` (기획 주제)에 대한 첫인상을 각각 공유한
    - 양쪽 모두 → PO/TL 순서 또는 TL/PO 순서 자유롭게
 3. **발언**: 각 역할이 자신의 관점에서 반응 (동의, 보충, 반론, 대안 제시)
 4. **대화 이어가기**: 자연스럽게 후속 질문이나 논점을 던져 대화를 이어간다
+
+### 이전 미팅 산출물 On-Demand 읽기
+
+`$PREV_MEETING_DIR`이 설정된 경우:
+- 사용자가 "이전 미팅 파일 읽어줘" 또는 특정 산출물을 언급하면, `$PREV_MEETING_FILES` 목록에서 해당 파일을 찾아 읽는다.
+- 이전 미팅의 추가 산출물(tech-research.md, fe-code-audit.md, api-reference.md 등)은 **필요할 때 on-demand로 읽기** (컨텍스트 절약).
+- M-0에서 로드한 `$PREV_MEETING_SUMMARY`와 `$PREV_MEETING_DECISIONS`만으로 충분하면 추가 읽기를 하지 않는다.
 
 ### "정리해줘" 처리
 

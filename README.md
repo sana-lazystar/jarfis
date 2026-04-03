@@ -319,7 +319,7 @@ bash install.sh --version 1.0.0
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
-    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 203줄)
+    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~715줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.4.4] - 2026-04-03
+## [2.4.5] - 2026-04-03
 
-- implement: meeting context dynamic scan — load all .md files from meeting directory
+- implement: work-meeting --prev-meeting flag for referencing previous meetings
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
