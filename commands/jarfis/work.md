@@ -126,7 +126,11 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - `$ARGUMENTS`에 `--meeting {기획명}` 플래그가 있으면 → 스크립트 결과에서 해당 기획명과 매칭하여 자동 선택 (AskUserQuestion 스킵)
 
    **0-a-3. Meeting 컨텍스트 로드**
-   - 미팅이 선택되면: `$JARFIS_ORG_DIR/{선택된 미팅 path}/`의 `summary.md`, `decisions.md`를 읽어 변수 저장.
+   - 미팅이 선택되면: `$JARFIS_ORG_DIR/{선택된 미팅 path}/`의 **전체 산출물**을 읽어 변수 저장:
+     - `summary.md` → `$MEETING_SUMMARY`
+     - `decisions.md` → `$MEETING_DECISIONS`
+     - `meeting-notes.md` → `$MEETING_NOTES`
+     - `tech-research.md` → `$MEETING_RESEARCH` (파일 존재 시에만 — 전문가 소환 미팅만 생성)
      - `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
    - 미팅 없음 선택 시: `source_meeting` = `null`, 모든 `$MEETING_*` 변수 = 빈 문자열
 

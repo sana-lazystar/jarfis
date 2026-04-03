@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.3] - 2026-04-03
+
+- implement: fix meeting context load — meeting-notes.md, tech-research.md 누락 수정
+
 ## [2.4.2] - 2026-03-31
 
 - implement: prompts/templates/agents 경로 해석 규칙 명시 (work, work-continue, work-meeting, jarfis-index)
