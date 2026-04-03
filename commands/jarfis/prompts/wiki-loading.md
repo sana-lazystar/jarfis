@@ -24,7 +24,7 @@
 2. **모든 섹션 _index.md 읽기**: PO, DESIGN, TA, QA 4개 섹션의 `_index.md` 읽기
 3. **시맨틱 검색으로 관련 파일 로딩**:
    ```bash
-   python3 ~/.claude/scripts/jarfis_cli.py wiki search {org_root} "{현재 기획의 핵심 키워드/문장}" --top-k 5
+   python3 ~/.claude/scripts/jarfis_cli.py search wiki "{현재 기획의 핵심 키워드/문장}" --top-k 5
    ```
    - 결과 JSON의 `results` 배열에서 `score` 0.5 이상인 파일만 읽기
    - `stale_warning`이 있으면 사용자에게 표시 (인덱스 갱신 권고)

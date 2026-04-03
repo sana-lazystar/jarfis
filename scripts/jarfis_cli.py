@@ -15,7 +15,8 @@ Commands:
     quality-gate  Run lint/typecheck on edited file
     validate      Workflow state + artifact validation
     org           Organization management (init/scan/info)
-    wiki          Wiki semantic search (index/search/status)
+    wiki          Wiki semantic search (index/search/status) [deprecated → use search]
+    search        Semantic search (all/meetings/works/wiki)
 """
 
 import os
@@ -27,6 +28,9 @@ if SCRIPT_DIR not in sys.path:
     sys.path.insert(0, SCRIPT_DIR)
 
 VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
+
+# Commands that require sentence-transformers venv
+VENV_COMMANDS = {"wiki", "search"}
 
 
 def _needs_venv_reexec(venv_dir=None):
@@ -51,8 +55,8 @@ def _needs_venv_reexec(venv_dir=None):
 
 
 def _maybe_reexec_in_venv(command):
-    """For wiki command, re-execute in JARFIS venv if available."""
-    if command != "wiki":
+    """For wiki/search commands, re-execute in JARFIS venv if available."""
+    if command not in VENV_COMMANDS:
         return
     if not _needs_venv_reexec():
         return
@@ -63,7 +67,7 @@ def _maybe_reexec_in_venv(command):
 def main():
     if len(sys.argv) < 2:
         print(
-            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org|wiki> [args...]"}',
+            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org|wiki|search> [args...]"}',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -88,6 +92,7 @@ def main():
         "validate": "jarfis.validate",
         "org": "jarfis.organization",
         "wiki": "jarfis.wiki_search",
+        "search": "jarfis.wiki_search",
     }
 
     if command not in commands:
@@ -100,7 +105,11 @@ def main():
     _maybe_reexec_in_venv(command)
 
     module = __import__(commands[command], fromlist=["main"])
-    module.main(args)
+
+    if command == "search":
+        module.search_main(args)
+    else:
+        module.main(args)
 
 
 if __name__ == "__main__":

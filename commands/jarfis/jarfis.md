@@ -31,10 +31,12 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   /jarfis:wiki-storyboard                          [Org]
     서비스 전체 디자인 카탈로그 브라우저 확인
 
+  /jarfis:search [--meetings] [--works] [--wiki] 검색어  [Org]
+    시맨틱 통합 검색 (meetings + works + wiki)
   /jarfis:search-setup                              [Org]
     시맨틱 검색 활성화 (sentence-transformers 설치)
-  /jarfis:search-index                              [Org]
-    전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신
+  /jarfis:search-index [--current]                  [Org]
+    전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki + meetings + works)
 
   /jarfis:sys-upgrade     학습 항목 관리 + 에이전트 적용
   /jarfis:sys-distill     토큰 효율 분석 + 최적화

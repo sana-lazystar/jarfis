@@ -14,9 +14,13 @@ from jarfis.wiki_search import (
     CHUNK_TOKEN_THRESHOLD,
     SCORE_THRESHOLD,
     _chunk_file,
+    _collect_md_files,
     _collect_wiki_files,
     _estimate_tokens,
+    _merge_results,
     _strip_frontmatter,
+    format_pretty,
+    resolve_search_dirs,
 )
 
 
@@ -86,7 +90,7 @@ class TestChunkFile:
         assert chunks == []
 
 
-class TestCollectWikiFiles:
+class TestCollectMdFiles:
     def test_collects_md_files(self, tmp_path):
         wiki = tmp_path / "wiki"
         wiki.mkdir()
@@ -97,7 +101,7 @@ class TestCollectWikiFiles:
         sub.mkdir()
         (sub / "decisions.md").write_text("# Decisions")
 
-        files = _collect_wiki_files(str(wiki))
+        files = _collect_md_files(str(wiki))
         assert len(files) == 3
         paths = [f["rel_path"] for f in files]
         assert "file1.md" in paths
@@ -110,18 +114,175 @@ class TestCollectWikiFiles:
         (wiki / "whitespace.md").write_text("   \n  \n  ")
         (wiki / "content.md").write_text("# Has content")
 
-        files = _collect_wiki_files(str(wiki))
+        files = _collect_md_files(str(wiki))
         assert len(files) == 1
 
     def test_empty_directory(self, tmp_path):
         wiki = tmp_path / "wiki"
         wiki.mkdir()
-        files = _collect_wiki_files(str(wiki))
+        files = _collect_md_files(str(wiki))
         assert files == []
 
     def test_nonexistent_directory(self, tmp_path):
-        files = _collect_wiki_files(str(tmp_path / "nonexistent"))
+        files = _collect_md_files(str(tmp_path / "nonexistent"))
         assert files == []
+
+    def test_backward_compat_alias(self, tmp_path):
+        """_collect_wiki_files should be an alias for _collect_md_files."""
+        d = tmp_path / "test"
+        d.mkdir()
+        (d / "a.md").write_text("# A")
+        assert _collect_wiki_files(str(d)) == _collect_md_files(str(d))
+
+    def test_skips_hidden_files(self, tmp_path):
+        d = tmp_path / "test"
+        d.mkdir()
+        (d / "visible.md").write_text("# Visible")
+        (d / ".hidden.md").write_text("# Hidden")
+        files = _collect_md_files(str(d))
+        paths = [f["rel_path"] for f in files]
+        assert "visible.md" in paths
+        assert ".hidden.md" not in paths
+
+    def test_skips_vectors_meta(self, tmp_path):
+        d = tmp_path / "test"
+        d.mkdir()
+        (d / "content.md").write_text("# Content")
+        (d / ".vectors-meta.json").write_text("{}")
+        files = _collect_md_files(str(d))
+        assert len(files) == 1
+
+
+class TestResolveSearchDirs:
+    def test_resolves_with_org(self, tmp_path):
+        # Simulate org structure
+        org_root = tmp_path / "org-project"
+        org_root.mkdir()
+        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir.mkdir()
+        wiki_dir = jarfis_dir / "wiki"
+        wiki_dir.mkdir()
+
+        org_dir = tmp_path / "org-workspace"
+        org_dir.mkdir()
+        (org_dir / "meetings").mkdir()
+        (org_dir / "works").mkdir()
+
+        result = resolve_search_dirs(
+            org_root=str(org_root), org_dir=str(org_dir)
+        )
+        assert result["wiki"] == str(wiki_dir)
+        assert result["meetings"] == str(org_dir / "meetings")
+        assert result["works"] == str(org_dir / "works")
+
+    def test_missing_wiki_excluded(self, tmp_path):
+        org_root = tmp_path / "org-project"
+        org_root.mkdir()
+        # No .jarfis/wiki/ directory
+
+        org_dir = tmp_path / "org-workspace"
+        org_dir.mkdir()
+        (org_dir / "meetings").mkdir()
+        (org_dir / "works").mkdir()
+
+        result = resolve_search_dirs(
+            org_root=str(org_root), org_dir=str(org_dir)
+        )
+        assert "wiki" not in result
+        assert "meetings" in result
+        assert "works" in result
+
+    def test_missing_meetings_excluded(self, tmp_path):
+        org_dir = tmp_path / "org-workspace"
+        org_dir.mkdir()
+        # No meetings/ directory
+
+        result = resolve_search_dirs(org_root=None, org_dir=str(org_dir))
+        assert "meetings" not in result
+
+    def test_all_missing(self, tmp_path):
+        result = resolve_search_dirs(org_root=None, org_dir=None)
+        assert result == {}
+
+
+class TestMergeResults:
+    def test_sorts_by_score_descending(self):
+        results = [
+            {"source": "wiki", "score": 0.7, "file_path": "a.md"},
+            {"source": "meetings", "score": 0.9, "file_path": "b.md"},
+            {"source": "works", "score": 0.8, "file_path": "c.md"},
+        ]
+        merged = _merge_results(results, top_k=5)
+        scores = [r["score"] for r in merged]
+        assert scores == [0.9, 0.8, 0.7]
+
+    def test_top_k_limit(self):
+        results = [
+            {"source": "wiki", "score": 0.9, "file_path": f"{i}.md"}
+            for i in range(10)
+        ]
+        merged = _merge_results(results, top_k=3)
+        assert len(merged) == 3
+
+    def test_empty_results(self):
+        assert _merge_results([], top_k=5) == []
+
+    def test_deduplicates_by_file_within_source(self):
+        results = [
+            {"source": "wiki", "score": 0.9, "file_path": "same.md", "section": "A"},
+            {"source": "wiki", "score": 0.7, "file_path": "same.md", "section": "B"},
+            {"source": "meetings", "score": 0.8, "file_path": "other.md", "section": None},
+        ]
+        merged = _merge_results(results, top_k=5)
+        # same.md should appear only once (highest score)
+        wiki_files = [r for r in merged if r["source"] == "wiki"]
+        assert len(wiki_files) == 1
+        assert wiki_files[0]["score"] == 0.9
+
+    def test_same_file_different_sources_kept(self):
+        """Same filename in different sources should both be kept."""
+        results = [
+            {"source": "wiki", "score": 0.9, "file_path": "summary.md"},
+            {"source": "meetings", "score": 0.8, "file_path": "summary.md"},
+        ]
+        merged = _merge_results(results, top_k=5)
+        assert len(merged) == 2
+
+
+class TestFormatPretty:
+    def test_basic_format(self):
+        data = {
+            "query": "Tanstack",
+            "results": [
+                {
+                    "source": "meetings",
+                    "file_path": "summary.md",
+                    "section": "핵심 결정사항",
+                    "score": 0.87,
+                    "preview": "TanStack Query 도입...",
+                }
+            ],
+        }
+        pretty = format_pretty(data)
+        assert "Tanstack" in pretty
+        assert "meetings" in pretty
+        assert "summary.md" in pretty
+        assert "0.87" in pretty
+
+    def test_no_results(self):
+        data = {"query": "없는검색어", "results": []}
+        pretty = format_pretty(data)
+        assert "없는검색어" in pretty
+        assert "결과 없음" in pretty
+
+    def test_stale_warning(self):
+        data = {
+            "query": "test",
+            "results": [],
+            "stale_warning": "2 files modified",
+        }
+        pretty = format_pretty(data)
+        assert "stale" in pretty.lower() or "modified" in pretty.lower()
 
 
 class TestConstants:

@@ -1,6 +1,6 @@
 # JARFIS Search Index
 
-> 등록된 전체 Org의 wiki 시맨틱 인덱스를 일괄 생성/갱신합니다.
+> 등록된 Org의 wiki, meetings, works 시맨틱 인덱스를 일괄 생성/갱신합니다.
 
 사용자 요청: $ARGUMENTS
 
@@ -10,6 +10,11 @@
 
 - `/jarfis:search-setup` 완료 (sentence-transformers 설치)
 - `/jarfis:org-init` 완료 (Org 등록 + wiki 구조 생성)
+
+## 플래그 파싱
+
+- `$ARGUMENTS`에 `--current` 플래그가 있으면 → 현재 Org만 인덱싱
+- 플래그 없으면 → 전체 Org 인덱싱 (기본)
 
 ## 실행 흐름
 
@@ -27,6 +32,13 @@ sentence-transformers가 설치되지 않았습니다.
 
 ### 2. Org 목록 로드
 
+**`--current` 모드**: `jarfis_cli.py preflight`로 현재 Org만 확인
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py preflight
+```
+JSON의 `org_root`와 `org_dir`을 사용하여 현재 Org 1개만 대상으로 한다.
+
+**전체 모드** (기본):
 ```bash
 python3 -c "
 import json, os
@@ -57,25 +69,26 @@ else:
 먼저 /jarfis:org-init 으로 Org을 등록하세요.
 ```
 
-### 3. 전체 Org 일괄 인덱싱
+### 3. Org별 일괄 인덱싱
 
-모든 Org에 대해 순차 실행한다. 각 Org마다:
+각 Org에 대해 **wiki, meetings, works** 3종을 순차 인덱싱한다:
 
 **3-1. 인덱스 상태 확인**:
 ```bash
-python3 ~/.claude/scripts/jarfis_cli.py wiki status {org_root}
+python3 ~/.claude/scripts/jarfis_cli.py search status --org-root {org_root}
 ```
 
-- `indexed: true`이고 `stale_files: 0` → 스킵 (최신 상태)
-- `indexed: false` 또는 `stale_files > 0` → 인덱싱 실행
-
-**3-2. 인덱싱 실행** (필요한 Org만):
-```
-⏳ {org_name} wiki 인덱싱 중...
-```
+**3-2. 인덱싱 실행** (stale이거나 미인덱싱인 scope만):
 
 ```bash
-python3 ~/.claude/scripts/jarfis_cli.py wiki index {org_root}
+# Wiki
+python3 ~/.claude/scripts/jarfis_cli.py search index wiki --org-root {org_root}
+
+# Meetings
+python3 ~/.claude/scripts/jarfis_cli.py search index meetings --org-root {org_root}
+
+# Works
+python3 ~/.claude/scripts/jarfis_cli.py search index works --org-root {org_root}
 ```
 
 최초 실행 시 bge-m3 모델 다운로드 안내:
@@ -87,15 +100,17 @@ Note: 최초 실행 시 bge-m3 모델이 자동 다운로드됩니다 (~2GB).
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Wiki Index 완료
+  Search Index 완료
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ✅ {org1_name} — {files}파일, {chunks}청크
-  ✅ {org2_name} — {files}파일, {chunks}청크
-  ⏭️ {org3_name} — 최신 (스킵)
+  {org_name}:
+    ✅ wiki     — {files}파일, {chunks}청크
+    ✅ meetings — {files}파일, {chunks}청크
+    ✅ works    — {files}파일, {chunks}청크
+    ⏭️ wiki     — 최신 (스킵)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-실패한 Org이 있으면 에러 메시지를 함께 표시:
+실패한 scope이 있으면 에러 메시지를 함께 표시:
 ```
-  ❌ {org_name} — {에러 메시지}
+  ❌ {scope} — {에러 메시지}
 ```

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.0] - 2026-04-03
+
+- implement: 시맨틱 검색 확장 — meetings/works 인덱싱 + 통합 검색 CLI + /jarfis:search 커맨드
+
 ## [2.4.5] - 2026-04-03
 
 - implement: work-meeting --prev-meeting flag for referencing previous meetings

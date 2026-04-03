@@ -236,6 +236,14 @@ PO와 TL이 각각 미팅을 정리하는 마무리 발언을 한다:
 - `decisions.md` — 의사결정 추적표
 - `tech-research.md` — 전문가 조사 결과 (전문가 소환 시에만 생성)
 
+### 시맨틱 검색 인덱스 갱신 (best-effort)
+
+산출물 생성 후, meetings 인덱스를 증분 갱신한다:
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py search index meetings
+```
+실패해도 미팅 완료를 중단하지 않는다 (best-effort). 에러 시 사용자에게 `/jarfis:search-index --current` 수동 실행 안내만 표시.
+
 ### 완료 메시지
 
-완료 배너를 표시한다: 미팅명, 생성된 산출물 목록($MEETING_DIR/ 하위 파일들), 다음 단계 안내(`/jarfis:work $ARGUMENTS --meeting $MEETING_NAME`).
+완료 배너를 표시한다: 미팅명, 생성된 산출물 목록($MEETING_DIR/ 하위 파일들), 다음 단계 안내(`/jarfis:sys-implement` 또는 `/jarfis:work $ARGUMENTS --meeting $MEETING_NAME`).

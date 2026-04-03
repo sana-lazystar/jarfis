@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-03 | Version: 2.4.5
+> 수동 편집하지 마세요. Last updated: 2026-04-03 | Version: 2.5.0
 
 ## 파일 구조
 ```
@@ -21,8 +21,9 @@
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
+    ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 (82줄) [NEW]
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (57줄)
-    ├── search-index.md    # 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신 (101줄)
+    ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current (116줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 (201줄)
@@ -76,7 +77,8 @@
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization 초기화 (스캔 + wiki 생성) |
 | `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저) |
 | `/jarfis:search-setup` | `jarfis/search-setup.md` | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝) |
-| `/jarfis:search-index` | `jarfis/search-index.md` | 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신 |
+| `/jarfis:search` | `jarfis/search.md` | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능) |
+| `/jarfis:search-index` | `jarfis/search-index.md` | 전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki+meetings+works) |
 | `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:sys-version` | `jarfis/sys-version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
@@ -102,13 +104,14 @@
   - `jarfis_cli.py quality-gate` — 파일별 린트/타입체크 실행 (PostToolUse hook에서 사용)
   - `jarfis_cli.py validate` — 워크플로우 상태 + 산출물 + Git 검증 (수동 도구, A-3)
   - `jarfis_cli.py org` — Organization 관리 (init --name/scan/info, v2 신규. info는 미등록 시 exit 0 + registered:false 반환)
-  - `jarfis_cli.py wiki` — Wiki 시맨틱 검색 (index/search/status, sentence-transformers bge-m3 기반. venv 자동 감지 — `~/.claude/.jarfis-venv/` 존재 시 자동 사용, 미설치 시 폴백 안내)
+  - `jarfis_cli.py search` — 시맨틱 검색 (search {all|meetings|works|wiki}, index, status. CWD 기반 Org 해석)
+  - `jarfis_cli.py wiki` — Wiki 시맨틱 검색 (deprecated → search wiki. 기존 호환 유지)
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
-  - `wiki_search.py` — Wiki 시맨틱 검색 모듈 (sentence-transformers bge-m3, index/search/status, venv 감지 에러 메시지, 358줄)
-- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (181 tests)
+  - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색, 683줄)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (196 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
   - `test_utils.py` — utils.py 인터페이스 테스트
   - `test_state.py` — state.py CRUD + validate 테스트
@@ -174,9 +177,12 @@
 - `continue-extend.md` → QA Prompt 추가 (test-strategy.md 존재 시 Extension Test Strategy 갱신)
 - `phase6.md` → Suggested Learnings 섹션 (learning_candidates 기반 학습 후보 자동 생성) + Wiki 갱신 후 `jarfis_cli.py wiki index` 리인덱싱 (best-effort)
 - `wiki-loading.md` → 4-Step Step 3에서 `jarfis_cli.py wiki search` 호출 (폴백: LLM 판단)
-- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md에서 참조 (sentence-transformers 선택적 의존성, 미설치 시 `/jarfis:search-setup` 안내)
+- `wiki_search.py` → wiki-loading.md/phase6.md/org-init.md/work.md/work-meeting.md/search.md에서 참조. `jarfis_cli.py search`(신규) + `jarfis_cli.py wiki`(deprecated) 양쪽 지원
+- `search.md` → `jarfis_cli.py search {scope} "쿼리" --pretty` 호출 (사용자 직접 검색)
 - `search-setup.md` → 독립 실행 (venv 생성 + sentence-transformers 설치), 완료 후 `/jarfis:search-index` 안내. org-init.md/wiki-loading.md/wiki_search.py에서 안내 참조
-- `search-index.md` → orgs.json에서 Org 선택 → `jarfis_cli.py wiki index` 실행. search-setup.md/org-init.md에서 안내 참조
+- `search-index.md` → orgs.json에서 Org 선택 → `jarfis_cli.py search index {scope}` 실행 (wiki+meetings+works). `--current` 플래그로 현재 Org만 가능. search-setup.md/org-init.md에서 안내 참조
+- `work-meeting.md` M-3 → `jarfis_cli.py search index meetings` 자동 호출 (best-effort)
+- `phase6.md` → `jarfis_cli.py search index wiki` + `search index works` 자동 호출 (best-effort)
 - `org-init.md` → 생성 완료 후 `/jarfis:search-setup` → `/jarfis:search-index` 안내 표시
 - `tests/` → sys-implement.md Step 2 Python TDD 규칙에서 참조 (148개 테스트, 전 Python 모듈 커버). `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 실행
 

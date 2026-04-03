@@ -114,15 +114,20 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - 브랜치명 기록: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "branch" "$BRANCH"`
    > ※ `$JARFIS_ORG_DIR` 결정 규칙은 "Execution Rules > Org Dir Resolution" 참조.
 
-   **0-a-2. Meeting 선택 (jarfis_cli.py meetings)**
-   - 스크립트를 실행하여 최근 미팅 목록을 조회한다:
+   **0-a-2. Meeting 선택 (시맨틱 검색 + fallback)**
+   - **시맨틱 검색 우선**: `$ARGUMENTS`의 기획 내용으로 관련 미팅을 시맨틱 검색한다:
      ```bash
-     python3 ~/.claude/scripts/jarfis_cli.py meetings 3
+     python3 ~/.claude/scripts/jarfis_cli.py search meetings "$ARGUMENTS" --top-k 3
      ```
-   - JSON 결과가 빈 배열(`[]`)이 아니면 → AskUserQuestion으로 표시:
-     - 각 미팅을 Option으로 변환: `[{date}] {name} - {summary}`
-     - 마지막 Option: `관련 미팅 없음`
-   - JSON 결과가 빈 배열이면 → 미팅 선택 단계 스킵
+     - 결과가 있으면 (results 비어있지 않음) → AskUserQuestion으로 추천 표시:
+       - 각 결과를 Option으로 변환: `[{source}] {file_path} (score: {score})`
+       - 마지막 Option: `관련 미팅 없음`
+     - 결과가 없거나 검색 실패 시 → **fallback**으로 최근 미팅 목록:
+       ```bash
+       python3 ~/.claude/scripts/jarfis_cli.py meetings 3
+       ```
+       - JSON 결과가 빈 배열이 아니면 → AskUserQuestion: `[{date}] {name} - {summary}` + `관련 미팅 없음`
+       - 빈 배열이면 → 미팅 선택 스킵
    - `$ARGUMENTS`에 `--meeting {기획명}` 플래그가 있으면 → 스크립트 결과에서 해당 기획명과 매칭하여 자동 선택 (AskUserQuestion 스킵)
 
    **0-a-3. Meeting 컨텍스트 로드**
