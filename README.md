@@ -320,7 +320,7 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 203줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~704줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~715줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -334,7 +334,7 @@ bash install.sh --version 1.0.0
     ├── search-index.md    # 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Artifact Loading Checklist + Handoff + Design Contract
@@ -397,9 +397,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.4.3] - 2026-04-03
+## [2.4.4] - 2026-04-03
 
-- implement: fix meeting context load — meeting-notes.md, tech-research.md 누락 수정
+- implement: meeting context dynamic scan — load all .md files from meeting directory
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

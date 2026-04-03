@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-03 | Version: 2.4.3
+> 수동 편집하지 마세요. Last updated: 2026-04-03 | Version: 2.4.4
 
 ## 파일 구조
 ```
@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 (PO/TL 토론, 203줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~704줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~715줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
@@ -25,7 +25,7 @@
     ├── search-index.md    # 전체 Org wiki 시맨틱 인덱스 일괄 생성/갱신 (101줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 (194줄)
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 (201줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Artifact Loading Checklist + Handoff + Design Contract (238줄)
@@ -141,7 +141,7 @@
 ## 내부 참조 관계
 - `jarfis.md` → 모든 명령어 참조 (도우미 텍스트)
 - `work-meeting.md` → 독립 (project-profile, context, learnings 선택적 참조) + compact 대비 중간 저장
-- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis_cli.py meetings`로 워크스페이스 미팅 조회 + AskUserQuestion 선택) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
+- `work.md` → `/jarfis:project-init` 참조 (프로필 로드 안내) + meetings 산출물 참조 (Phase 0에서 `jarfis_cli.py meetings`로 워크스페이스 미팅 조회 + AskUserQuestion 선택 + 선택된 미팅 디렉토리 동적 스캔으로 전체 .md 로드) + `.compact-backups/` 참조 (Resume 시) + `prompts/*.md` 참조 (Phase별 에이전트 프롬프트)
 - `prompts/*.md` → work.md에서 외부화된 에이전트 프롬프트 (distill이 생성, work.md가 Phase 진입 시 로드)
 - `prompts/phase3-figma.md` → work.md Phase 3 Figma 분기에서 로드 (Framelink MCP + 에셋 다운로드 + token-map + UX Designer 재현 + PO/UX 리뷰 루프)
 - `templates/*.md` → work.md/work-meeting.md에서 외부화된 산출물 템플릿 (distill이 생성, 해당 Phase에서 필요 시 로드). v2 신규: org-profile, wiki-index, wiki-section-index, ux-direction, design-html-meta

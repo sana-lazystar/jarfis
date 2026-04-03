@@ -39,6 +39,9 @@ $PROJECT_CONTEXT
 미팅 요약: $MEETING_SUMMARY
 미팅 결정사항: $MEETING_DECISIONS
 
+[추가 미팅 자료 — $MEETING_EXTRA가 비어있으면 이 블록 생략]
+추가 미팅 자료: $MEETING_EXTRA
+
 중요: 위 미팅에서 이미 논의/결정된 사항은 재질문하지 마세요.
 다음 항목만 질문하세요:
 1. 미팅에서 '미결'로 남은 사항
@@ -60,6 +63,8 @@ Task prompt:
 [미팅 참조 시 추가 — $MEETING_REF가 비어있으면 이 블록 생략]
 미팅 회의록: $MEETING_NOTES
 미팅 결정사항: $MEETING_DECISIONS
+[추가 미팅 자료 — $MEETING_EXTRA가 비어있으면 이 블록 생략]
+추가 미팅 자료: $MEETING_EXTRA
 (미팅에서 논의된 고객 문제, 솔루션, FAQ 내용을 적극 활용하세요)
 
 다음 형식으로 작성하세요:
@@ -96,6 +101,8 @@ $LEARNINGS (Workflow Patterns 섹션)
 [미팅 참조 시 추가 — $MEETING_REF가 비어있으면 이 블록 생략]
 미팅 결정사항: $MEETING_DECISIONS
 미팅 기술 조사: $MEETING_RESEARCH
+[추가 미팅 자료 — $MEETING_EXTRA가 비어있으면 이 블록 생략]
+추가 미팅 자료: $MEETING_EXTRA
 (미팅에서 확정된 결정사항을 PRD에 사전 반영하세요.
  잠정 결정은 '잠정' 표기와 함께 포함하세요.
  미결 사항은 '미결 — work 진행 중 확정 필요'로 표기하세요.)

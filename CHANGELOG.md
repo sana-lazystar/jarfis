@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.4.4] - 2026-04-03
+
+- implement: meeting context dynamic scan — load all .md files from meeting directory
+
 ## [2.4.3] - 2026-04-03
 
 - implement: fix meeting context load — meeting-notes.md, tech-research.md 누락 수정

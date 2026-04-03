@@ -126,12 +126,22 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
    - `$ARGUMENTS`에 `--meeting {기획명}` 플래그가 있으면 → 스크립트 결과에서 해당 기획명과 매칭하여 자동 선택 (AskUserQuestion 스킵)
 
    **0-a-3. Meeting 컨텍스트 로드**
-   - 미팅이 선택되면: `$JARFIS_ORG_DIR/{선택된 미팅 path}/`의 **전체 산출물**을 읽어 변수 저장:
+   - 미팅이 선택되면: `$MEETING_PATH` = `$JARFIS_ORG_DIR/{선택된 미팅 path}/`
+     - `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
+
+     **알려진 파일 → 기존 변수 매핑** (존재하는 파일만):
      - `summary.md` → `$MEETING_SUMMARY`
      - `decisions.md` → `$MEETING_DECISIONS`
      - `meeting-notes.md` → `$MEETING_NOTES`
-     - `tech-research.md` → `$MEETING_RESEARCH` (파일 존재 시에만 — 전문가 소환 미팅만 생성)
-     - `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "source_meeting" "{선택된 미팅 디렉토리명}"`
+     - `tech-research.md` → `$MEETING_RESEARCH`
+
+     **추가 파일 동적 스캔** → `$MEETING_EXTRA`:
+     - `$MEETING_PATH` 내 모든 `.md` 파일을 Glob으로 스캔
+     - 위 4개 알려진 파일과 숨김 파일(`.`으로 시작)을 제외한 나머지를 수집
+     - 각 파일을 `## [파일명]` 헤더와 함께 `$MEETING_EXTRA`에 연결
+     - **상한**: 추가 파일 합계 200줄 초과 시 truncate하고 `(... 이하 생략 — 원본: $MEETING_PATH/{파일명})` 안내
+     - 추가 파일이 없으면 `$MEETING_EXTRA` = 빈 문자열
+
    - 미팅 없음 선택 시: `source_meeting` = `null`, 모든 `$MEETING_*` 변수 = 빈 문자열
 
    **0-a-4. Workspace Detection (프로젝트 구조 확인)**
@@ -214,7 +224,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 **Step 1-1: PO 역질문** (senior-product-owner)
 
-> **미팅 참조 시 조건부 동작**: `$MEETING_REF`가 존재하면, 미팅 컨텍스트를 주입하고 미결 사항만 질문한다.
+> **미팅 참조 시 조건부 동작**: `$MEETING_REF`가 존재하면, 미팅 컨텍스트(`$MEETING_SUMMARY`, `$MEETING_DECISIONS`, `$MEETING_NOTES`, `$MEETING_RESEARCH` + 동적 스캔 `$MEETING_EXTRA`)를 주입하고 미결 사항만 질문한다.
 
 > 📄 프롬프트: `prompts/phase1.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
