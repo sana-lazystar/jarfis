@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.1] - 2026-04-06
+
+- implement: wiki_search.py model.encode()에 batch_size=2 추가 (대량 청크 인덱싱 OOM 방지)
+
 ## [2.5.0] - 2026-04-03
 
 - implement: 시맨틱 검색 확장 — meetings/works 인덱싱 + 통합 검색 CLI + /jarfis:search 커맨드

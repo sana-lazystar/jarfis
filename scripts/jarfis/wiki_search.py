@@ -228,7 +228,7 @@ def cmd_index(target_dir):
     # Embed
     model = _load_model()
     texts = [c["text"] for c in all_chunks]
-    embeddings = model.encode(texts, show_progress_bar=True, normalize_embeddings=True)
+    embeddings = model.encode(texts, batch_size=2, show_progress_bar=True, normalize_embeddings=True)
 
     # Save vectors
     vectors_path = os.path.join(target_dir, VECTORS_FILE)

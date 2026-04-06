@@ -399,9 +399,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.0] - 2026-04-03
+## [2.5.1] - 2026-04-06
 
-- implement: 시맨틱 검색 확장 — meetings/works 인덱싱 + 통합 검색 CLI + /jarfis:search 커맨드
+- implement: wiki_search.py model.encode()에 batch_size=2 추가 (대량 청크 인덱싱 OOM 방지)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
