@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-06 | Version: 2.5.2
+> 수동 편집하지 마세요. Last updated: 2026-04-06 | Version: 2.5.3
 
 ## 파일 구조
 ```
@@ -110,8 +110,8 @@
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
-  - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색 + 메모리 가드, 745줄)
-- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (200 tests)
+  - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색 + 메모리 가드 + CPU 강제 + MPS 메모리 차감, 771줄)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (202 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
   - `test_utils.py` — utils.py 인터페이스 테스트
   - `test_state.py` — state.py CRUD + validate 테스트

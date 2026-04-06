@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.3] - 2026-04-06
+
+- implement: wiki_search.py MPS 메모리 크래시 수정 — CPU 강제 + MPS 메모리 차감
+
 ## [2.5.2] - 2026-04-06
 
 - implement: SentenceTransformer 메모리 가드 추가 (4GB 임계값, macOS/Linux 지원, LLM 폴백 경고)

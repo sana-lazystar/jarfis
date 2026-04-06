@@ -19,6 +19,7 @@ from jarfis.wiki_search import (
     _collect_md_files,
     _collect_wiki_files,
     _estimate_tokens,
+    _get_mps_allocated_gb,
     _merge_results,
     _strip_frontmatter,
     format_pretty,
@@ -310,6 +311,27 @@ class TestCheckAvailableMemory:
         # test the pattern directly
         val = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", "4.0"))
         assert val == 2.5
+
+
+class TestGetMpsAllocatedGb:
+    def test_returns_float(self):
+        result = _get_mps_allocated_gb()
+        assert isinstance(result, float)
+        assert result >= 0.0
+
+    def test_returns_zero_when_torch_unavailable(self, monkeypatch):
+        """Should return 0.0 gracefully when torch is not importable."""
+        import builtins
+
+        real_import = builtins.__import__
+
+        def mock_import(name, *args, **kwargs):
+            if name == "torch":
+                raise ImportError("mocked")
+            return real_import(name, *args, **kwargs)
+
+        monkeypatch.setattr(builtins, "__import__", mock_import)
+        assert _get_mps_allocated_gb() == 0.0
 
 
 class TestConstants:

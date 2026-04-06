@@ -89,18 +89,39 @@ def _check_available_memory_gb():
         return None
 
 
+def _get_mps_allocated_gb():
+    """Return MPS (Metal) driver-allocated memory in GB, or 0.0 if unavailable.
+
+    On Apple Silicon, MPS allocations consume unified memory but are invisible
+    to vm_stat. This captures GPU memory pressure from other processes.
+    """
+    try:
+        import torch
+
+        if hasattr(torch, "mps") and hasattr(torch.mps, "driver_allocated_memory"):
+            return torch.mps.driver_allocated_memory() / (1024 ** 3)
+    except Exception:
+        pass
+    return 0.0
+
+
 def _ensure_dependencies():
     """Check that sentence-transformers, numpy are available and memory is sufficient."""
     # Memory check first — prevent OOM/kernel panic
     threshold = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", str(MEMORY_THRESHOLD_GB)))
     available = _check_available_memory_gb()
-    if available is not None and available < threshold:
-        json_error(
-            f"메모리 부족: 가용 {available:.1f}GB / 최소 {threshold:.0f}GB 필요. "
-            "SentenceTransformer를 로드할 수 없습니다. "
-            "다른 앱을 종료하거나 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정하세요.",
-            hint="memory_insufficient",
-        )
+    if available is not None:
+        # Deduct MPS GPU memory (invisible to vm_stat on Apple Silicon)
+        mps_gb = _get_mps_allocated_gb()
+        effective = available - mps_gb
+        if effective < threshold:
+            mps_note = f" (MPS GPU: {mps_gb:.1f}GB 사용 중)" if mps_gb > 0.1 else ""
+            json_error(
+                f"메모리 부족: 가용 {effective:.1f}GB{mps_note} / 최소 {threshold:.0f}GB 필요. "
+                "SentenceTransformer를 로드할 수 없습니다. "
+                "다른 앱을 종료하거나 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정하세요.",
+                hint="memory_insufficient",
+            )
 
     try:
         import numpy  # noqa: F401
@@ -196,10 +217,15 @@ _collect_wiki_files = _collect_md_files
 
 
 def _load_model():
-    """Lazy-load the sentence-transformers model."""
+    """Lazy-load the sentence-transformers model.
+
+    Forces CPU to avoid MPS (Metal) unified-memory exhaustion on Apple Silicon.
+    MPS driver allocates ~3.8GB that persists even after empty_cache(), causing
+    macOS kernel panic under repeated invocations.
+    """
     from sentence_transformers import SentenceTransformer
 
-    return SentenceTransformer(MODEL_NAME)
+    return SentenceTransformer(MODEL_NAME, device="cpu")
 
 
 def _check_staleness(target_dir, meta):
