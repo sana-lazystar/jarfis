@@ -73,6 +73,14 @@ python3 ~/.claude/scripts/jarfis_cli.py search works "{$QUERY}" --top-k 5
   결과 없음. 인덱스가 최신인지 확인하세요: /jarfis:search-index --current
 ```
 
+검색 실패 시 (에러 JSON 반환):
+- `hint`가 `memory_insufficient`이면:
+  ```
+  ⚠️ 시맨틱 검색을 사용할 수 없습니다 (메모리 부족). 다른 앱을 종료 후 재시도하거나, 파일을 직접 탐색합니다.
+  ```
+  → `_index.md` 기반으로 관련 파일을 LLM 판단하여 직접 읽고 답변한다.
+- `hint`가 `/jarfis:search-setup`이면 → 기존대로 설치 안내
+
 ### 5. 상세 보기 안내
 
 결과 하단에 안내:

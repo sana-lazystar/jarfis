@@ -102,7 +102,7 @@ python3 ~/.claude/scripts/jarfis_cli.py search index wiki
 # Works 인덱스 갱신 (이번 워크플로우 산출물 포함)
 python3 ~/.claude/scripts/jarfis_cli.py search index works
 ```
-실패해도 워크플로우를 중단하지 않는다 (best-effort). 에러 시 사용자에게 `/jarfis:search-index --current` 수동 실행 안내만 표시.
+실패해도 워크플로우를 중단하지 않는다 (best-effort). 에러에 `memory_insufficient`가 포함되면 → `⚠️ 메모리 부족으로 인덱싱을 스킵합니다. 나중에 /jarfis:search-index --current 로 갱신하세요.` 표시. 그 외 에러 시 수동 실행 안내 표시.
 
 ### 갱신 요약 사용자 표시
 ```

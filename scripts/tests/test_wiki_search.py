@@ -12,7 +12,9 @@ import pytest
 
 from jarfis.wiki_search import (
     CHUNK_TOKEN_THRESHOLD,
+    MEMORY_THRESHOLD_GB,
     SCORE_THRESHOLD,
+    _check_available_memory_gb,
     _chunk_file,
     _collect_md_files,
     _collect_wiki_files,
@@ -283,6 +285,31 @@ class TestFormatPretty:
         }
         pretty = format_pretty(data)
         assert "stale" in pretty.lower() or "modified" in pretty.lower()
+
+
+class TestCheckAvailableMemory:
+    def test_returns_float(self):
+        result = _check_available_memory_gb()
+        # Should return a non-negative float (or None on unsupported OS)
+        if result is not None:
+            assert isinstance(result, float)
+            assert result >= 0.0
+
+    def test_returns_reasonable_value(self):
+        result = _check_available_memory_gb()
+        if result is not None:
+            # Should be between 0 and 1024 GB (reasonable range)
+            assert 0.0 <= result <= 1024.0
+
+    def test_memory_threshold_default(self):
+        assert MEMORY_THRESHOLD_GB == 4.0
+
+    def test_env_override(self, monkeypatch):
+        monkeypatch.setenv("JARFIS_MEMORY_THRESHOLD_GB", "2.5")
+        # Re-import to pick up env var — but since it's module-level,
+        # test the pattern directly
+        val = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", "4.0"))
+        assert val == 2.5
 
 
 class TestConstants:

@@ -31,6 +31,7 @@ SCORE_THRESHOLD = 0.5
 MODEL_NAME = "BAAI/bge-m3"
 
 VALID_SCOPES = ("all", "meetings", "works", "wiki")
+MEMORY_THRESHOLD_GB = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", "4.0"))
 
 VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
 
@@ -38,8 +39,69 @@ VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
 # --- Utilities ---
 
 
+def _check_available_memory_gb():
+    """Check available memory in GB. Returns float or None if unsupported.
+
+    macOS: parses vm_stat (free + speculative + inactive pages).
+    Linux: reads /proc/meminfo MemAvailable.
+    Other/failure: returns None (caller should treat as pass-through).
+    """
+    import platform
+    import subprocess
+
+    system = platform.system()
+    try:
+        if system == "Darwin":
+            result = subprocess.run(
+                ["vm_stat"], capture_output=True, text=True, timeout=5
+            )
+            if result.returncode != 0:
+                return None
+            output = result.stdout
+            page_size = 16384  # ARM Mac default
+            # Try to parse page size from first line
+            first_line = output.split("\n")[0]
+            if "page size of" in first_line:
+                try:
+                    page_size = int(first_line.split("page size of")[1].strip().rstrip(".").split()[0])
+                except (ValueError, IndexError):
+                    pass
+            free = spec = inactive = 0
+            for line in output.split("\n"):
+                if "Pages free:" in line:
+                    free = int(line.split(":")[1].strip().rstrip("."))
+                elif "Pages speculative:" in line:
+                    spec = int(line.split(":")[1].strip().rstrip("."))
+                elif "Pages inactive:" in line:
+                    inactive = int(line.split(":")[1].strip().rstrip("."))
+            total_bytes = (free + spec + inactive) * page_size
+            return total_bytes / (1024 ** 3)
+        elif system == "Linux":
+            with open("/proc/meminfo") as f:
+                for line in f:
+                    if line.startswith("MemAvailable:"):
+                        kb = int(line.split()[1])
+                        return kb / (1024 ** 2)
+            return None
+        else:
+            return None
+    except (OSError, subprocess.TimeoutExpired, ValueError):
+        return None
+
+
 def _ensure_dependencies():
-    """Check that sentence-transformers and numpy are available."""
+    """Check that sentence-transformers, numpy are available and memory is sufficient."""
+    # Memory check first — prevent OOM/kernel panic
+    threshold = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", str(MEMORY_THRESHOLD_GB)))
+    available = _check_available_memory_gb()
+    if available is not None and available < threshold:
+        json_error(
+            f"메모리 부족: 가용 {available:.1f}GB / 최소 {threshold:.0f}GB 필요. "
+            "SentenceTransformer를 로드할 수 없습니다. "
+            "다른 앱을 종료하거나 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정하세요.",
+            hint="memory_insufficient",
+        )
+
     try:
         import numpy  # noqa: F401
         from sentence_transformers import SentenceTransformer  # noqa: F401

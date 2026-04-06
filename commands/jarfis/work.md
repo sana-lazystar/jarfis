@@ -122,7 +122,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
      - 결과가 있으면 (results 비어있지 않음) → AskUserQuestion으로 추천 표시:
        - 각 결과를 Option으로 변환: `[{source}] {file_path} (score: {score})`
        - 마지막 Option: `관련 미팅 없음`
-     - 결과가 없거나 검색 실패 시 → **fallback**으로 최근 미팅 목록:
+     - 결과가 없거나 검색 실패 시 (메모리 부족 포함) → 사용자에게 표시: `⚠️ 시맨틱 검색을 사용할 수 없습니다 (메모리 부족 또는 미설치). LLM 기반 검색으로 대체합니다.` → **fallback**으로 최근 미팅 목록:
        ```bash
        python3 ~/.claude/scripts/jarfis_cli.py meetings 3
        ```

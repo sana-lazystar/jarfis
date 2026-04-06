@@ -114,3 +114,11 @@ Note: 최초 실행 시 bge-m3 모델이 자동 다운로드됩니다 (~2GB).
 ```
   ❌ {scope} — {에러 메시지}
 ```
+
+에러에 `memory_insufficient` hint가 포함된 경우 → 전체 인덱싱 중단 + 경고:
+```
+  ⚠️ 메모리 부족으로 인덱싱을 중단합니다.
+  가용 메모리: {N}GB / 최소 필요: 4GB
+  다른 앱(VS Code, Chrome, Figma 등)을 종료한 후 다시 시도하세요.
+  또는 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정할 수 있습니다.
+```

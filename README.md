@@ -331,9 +331,9 @@ bash install.sh --version 1.0.0
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
-    ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링
+    ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 + 메모리 부족 LLM 폴백
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
-    ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current
+    ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입
@@ -399,9 +399,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.1] - 2026-04-06
+## [2.5.2] - 2026-04-06
 
-- implement: wiki_search.py model.encode()에 batch_size=2 추가 (대량 청크 인덱싱 OOM 방지)
+- implement: SentenceTransformer 메모리 가드 추가 (4GB 임계값, macOS/Linux 지원, LLM 폴백 경고)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
