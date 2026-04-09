@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.4] - 2026-04-09
+
+- implement: PRD Completeness Check ratchet (AutoResearch pattern)
+
 ## [2.5.3] - 2026-04-06
 
 - implement: wiki_search.py MPS 메모리 크래시 수정 — CPU 강제 + MPS 메모리 차감

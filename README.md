@@ -321,7 +321,7 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~715줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~753줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔, v2.5.4: PRD Ratchet)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -336,7 +336,7 @@ bash install.sh --version 1.0.0
     ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입
+    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
     │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Artifact Loading Checklist + Handoff + Design Contract
@@ -346,7 +346,7 @@ bash install.sh --version 1.0.0
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions + tdd_enabled
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions + tdd_enabled + PRD ratchet
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
         ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
@@ -399,9 +399,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.3] - 2026-04-06
+## [2.5.4] - 2026-04-09
 
-- implement: wiki_search.py MPS 메모리 크래시 수정 — CPU 강제 + MPS 메모리 차감
+- implement: PRD Completeness Check ratchet (AutoResearch pattern)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

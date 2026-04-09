@@ -29,7 +29,17 @@
   },
   "phases": {
     "0": { "status": "completed" },
-    "1": { "status": "completed", "gate": "approved" },
+    "1": {
+      "status": "completed",
+      "gate": "approved",
+      "ratchet": {
+        "prd_score": 9,
+        "items": {"ambiguity": 2, "kpi": 2, "perf_budget": 1, "roles_rationale": 2, "scope_boundary": 2},
+        "passed_items": ["ambiguity", "kpi", "roles_rationale", "scope_boundary"],
+        "attempts": 1,
+        "history": [{"score": 9, "passed": ["ambiguity", "kpi", "roles_rationale", "scope_boundary"], "action": "accept"}]
+      }
+    },
     "2": {
       "status": "completed",
       "handoff": {
@@ -107,6 +117,14 @@
 ```
 
 ## 필드 설명
+
+### phases.1.ratchet
+Phase 1 PRD Completeness Check의 래칫 상태. AutoResearch 래칫 패턴 기반.
+- `prd_score`: 현재 총점 (0-10)
+- `items`: 5개 항목별 점수 (0-2). 키: `ambiguity`, `kpi`, `perf_budget`, `roles_rationale`, `scope_boundary`
+- `passed_items`: 현재 Pass(2점)인 항목명 배열. 래칫 검증에 사용: 이전에 Pass였던 항목이 Fail로 변경되면 래칫 위반
+- `attempts`: PO 재작성 시도 횟수 (최대 2)
+- `history`: 채점 이력. `score`: 해당 시점 총점, `passed`: Pass 항목, `action`: `accept`(점수 유지/개선) 또는 `ratchet_violation`(Pass→Fail 감지)
 
 ### phases.4.tdd_enabled
 Step 4-0.5 TDD 테스트 선행 작성 활성화 여부. `true`이면 QA(Opus)가 test-strategy.md 기반 테스트 코드를 선행 작성했음을 의미. Phase 5 QA 리뷰 시 경량화 힌트로 활용.

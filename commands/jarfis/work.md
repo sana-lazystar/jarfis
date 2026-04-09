@@ -246,15 +246,48 @@ PO (senior-product-owner):
 Architect (technical-architect):
 > 📄 프롬프트: `prompts/phase1.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
-**Step 1-2.5: PRD Completeness Check** (오케스트레이터 직접 실행 — 에이전트 아님)
+**Step 1-2.5: PRD Completeness Check — Ratchet** (오케스트레이터 직접 실행 — 에이전트 아님)
 
 > 📄 프롬프트: `prompts/phase1.md` Step 1-2.5 섹션을 읽어서 오케스트레이터가 직접 실행한다.
-> PRD 자동 검증 후 미통과 항목이 있으면 PO에게 재작성 지시 (최대 2회).
+> PRD를 5개 항목별 Pass/Fail + 점수(0-2)로 채점하고, 래칫 규칙을 적용한다.
+
+**채점 기준** (각 항목 0-2점, 총 10점):
+
+| 항목 | 0점 (Fail) | 1점 (Fail) | 2점 (Pass) |
+|------|-----------|-----------|-----------|
+| 모호 표현 | "적절한/빠른/충분한" 등 3개+ | 1-2개 남음 | 모두 구체적 수치로 전환됨 |
+| KPI 측정 가능성 | KPI 없거나 정성적 | 숫자 있으나 측정 방법 미명시 | 숫자 + 측정 방법 모두 명시 |
+| Performance Budget | 미정의 | 일부 지표만 수치화 | 모든 지표에 숫자 + 측정 방법 |
+| Required Roles 근거 | 근거 없음 | 일부 역할만 근거 제시 | 모든 역할에 1문장+ 근거 |
+| 스코프 경계 | Out of Scope 미정의 | 포함 범위만 정의 | 포함 + 제외 범위 모두 명시 |
+
+> ⚠️ **불변 평가자 원칙**: 위 채점 기준은 오케스트레이터 전용이다. PO 에이전트 프롬프트에는 이 기준을 포함하지 않는다.
+
+**래칫 로직**:
+1. PRD 최초 생성 시 → 5개 항목 채점 → 항목별 Pass(2점)/Fail(0-1점) 상태 + 총점 기록
+2. 5개 항목 모두 Pass → Gate 1로 진행
+3. Fail 항목 존재 → PO에게 Fail 항목 + 현재 점수 전달, 해당 항목만 재작성 지시
+4. PO 재작성 후 재채점:
+   - **래칫 검증**: 이전에 Pass였던 항목이 Fail로 변했는지 확인
+   - 래칫 위반 없음 → 결과 반영, 남은 횟수 내 재시도
+   - **래칫 위반 발생** → PO에게 경고: "이전에 통과했던 [항목명]이 미통과로 변경됨. 해당 항목의 품질을 유지하면서 Fail 항목만 개선하라" 재지시
+5. 최대 2회 시도 후에도 Fail 항목 존재 → Gate 1에 "PRD Score: X/10, Fail 항목: [목록]" 표시하고 사용자 판단
+
+**상태 기록** (`.jarfis-state.json`):
+```
+jarfis_cli.py state set-nested phases.1.ratchet '{
+  "prd_score": <총점>,
+  "items": {"ambiguity": <0-2>, "kpi": <0-2>, "perf_budget": <0-2>, "roles_rationale": <0-2>, "scope_boundary": <0-2>},
+  "passed_items": ["<Pass된 항목 목록>"],
+  "attempts": <시도 횟수>,
+  "history": [{"score": <N>, "passed": ["<항목>"], "action": "accept|ratchet_violation"}]
+}'
+```
 
 ### 🔒 게이트 1: 사용자 컨펌
-산출물(`press-release.md`, `prd.md`) 요약을 표시한 후 AskUserQuestion:
+산출물(`press-release.md`, `prd.md`) 요약 + **PRD Completeness Score** 를 표시한 후 AskUserQuestion:
 ```
-question: "Phase 1 산출물을 확인하세요. 어떻게 진행할까요?"
+question: "Phase 1 산출물을 확인하세요. PRD Score: {X}/10 (Pass: {N}/5). 어떻게 진행할까요?"
 header: "Gate 1"
 options:
   - label: "승인 — 다음 Phase로 진행"
