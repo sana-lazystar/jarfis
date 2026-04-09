@@ -327,7 +327,7 @@ bash install.sh --version 1.0.0
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── sys-version.md                 # 버전 관리/업데이트
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 + Workflow Metrics
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + Fix 테스트 래칫 + wiki 2/4-Step + Workflow Metrics
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
@@ -346,7 +346,7 @@ bash install.sh --version 1.0.0
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + tdd_enabled + PRD ratchet + Phase 4 TDD ratchet + workflow-metrics.tsv
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
         ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
@@ -399,9 +399,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.6] - 2026-04-09
+## [2.5.7] - 2026-04-09
 
-- implement: TDD code quality ratchet for Phase 4 (AutoResearch pattern)
+- implement: Fix mode test ratchet for work-continue (AutoResearch pattern)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

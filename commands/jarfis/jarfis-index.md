@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-09 | Version: 2.5.6
+> 수동 편집하지 마세요. Last updated: 2026-04-09 | Version: 2.5.7
 
 ## 파일 구조
 ```
@@ -17,7 +17,7 @@
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review (312줄)
     ├── sys-version.md                 # 버전 관리/업데이트 (158줄)
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 + Workflow Metrics (295줄)
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + Fix 테스트 래칫 + wiki 2/4-Step + Workflow Metrics (333줄)
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트 (96줄)
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내 (114줄)
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어 (48줄)
@@ -36,7 +36,7 @@
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트 (95줄)
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + tdd_enabled + PRD ratchet + Phase 4 TDD ratchet + workflow-metrics.tsv (204줄)
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv (229줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
         ├── project-context.md     # project-context.md 템플릿 (17줄)
         ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조 (68줄)

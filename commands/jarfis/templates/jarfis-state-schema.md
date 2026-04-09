@@ -202,3 +202,28 @@ workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning
 | skipped_phases | string | 스킵된 Phase 번호 (쉼표 구분) | status="skipped"인 Phase |
 | follow_up_mode | string | 후속 작업 모드 | "" (본 워크플로우) / "fix" / "extend" |
 | follow_up_iteration | int | 후속 작업 반복 횟수 | `follow_up.iteration` (없으면 빈 칸) |
+
+---
+
+## follow_up.ratchet
+
+work-continue Fix 모드의 테스트 래칫 상태. Unit 3(Phase 4 TDD 래칫)의 경량 버전.
+테스트 러너가 존재하는 프로젝트에서 Fix 구현 전후 통과율을 비교하여 fix cascade를 방지한다.
+
+```json
+{
+  "follow_up": {
+    "ratchet": {
+      "fix_baseline_pass_rate": 0.95,
+      "fix_current_pass_rate": 0.97,
+      "action": "accept"
+    }
+  }
+}
+```
+
+| 필드 | 타입 | 설명 |
+|------|------|------|
+| fix_baseline_pass_rate | float(0.0-1.0) | Fix 시작 전 테스트 통과율 |
+| fix_current_pass_rate | float(0.0-1.0) | Fix 완료 후 테스트 통과율 |
+| action | string | `accept`(통과율 유지/개선), `reject`(하락→재시도), `user_override`(사용자 강제 진행), `disabled`(테스트 러너 미존재) |
