@@ -224,6 +224,12 @@ work.md의 Phase 5를 경량으로 실행한다:
 
 **Wiki 갱신** (Org 등록 시): 디폴트 "안 함". AskUserQuestion으로 사용자 선택 시에만 wiki 2-트랙 갱신 실행.
 
+**Workflow Metrics 기록** (best-effort):
+`$JARFIS_ORG_DIR/workflow-metrics.tsv`에 경량 메트릭을 append한다. `prompts/phase6.md` Step 6-2.5의 TSV 형식을 따르되:
+- `follow_up_mode` = `"fix"`
+- `follow_up_iteration` = `.jarfis-state.json`의 `follow_up.iteration`
+- 나머지 필드는 원본 워크플로우 state에서 추출 (빈 칸 허용)
+
 ---
 
 ## Step 4: Extend 모드 실행
@@ -273,6 +279,12 @@ Fix 모드의 3-4와 동일한 형식.
 Fix 모드의 3-5와 동일하되, 회고 관점을 확장 작업에 맞춤:
 - "확장 기능이 기존 아키텍처와 잘 통합되었는가?"
 - "확장 시 발견된 기존 설계의 개선점은?"
+
+**Workflow Metrics 기록** (best-effort):
+`$JARFIS_ORG_DIR/workflow-metrics.tsv`에 경량 메트릭을 append한다. `prompts/phase6.md` Step 6-2.5의 TSV 형식을 따르되:
+- `follow_up_mode` = `"extend"`
+- `follow_up_iteration` = `.jarfis-state.json`의 `follow_up.iteration`
+- 나머지 필드는 원본 워크플로우 state에서 추출 (빈 칸 허용)
 
 ---
 

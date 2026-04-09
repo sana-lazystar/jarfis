@@ -321,13 +321,13 @@ bash install.sh --version 1.0.0
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~753줄, v2.4: TDD Step 4-0.5, 디자이너 분기, 복수 Figma, reference.png, Design Contract, Phase 5 이중 비교, MCP 체크, Prompt Path Resolution, Meeting 동적 스캔, v2.5.4: PRD Ratchet)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~758줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
     ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
     ├── sys-version.md                 # 버전 관리/업데이트
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출
+    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + wiki 2/4-Step + Extend QA 호출 + Workflow Metrics
     ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
     ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
     ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
@@ -342,11 +342,11 @@ bash install.sh --version 1.0.0
     │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Artifact Loading Checklist + Handoff + Design Contract
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
     │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + TDD 경량화 + Fix 원설계 참조 + UX Designer 이중 비교
-    │   ├── phase6.md              # Phase 6 Retrospective + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
+    │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions + tdd_enabled + PRD ratchet
+        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + status/key_decisions + tdd_enabled + PRD ratchet + workflow-metrics.tsv 형식
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
         ├── project-context.md     # project-context.md 템플릿
         ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
@@ -399,9 +399,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.4] - 2026-04-09
+## [2.5.5] - 2026-04-09
 
-- implement: PRD Completeness Check ratchet (AutoResearch pattern)
+- implement: workflow metrics recording (AutoResearch results.tsv pattern)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

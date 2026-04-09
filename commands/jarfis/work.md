@@ -639,6 +639,11 @@ retrospective.md를 읽고 다음 두 파일에 분배 저장한다:
 
 관리 규칙: 기존 파일에 업데이트 (새 정보 추가, 오래된 정보 갱신)
 
+**Step 6-2.5: Workflow Metrics 기록** (오케스트레이터 직접 실행)
+
+> 📄 프롬프트: `prompts/phase6.md` Step 6-2.5 섹션을 읽어서 오케스트레이터가 직접 실행한다.
+> .jarfis-state.json에서 핵심 메트릭을 추출하여 $JARFIS_ORG_DIR/workflow-metrics.tsv에 기록한다. best-effort — 실패 시 경고만.
+
 **Step 6-3: Wiki 갱신** (Org 등록 시만 실행, 오케스트레이터)
 > 📄 프롬프트: `prompts/phase6.md` Step 6-3 섹션을 읽어서 실행한다.
 - 트랙 A: 텍스트 Wiki (PO, TA, QA) — 산출물에서 누적 지식 추출 → wiki 갱신

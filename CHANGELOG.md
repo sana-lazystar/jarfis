@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.5] - 2026-04-09
+
+- implement: workflow metrics recording (AutoResearch results.tsv pattern)
+
 ## [2.5.4] - 2026-04-09
 
 - implement: PRD Completeness Check ratchet (AutoResearch pattern)

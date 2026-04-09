@@ -55,6 +55,40 @@ learning_candidates가 없으면 이 섹션을 생략하세요.
 결과를 $DOCS_DIR/retrospective.md에 저장하세요."
 ```
 
+**Step 6-2.5: Workflow Metrics 기록** (오케스트레이터 직접 실행)
+
+> 이 단계는 에이전트를 호출하지 않고, 오케스트레이터가 직접 실행한다.
+> .jarfis-state.json에서 핵심 메트릭을 추출하여 TSV에 기록한다. **best-effort** — 실패 시 경고만.
+
+기록 위치: `$JARFIS_ORG_DIR/workflow-metrics.tsv`
+
+**TSV 헤더** (파일이 없으면 이 헤더 행 포함 생성):
+```
+workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning_candidates_count	skipped_phases	follow_up_mode	follow_up_iteration
+```
+
+**필드 매핑** (.jarfis-state.json → TSV):
+
+| TSV 컬럼 | 추출 경로 | 기본값 (없을 때) |
+|----------|-----------|----------------|
+| workflow_id | `work_name` | (필수 — 없으면 기록 스킵) |
+| project | `project_name` | "" |
+| started_at | `started_at` | "" |
+| completed_at | 현재 시각 (ISO8601) | — |
+| prd_score | `phases.1.ratchet.prd_score` | "" |
+| review_iterations | `phases.5`의 재리뷰 관련 정보에서 추출 | "0" |
+| learning_candidates_count | `learning_candidates` 배열 길이 | "0" |
+| skipped_phases | status가 "skipped"인 Phase 번호를 쉼표 구분 | "" |
+| follow_up_mode | (work.md 본 워크플로우에서는 항상 빈 칸) | "" |
+| follow_up_iteration | (work.md 본 워크플로우에서는 항상 빈 칸) | "" |
+
+**실행 절차**:
+1. `$JARFIS_ORG_DIR/workflow-metrics.tsv` 존재 확인 → 없으면 헤더 행 포함 생성
+2. .jarfis-state.json 읽기 → 위 매핑 테이블에 따라 값 추출
+3. TSV 행 구성 → 파일에 append
+4. 성공 시: "📊 Workflow metrics recorded: {workflow_id}" 표시
+5. 실패 시: "⚠️ Metrics recording failed (best-effort, 워크플로우 계속 진행)" 경고 표시
+
 **Step 6-3: Wiki 2-트랙 갱신** (Org 등록 시만 실행, 오케스트레이터)
 
 > 핵심 원칙: learning = JARFIS 에이전트/워크플로우 개선, wiki = Org 누적 지식 — 목적이 다르므로 독립
