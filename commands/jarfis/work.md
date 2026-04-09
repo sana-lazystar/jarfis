@@ -531,8 +531,51 @@ options:
 > 스킵 시 `phases.4.tdd_enabled: false` 기록.
 > 📄 프롬프트: `prompts/phase4.md` Step 4-0.5 섹션을 읽어서 에이전트에 전달한다.
 
-**Step 4-1: 병렬 구현** (tasks.md에 태스크가 있는 파트만 동시 실행)
+**Step 4-0.5a: TDD Baseline 기록** (오케스트레이터 직접 실행, `tdd_enabled: true`일 때만)
+
+> Step 4-0.5 완료 직후, 오케스트레이터가 전체 테스트를 실행하여 baseline을 기록한다.
+> 구현 에이전트에게 "테스트 실행 후 passed/failed/total을 보고하라" 지시하여 결과를 받는다.
+> 프레임워크 독립: 테스트 러너 명령어는 project-profile의 scripts 섹션에서 추출한다.
+
+```
+jarfis_cli.py state set-nested "$DOCS_DIR/.jarfis-state.json" "ratchet.phase4_tests" '{
+  "baseline_pass_rate": <passed/total>,
+  "test_command": "<project-profile에서 추출한 테스트 명령어>",
+  "task_index": 0,
+  "test_modifications": [],
+  "history": []
+}'
+```
+
+**Step 4-1: 병렬 구현 — Ratchet Loop** (tasks.md에 태스크가 있는 파트만 동시 실행)
 > Step 4-0.5에서 TDD가 활성화된 경우, 각 구현 에이전트에게 TDD Green Phase 블록이 추가된다.
+> 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
+
+**TDD 래칫 규칙** (`tdd_enabled: true`일 때, 오케스트레이터가 각 태스크 완료 후 실행):
+
+1. 구현 에이전트가 태스크 완료 + git commit 후
+2. 오케스트레이터: 에이전트에게 "전체 테스트 실행 → passed/failed/total 숫자 보고" 지시
+3. current_pass_rate = passed / total
+4. **래칫 판정**:
+   - current_pass_rate >= baseline_pass_rate → **ACCEPT**
+     - baseline_pass_rate = current_pass_rate (갱신)
+     - ratchet.phase4_tests.task_index 증가
+     - history에 `{"task": "BE-N", "pass_rate": X, "action": "accept"}` 추가
+   - current_pass_rate < baseline_pass_rate → **REJECT**
+     - `git stash`로 변경사항 저장
+     - 에이전트에게: "태스크 구현이 기존 테스트 N개를 깨뜨림. 깨진 테스트: [목록]. `git stash pop`으로 코드를 복원한 뒤, 기존 테스트를 통과하면서 태스크를 구현하라." 재지시
+     - 재시도 (태스크당 **최대 2회**)
+     - history에 `{"task": "BE-N", "pass_rate": X, "action": "reject", "attempt": N}` 추가
+5. 2회 재시도 후에도 실패 → `git stash pop`으로 원복 → 경고 기록 → 다음 태스크로 진행
+   - history에 `{"task": "BE-N", "pass_rate": X, "action": "skipped_after_max_retries"}` 추가
+   - Phase 5에서 해당 태스크를 진단 대상으로 플래그
+
+**테스트 파일 수정 감지** (오케스트레이터):
+- 각 태스크 커밋에서 `tests/`, `__tests__/`, `*.test.*`, `*.spec.*` 경로의 파일 수정 여부 확인
+- 수정 감지 시: `ratchet.phase4_tests.test_modifications`에 `{"file": "<경로>", "task": "BE-N", "reason": "<커밋 메시지>"}` 추가
+- Phase 5 QA 리뷰에서 해당 수정의 타당성 사후 검증 대상으로 플래그
+
+> ⚠️ **Anti-pattern**: Phase 4 전체를 반복하거나, 태스크당 2회를 초과하여 재시도하지 않는다. 해결 불가 시 Phase 5에서 진단한다.
 
 Backend (senior-backend-engineer), Frontend (senior-frontend-engineer), DevOps (senior-devops-sre-engineer):
 > 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.5.6] - 2026-04-09
+
+- implement: TDD code quality ratchet for Phase 4 (AutoResearch pattern)
+
 ## [2.5.5] - 2026-04-09
 
 - implement: workflow metrics recording (AutoResearch results.tsv pattern)

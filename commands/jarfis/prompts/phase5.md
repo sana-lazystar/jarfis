@@ -99,6 +99,16 @@ QA 리뷰는 아래에 집중하세요:
 - 비기능 요구사항: 성능 테스트 (Performance Budget 기준), 접근성
 - 구현 에이전트가 [TEST_ISSUE]로 보고한 항목 검토
 - 코드 품질, 아키텍처 적합성 리뷰는 축소하지 않음 (Tech Lead 담당 유지)
+
+─── 테스트 파일 수정 검증 (test_modifications) ───
+.jarfis-state.json의 `ratchet.phase4_tests.test_modifications`에
+구현 에이전트가 테스트 파일을 수정한 기록이 있으면:
+1. 각 수정의 사유(커밋 메시지의 [TEST_MODIFIED] 태그)를 확인
+2. 수정이 정당한지 판단: 테스트 자체의 버그/부정확성 수정인가, 테스트를 우회하기 위한 수정인가?
+3. 부당한 수정 → review.md에 "테스트 무결성 위반" 이슈로 보고
+4. test_modifications가 비어있으면 이 블록을 건너뜀
+──────────────────────────────────────────
+
 ※ tdd_enabled가 false이면 이 블록을 무시하세요.
 ───────────────────────────────
 
