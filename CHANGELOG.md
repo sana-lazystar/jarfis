@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.1] - 2026-04-10
+
+- implement: Phase B-alpha — 9 Personas + 6 Skills 추출 (domain plugin architecture)
+
 ## [2.6.0] - 2026-04-10
 
 - implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가

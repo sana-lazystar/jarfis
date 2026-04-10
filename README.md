@@ -347,7 +347,14 @@ bash install.sh --version 1.0.0
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
     ├── domains/                   # v3.0 Domain Pack 인프라
     │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
-    │   └── web.yaml               # Web Development 도메인 팩
+    │   ├── web.yaml               # Web Development 도메인 팩
+    │   └── web/skills/            # Web 도메인 Skills
+    │       ├── react.md           # React 패턴 + 상태관리 + Next.js
+    │       ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
+    │       ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
+    │       ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
+    │       ├── express.md         # Express/NestJS + API 설계
+    │       └── biome-lint.md      # Biome 린팅/포매팅 패턴
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
@@ -361,6 +368,16 @@ bash install.sh --version 1.0.0
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크
+│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
+│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
+│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
+│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
+│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
+│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
+│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
+│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
+│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트
 ├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트
 ├── senior-backend-engineer.md     # BE 구현 에이전트
@@ -402,9 +419,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.6.0] - 2026-04-10
+## [2.6.1] - 2026-04-10
 
-- implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가
+- implement: Phase B-alpha — 9 Personas + 6 Skills 추출 (domain plugin architecture)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

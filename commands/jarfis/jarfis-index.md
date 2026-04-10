@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.6.0
+> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.6.1
 
 ## 파일 구조
 ```
@@ -37,7 +37,14 @@
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트 (95줄)
     ├── domains/                   # v3.0 Domain Pack 인프라 [NEW]
     │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
-    │   └── web.yaml               # Web Development 도메인 팩
+    │   ├── web.yaml               # Web Development 도메인 팩
+    │   └── web/skills/            # Web 도메인 Skills [NEW]
+    │       ├── react.md           # React 패턴 + 상태관리 + Next.js
+    │       ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
+    │       ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
+    │       ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
+    │       ├── express.md         # Express/NestJS + API 설계
+    │       └── biome-lint.md      # Biome 린팅/포매팅 패턴
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv (229줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
@@ -51,6 +58,16 @@
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿 (27줄) [NEW]
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크 [NEW]
+│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
+│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
+│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
+│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
+│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
+│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
+│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
+│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
+│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄)
 ├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄)
 ├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
