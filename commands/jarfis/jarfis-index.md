@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 3.1.1
+> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 3.1.2
 
 ## 파일 구조
 ```
@@ -24,7 +24,7 @@
     ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 + 메모리 부족 LLM 폴백 (90줄)
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝 (57줄)
     ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드 (124줄)
-    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — 자동 수집 + 인터뷰, 7차원 10점 (195줄) [NEW]
+    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — level_check.py 자체 수집 + 인터뷰, 7차원 10점 (195줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙 (209줄)
@@ -142,6 +142,7 @@
   - `domain.py` — Domain Pack 관리 모듈 (list/detect/agents/compose/validate/scaffold/install, v3.0 신규) [NEW]
   - `audit.py` — 감사 로그 모듈 (append-only JSONL, v3.0 신규) [NEW]
   - `trace.py` — 성능 추적 모듈 (에이전트별 토큰/소요시간, v3.0 신규) [NEW]
+  - `level_check.py` — AI-native 성숙도 자동 수집 모듈 (파일시스템 조사 + jsonl 세션 파싱, 오케스트레이션 감지)
   - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색 + 메모리 가드 + CPU 강제 + MPS 메모리 차감, 771줄)
 - `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (260 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
@@ -156,6 +157,7 @@
   - `test_sync.py` — sync.py 파일 동기화 테스트
   - `test_validate.py` — validate.py 워크플로우 검증 테스트
   - `test_organization.py` — organization.py Org 관리 테스트
+  - `test_level_check.py` — level_check.py 자동 수집 테스트 (22 tests: 파일시스템 13 + jsonl 파싱 7 + 통합 2)
   - `test_wiki_search.py` — wiki_search.py 유틸리티 함수 테스트 (임베딩 제외)
   - `test_jarfis_cli.py` — jarfis_cli.py 디스패처 테스트 (subprocess)
 - `~/.claude/scripts/jarfis_check.sh` — grep 기반 JARFIS 구조 검증 스크립트 (Phase 헤딩, 프롬프트 파일, 버전 일치, 모델 정합성)

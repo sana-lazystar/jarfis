@@ -335,7 +335,7 @@ bash install.sh --version 1.0.0
     ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 + 메모리 부족 LLM 폴백
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
     ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드
-    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — 자동 수집 + 인터뷰, 7차원 10점
+    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — level_check.py 자체 수집 + 인터뷰, 7차원 10점
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙
@@ -427,9 +427,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [3.1.1] - 2026-04-10
+## [3.1.2] - 2026-04-10
 
-- fix: v3.0 코드 버그 4건 수정 (web.yaml persona, desktop react 중복, fallback 매핑, agent name 충돌)
+- implement: level_check.py self-contained data collection (remove collect.py dependency)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

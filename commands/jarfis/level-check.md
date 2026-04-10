@@ -8,42 +8,30 @@
 
 ### Step 1: 자동 수집 (로컬 데스크탑 조사)
 
-`claude-profile`의 `collect.py`를 실행하여 기본 데이터를 수집한다.
+JARFIS 자체 수집 스크립트를 실행하여 데이터를 수집한다. 외부 의존성 없음.
 
 ```bash
-python3 ~/.claude/skills/claude-profile/scripts/collect.py 2>/dev/null || \
-python3 ~/.claude/skills/claude_profile/scripts/collect.py 2>/dev/null
+python3 ~/.claude/scripts/jarfis/level_check.py
+# 또는 전체 세션 분석 (최근 30일 제한 해제):
+python3 ~/.claude/scripts/jarfis/level_check.py --all
 ```
 
 수집 항목 (JSON 출력):
-- `usage.sessions` — 총 세션 수
-- `usage.avg_prompts` — 세션당 평균 프롬프트
-- `usage.bash`, `usage.read`, `usage.edit` — 도구 호출 수
-- `tree.skills_total` — 스킬 수
-- `tree.hooks_total` — 훅 수
-- `tree.memory_count` — 메모리 수
-- `skill_usage` — 스킬별 사용 횟수
-- `mcp_usage` — MCP 서버별 호출 횟수
-- `agents` — 에이전트 위임 횟수/종류
+- `sessions`, `avg_prompts` — 세션 수, 세션당 평균 프롬프트
+- `tools` — 도구별 호출 수 (Bash, Read, Edit, Agent 등)
+- `skills.total`, `skills.usage` — 스킬 파일 수 + 스킬별 사용 횟수
+- `mcp.total`, `mcp.servers` — MCP 서버 수 + 서버별 호출 횟수
+- `agents.custom`, `agents.personas`, `agents.dialectic`, `agents.delegations`, `agents.types` — 에이전트 상세
+- `hooks.total`, `hooks.events`, `hooks.names` — 훅 상세
+- `memory.total`, `memory.types` — 메모리 수 + 유형 분포
+- `claude_md.total_lines`, `claude_md.files` — 프로젝트별 CLAUDE.md 합산
 - `models` — 모델 사용 비율
-- `permissions` — 권한 모드
-
-**collect.py 실패 시**: 사용자에게 안내하고 모든 항목을 Step 2에서 수동 입력으로 대체.
-
-추가로 직접 조사:
-```bash
-# 커스텀 에이전트 수
-find ~/.claude/agents/ -name "*.md" 2>/dev/null | wc -l
-
-# 커맨드(스킬) 파일 수
-find ~/.claude/commands/ -name "*.md" -type f 2>/dev/null | wc -l
-
-# 프로젝트별 CLAUDE.md 총 줄 수
-find ~/. -name "CLAUDE.md" -not -path "*node_modules*" -not -path "*.git*" -exec wc -l {} + 2>/dev/null | tail -1
-
-# hooks 상세
-cat ~/.claude/settings.json 2>/dev/null | python3 -c "import sys,json; d=json.load(sys.stdin); hooks=d.get('hooks',{}); print(f'events: {len(hooks)}, hooks: {sum(len(v) for v in hooks.values())}')" 2>/dev/null
-```
+- `permissions.mode` — 권한 모드
+- `orchestration.jarfis`, `orchestration.omc`, `orchestration.superclaude`, `orchestration.custom` — 오케스트레이션 시스템 감지
+- `domains.packs`, `domains.skills` — 도메인 팩/스킬 수
+- `wiki` — Wiki 시스템 존재 여부
+- `tests` — 테스트 함수 수
+- `plugins` — 플러그인 수
 
 자동 수집 결과를 `$AUTO_DATA`에 저장하고, 사용자에게 요약을 보여준다:
 
