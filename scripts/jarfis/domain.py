@@ -302,14 +302,28 @@ def compose(domain_name, role_name, task,
         Dict with agent_type, prompt_content, token_count,
         loaded_skills, truncated_skills, fallback.
     """
+    # Fallback persona mapping: role_name → known agent_type
+    _FALLBACK_PERSONAS = {
+        "backend_engineer": "backend-developer",
+        "frontend_engineer": "frontend-developer",
+        "devops_engineer": "devops-engineer",
+        "rust_engineer": "backend-developer",
+        "webview_engineer": "frontend-developer",
+        "security_engineer": "security-engineer",
+        "qa_engineer": "qa-engineer",
+    }
+
     try:
         config = _load_domain_yaml(domain_name, domains_dir)
         role = _find_role(config, role_name)
     except (FileNotFoundError, yaml.YAMLError, KeyError, ValueError) as e:
         # Fallback: persona-only execution
         error_msg = f"{type(e).__name__}: domain config load failed"
+        fallback_type = _FALLBACK_PERSONAS.get(
+            role_name, role_name.replace("_", "-")
+        )
         return {
-            "agent_type": role_name.split("_")[0] + "-developer",
+            "agent_type": fallback_type,
             "prompt_content": f"## Task\n{task}",
             "token_count": estimate_tokens(task),
             "loaded_skills": [],

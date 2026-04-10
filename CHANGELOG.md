@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.1.1] - 2026-04-10
+
+- fix: v3.0 코드 버그 4건 수정 (web.yaml persona, desktop react 중복, fallback 매핑, agent name 충돌)
+
 ## [3.1.0] - 2026-04-10
 
 - implement: add jarfis:level-check - AI-native developer maturity assessment

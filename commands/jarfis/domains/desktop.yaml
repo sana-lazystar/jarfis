@@ -29,7 +29,7 @@ roles:
       required: true
     - name: webview_engineer
       persona: frontend-developer
-      skills: ["react", "tauri-webview"]
+      skills: ["tauri-webview"]
       external_skills: ["web/react"]
       model: sonnet
       commit_prefix: "WV"

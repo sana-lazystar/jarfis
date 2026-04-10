@@ -1,6 +1,6 @@
 ---
-name: tech-lead
-description: "코드 리뷰, 리팩토링, 기술 부채 관리, 코딩 컨벤션 수립, PR 리뷰, 엔지니어링 의사결정을 담당한다."
+name: senior-tech-lead
+description: "v2.5 legacy — 코드 리뷰, 리팩토링, 기술 부채 관리, 코딩 컨벤션 수립, PR 리뷰, 엔지니어링 의사결정을 담당한다."
 model: opus
 color: white
 ---

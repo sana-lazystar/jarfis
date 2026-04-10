@@ -1,6 +1,6 @@
 ---
-name: technical-architect
-description: "시스템 아키텍처 설계, 기술 스택 선정, NFR 정량화, ADR 작성, BE/FE/DevOps 태스크 분해를 담당한다."
+name: senior-technical-architect
+description: "v2.5 legacy — 시스템 아키텍처 설계, 기술 스택 선정, NFR 정량화, ADR 작성, BE/FE/DevOps 태스크 분해를 담당한다."
 model: opus
 color: green
 ---

@@ -259,6 +259,26 @@ class TestCompose:
         result = compose("broken", "eng", "task", domains_dir=str(domains_dir))
         assert result["fallback"] is True
 
+    def test_compose_fallback_agent_type_mapping(self, tmp_path):
+        """Fallback agent_type should map to existing personas."""
+        domains_dir = tmp_path / "domains"
+        domains_dir.mkdir()
+        (domains_dir / "broken.yaml").write_text("not valid")
+
+        # Known role names should map to known personas
+        known_mappings = {
+            "backend_engineer": "backend-developer",
+            "frontend_engineer": "frontend-developer",
+            "devops_engineer": "devops-engineer",
+            "rust_engineer": "backend-developer",
+            "webview_engineer": "frontend-developer",
+        }
+        for role_name, expected_agent in known_mappings.items():
+            result = compose("broken", role_name, "task", domains_dir=str(domains_dir))
+            assert result["fallback"] is True
+            assert result["agent_type"] == expected_agent, \
+                f"{role_name} should fallback to {expected_agent}, got {result['agent_type']}"
+
     def test_compose_skills_string_type(self, tmp_path):
         """S1: skills: "react" (string) should be converted to ["react"]."""
         import yaml

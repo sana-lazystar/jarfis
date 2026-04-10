@@ -28,19 +28,19 @@ roles:
       model: opus
   implement:
     - name: backend_engineer
-      persona: senior-backend-engineer
+      persona: backend-developer
       skills: ["nodejs", "express"]
       model: sonnet
       commit_prefix: "BE"
       required: true
     - name: frontend_engineer
-      persona: senior-frontend-engineer
+      persona: frontend-developer
       skills: ["react", "browser"]
       model: sonnet
       commit_prefix: "FE"
       required: true
     - name: devops_engineer
-      persona: senior-devops-sre-engineer
+      persona: devops-engineer
       skills: []
       model: sonnet
       commit_prefix: "DevOps"
