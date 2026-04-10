@@ -238,6 +238,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis:search-setup`    | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)           |
 | `/jarfis:search`          | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능)                 |
 | `/jarfis:search-index`    | 전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki+meetings+works)          |
+| `/jarfis:level-check`     | AI-native 개발자 성숙도 평가 (자동 수집 + 인터뷰, 7차원 10점)            |
 | `/jarfis:sys-implement`   | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
 | `/jarfis:sys-version`     | 버전 확인/업데이트/특정 버전 설치                                    |
 <!-- JARFIS-COMMANDS-END -->
@@ -334,6 +335,7 @@ bash install.sh --version 1.0.0
     ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 + 메모리 부족 LLM 폴백
     ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
     ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드
+    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — 자동 수집 + 인터뷰, 7차원 10점
     ├── sys-health.md                  # 좀비 프로세스 진단
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙
@@ -425,9 +427,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.7.0] - 2026-04-10
+## [3.1.1] - 2026-04-10
 
-- implement: Phase D — Desktop Domain Pack (desktop.yaml + 4 skills)
+- fix: v3.0 코드 버그 4건 수정 (web.yaml persona, desktop react 중복, fallback 매핑, agent name 충돌)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

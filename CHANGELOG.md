@@ -7,33 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [2.7.0] - 2026-04-10
+## [3.1.0] - 2026-04-10
 
-- implement: Phase D — Desktop Domain Pack (desktop.yaml + 4 skills)
+- implement: add jarfis:level-check - AI-native developer maturity assessment
 
-## [2.6.5] - 2026-04-10
+## [3.0.0] - 2026-04-10
 
-- implement: B-6 install 로직 Python 전환 + install.sh 재귀 복사
+JARFIS v3.0 Domain Plugin Architecture — 모놀리식 에이전트 → Persona + Skill + Rule 합성 체계 전환.
+120회 래칫 수렴 + 11개 병렬 에이전트 분석 기반 설계.
 
-## [2.6.4] - 2026-04-10
+### Added
+- **Domain Pack 인프라**: _schema.yaml (Published Language), domain.py (Registry/Compose/Detect/Validate/Scaffold/Install)
+- **Web Domain Pack**: web.yaml + skills 6개 (react, vue, browser, nodejs, express, biome-lint)
+- **Desktop Domain Pack**: desktop.yaml + skills 4개 (rust, tauri-backend, tauri-webview, cargo-clippy)
+- **Persona 9개**: 기존 모놀리식 에이전트에서 역할 정체성만 추출 (backend-developer, frontend-developer, tech-lead 등)
+- **audit.py**: append-only 감사 로그 (state.json 하이브리드)
+- **trace.py**: 성능 추적 (에이전트 토큰/소요시간)
+- **test_architecture.py**: Leaky Abstraction 경계 검증 자동화
 
-- implement: Dialectic Review 래칫 수렴 방식으로 전면 재설계
-
-## [2.6.3] - 2026-04-10
-
-- implement: Dialectic Review 래칫 위반 자동 판정 추가
-
-## [2.6.2] - 2026-04-10
-
-- implement: work.md Phase 4 DOMAIN 분기 + state.py audit 연동 (B-beta)
-
-## [2.6.1] - 2026-04-10
-
-- implement: Phase B-alpha — 9 Personas + 6 Skills 추출 (domain plugin architecture)
-
-## [2.6.0] - 2026-04-10
-
-- implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가
+### Changed
+- **work.md**: Phase 0에 Domain 감지, Phase 4에 `if DOMAIN` 분기 (기존 하드코딩 fallback 유지)
+- **state.py**: `audit_path` optional 파라미터 추가 (기존 동작 100% 호환)
+- **install.sh**: 에이전트 재귀 복사 + 도메인 팩 복사 지원
+- **sys-implement.md**: Dialectic Review를 래칫 수렴 방식으로 전면 재설계 (분석→검증→이력→개선 루프)
 
 ## [2.5.7] - 2026-04-09
 
