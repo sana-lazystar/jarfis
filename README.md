@@ -345,6 +345,9 @@ bash install.sh --version 1.0.0
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
+    ├── domains/                   # v3.0 Domain Pack 인프라
+    │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
+    │   └── web.yaml               # Web Development 도메인 팩
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
@@ -399,9 +402,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.7] - 2026-04-09
+## [2.6.0] - 2026-04-10
 
-- implement: Fix mode test ratchet for work-continue (AutoResearch pattern)
+- implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

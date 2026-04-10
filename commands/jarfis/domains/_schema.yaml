@@ -1,0 +1,100 @@
+# JARFIS Domain Pack Schema v2
+# Published Language — 모든 도메인 팩은 이 형식을 따라야 합니다.
+#
+# EP1-EP7: 7개 Extension Point
+# Hooks: Phase별 Before/After 삽입점
+# Fallback: 에이전트 실패 시 동작 (v3.0: 기본값만)
+
+schema_version: 2
+supported_schema_versions: [2]
+min_core_version: "3.0.0"
+
+# ── Domain Identity ──
+# domain:
+#   name: string          # 고유 식별자 (^[a-z][a-z0-9-]{0,30}$)
+#   display_name: string  # 표시 이름
+
+# ── EP1: Agent Composition ──
+# roles:
+#   plan:
+#     - persona: string       # core/personas/ 참조
+#       skills: [string]      # domains/{name}/skills/ 참조
+#       model: string         # opus | sonnet | haiku
+#   design:
+#     - persona: string
+#       skills: [string]
+#       model: string
+#   implement:
+#     - name: string          # 역할 식별자
+#       persona: string
+#       skills: [string]
+#       external_skills: [string]?  # 타 도메인 스킬 참조 ("web/react")
+#       model: string
+#       commit_prefix: string       # "FE", "BE", "RS" 등
+#       required: boolean           # true면 누락 시 워크플로우 중단
+#   review:
+#     - persona: string
+#       skills: [string]
+#       model: string
+#
+# max_skill_tokens: 2500    # 스킬 토큰 예산 (초과 시 우선순위순 절삭)
+#
+# rules:
+#   filter_by_tags: true     # Rule 주입 시 프레임워크 태그 매칭
+#   always_include_untagged: true  # 태그 없는 Rule은 항상 주입
+
+# ── EP2: Framework Detection ──
+# detect:
+#   indicators:
+#     - file: string?         # 파일 존재 확인
+#       manifest: string?     # 매니페스트 파일 경로
+#       key: string?          # 매니페스트 내 키 (substring match)
+#       framework: string     # 감지된 프레임워크 이름
+#       confidence: number    # 0.0-1.0
+
+# ── EP3: Quality Gates ──
+# quality:
+#   linters:
+#     - extensions: [string]
+#       tool: string
+#       args: string?
+#   type_checker:
+#     config: string?
+#     tool: string
+#     args: string?
+
+# ── EP4: Commit Format ──
+# commit:
+#   implementation: string   # "jarfis({ROLE}-{N}):"
+#   fix: string              # "jarfis(fix/{ROLE}):"
+
+# ── EP5: MCP Integration ──
+# mcp:
+#   required: [string]?
+#   optional: [string]?
+
+# ── EP6: Test & Build ──
+# pipeline:
+#   test:
+#     runner: string
+#     coverage: string?
+#   build:
+#     check: string
+
+# ── EP7: Domain Lifecycle ──
+# lifecycle:
+#   install: string?
+#   init: string?
+#   upgrade: string?
+
+# ── Before/After Hooks (래칫 R1) ──
+# hooks:
+#   phase2: { before: string?, after: string? }
+#   phase3: { before: string?, after: string? }
+#   phase4: { before: string?, after: string? }
+#   phase5: { before: string?, after: string? }
+
+# ── Fallback (래칫 R5) ──
+# fallback:
+#   on_compose_error: "persona-only"  # 스킬 로드 실패 시
+#   on_skip: "ask-user"               # skip 시 AskUserQuestion 필수

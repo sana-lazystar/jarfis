@@ -17,6 +17,7 @@ Commands:
     org           Organization management (init/scan/info)
     wiki          Wiki semantic search (index/search/status) [deprecated → use search]
     search        Semantic search (all/meetings/works/wiki)
+    domain        Domain pack management (list/detect/agents/compose/validate/scaffold/install)
 """
 
 import os
@@ -93,6 +94,7 @@ def main():
         "org": "jarfis.organization",
         "wiki": "jarfis.wiki_search",
         "search": "jarfis.wiki_search",
+        "domain": "jarfis.domain",
     }
 
     if command not in commands:

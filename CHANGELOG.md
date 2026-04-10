@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.0] - 2026-04-10
+
+- implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가
+
 ## [2.5.7] - 2026-04-09
 
 - implement: Fix mode test ratchet for work-continue (AutoResearch pattern)

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-09 | Version: 2.5.7
+> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.6.0
 
 ## 파일 구조
 ```
@@ -35,6 +35,9 @@
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (152줄)
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트 (95줄)
+    ├── domains/                   # v3.0 Domain Pack 인프라 [NEW]
+    │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
+    │   └── web.yaml               # Web Development 도메인 팩
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv (229줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
@@ -106,12 +109,16 @@
   - `jarfis_cli.py org` — Organization 관리 (init --name/scan/info, v2 신규. info는 미등록 시 exit 0 + registered:false 반환)
   - `jarfis_cli.py search` — 시맨틱 검색 (search {all|meetings|works|wiki}, index, status. CWD 기반 Org 해석)
   - `jarfis_cli.py wiki` — Wiki 시맨틱 검색 (deprecated → search wiki. 기존 호환 유지)
+  - `jarfis_cli.py domain` — Domain Pack 관리 (list/detect/agents/compose/validate/scaffold/install) [NEW v3.0]
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
+  - `domain.py` — Domain Pack 관리 모듈 (list/detect/agents/compose/validate/scaffold/install, v3.0 신규) [NEW]
+  - `audit.py` — 감사 로그 모듈 (append-only JSONL, v3.0 신규) [NEW]
+  - `trace.py` — 성능 추적 모듈 (에이전트별 토큰/소요시간, v3.0 신규) [NEW]
   - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색 + 메모리 가드 + CPU 강제 + MPS 메모리 차감, 771줄)
-- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (202 tests)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (260 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
   - `test_utils.py` — utils.py 인터페이스 테스트
   - `test_state.py` — state.py CRUD + validate 테스트
