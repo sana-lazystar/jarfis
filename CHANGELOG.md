@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.3] - 2026-04-10
+
+- implement: Dialectic Review 래칫 위반 자동 판정 추가
+
 ## [2.6.2] - 2026-04-10
 
 - implement: work.md Phase 4 DOMAIN 분기 + state.py audit 연동 (B-beta)

@@ -319,7 +319,7 @@ bash install.sh --version 1.0.0
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
+    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + 래칫 위반 자동 판정 + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
     ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~830줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain 분기)
     ├── project-init.md            # 프로젝트 프로필 생성
@@ -419,9 +419,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.6.2] - 2026-04-10
+## [2.6.3] - 2026-04-10
 
-- implement: work.md Phase 4 DOMAIN 분기 + state.py audit 연동 (B-beta)
+- implement: Dialectic Review 래칫 위반 자동 판정 추가
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
