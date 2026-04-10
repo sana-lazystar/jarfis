@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.2] - 2026-04-10
+
+- implement: work.md Phase 4 DOMAIN 분기 + state.py audit 연동 (B-beta)
+
 ## [2.6.1] - 2026-04-10
 
 - implement: Phase B-alpha — 9 Personas + 6 Skills 추출 (domain plugin architecture)

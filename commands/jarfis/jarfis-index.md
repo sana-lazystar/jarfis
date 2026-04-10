@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.6.1
+> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.6.2
 
 ## 파일 구조
 ```
@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
     ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~801줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~830줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain 분기)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)

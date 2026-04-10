@@ -17,6 +17,23 @@ from datetime import datetime, timezone
 
 from .utils import get_all_workspaces, json_error, json_output, parse_json_value
 
+# Lazy import to avoid circular dependency; audit is optional.
+_audit_module = None
+
+
+def _try_audit(audit_path, event_type, **data):
+    """Best-effort audit logging. Failures are silently ignored (P9)."""
+    if not audit_path:
+        return
+    try:
+        global _audit_module
+        if _audit_module is None:
+            from . import audit as _mod
+            _audit_module = _mod
+        _audit_module.append_event(audit_path, event_type, **data)
+    except Exception:
+        pass  # Audit is not a recovery source — never block state ops
+
 
 def cmd_read(args):
     state_file = args[0] if args else ""
@@ -59,7 +76,7 @@ def cmd_write(args):
     json_output({"success": True, "path": state_file})
 
 
-def cmd_set(args):
+def cmd_set(args, audit_path=None):
     state_file = args[0] if args else ""
     key = args[1] if len(args) > 1 else ""
     value = args[2] if len(args) > 2 else ""
@@ -75,10 +92,12 @@ def cmd_set(args):
 
     with open(state_file, "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+    _try_audit(audit_path, "PhaseCompleted", key=key)
     json_output({"success": True, "key": key})
 
 
-def cmd_set_nested(args):
+def cmd_set_nested(args, audit_path=None):
     state_file = args[0] if args else ""
     key_path = args[1] if len(args) > 1 else ""
     value = args[2] if len(args) > 2 else ""
@@ -102,6 +121,8 @@ def cmd_set_nested(args):
 
     with open(state_file, "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
+
+    _try_audit(audit_path, "PhaseCompleted", key_path=key_path)
     json_output({"success": True, "key_path": key_path})
 
 
