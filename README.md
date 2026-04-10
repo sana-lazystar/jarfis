@@ -348,13 +348,19 @@ bash install.sh --version 1.0.0
     ├── domains/                   # v3.0 Domain Pack 인프라
     │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
     │   ├── web.yaml               # Web Development 도메인 팩
-    │   └── web/skills/            # Web 도메인 Skills
-    │       ├── react.md           # React 패턴 + 상태관리 + Next.js
-    │       ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
-    │       ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
-    │       ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
-    │       ├── express.md         # Express/NestJS + API 설계
-    │       └── biome-lint.md      # Biome 린팅/포매팅 패턴
+    │   ├── web/skills/            # Web 도메인 Skills
+    │   │   ├── react.md           # React 패턴 + 상태관리 + Next.js
+    │   │   ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
+    │   │   ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
+    │   │   ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
+    │   │   ├── express.md         # Express/NestJS + API 설계
+    │   │   └── biome-lint.md      # Biome 린팅/포매팅 패턴
+    │   ├── desktop.yaml           # Desktop Development (Tauri) 도메인 팩
+    │   └── desktop/skills/        # Desktop 도메인 Skills
+    │       ├── rust.md            # Ownership/borrowing, error handling, async
+    │       ├── tauri-backend.md   # #[tauri::command], IPC, serde, plugins
+    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView 제약
+    │       └── cargo-clippy.md    # Clippy 규칙, deny 설정
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
@@ -419,9 +425,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.6.5] - 2026-04-10
+## [2.7.0] - 2026-04-10
 
-- implement: B-6 install 로직 Python 전환 + install.sh 재귀 복사
+- implement: Phase D — Desktop Domain Pack (desktop.yaml + 4 skills)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
