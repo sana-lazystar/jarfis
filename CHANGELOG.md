@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.6.5] - 2026-04-10
+
+- implement: B-6 install 로직 Python 전환 + install.sh 재귀 복사
+
 ## [2.6.4] - 2026-04-10
 
 - implement: Dialectic Review 래칫 수렴 방식으로 전면 재설계

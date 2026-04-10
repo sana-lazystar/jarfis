@@ -419,9 +419,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.6.4] - 2026-04-10
+## [2.6.5] - 2026-04-10
 
-- implement: Dialectic Review 래칫 수렴 방식으로 전면 재설계
+- implement: B-6 install 로직 Python 전환 + install.sh 재귀 복사
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

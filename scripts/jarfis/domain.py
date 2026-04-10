@@ -745,6 +745,63 @@ fallback:
     return {"created_files": created}
 
 
+def install(source_dir, target_dir=None):
+    """Install domain packs and personas from source to target.
+
+    Phase 0 confirmed: recursive discovery works, so directory copy is sufficient.
+    No flattening needed.
+
+    Args:
+        source_dir: Repository root (e.g., ~/repos/jarfis).
+        target_dir: Installation root (e.g., ~/.claude). Defaults to get_claude_dir().
+
+    Returns:
+        Dict with copied_count and copied_files list.
+    """
+    if target_dir is None:
+        target_dir = get_claude_dir()
+
+    if not os.path.isdir(source_dir):
+        return {"error": f"Source directory not found: {source_dir}"}
+
+    import shutil
+
+    copied_files = []
+
+    # 1. Copy domains/ (schema, yamls, skills, hooks, templates)
+    src_domains = os.path.join(source_dir, "commands", "jarfis", DOMAINS_DIR_NAME)
+    tgt_domains = os.path.join(target_dir, "commands", "jarfis", DOMAINS_DIR_NAME)
+
+    if os.path.isdir(src_domains):
+        for root, dirs, files in os.walk(src_domains):
+            rel = os.path.relpath(root, src_domains)
+            tgt_root = os.path.join(tgt_domains, rel) if rel != "." else tgt_domains
+            os.makedirs(tgt_root, exist_ok=True)
+            for fname in files:
+                src_file = os.path.join(root, fname)
+                tgt_file = os.path.join(tgt_root, fname)
+                shutil.copy2(src_file, tgt_file)
+                copied_files.append(os.path.relpath(tgt_file, target_dir))
+
+    # 2. Copy agents/jarfis/personas/ (recursive)
+    src_personas = os.path.join(source_dir, "agents", "jarfis", "personas")
+    tgt_personas = os.path.join(target_dir, "agents", "jarfis", "personas")
+
+    if os.path.isdir(src_personas):
+        os.makedirs(tgt_personas, exist_ok=True)
+        for fname in os.listdir(src_personas):
+            src_file = os.path.join(src_personas, fname)
+            tgt_file = os.path.join(tgt_personas, fname)
+            if os.path.isfile(src_file):
+                shutil.copy2(src_file, tgt_file)
+                copied_files.append(os.path.relpath(tgt_file, target_dir))
+
+    return {
+        "copied_count": len(copied_files),
+        "copied_files": copied_files,
+    }
+
+
 # ── CLI Entry Point ──
 
 def main(args):
@@ -800,8 +857,18 @@ def main(args):
         json_output(result)
 
     elif subcmd == "install":
-        # TODO: Phase B — implement install logic
-        json_output({"status": "not_implemented", "message": "Install will be implemented in Phase B"})
+        source = subargs[0] if subargs else None
+        if not source:
+            # Default: read from .jarfis-source
+            source_file = os.path.join(get_claude_dir(), ".jarfis-source")
+            if os.path.isfile(source_file):
+                with open(source_file) as f:
+                    source = f.read().strip()
+            else:
+                json_output({"error": "No source directory. Usage: jarfis domain install [source_dir]"})
+                sys.exit(1)
+        result = install(source)
+        json_output(result)
 
     else:
         json_output({"error": f"Unknown subcommand: {subcmd}"})

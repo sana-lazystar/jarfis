@@ -29,13 +29,13 @@ roles:
   implement:
     - name: backend_engineer
       persona: senior-backend-engineer
-      skills: []    # Phase B에서 nodejs, express 등 추가 예정
+      skills: ["nodejs", "express"]
       model: sonnet
       commit_prefix: "BE"
       required: true
     - name: frontend_engineer
       persona: senior-frontend-engineer
-      skills: []    # Phase B에서 react, browser 등 추가 예정
+      skills: ["react", "browser"]
       model: sonnet
       commit_prefix: "FE"
       required: true

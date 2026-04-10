@@ -6,7 +6,7 @@ import os
 import pytest
 
 from jarfis.domain import (
-    list_domains, detect, agents, compose, validate, scaffold,
+    list_domains, detect, agents, compose, validate, scaffold, install,
     estimate_tokens, _resolve_skill_path, _extract_section,
     load_filtered_rules,
 )
@@ -433,3 +433,66 @@ class TestExtractSection:
         result = _extract_section(content, "Bar")
         assert "line2" in result
         assert "line3" in result
+
+
+# ── install ──
+
+class TestInstall:
+    def test_install_copies_domains(self, tmp_path):
+        """Install copies domain packs from repo to target."""
+        # Set up source repo structure
+        src = tmp_path / "repo"
+        src_domains = src / "commands" / "jarfis" / "domains"
+        src_domains.mkdir(parents=True)
+        (src_domains / "web.yaml").write_text("domain:\n  name: web\n")
+        src_skills = src_domains / "web" / "skills"
+        src_skills.mkdir(parents=True)
+        (src_skills / "react.md").write_text("# React Skill")
+        (src_domains / "_schema.yaml").write_text("schema_version: 2")
+
+        # Set up target
+        tgt = tmp_path / "target"
+        tgt_domains = tgt / "commands" / "jarfis" / "domains"
+        tgt_domains.mkdir(parents=True)
+
+        result = install(str(src), str(tgt))
+        assert result["copied_count"] > 0
+        assert os.path.isfile(str(tgt_domains / "web.yaml"))
+        assert os.path.isfile(str(tgt_domains / "web" / "skills" / "react.md"))
+        assert os.path.isfile(str(tgt_domains / "_schema.yaml"))
+
+    def test_install_copies_personas(self, tmp_path):
+        """Install copies persona files recursively."""
+        src = tmp_path / "repo"
+        src_personas = src / "agents" / "jarfis" / "personas"
+        src_personas.mkdir(parents=True)
+        (src_personas / "tech-lead.md").write_text("---\nname: tech-lead\n---\n")
+
+        tgt = tmp_path / "target"
+        tgt_agents = tgt / "agents" / "jarfis" / "personas"
+        tgt_agents.mkdir(parents=True)
+
+        result = install(str(src), str(tgt))
+        assert os.path.isfile(str(tgt_agents / "tech-lead.md"))
+
+    def test_install_no_source_dir(self, tmp_path):
+        """Install with nonexistent source returns error."""
+        result = install(str(tmp_path / "nope"), str(tmp_path / "tgt"))
+        assert "error" in result
+
+    def test_install_preserves_existing(self, tmp_path):
+        """Install overwrites files but preserves non-conflicting ones."""
+        src = tmp_path / "repo"
+        src_domains = src / "commands" / "jarfis" / "domains"
+        src_domains.mkdir(parents=True)
+        (src_domains / "web.yaml").write_text("new content")
+
+        tgt = tmp_path / "target"
+        tgt_domains = tgt / "commands" / "jarfis" / "domains"
+        tgt_domains.mkdir(parents=True)
+        (tgt_domains / "custom.yaml").write_text("custom")
+        (tgt_domains / "web.yaml").write_text("old content")
+
+        install(str(src), str(tgt))
+        assert (tgt_domains / "custom.yaml").read_text() == "custom"
+        assert (tgt_domains / "web.yaml").read_text() == "new content"
