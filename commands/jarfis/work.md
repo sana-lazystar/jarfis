@@ -167,6 +167,18 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
      JSON 출력의 `frameworks`, `languages`, `project_type`을 활용하여 workspace 정보를 `.jarfis-state.json`에 기록한다.
    - `$BACKEND_PROJECT_DIR`, `$FRONTEND_PROJECT_DIR` 변수 설정 (`N/A`이면 빈 문자열)
 
+   **0-a-5. Domain 감지** (v3.0)
+
+   각 프로젝트 경로에서 Domain Pack을 감지한다:
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py domain detect "$PROJECT_PATH"
+   ```
+   - 결과 JSON의 `matches[0].domain`을 `$DOMAIN`으로 설정
+   - `tie`=true → AskUserQuestion으로 사용자에게 도메인 선택
+   - 감지 실패(exit code != 0, 빈 matches) → `$DOMAIN` = `null`
+   - `.jarfis-state.json`에 기록: `jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "domain" "$DOMAIN"`
+   > ※ domain이 null이면 Phase 4에서 기존 하드코딩 방식으로 fallback
+
    **0-b. Git 브랜치 동기화 및 생성**
 
    - **monorepo**: git repo 확인 → uncommitted 경고 → 기본 브랜치+develop pull → `git checkout -b $BRANCH develop` → `.jarfis-state.json` `branch` 기록. develop 없으면 기본 브랜치에서 분기 여부 확인.
@@ -205,7 +217,7 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 **주입 규칙:**
 - Phase 1 (PO, Architect): `$LEARNINGS`의 Workflow Patterns + `$PROJECT_CONTEXT` 전체 + `$WIKI_CONTEXT` (Org 등록 시)
 - Phase 2 (Architect — Impact Analysis, 설계): `$BE_PROJECT_PROFILE` + `$FE_PROJECT_PROFILE` (존재 시) + `$WIKI_CONTEXT` (Org 등록 시)
-- Phase 4 (BE/FE/DevOps): `$LEARNINGS`의 해당 역할 Agent Hints + `$PROJECT_CONTEXT` 전체 + **해당 역할의 `$PROJECT_PROFILE`**
+- Phase 4 (BE/FE/DevOps): `$DOMAIN` 설정 시 `domain compose`가 Skills+Rules를 합성하여 주입. 미설정 시 `$LEARNINGS`의 해당 역할 Agent Hints + `$PROJECT_CONTEXT` 전체 + **해당 역할의 `$PROJECT_PROFILE`**
 - Phase 5 (Tech Lead/QA/Security): `$LEARNINGS`의 해당 역할 Agent Hints
 - **Cascading Specificity**: Org 등록 시 모든 Phase에 우선순위 규칙 주입
 
@@ -551,6 +563,24 @@ jarfis_cli.py state set-nested "$DOCS_DIR/.jarfis-state.json" "ratchet.phase4_te
 > Step 4-0.5에서 TDD가 활성화된 경우, 각 구현 에이전트에게 TDD Green Phase 블록이 추가된다.
 > 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
+**에이전트 매핑 분기** (v3.0):
+
+`$DOMAIN`이 null이 아닌 경우 (domain.yaml 기반):
+1. `jarfis_cli.py domain agents "$DOMAIN" implement` → 역할 목록 JSON 로드
+2. domain.yaml의 `hooks.phase4.before`가 있으면 해당 파일을 읽어 사전 컨텍스트로 제공
+3. 각 역할에 대해:
+   a. `jarfis_cli.py domain compose "$DOMAIN" "$ROLE_NAME"` 호출
+   b. 반환된 `{agent_type, prompt_content}`로 Agent 도구 호출 (model은 역할의 model 필드)
+   c. 자동 커밋 (commit_prefix 사용: `jarfis({PREFIX}-{N}):`)
+4. domain.yaml의 `hooks.phase4.after`가 있으면 실행
+5. 래칫 체크: domain.yaml의 `pipeline.test.runner`로 테스트 실행
+
+`$DOMAIN`이 null인 경우 (기존 방식 — fallback):
+- 아래 하드코딩 에이전트 매핑으로 실행
+
+Backend (senior-backend-engineer), Frontend (senior-frontend-engineer), DevOps (senior-devops-sre-engineer):
+> 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
+
 **TDD 래칫 규칙** (`tdd_enabled: true`일 때, 오케스트레이터가 각 태스크 완료 후 실행):
 
 1. 구현 에이전트가 태스크 완료 + git commit 후
@@ -576,9 +606,6 @@ jarfis_cli.py state set-nested "$DOCS_DIR/.jarfis-state.json" "ratchet.phase4_te
 - Phase 5 QA 리뷰에서 해당 수정의 타당성 사후 검증 대상으로 플래그
 
 > ⚠️ **Anti-pattern**: Phase 4 전체를 반복하거나, 태스크당 2회를 초과하여 재시도하지 않는다. 해결 불가 시 Phase 5에서 진단한다.
-
-Backend (senior-backend-engineer), Frontend (senior-frontend-engineer), DevOps (senior-devops-sre-engineer):
-> 📄 프롬프트: `prompts/phase4.md` 해당 섹션을 읽어서 에이전트에 전달한다.
 
 ---
 
@@ -739,6 +766,8 @@ jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "status" "completed"
 `$JARFIS_ORG_DIR` = `$JARFIS_PERSONAL_DIR/orgs/{org_name}/` (Org 감지 시) 또는 `$JARFIS_PERSONAL_DIR/orgs/_standalone/` (Org 없을 때). `jarfis_cli.py preflight`의 `org_root` 결과로 결정한다.
 
 ### Agent Mapping
+> v3.0: `$DOMAIN` 설정 시 domain.yaml의 `roles` 섹션이 이 테이블을 대체한다. 아래는 `$DOMAIN`=null fallback 전용.
+
 | Role | Agent (subagent_type) | Model |
 |------|----------------------|-------|
 | Product Owner | senior-product-owner | opus |

@@ -206,13 +206,19 @@ for f in "$SCRIPT_DIR/commands/jarfis/templates/"*.md; do
   echo "  [OK] commands/jarfis/templates/$filename"
 done
 
-# Install agents
-for f in "$SCRIPT_DIR/agents/jarfis/"*.md; do
-  [[ ! -f "$f" ]] && continue
-  filename=$(basename "$f")
-  cp "$f" "$CLAUDE_DIR/agents/jarfis/$filename"
-  echo "  [OK] agents/jarfis/$filename"
-done
+# Install agents (recursive — includes personas/ subdirectory)
+if [[ -d "$SCRIPT_DIR/agents/jarfis" ]]; then
+  cp -r "$SCRIPT_DIR/agents/jarfis/" "$CLAUDE_DIR/agents/jarfis/"
+  find "$CLAUDE_DIR/agents/jarfis" -name "__pycache__" -type d -exec rm -rf {} + 2>/dev/null || true
+  echo "  [OK] agents/jarfis/ (recursive)"
+fi
+
+# Install domain packs (domains/ directory — schema, yamls, skills)
+if [[ -d "$SCRIPT_DIR/commands/jarfis/domains" ]]; then
+  mkdir -p "$CLAUDE_DIR/commands/jarfis/domains"
+  cp -r "$SCRIPT_DIR/commands/jarfis/domains/" "$CLAUDE_DIR/commands/jarfis/domains/"
+  echo "  [OK] commands/jarfis/domains/ (recursive)"
+fi
 
 # Install hooks (all jarfis-*.sh)
 for hf in "$SCRIPT_DIR/hooks/"jarfis-*.sh; do

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-09 | Version: 2.5.7
+> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 2.7.0
 
 ## 파일 구조
 ```
@@ -9,9 +9,9 @@
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B (66줄)
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙 (240줄)
+    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 래칫 수렴 (분석→검증→이력→개선 루프) + Python TDD 규칙 (292줄)
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~801줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~830줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain 분기)
     ├── project-init.md            # 프로젝트 프로필 생성 (162줄)
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지 (160줄)
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호 (296줄)
@@ -35,6 +35,22 @@
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신 (152줄)
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색 (44줄)
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트 (95줄)
+    ├── domains/                   # v3.0 Domain Pack 인프라 [NEW]
+    │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
+    │   ├── web.yaml               # Web Development 도메인 팩
+    │   ├── web/skills/            # Web 도메인 Skills
+    │   │   ├── react.md           # React 패턴 + 상태관리 + Next.js
+    │   │   ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
+    │   │   ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
+    │   │   ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
+    │   │   ├── express.md         # Express/NestJS + API 설계
+    │   │   └── biome-lint.md      # Biome 린팅/포매팅 패턴
+    │   ├── desktop.yaml           # Desktop Development (Tauri) 도메인 팩 [NEW]
+    │   └── desktop/skills/        # Desktop 도메인 Skills [NEW]
+    │       ├── rust.md            # Ownership/borrowing, error handling, async
+    │       ├── tauri-backend.md   # #[tauri::command], IPC, serde, plugins
+    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView 제약
+    │       └── cargo-clippy.md    # Clippy 규칙, deny 설정
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv (229줄)
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조 (43줄)
@@ -48,6 +64,16 @@
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿 (27줄) [NEW]
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크 [NEW]
+│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
+│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
+│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
+│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
+│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
+│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
+│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
+│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
+│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄)
 ├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄)
 ├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
@@ -106,12 +132,16 @@
   - `jarfis_cli.py org` — Organization 관리 (init --name/scan/info, v2 신규. info는 미등록 시 exit 0 + registered:false 반환)
   - `jarfis_cli.py search` — 시맨틱 검색 (search {all|meetings|works|wiki}, index, status. CWD 기반 Org 해석)
   - `jarfis_cli.py wiki` — Wiki 시맨틱 검색 (deprecated → search wiki. 기존 호환 유지)
+  - `jarfis_cli.py domain` — Domain Pack 관리 (list/detect/agents/compose/validate/scaffold/install) [NEW v3.0]
 - `~/.claude/scripts/jarfis/` — Python 모듈 디렉토리 (jarfis_cli.py가 참조)
   - `quality_gate.py` — Quality Gate 모듈 (biome/prettier 감지, 확장자별 체크)
   - `validate.py` — 워크플로우 검증 모듈 (상태 검증 + 산출물 존재 + wiki 구조 + Git 상태)
   - `organization.py` — Organization 관리 모듈 (init/scan/info, v2 신규)
+  - `domain.py` — Domain Pack 관리 모듈 (list/detect/agents/compose/validate/scaffold/install, v3.0 신규) [NEW]
+  - `audit.py` — 감사 로그 모듈 (append-only JSONL, v3.0 신규) [NEW]
+  - `trace.py` — 성능 추적 모듈 (에이전트별 토큰/소요시간, v3.0 신규) [NEW]
   - `wiki_search.py` — 범용 시맨틱 검색 모듈 (sentence-transformers bge-m3, wiki/meetings/works 인덱싱+검색+통합검색 + 메모리 가드 + CPU 강제 + MPS 메모리 차감, 771줄)
-- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (202 tests)
+- `~/.claude/scripts/tests/` — pytest 테스트 디렉토리 (260 tests)
   - `conftest.py` — 공유 fixture (jarfis_env, state_file, project_dir — tmpdir 기반 격리)
   - `test_utils.py` — utils.py 인터페이스 테스트
   - `test_state.py` — state.py CRUD + validate 테스트

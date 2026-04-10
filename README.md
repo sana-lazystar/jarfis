@@ -319,9 +319,9 @@ bash install.sh --version 1.0.0
 ├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B
 └── jarfis/
     ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 게이트 + Python TDD 규칙
+    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 래칫 수렴 (분석→검증→이력→개선 루프) + Python TDD 규칙
     ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~801줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet)
+    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~830줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain 분기)
     ├── project-init.md            # 프로젝트 프로필 생성
     ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
     ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
@@ -345,6 +345,22 @@ bash install.sh --version 1.0.0
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
     │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
     │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
+    ├── domains/                   # v3.0 Domain Pack 인프라
+    │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
+    │   ├── web.yaml               # Web Development 도메인 팩
+    │   ├── web/skills/            # Web 도메인 Skills
+    │   │   ├── react.md           # React 패턴 + 상태관리 + Next.js
+    │   │   ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
+    │   │   ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
+    │   │   ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
+    │   │   ├── express.md         # Express/NestJS + API 설계
+    │   │   └── biome-lint.md      # Biome 린팅/포매팅 패턴
+    │   ├── desktop.yaml           # Desktop Development (Tauri) 도메인 팩
+    │   └── desktop/skills/        # Desktop 도메인 Skills
+    │       ├── rust.md            # Ownership/borrowing, error handling, async
+    │       ├── tauri-backend.md   # #[tauri::command], IPC, serde, plugins
+    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView 제약
+    │       └── cargo-clippy.md    # Clippy 규칙, deny 설정
     └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
         ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
         ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
@@ -358,6 +374,16 @@ bash install.sh --version 1.0.0
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿
 
 ~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
+├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크
+│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
+│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
+│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
+│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
+│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
+│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
+│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
+│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
+│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
 ├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트
 ├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트
 ├── senior-backend-engineer.md     # BE 구현 에이전트
@@ -399,9 +425,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [2.5.7] - 2026-04-09
+## [2.7.0] - 2026-04-10
 
-- implement: Fix mode test ratchet for work-continue (AutoResearch pattern)
+- implement: Phase D — Desktop Domain Pack (desktop.yaml + 4 skills)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

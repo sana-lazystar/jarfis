@@ -1,0 +1,124 @@
+# JARFIS Web Domain Pack — v2.5 동작 100% 재현
+# schema_version 2 준수
+
+schema_version: 2
+min_core_version: "3.0.0"
+
+domain:
+  name: web
+  display_name: "Web Development"
+
+roles:
+  plan:
+    - persona: senior-product-owner
+      skills: []
+      model: opus
+    - persona: technical-architect
+      skills: []
+      model: opus
+  design:
+    - persona: technical-architect
+      skills: []
+      model: opus
+    - persona: tech-lead
+      skills: []
+      model: opus
+    - persona: senior-ux-designer
+      skills: []
+      model: opus
+  implement:
+    - name: backend_engineer
+      persona: senior-backend-engineer
+      skills: ["nodejs", "express"]
+      model: sonnet
+      commit_prefix: "BE"
+      required: true
+    - name: frontend_engineer
+      persona: senior-frontend-engineer
+      skills: ["react", "browser"]
+      model: sonnet
+      commit_prefix: "FE"
+      required: true
+    - name: devops_engineer
+      persona: senior-devops-sre-engineer
+      skills: []
+      model: sonnet
+      commit_prefix: "DevOps"
+      required: false
+  review:
+    - persona: tech-lead
+      skills: []
+      model: opus
+    - persona: senior-qa-engineer
+      skills: []
+      model: opus
+    - persona: senior-security-engineer
+      skills: []
+      model: opus
+
+max_skill_tokens: 2500
+
+rules:
+  filter_by_tags: true
+  always_include_untagged: true
+
+detect:
+  indicators:
+    - file: "package.json"
+      key: "react"
+      framework: "react"
+      confidence: 0.9
+    - file: "package.json"
+      key: "vue"
+      framework: "vue"
+      confidence: 0.9
+    - file: "package.json"
+      key: "next"
+      framework: "nextjs"
+      confidence: 0.85
+    - file: "package.json"
+      key: "svelte"
+      framework: "svelte"
+      confidence: 0.85
+    - file: "tsconfig.json"
+      framework: "typescript"
+      confidence: 0.7
+    - file: "package.json"
+      framework: "nodejs"
+      confidence: 0.5
+
+quality:
+  linters:
+    - extensions: [".ts", ".tsx", ".js", ".jsx"]
+      tool: "biome"
+      args: "check"
+  type_checker:
+    config: "tsconfig.json"
+    tool: "tsc"
+    args: "--noEmit"
+
+commit:
+  implementation: "jarfis({ROLE}-{N}):"
+  fix: "jarfis(fix/{ROLE}):"
+
+mcp:
+  optional: ["playwright", "chrome-devtools"]
+
+pipeline:
+  test:
+    runner: "npm test"
+    coverage: "npm run test:coverage"
+  build:
+    check: "npm run build"
+
+lifecycle: {}
+
+hooks:
+  phase2: { before: null, after: null }
+  phase3: { before: null, after: null }
+  phase4: { before: null, after: null }
+  phase5: { before: null, after: null }
+
+fallback:
+  on_compose_error: "persona-only"
+  on_skip: "ask-user"

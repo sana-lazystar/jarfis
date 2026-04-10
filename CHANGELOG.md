@@ -7,6 +7,34 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [2.7.0] - 2026-04-10
+
+- implement: Phase D — Desktop Domain Pack (desktop.yaml + 4 skills)
+
+## [2.6.5] - 2026-04-10
+
+- implement: B-6 install 로직 Python 전환 + install.sh 재귀 복사
+
+## [2.6.4] - 2026-04-10
+
+- implement: Dialectic Review 래칫 수렴 방식으로 전면 재설계
+
+## [2.6.3] - 2026-04-10
+
+- implement: Dialectic Review 래칫 위반 자동 판정 추가
+
+## [2.6.2] - 2026-04-10
+
+- implement: work.md Phase 4 DOMAIN 분기 + state.py audit 연동 (B-beta)
+
+## [2.6.1] - 2026-04-10
+
+- implement: Phase B-alpha — 9 Personas + 6 Skills 추출 (domain plugin architecture)
+
+## [2.6.0] - 2026-04-10
+
+- implement: Domain Plugin Architecture Phase A — domain.py, audit.py, trace.py, _schema.yaml, web.yaml, test_architecture.py 추가
+
 ## [2.5.7] - 2026-04-09
 
 - implement: Fix mode test ratchet for work-continue (AutoResearch pattern)

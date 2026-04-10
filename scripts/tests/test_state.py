@@ -95,6 +95,36 @@ class TestCmdSet:
             data = json.load(f)
         assert data["current_phase"] == 2  # parsed as int
 
+    def test_set_with_audit_path(self, state_file, tmp_path, capsys):
+        audit = str(tmp_path / "audit.jsonl")
+        cmd_set([state_file, "status", "completed"], audit_path=audit)
+        # State changed
+        with open(state_file) as f:
+            data = json.load(f)
+        assert data["status"] == "completed"
+        # Audit event recorded
+        with open(audit) as f:
+            lines = f.readlines()
+        assert len(lines) == 1
+        event = json.loads(lines[0])
+        assert event["type"] == "PhaseCompleted"
+        assert event["key"] == "status"
+
+    def test_set_without_audit_path(self, state_file, tmp_path, capsys):
+        """audit_path=None (default) should not create any audit file."""
+        audit = str(tmp_path / "audit.jsonl")
+        cmd_set([state_file, "status", "completed"])
+        assert not os.path.exists(audit)
+
+    def test_set_audit_failure_does_not_block(self, state_file, tmp_path, capsys):
+        """Audit write failure should not prevent state change."""
+        # Use a directory path as audit_path to force write failure
+        bad_audit = str(tmp_path / "nonexistent_dir" / "deep" / "audit.jsonl")
+        cmd_set([state_file, "status", "completed"], audit_path=bad_audit)
+        with open(state_file) as f:
+            data = json.load(f)
+        assert data["status"] == "completed"
+
 
 class TestCmdSetNested:
     def test_sets_nested_key(self, state_file, capsys):
@@ -108,6 +138,19 @@ class TestCmdSetNested:
         with open(state_file) as f:
             data = json.load(f)
         assert data["new"]["nested"]["key"] == "value"
+
+    def test_set_nested_with_audit_path(self, state_file, tmp_path, capsys):
+        audit = str(tmp_path / "audit.jsonl")
+        cmd_set_nested([state_file, "phases.1.status", "in_progress"], audit_path=audit)
+        with open(state_file) as f:
+            data = json.load(f)
+        assert data["phases"]["1"]["status"] == "in_progress"
+        with open(audit) as f:
+            lines = f.readlines()
+        assert len(lines) == 1
+        event = json.loads(lines[0])
+        assert event["type"] == "PhaseCompleted"
+        assert event["key_path"] == "phases.1.status"
 
 
 class TestCmdValidate:

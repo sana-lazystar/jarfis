@@ -1,0 +1,98 @@
+schema_version: 2
+min_core_version: "3.0.0"
+
+domain:
+  name: desktop
+  display_name: "Desktop Development (Tauri)"
+
+roles:
+  plan:
+    - persona: product-owner
+      skills: []
+      model: opus
+    - persona: technical-architect
+      skills: []
+      model: opus
+  design:
+    - persona: technical-architect
+      skills: []
+      model: opus
+    - persona: tech-lead
+      skills: []
+      model: opus
+  implement:
+    - name: rust_engineer
+      persona: backend-developer
+      skills: ["rust", "tauri-backend"]
+      model: sonnet
+      commit_prefix: "RS"
+      required: true
+    - name: webview_engineer
+      persona: frontend-developer
+      skills: ["react", "tauri-webview"]
+      external_skills: ["web/react"]
+      model: sonnet
+      commit_prefix: "WV"
+      required: true
+  review:
+    - persona: tech-lead
+      skills: []
+      model: opus
+
+max_skill_tokens: 2500
+
+rules:
+  filter_by_tags: true
+  always_include_untagged: true
+
+detect:
+  indicators:
+    - file: "tauri.conf.json"
+      framework: "tauri"
+      confidence: 0.95
+    - file: "src-tauri/tauri.conf.json"
+      framework: "tauri"
+      confidence: 0.95
+    - manifest: "Cargo.toml"
+      key: "tauri"
+      framework: "tauri-cargo"
+      confidence: 0.8
+    - file: "package.json"
+      key: "tauri"
+      framework: "tauri-npm"
+      confidence: 0.7
+
+quality:
+  linters:
+    - extensions: [".rs"]
+      tool: "cargo"
+      args: "clippy -- -D warnings"
+    - extensions: [".ts", ".tsx", ".js", ".jsx"]
+      tool: "biome"
+      args: "check"
+  type_checker:
+    tool: "cargo"
+    args: "check"
+
+commit:
+  implementation: "jarfis({ROLE}-{N}):"
+  fix: "jarfis(fix/{ROLE}):"
+
+pipeline:
+  lint:
+    runner: "cargo clippy -- -D warnings"
+  test:
+    runner: "cargo test"
+  build:
+    check: "cargo check"
+
+lifecycle: {}
+
+hooks:
+  phase4:
+    before: null
+    after: null
+
+fallback:
+  on_compose_error: "persona-only"
+  on_skip: "ask-user"
