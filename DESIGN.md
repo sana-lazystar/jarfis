@@ -158,7 +158,13 @@ EVENT_TYPES = [
 ```python
 def _try_audit(audit_path, event_type, **data):
     """Best-effort audit logging. Failures are silently ignored (P9)."""
+    if not audit_path:
+        return
     try:
+        global _audit_module
+        if _audit_module is None:
+            from . import audit as _mod
+            _audit_module = _mod
         _audit_module.append_event(audit_path, event_type, **data)
     except Exception:
         pass  # Audit is not a recovery source — never block state ops
@@ -561,7 +567,7 @@ work.md에 모든 에이전트 프롬프트가 인라인되면 파일이 비대�
 | 버전 | 내용 | 관련 ADR |
 |------|------|----------|
 | v2.5.4 | PRD Ratchet 도입 (5항목 채점 + 단조증가) | ADR-4 |
-| v2.5.5 | Metrics Ratchet (measure.py 기반 토큰 측정) | ADR-8 |
+| v2.5.5 | Workflow Metrics Recording (AutoResearch results.tsv 패턴) | ADR-8 |
 | v2.5.6 | TDD Ratchet (pass_rate baseline + git stash 원복) | ADR-4 |
 | v2.5.7 | Fix Ratchet (Continue 모드 1회 재시도) | ADR-4 |
 

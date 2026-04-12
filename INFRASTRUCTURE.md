@@ -207,7 +207,7 @@ def trace_agent(trace_path, trace_id, phase, persona, skills):
 ```mermaid
 flowchart TD
     A["파일 확장자 판별"] --> B["프로젝트 루트 탐색\n(package.json)"]
-    B --> C{"biome.json\n존재?"}
+    B --> C{"biome.json 또는\nbiome.jsonc 존재?"}
     C -->|"Yes"| D["biome check"]
     C -->|"No"| E["prettier --check"]
     B --> F{".ts/.tsx/.mts?"}
@@ -221,6 +221,14 @@ flowchart TD
     style F fill:#e94560,color:#e0e0e0,stroke:#4a4a6a
     style G fill:#0f3460,color:#e0e0e0,stroke:#4a4a6a
 ```
+
+**지원 확장자**:
+
+| 구분 | 확장자 |
+|------|--------|
+| TypeScript | `.ts`, `.tsx`, `.mts` |
+| JavaScript | `.js`, `.jsx`, `.mjs` |
+| Format-only | `.json`, `.css`, `.scss` |
 
 **절대 차단 안 함**: PostToolUse 훅으로 실행되므로 항상 `exit 0`. 경고만 stderr로 출력.
 
@@ -247,6 +255,7 @@ bge-m3 모델 기반 시맨틱 검색. 4개 스코프: `all`, `meetings`, `works
 | CPU 강제 | `CUDA_VISIBLE_DEVICES=""` (MPS 패닉 방지) |
 | 메모리 가드 | 기본 4GB (`JARFIS_MEMORY_THRESHOLD_GB`) |
 | 점수 임계값 | `SCORE_THRESHOLD = 0.5` |
+| 기본 결과 수 | `DEFAULT_TOP_K = 5` |
 | 청크 토큰 임계값 | 500 (chars/4 근사) |
 
 메모리 확인: macOS는 `vm_stat` (free + speculative + inactive pages), Linux는 `/proc/meminfo` MemAvailable.
@@ -457,7 +466,7 @@ org-aware `meetings/` 디렉토리를 탐색하여 `summary.md`가 있는 미팅
 | 항목 | 수치 |
 |------|------|
 | 테스트 함수 | 294개 |
-| 테스트 파일 | 18개 |
+| 테스트 파일 | 18개 테스트 파일 + `conftest.py` + `__init__.py` |
 | 아키텍처 테스트 | `test_architecture.py` (3 테스트 클래스) |
 
 ### 아키텍처 테스트 (`test_architecture.py`)

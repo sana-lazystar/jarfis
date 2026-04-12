@@ -39,7 +39,7 @@ flowchart LR
 │  │  ┌─ Ratchet Loop (Phase 내부 품질 검증) ────────────────────────┐         │  │
 │  │  │  PRD Ratchet (Phase 1): 5항목 채점, 최대 2회 재시도          │         │  │
 │  │  │  TDD Ratchet (Phase 4): pass_rate >= baseline, 태스크당 2회  │         │  │
-│  │  │  Fix Ratchet (continue): 수정 → 리뷰 → 최대 2회 재시도      │         │  │
+│  │  │  Fix Ratchet (continue): 수정 → 리뷰 루프 최대 2회, Fix 테스트 최대 1회  │  │  │
 │  │  └──────────────────────────────────────────────────────────────┘         │  │
 │  │                                                                           │  │
 │  └───────────────────────────────────────────────────────────────────────────┘  │
@@ -59,7 +59,8 @@ flowchart LR
 ### M-0: Setup (미팅 준비)
 
 1. **기획명 결정**: `$ARGUMENTS`에서 추출 → kebab-case 변환 → AskUserQuestion으로 확인
-2. **디렉토리 생성**: `$JARFIS_WORKSPACE_DIR/meetings/{YYYYMMDD}-{기획명}/`
+   - `--prev-meeting {이전미팅명}` 플래그 있으면 해당 미팅의 `decisions.md`를 로드하여 토론 컨텍스트로 활용
+2. **디렉토리 생성**: `$JARFIS_ORG_DIR/meetings/{YYYYMMDD}-{기획명}/`
    - 동일 기획명 존재 시: 이어서 진행 또는 새로 시작 선택
 3. **컨텍스트 로드**: `jarfis_cli.py preflight` 실행
    - `project-profile.md`, `learnings.md`, `project-context.md` 로드 (없어도 진행 가능)
@@ -107,7 +108,14 @@ PO와 TL이 기획 주제에 대한 첫인상을 각각 공유한다:
 | `decisions.md` | 의사결정 추적표 | |
 | `tech-research.md` | 전문가 조사 결과 | 소환 시에만 생성 |
 
-완료 후 안내: `/jarfis:work $ARGUMENTS --meeting $MEETING_NAME`
+산출물 생성 후 시맨틱 검색 인덱스 갱신 (best-effort):
+```
+jarfis_cli.py search index meetings
+```
+
+완료 후 안내:
+- 구현 시작: `/jarfis:work $ARGUMENTS --meeting $MEETING_NAME`
+- 추가 미팅: `/jarfis:work-meeting $ARGUMENTS --prev-meeting $MEETING_NAME`
 
 ---
 
@@ -164,6 +172,7 @@ flowchart LR
 | UX 피드백, 화면 설계 수정 | Phase 3 (UX Design) |
 | 추가 구현, 버그 수정 (기존 PRD 기반) | Phase 4 (Implementation) |
 | 배포 전략, 롤백 계획 | Phase 4.5 (Ops Readiness) |
+| 코드리뷰, 보안리뷰 | Phase 5 |
 
 - `.jarfis-state.json` 존재 시 유형 B 가능성이 높음
 - 유형 B는 원래 피처 브랜치에서 분기 (`.jarfis-state.json`의 `branch` 필드 참조)
@@ -601,7 +610,7 @@ flowchart TD
     F1["3-1: 수정 사항 정리\ntasks.md에 Follow-up Fix 추가"] --> F2["3-2: 구현\njarfis(fix/BE-N):"]
     F2 --> F3["3-3: 경량 리뷰\n(TL, 보안 시 Security)"]
     F3 --> F3R{"수정 필요?"}
-    F3R -->|"Yes (최대 2회)"| F2
+    F3R -->|"Yes (리뷰 루프 최대 2회)"| F2
     F3R -->|"No"| F4{{"🔒 3-4: 게이트"}}
     F4 -->|"승인"| F5["3-5: 경량 회고"]
     F4 -->|"추가 수정"| F2
@@ -666,7 +675,7 @@ flowchart TD
 
 | 대상 | 스킵 조건 |
 |------|----------|
-| Phase 3 전체 | UX Designer 불필요 (PRD Required Roles) |
+| Phase 3 전체 | FE 불필요 또는 UX Designer 불필요 (PRD Required Roles) |
 | Phase 4 파트별 | `tasks.md` 해당 섹션이 `N/A` |
 | Step 4-0.5 (TDD) | `test-strategy.md` 없음 or P0 시나리오 3개 미만 or 테스트 프레임워크 없음 |
 | Step 2-1.5 (API Spec) | BE+FE 모두 필요하지 않을 때 |
@@ -691,6 +700,7 @@ auto-compact 직전에 자동 실행:
 - `.jarfis-state.json` 백업 → `.compact-backups/state_{timestamp}.json` (최대 10개 유지)
 - 미팅 파일 백업 (summary, meeting-notes, decisions, tech-research) (최대 20개 유지)
 - 백업 메타데이터 기록: `last_compact.json`
+- 킬스위치: 없음 (PreCompact는 항상 실행)
 
 ### SessionStart Hook (`jarfis-session-start.sh`)
 
@@ -698,6 +708,7 @@ auto-compact 직전에 자동 실행:
 - `jarfis_cli.py state list-workflows`로 미완료 워크플로우 감지
 - 미완료 존재 시 Phase, 프로젝트명, 마지막 체크포인트, 핵심 결정사항 표시
 - Wiki 미반영 워크플로우 경고
+- 킬스위치: `JARFIS_SESSION_RESTORE=0` (환경변수 설정 시 복원 알림 스킵)
 
 ### Resume After Context Compression
 
@@ -712,6 +723,7 @@ auto-compact 직전에 자동 실행:
 PreToolUse 훅으로 위험한 Bash 명령을 차단:
 - **차단 (exit 2)**: `git push --force`, `--no-verify`, main/master 직접 커밋
 - **경고 (exit 0 + stderr)**: `.env` 접근, `rm -rf`, credential 파일, `curl | bash`
+- 킬스위치: `JARFIS_SAFETY_HOOK=0` (환경변수 설정 시 Safety Hook 비활성화)
 
 ### Quality Gate Hook (`jarfis-quality-gate.sh`)
 

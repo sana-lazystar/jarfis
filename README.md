@@ -155,7 +155,7 @@ Meeting 모드에서 PO와 Tech Lead가 자유 토론을 벌이고, 필요하면
 하나의 워크플로우가 만들어내는 산출물:
 
 ```
-.local/workspace/works/20260311-feat-결제-리팩토링/
+.personal/orgs/{org}/works/20260311-feat-결제-리팩토링/
 ├── .jarfis-state.json       # 워크플로우 상태 (중단 시 재개용)
 ├── press-release.md          # Working Backwards 프레스 릴리스
 ├── prd.md                    # 요구사항 정의서
@@ -196,7 +196,7 @@ flowchart LR
 
 **두 가지 레벨의 학습**:
 
-- **전역 학습** (`jarfis-learnings.md`): 모든 프로젝트에 적용되는 에이전트 힌트 + 워크플로우 패턴
+- **전역 학습** (`$JARFIS_ORG_DIR/learnings.md`): 모든 프로젝트에 적용되는 에이전트 힌트 + 워크플로우 패턴
 - **프로젝트 학습** (`project-context.md`): 특정 코드베이스에 대한 맥락 (컨벤션, 기술 스택, 히스토리)
 
 ### Context Resilience
@@ -318,14 +318,20 @@ bash install.sh
 
 ### Data Directory
 
-런타임 데이터는 repo 내 `.local/` 디렉토리에 저장됩니다 (`.gitignore`에 의해 추적 제외):
+런타임 데이터는 repo 내 `.personal/` 디렉토리에 저장됩니다 (`.gitignore`에 의해 추적 제외):
 
 ```
-~/repos/jarfis/.local/
-├── workspace/
-│   ├── works/        # 워크플로우 산출물
-│   └── meetings/     # 미팅 산출물
-└── jarfis-learnings.md  # 학습 항목
+~/repos/jarfis/.personal/
+├── orgs/
+│   ├── {org-name}/
+│   │   ├── works/        # 워크플로우 산출물
+│   │   ├── meetings/     # 미팅 산출물
+│   │   └── learnings.md  # 학습 항목
+│   └── _standalone/      # Org 미등록 시 기본
+│       ├── works/
+│       ├── meetings/
+│       └── learnings.md
+└── orgs.json              # Org 레지스트리
 ```
 
 ### Update

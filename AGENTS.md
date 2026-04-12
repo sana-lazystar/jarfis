@@ -48,7 +48,7 @@ flowchart LR
 
 ### 2.2 Persona Body 구조
 
-모든 Persona는 동일한 4단 구조를 따른다:
+모든 Persona는 frontmatter + body 구조를 따른다. body의 섹션 구성은 Persona마다 다를 수 있으며, 공통적으로 나타나는 패턴은 다음과 같다:
 
 ```markdown
 ---
@@ -58,11 +58,15 @@ model: sonnet
 color: red
 ---
 
-## Core Identity          ← 역할의 본질, 관점(Perspective)
-## Behavioral Guidelines  ← 문제 해결 접근, 코드 품질, 커뮤니케이션
-## Judgment Framework      ← 의사결정 기준 (일부 Persona)
-## Output Formatting       ← 응답 형식 규칙
+## Core Identity          ← 역할의 본질, 관점(Perspective) (대부분의 Persona)
+## Behavioral Guidelines  ← 문제 해결 접근, 코드 품질, 커뮤니케이션 (일부 Persona)
+## Mindset & Disposition  ← 사고방식, 태도 (일부 Persona)
+## Core Expertise         ← 핵심 전문 영역 (일부 Persona)
+## Judgment Framework     ← 의사결정 기준 (일부 Persona)
+## Response Format        ← 응답 형식 규칙 (일부 Persona)
 ```
+
+> **참고**: 섹션 이름과 구성은 Persona별로 상이하다. 예를 들어 `product-owner`는 `핵심 정체성`(한글)을, `qa-engineer`와 `security-engineer`는 `Core Expertise`를 포함하며, `frontend-developer`는 `Response Format`을 사용한다.
 
 ### 2.3 v2.5 Legacy Persona와의 관계
 
@@ -70,7 +74,7 @@ color: red
 
 | v2.5 (모놀리식) | v3.0 (Persona only) | 차이 |
 |---|---|---|
-| `senior-backend-engineer.md` (107줄) | `backend-developer.md` (57줄) | v2.5는 기술 스택 목록 포함, v3.0은 관점/판단 기준만 |
+| `senior-backend-engineer.md` (106줄) | `backend-developer.md` (57줄) | v2.5는 기술 스택 목록 포함, v3.0은 관점/판단 기준만 |
 | `senior-product-owner.md` | `product-owner.md` | 동일 패턴 |
 
 **현재 상태**: `web.yaml`의 plan/design/review 페이즈는 `senior-*` (v2.5)를 참조하고, implement 페이즈는 v3.0 Persona를 참조한다. `desktop.yaml`은 모든 페이즈에서 v3.0 Persona를 참조한다. `validate` 함수는 `agents/jarfis/` 전체를 재귀 탐색하므로 양쪽 모두 발견된다.
@@ -414,7 +418,7 @@ JARFIS 시스템 자체의 변경 사항을 검토하는 토론 메커니즘.
 ### 10.2 프로토콜
 
 - 라운드당 최대 **300단어**
-- 최대 **2라운드**
+- 라운드 수는 워크플로우 오케스트레이터(`implement.md`)가 제어 (Round 1 → Round 2 → 미합의 시 사용자 판단)
 - 합의 표기: ✅ 합의 / ⚠️ 조건부 합의 / ❌ 사용자 판단 필요
 - 평가 축: 구체성, 건설성, 범용성, 토큰 경제
 
