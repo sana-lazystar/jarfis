@@ -473,9 +473,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [3.2.0] - 2026-04-13
+## [3.3.0] - 2026-04-13
 
-- implement: Locale infrastructure — locale/locale-set commands, state schema locale field, Phase 0 locale detection
+- implement: Phase prompts migrated to English — all 9 prompt files (phase1-6, phase3-figma, phase4-5, continue-extend, wiki-loading) converted with Locale Output directive
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

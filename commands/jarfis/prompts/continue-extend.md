@@ -1,95 +1,97 @@
 # Continue Extend — Agent Prompts
 
-## PO Prompt (PRD 보강)
+> **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
+
+## PO Prompt (PRD Augmentation)
 
 ```
 Task prompt:
-"기존 PRD를 참조하여 확장 요구사항을 추가해주세요.
+"Refer to the existing PRD and add the extended requirements.
 
-## 기존 PRD
-{$DOCS_DIR/prd.md 내용}
+## Existing PRD
+{$DOCS_DIR/prd.md content}
 
-## 확장 요청
+## Extension Request
 {$ARGUMENTS}
 
 $PROJECT_CONTEXT
 
-## 지시사항
-1. 기존 PRD의 구조와 스타일을 유지하세요.
-2. 새 요구사항을 기존 PRD 뒤에 "## Extension #{iteration}" 섹션으로 추가하세요.
-3. 기존 기능과의 의존성/충돌을 분석하세요.
-4. 추가 역할이 필요한지 판단하세요 (기존: {required_roles 요약}).
-5. Working Backwards는 생략합니다 (기존 press-release.md 참조).
-6. 불명확한 점이 있으면 사용자에게 역질문하세요."
+## Instructions
+1. Preserve the structure and style of the existing PRD.
+2. Append the new requirements as an '## Extension #{iteration}' section after the existing PRD.
+3. Analyze dependencies and conflicts with existing features.
+4. Determine whether additional roles are needed (current: {required_roles summary}).
+5. Skip Working Backwards (refer to the existing press-release.md).
+6. If anything is unclear, ask the user a clarifying question."
 ```
 
-## Architect Prompt (설계 보강)
+## Architect Prompt (Architecture Augmentation)
 
 ```
 Task prompt:
-"기존 아키텍처를 기반으로 확장 설계를 추가해주세요.
+"Build on the existing architecture and add the extension design.
 
-## 기존 아키텍처
-{$DOCS_DIR/architecture.md 내용}
+## Existing Architecture
+{$DOCS_DIR/architecture.md content}
 
-## 확장 PRD
-{prd.md의 Extension 섹션}
+## Extension PRD
+{Extension section of prd.md}
 
 $PROJECT_CONTEXT
 $BE_PROJECT_PROFILE
 $FE_PROJECT_PROFILE
 
-## 지시사항
-1. 기존 아키텍처에 미치는 영향을 분석하세요.
-2. 변경/추가할 컴포넌트를 식별하세요.
-3. architecture.md에 "## Extension #{iteration}" 섹션으로 추가하세요.
-4. 기존 ADR과 충돌하는 결정이 있으면 새 ADR을 추가하세요."
+## Instructions
+1. Analyze the impact on the existing architecture.
+2. Identify components to be changed or added.
+3. Append an '## Extension #{iteration}' section to architecture.md.
+4. If any decisions conflict with existing ADRs, add a new ADR."
 ```
 
-## Tech Lead Prompt (태스크 분해)
+## Tech Lead Prompt (Task Breakdown)
 
 ```
 Task prompt:
-"확장 요구사항에 대한 태스크를 분해해주세요.
+"Break down the extension requirements into tasks.
 
-## 기존 태스크
-{$DOCS_DIR/tasks.md 내용}
+## Existing Tasks
+{$DOCS_DIR/tasks.md content}
 
-## 확장 설계
-{architecture.md Extension 섹션}
+## Extension Design
+{Extension section of architecture.md}
 
-## 확장 PRD
-{prd.md Extension 섹션}
+## Extension PRD
+{Extension section of prd.md}
 
 $BE_PROJECT_PROFILE
 $FE_PROJECT_PROFILE
 
-## 지시사항
-1. tasks.md에 "## Extension Tasks (#N)" 섹션을 추가하세요.
-2. 기존 태스크와의 의존성을 명시하세요.
-3. 기존과 동일한 형식(BE/FE/DevOps 분류, 체크박스)을 따르세요.
-4. 프로젝트 프로필이 존재하면 디렉토리 구조와 컨벤션을 참조하여 대상 파일을 구체적으로 명시하세요."
+## Instructions
+1. Add an '## Extension Tasks (#N)' section to tasks.md.
+2. Specify dependencies with existing tasks.
+3. Follow the same format as existing tasks (BE/FE/DevOps categorization, checkboxes).
+4. If a project profile exists, reference the directory structure and conventions to specify target files concretely."
 ```
 
-## QA Prompt (테스트 전략 보강) — test-strategy.md 존재 시만 실행
+## QA Prompt (Test Strategy Augmentation) — runs only when test-strategy.md exists
 
 ```
 Task prompt:
-"기존 테스트 전략을 참조하여 확장 기능의 테스트 전략을 추가해주세요.
+"Refer to the existing test strategy and add the test strategy for the extended features.
 
-## 기존 테스트 전략
-{$DOCS_DIR/test-strategy.md 내용}
+## Existing Test Strategy
+{$DOCS_DIR/test-strategy.md content}
 
-## 확장 태스크
-{tasks.md의 Extension Tasks 섹션}
+## Extension Tasks
+{Extension Tasks section of tasks.md}
 
-## 확장 PRD
-{prd.md의 Extension 섹션}
+## Extension PRD
+{Extension section of prd.md}
 
-## 지시사항
-1. test-strategy.md에 "## Extension Test Strategy (#N)" 섹션을 추가하세요.
-2. 확장 기능에 대한 Unit/Integration/E2E 테스트 시나리오를 기존과 동일한 형식으로 작성하세요.
-3. 기존 테스트와의 영향 관계를 분석하세요 (기존 테스트가 깨질 가능성이 있는지).
-4. 확장 기능의 엣지 케이스를 나열하세요.
-5. 성능 테스트 기준이 변경되는 경우 명시하세요."
+## Instructions
+1. Add an '## Extension Test Strategy (#N)' section to test-strategy.md.
+2. Write Unit/Integration/E2E test scenarios for the extended features in the same format as existing tests.
+3. Analyze the impact on existing tests (whether existing tests might break).
+4. List edge cases for the extended features.
+5. If performance test criteria change, specify them."
 ```

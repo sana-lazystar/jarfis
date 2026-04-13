@@ -1,69 +1,71 @@
 # Phase 3 Figma-Driven Design Path — Agent Prompts
 
-> Phase 3에서 Figma URL이 제공된 경우(디자이너가 있는 경우) 실행되는 경로.
-> 출력 계약은 기존 텍스트 경로와 동일: `$DOCS_DIR/design/{path}/index.html`
+> Executed when a Figma URL is provided in Phase 3 (i.e., when a designer is involved).
+> The output contract is identical to the existing text path: `$DOCS_DIR/design/{path}/index.html`
 >
-> **v5 업데이트 (2026-03-27)**: A/B 테스트 결과 HTML 시안 경유가 직접 생성 대비
-> 레이아웃 정확도에서 확연히 우위 확인. HTML 시안 유지하되 **섹션별 분할 생성**으로
-> 효율/안정성 개선. 상세: `~/UX-AI/workflow/figma-to-html-v5.md`
+> **v5 Update (2026-03-27)**: A/B test results confirmed that routing through HTML mockups
+> significantly outperforms direct generation in layout accuracy. HTML mockups are retained,
+> but **section-by-section split generation** improves efficiency/stability.
+> Details: `~/UX-AI/workflow/figma-to-html-v5.md`
+> **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
 
 ---
 
-## 복수 Figma 페이지 병렬 처리 (v5)
+## Multiple Figma Page Parallel Processing (v5)
 
-> `.jarfis-state.json`의 `phases.3.figma_pages` 배열에 여러 페이지가 있을 수 있다.
-> 각 페이지를 **병렬로** Step 3-F0~3-F3를 실행한다 (최대 5페이지 동시).
-> 각 페이지는 `$DOCS_DIR/design/{page_path}/`에 독립 산출물을 생성한다.
-> `{page_path}`는 figma_pages[].title의 kebab-case 변환이다 (예: "혜택 소개" → "benefits-signup").
+> The `phases.3.figma_pages` array in `.jarfis-state.json` may contain multiple pages.
+> Execute Steps 3-F0~3-F3 **in parallel** for each page (up to 5 pages concurrently).
+> Each page produces independent deliverables in `$DOCS_DIR/design/{page_path}/`.
+> `{page_path}` is the kebab-case conversion of figma_pages[].title (e.g., "Benefits Signup" → "benefits-signup").
 
 ```
-figma_pages 예시:
+figma_pages example:
 [
-  {"title": "혜택 소개", "url": "https://figma.com/design/xxx?node-id=123-456"},
-  {"title": "멤버십 내역", "url": "https://figma.com/design/xxx?node-id=789-012"}
+  {"title": "Benefits Signup", "url": "https://figma.com/design/xxx?node-id=123-456"},
+  {"title": "Membership History", "url": "https://figma.com/design/xxx?node-id=789-012"}
 ]
 ```
 
-**각 페이지에 대해 아래 Step 3-F0~3-F3를 독립 실행:**
+**Execute Steps 3-F0~3-F3 below independently for each page:**
 
 ---
 
-## Step 3-F0: Figma 데이터 추출 (오케스트레이터 직접 실행, 페이지별)
+## Step 3-F0: Figma Data Extraction (Orchestrator direct execution, per page)
 
-1. **Figma URL 파싱**:
-   - figma_pages[].url에서 `fileKey`와 `nodeId` 추출
-   - `{page_path}` = title의 kebab-case
+1. **Figma URL Parsing**:
+   - Extract `fileKey` and `nodeId` from figma_pages[].url
+   - `{page_path}` = kebab-case of title
 
-2. **Framelink MCP 호출**:
-   - `get_figma_data(fileKey, nodeId)` → YAML 데이터
-   - `$DOCS_DIR/design/{page_path}/figma-spec.yaml`에 저장
+2. **Framelink MCP Call**:
+   - `get_figma_data(fileKey, nodeId)` → YAML data
+   - Save to `$DOCS_DIR/design/{page_path}/figma-spec.yaml`
 
-3. **Figma 스크린샷 다운로드**:
-   - Framelink `download_figma_images` 또는 Figma REST API (scale=2)
-   - `$DOCS_DIR/design/{page_path}/reference.png`에 저장
+3. **Figma Screenshot Download**:
+   - Framelink `download_figma_images` or Figma REST API (scale=2)
+   - Save to `$DOCS_DIR/design/{page_path}/reference.png`
 
-4. **공통 컴포넌트 감지** (첫 번째 페이지에서만 — 이후 페이지는 결과 재사용):
-   - YAML 노드 트리에서 최상위 1-2레벨의 INSTANCE 노드 중:
-     - 이름에 `헤더/Header/풋터/Footer/GNB/Navigation` 포함하는 노드
-     - project-profile.md에 등록된 shared components와 이름 매칭
-   - AskUserQuestion으로 사용자 확인:
+4. **Common Component Detection** (first page only — subsequent pages reuse results):
+   - Among top 1-2 level INSTANCE nodes in the YAML node tree:
+     - Nodes whose names contain `Header/Footer/GNB/Navigation`
+     - Name matching against shared components registered in project-profile.md
+   - Confirm with user via AskUserQuestion:
      ```
-     question: "다음 컴포넌트를 공통 컴포넌트로 인식했습니다. 프로젝트 기존 컴포넌트를 사용하고 Figma 추출에서 제외할 항목을 확인해주세요."
-     header: "공통 컴포넌트"
-     options: (감지된 컴포넌트 목록)
+     question: "The following components have been identified as common components. Please confirm which items should use existing project components and be excluded from Figma extraction."
+     header: "Common Components"
+     options: (list of detected components)
      multiSelect: true
      ```
-   - `.jarfis-state.json`에 `phases.3.common_components_skip` 저장
+   - Save to `.jarfis-state.json` as `phases.3.common_components_skip`
 
 ---
 
-## Step 3-F1: 에셋 탐지 & 다운로드 (오케스트레이터 직접 실행)
+## Step 3-F1: Asset Detection & Download (Orchestrator direct execution)
 
-1. **YAML 스캔** — `styles` 섹션에서 `type: IMAGE` fill 탐색:
-   - 각 `fill_XXXXX`의 `imageRef` 값 추출
-   - 해당 fill을 참조하는 노드 ID + 이름 매핑
+1. **YAML Scan** — Search for `type: IMAGE` fills in the `styles` section:
+   - Extract `imageRef` values from each `fill_XXXXX`
+   - Map node IDs + names that reference each fill
 
-2. **다운로드 매니페스트 생성** — `$DOCS_DIR/design/asset-manifest.json`:
+2. **Download Manifest Generation** — `$DOCS_DIR/design/asset-manifest.json`:
    ```json
    [
      {"nodeId": "39286:42489", "imageRef": "abc123...", "fileName": "card-3d.png", "dimensions": {"width": 310, "height": 176}},
@@ -71,12 +73,12 @@ figma_pages 예시:
    ]
    ```
 
-3. **다운로드 시도** (순서):
-   - 1차: Framelink MCP `download_figma_images` (localPath + nodes 배열)
-   - 2차 (1차 실패 시): Figma REST API `GET /v1/images/{fileKey}?ids={nodeIds}&format=png&scale=2`
-   - 저장: `$DOCS_DIR/design/assets/{fileName}`
+3. **Download Attempt** (in order):
+   - Primary: Framelink MCP `download_figma_images` (localPath + nodes array)
+   - Fallback (if primary fails): Figma REST API `GET /v1/images/{fileKey}?ids={nodeIds}&format=png&scale=2`
+   - Save to: `$DOCS_DIR/design/assets/{fileName}`
 
-4. **검증 및 기록** — `$DOCS_DIR/design/asset-verification.md`:
+4. **Verification and Logging** — `$DOCS_DIR/design/asset-verification.md`:
    ```markdown
    ## Asset Verification
    - Total in manifest: N
@@ -91,23 +93,23 @@ figma_pages 예시:
 
 ---
 
-## Step 3-F2: 토큰 맵 생성 (오케스트레이터 직접 실행)
+## Step 3-F2: Token Map Generation (Orchestrator direct execution)
 
-1. **Figma 값 추출** — YAML의 `styles` 섹션에서:
-   - 모든 `fill_XXXXX`의 hex 색상값 수집 (단색 + 그라디언트의 각 stop)
-   - 모든 `style_XXXXX`의 타이포그래피 값 (fontFamily, fontSize, fontWeight, lineHeight, letterSpacing)
+1. **Figma Value Extraction** — From the `styles` section of the YAML:
+   - Collect all hex color values from `fill_XXXXX` (solid colors + each gradient stop)
+   - Collect all typography values from `style_XXXXX` (fontFamily, fontSize, fontWeight, lineHeight, letterSpacing)
 
-2. **프로젝트 디자인 시스템 로드**:
-   - `project-profile.md`의 "Design System" 또는 "Styles" 섹션에서 변수 파일 경로 확인
-   - 해당 파일들 파싱하여 `{hex_value: [variable_names]}` 룩업 테이블 구축
-   - 매칭 우선순위: semantic 변수 > theme 변수 > primitive 변수
+2. **Load Project Design System**:
+   - Find variable file paths from the "Design System" or "Styles" section in `project-profile.md`
+   - Parse those files to build a `{hex_value: [variable_names]}` lookup table
+   - Matching priority: semantic variables > theme variables > primitive variables
 
-3. **역방향 매칭 + delta-E fuzzy matching**:
-   - 정확 매칭 시도 → 성공 시 `"exact": true`
-   - 정확 매칭 실패 시 → delta-E ≤ 5 범위에서 최근접 변수 탐색 → `"exact": false, "deltaE": N`
-   - 매칭 완전 실패 → `unmapped` 섹션에 기록
+3. **Reverse Matching + delta-E Fuzzy Matching**:
+   - Attempt exact match → if successful, `"exact": true`
+   - If exact match fails → search for nearest variable within delta-E ≤ 5 range → `"exact": false, "deltaE": N`
+   - Complete match failure → record in `unmapped` section
 
-4. **저장** — `$DOCS_DIR/design/token-map.json`:
+4. **Save** — `$DOCS_DIR/design/token-map.json`:
    ```json
    {
      "colors": {
@@ -119,24 +121,24 @@ figma_pages 예시:
          "Pretendard/18/700": {"fontSize": {"value": 18, "variable": "var(--font-size-lg)"}, "fontWeight": {"value": 700, "variable": "$font-weight-bold"}, ...}
        }
      },
-     "unmapped": {"colors": ["#AABBCC"], "note": "프로젝트 디자인 시스템에 매칭되는 변수 없음"}
+     "unmapped": {"colors": ["#AABBCC"], "note": "No matching variables found in the project design system"}
    }
    ```
 
 ---
 
-## Step 3-F2.5: 섹션 분할 맵 생성 (v5 신규 — 오케스트레이터 직접 실행)
+## Step 3-F2.5: Section Split Map Generation (v5 new — Orchestrator direct execution)
 
-1. **YAML 루트 children 파싱**:
-   - YAML 루트 프레임의 직계 children 노드를 "섹션"으로 정의
-   - 공통 컴포넌트(헤더/풋터)는 제외
-   - 인접한 작은 노드(height ≤ 40px, 구분선/스페이서)는 이전 섹션에 병합
+1. **Parse YAML Root Children**:
+   - Define direct children nodes of the YAML root frame as "sections"
+   - Exclude common components (header/footer)
+   - Merge adjacent small nodes (height ≤ 40px, dividers/spacers) into the previous section
 
-2. **섹션별 레퍼런스 crop**:
-   - reference-cropped.png를 각 섹션의 y좌표/height로 crop
-   - 저장: `$DOCS_DIR/design/sections/{section-id}/reference.png`
+2. **Per-Section Reference Crop**:
+   - Crop reference-cropped.png by each section's y-coordinate/height
+   - Save to: `$DOCS_DIR/design/sections/{section-id}/reference.png`
 
-3. **저장** — `$DOCS_DIR/design/section-map.json`:
+3. **Save** — `$DOCS_DIR/design/section-map.json`:
    ```json
    {
      "root": { "width": 1440, "height": 6294 },
@@ -149,172 +151,176 @@ figma_pages 예시:
 
 ---
 
-## Step 3-F3: UX Designer — 섹션별 Figma 재현 (v5 — senior-ux-designer)
+## Step 3-F3: UX Designer — Section-by-Section Figma Reproduction (v5 — senior-ux-designer)
 
-> **v5 변경**: 전체 페이지를 한번에 생성하지 않고 **섹션별로 분할 생성+검증**.
-> 실패 시 해당 섹션만 재작업하여 토큰 절약 + 안정성 향상.
+> **v5 Change**: Instead of generating the entire page at once, **generate and verify section by section**.
+> On failure, only the affected section is reworked, saving tokens and improving stability.
 
-### 3-F3a: 페이지 셸 생성
+> **Reminder**: All output in $LOCALE language.
+
+### 3-F3a: Page Shell Generation
 
 ```
 Task prompt:
-"페이지 HTML 셸을 생성하세요.
+"Generate the page HTML shell.
 
-입력: $DOCS_DIR/design/figma-spec.yaml (루트 프레임 정보만)
-출력: $DOCS_DIR/design/{path}/index.html
+Input: $DOCS_DIR/design/figma-spec.yaml (root frame info only)
+Output: $DOCS_DIR/design/{path}/index.html
 
-내용:
-- <!DOCTYPE html>, <head> (Pretendard CDN, 기본 리셋 스타일)
-- 루트 컨테이너: YAML root의 width, background-color 적용
-- 섹션 슬롯: section-map.json의 각 섹션에 대해
+Contents:
+- <!DOCTYPE html>, <head> (Pretendard CDN, basic reset styles)
+- Root container: apply YAML root's width, background-color
+- Section slots: for each section in section-map.json
   <section id='section-{N}' class='section-slot'></section>
-- 공통 컴포넌트 placeholder: <!-- COMMON: {name} --> (높이 확보)"
+- Common component placeholder: <!-- COMMON: {name} --> (reserve height)"
 ```
 
-### 3-F3b: 섹션별 생성 + 즉시 검증 (반복)
+### 3-F3b: Per-Section Generation + Immediate Verification (iterative)
 
-각 섹션에 대해:
+For each section:
 
 ```
 Task prompt:
-"Figma 디자인의 '{section_name}' 섹션을 pixel-perfect HTML+CSS로 재현하세요.
+"Reproduce the '{section_name}' section of the Figma design as pixel-perfect HTML+CSS.
 
-입력 자료:
-- Figma 스펙: $DOCS_DIR/design/figma-spec.yaml 중 해당 노드만
+Input materials:
+- Figma spec: only the relevant nodes from $DOCS_DIR/design/figma-spec.yaml
   (nodeIds: $SECTION_NODE_IDS)
-- 섹션 참조 스크린샷: $DOCS_DIR/design/sections/{section-id}/reference.png
-- 이미지 에셋: $DOCS_DIR/design/assets/
-- 토큰 맵: $DOCS_DIR/design/token-map.json
-- 공통 컴포넌트 스킵 목록: $COMMON_SKIP_LIST
+- Section reference screenshot: $DOCS_DIR/design/sections/{section-id}/reference.png
+- Image assets: $DOCS_DIR/design/assets/
+- Token map: $DOCS_DIR/design/token-map.json
+- Common component skip list: $COMMON_SKIP_LIST
 
-─── 절대 금지 규칙 (Figma 모드) ───
-1. 에이전트 추론 금지: Figma 스펙에 없는 스타일을 추론하지 마라.
-   예: '다크 페이지이므로 헤더도 다크'는 금지. 스펙 데이터만 따라라.
-2. 노드 순서 엄수: siblings 순서를 정확히 보존하라.
-   같은 이름의 노드가 2번 등장하면 2번 렌더링. deduplicate 금지.
-3. 이미지 에셋 필수: IMAGE/IMAGE-SVG 노드는 반드시 assets/ 참조.
-   에셋 없으면 [MISSING_ASSET: {nodeId}] placeholder.
-4. 복합 fill 정확 변환: gradient + opacity를 정확히 CSS 변환.
-   단순화/근사값 금지.
-5. 토큰 맵 적극 활용: hex 대신 CSS variable 우선.
-6. YAML layout 속성 1:1 매핑: 아래 가이드 엄수.
-   mode→flex-direction, gap→gap, padding→padding 그대로 사용.
-7. 벡터/아이콘은 placeholder: SVG 근사 금지.
-   .placeholder-icon (dimensions 유지, 밝은 배경 #E1E4EC / 어두운 배경 #3D3E42)
-8. 복합 fill은 placeholder: 다중 fill CSS 재현 금지.
-   .placeholder-bg (첫 번째 단색 사용)
-───────────────────────────────
+─── Absolute Forbidden Rules (Figma Mode) ───
+1. No agent inference: Do not infer styles not present in the Figma spec.
+   Example: 'header should be dark because the page is dark' is forbidden. Follow spec data only.
+2. Strict node order: Preserve sibling order exactly.
+   If a node with the same name appears twice, render it twice. No deduplication.
+3. Image assets required: IMAGE/IMAGE-SVG nodes must reference assets/.
+   If asset is missing, use [MISSING_ASSET: {nodeId}] placeholder.
+4. Exact compound fill conversion: Convert gradient + opacity to CSS precisely.
+   No simplification/approximation.
+5. Actively use token map: Prefer CSS variables over hex values.
+6. 1:1 YAML layout property mapping: Strictly follow the guide below.
+   mode→flex-direction, gap→gap, padding→padding used as-is.
+7. Vectors/icons as placeholders: No SVG approximation.
+   .placeholder-icon (maintain dimensions, light background #E1E4EC / dark background #3D3E42)
+8. Compound fills as placeholders: No multi-fill CSS reproduction.
+   .placeholder-bg (use first solid color)
+──────────────────────────────────
 
-─── YAML → CSS 매핑 가이드 (v5 확장) ───
-레이아웃:
+─── YAML → CSS Mapping Guide (v5 Extended) ───
+Layout:
   mode: row → display:flex; flex-direction:row
   mode: column → display:flex; flex-direction:column
   gap → gap / padding → padding
   justifyContent/alignItems → justify-content/align-items
-  sizing.horizontal: fill → width:100% (flex 컨텍스트면 flex:1)
+  sizing.horizontal: fill → width:100% (flex:1 in flex context)
   sizing.horizontal: fixed → width:{dimensions.width}px
   sizing.horizontal: hug → width:fit-content
   clipsContent:true → overflow:hidden
   borderRadius → border-radius
 
-텍스트:
+Text:
   fontFamily/fontSize/fontWeight → font-family/font-size/font-weight
   lineHeight → line-height
   letterSpacing → letter-spacing
   textAlign → text-align
 
-이펙트:
+Effects:
   dropShadow → box-shadow
   innerShadow → box-shadow: inset
   backgroundBlur → backdrop-filter:blur()
 
-보더:
+Borders:
   stroke + strokeWeight → border
   strokeAlign: inside → border (box-sizing:border-box)
-  strokeAlign: outside → outline 또는 box-shadow
+  strokeAlign: outside → outline or box-shadow
 
-그라디언트:
+Gradients:
   linearGradient → background: linear-gradient()
   radialGradient → background: radial-gradient()
 ────────────────────────────────────
 
-출력: $DOCS_DIR/design/sections/{section-id}/content.html
+Output: $DOCS_DIR/design/sections/{section-id}/content.html
 
-완료 후 즉시 검증:
-1. 페이지 셸에 이 섹션 content.html을 삽입
-2. Playwright MCP로 스크린샷 촬영
-3. 해당 섹션 영역만 crop
-4. sections/{section-id}/reference.png과 시각 비교
-5. 차이점이 있으면 즉시 수정 (최대 5회 자체 반복/섹션)
-6. PASS 시 다음 섹션으로"
+Immediately verify upon completion:
+1. Insert this section's content.html into the page shell
+2. Take a screenshot with Playwright MCP
+3. Crop to the relevant section area only
+4. Visually compare with sections/{section-id}/reference.png
+5. If differences exist, fix immediately (max 5 self-iterations per section)
+6. On PASS, proceed to next section"
 ```
 
-### 3-F3c: 에셋 채우기 + 전체 조립
+### 3-F3c: Asset Population + Full Assembly
 
 ```
-모든 섹션 PASS 후:
-1. placeholder를 실제 에셋으로 교체 (photo→img, icon→img, bg→background-image)
-2. 페이지 셸에 모든 섹션 content.html 조립
-3. $DOCS_DIR/design/{path}/index.html 완성
-4. $DOCS_DIR/design/_index.html (목차) 생성
+After all sections PASS:
+1. Replace placeholders with actual assets (photo→img, icon→img, bg→background-image)
+2. Assemble all section content.html into the page shell
+3. Finalize $DOCS_DIR/design/{path}/index.html
+4. Generate $DOCS_DIR/design/_index.html (table of contents)
 ```
 
 ---
 
-## Step 3-F4: PO + UX 전체 리뷰 (v5 — 조립 후)
+## Step 3-F4: PO + UX Full Review (v5 — after assembly)
 
-> v5 변경: 섹션별 검증은 3-F3b에서 이미 완료. 3-F4는 **조립된 전체 페이지**에 대한 최종 리뷰.
-> 반복 철학: 토큰 절약보다 완벽한 결과물이 절대 우선.
+> v5 Change: Per-section verification is already completed in 3-F3b. 3-F4 is the **final review of the assembled full page**.
+> Iteration philosophy: A perfect result always takes absolute priority over token savings.
 
-**리뷰 대상**: $DOCS_DIR/design/{path}/index.html (전체 조립 완료본)
+> **Reminder**: All output in $LOCALE language.
 
-**각 라운드:**
+**Review target**: $DOCS_DIR/design/{path}/index.html (fully assembled version)
+
+**Each round:**
 
 PO (senior-product-owner):
 ```
 Task prompt:
-"$DOCS_DIR/design/ 디렉토리의 HTML 시안을 검토하세요.
-Figma 원본 스크린샷: $DOCS_DIR/design/reference.png
+"Review the HTML mockups in the $DOCS_DIR/design/ directory.
+Figma original screenshot: $DOCS_DIR/design/reference.png
 
-확인 항목:
-- Figma 디자인의 콘텐츠(텍스트, 이미지, 순서)가 정확히 재현되었는가
-- 누락된 섹션이나 텍스트가 없는가
-- 이미지 에셋이 올바른 위치에 표시되는가
-- 섹션 간 연결부가 자연스러운가 (섹션별 생성으로 인한 이음새 확인)
+Verification items:
+- Whether the Figma design's content (text, images, order) is accurately reproduced
+- Whether there are any missing sections or text
+- Whether image assets are displayed in the correct positions
+- Whether transitions between sections are natural (check seams from section-by-section generation)
 
-피드백이 있으면 해당 섹션 ID와 함께 구체적으로 기술하세요."
+If there is feedback, describe it specifically along with the relevant section ID."
 ```
 
-UX Designer (senior-ux-designer) — Playwright 비교:
+UX Designer (senior-ux-designer) — Playwright comparison:
 ```
 Task prompt:
-"$DOCS_DIR/design/reference.png와 HTML 시안을 Playwright로 비교 리뷰하세요.
+"Compare and review $DOCS_DIR/design/reference.png against the HTML mockup using Playwright.
 
-비교 프로세스:
-1. Playwright MCP로 $DOCS_DIR/design/{path}/index.html 전체 스크린샷 촬영
-2. mcp-design-comparison으로 reference-cropped.png과 pixel-diff 측정
-3. diff > 5% 시: section-map.json 활용하여 문제 섹션 특정
-4. 문제 섹션만 리비전 (해당 섹션의 content.html 수정 → 재조립)
+Comparison process:
+1. Take a full-page screenshot of $DOCS_DIR/design/{path}/index.html with Playwright MCP
+2. Measure pixel-diff against reference-cropped.png using mcp-design-comparison
+3. If diff > 5%: use section-map.json to identify problem sections
+4. Revise only problem sections (modify that section's content.html → reassemble)
 
-리포트 형식:
+Report format:
 ## Figma vs HTML Final Review (Round N)
 - Full diff: {N}%
-### Section: {섹션명} ({section-id})
-- [PASS] / [REVISION] 상세 설명
+### Section: {section name} ({section-id})
+- [PASS] / [REVISION] detailed description
 
-REVISION 항목이 있으면 해당 섹션만 수정 후 재조립하여 확인."
+If there are REVISION items, fix only those sections and reassemble to verify."
 ```
 
-**종료 조건:**
-- 전체 diff ≤ 5% + PO 콘텐츠 승인 → 완료
-- max 10회 도달 → 사용자에게 미해결 항목 목록과 함께 알림:
+**Exit conditions:**
+- Full diff ≤ 5% + PO content approval → Complete
+- Max 10 rounds reached → Notify user with list of unresolved items:
   ```
-  question: "HTML 시안 전체 리뷰 10회 도달. 아래 미해결 항목이 있습니다: [목록]. 어떻게 진행할까요?"
+  question: "HTML mockup full review has reached 10 rounds. The following unresolved items remain: [list]. How would you like to proceed?"
   header: "Max Iteration"
   options:
-    - label: "현재 상태로 승인"
-    - label: "수동 수정 후 재검토"
-    - label: "중단"
+    - label: "Approve as-is"
+    - label: "Manually fix then re-review"
+    - label: "Abort"
   ```
 
-**사용자 Gate**: 기존 텍스트 경로와 동일 — `open $DOCS_DIR/design/_index.html`
+**User Gate**: Same as the existing text path — `open $DOCS_DIR/design/_index.html`

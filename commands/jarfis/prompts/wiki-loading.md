@@ -1,44 +1,45 @@
-# Wiki Loading — 공통 모듈
+# Wiki Loading — Shared Module
 
-> 이 파일은 work.md, continue.md, meeting.md에서 참조하는 wiki 로딩 공통 모듈이다.
-> Org 등록된 프로젝트에서만 실행한다.
+> This file is a shared wiki-loading module referenced by work.md, continue.md, and meeting.md.
+> **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
+> Only runs in projects registered under an Org.
 
-## 전제 조건
+## Prerequisites
 
-- `preflight` JSON의 `org_root`가 non-null
-- `{org_root}/.jarfis/wiki/INDEX.md` 존재
+- `preflight` JSON's `org_root` is non-null
+- `{org_root}/.jarfis/wiki/INDEX.md` exists
 
-## 2-Step 경량 로딩 (Fix 모드용)
+## 2-Step Lightweight Loading (for Fix mode)
 
-1. **INDEX.md 읽기**: `{org_root}/.jarfis/wiki/INDEX.md`를 읽어 Quick Reference + Directory Map 파악
-2. **관련 섹션만 선택적 로딩**: 현재 태스크와 관련된 섹션의 `_index.md`만 읽기
-   - 예: FE 버그 수정 → DESIGN/_index.md + QA/_index.md
-   - 예: BE API 수정 → TA/_index.md + QA/_index.md
+1. **Read INDEX.md**: Read `{org_root}/.jarfis/wiki/INDEX.md` to identify Quick Reference + Directory Map
+2. **Selectively load relevant sections only**: Read only the `_index.md` of sections related to the current task
+   - e.g.: FE bug fix → DESIGN/_index.md + QA/_index.md
+   - e.g.: BE API change → TA/_index.md + QA/_index.md
 
-> 2-Step은 INDEX.md + 관련 _index.md 최대 2개만 읽는다. 개별 파일은 읽지 않는다.
-> (선택적: `jarfis_cli.py wiki search --top-k 2`로 대체 가능하나, 기본은 _index.md 방식 유지)
+> 2-Step reads INDEX.md + at most 2 relevant _index.md files. Individual files are not read.
+> (Optional: can be replaced with `jarfis_cli.py wiki search --top-k 2`, but the default _index.md approach is preferred)
 
-## 4-Step 전체 로딩 (Work 모드, Extend 모드)
+## 4-Step Full Loading (for Work mode, Extend mode)
 
-1. **INDEX.md 읽기**: Quick Reference + Directory Map → 전체 wiki 구조 파악
-2. **모든 섹션 _index.md 읽기**: PO, DESIGN, TA, QA 4개 섹션의 `_index.md` 읽기
-3. **시맨틱 검색으로 관련 파일 로딩**:
+1. **Read INDEX.md**: Quick Reference + Directory Map → understand the full wiki structure
+2. **Read all section _index.md files**: Read the `_index.md` of all 4 sections — PO, DESIGN, TA, QA
+3. **Load related files via semantic search**:
    ```bash
-   python3 ~/.claude/scripts/jarfis_cli.py search wiki "{현재 기획의 핵심 키워드/문장}" --top-k 5
+   python3 ~/.claude/scripts/jarfis_cli.py search wiki "{core keywords/phrases of the current plan}" --top-k 5
    ```
-   - 결과 JSON의 `results` 배열에서 `score` 0.5 이상인 파일만 읽기
-   - `stale_warning`이 있으면 사용자에게 표시 (인덱스 갱신 권고)
-   - **폴백**: 검색 실패 시(인덱스 없음/모듈 미설치/메모리 부족) → 사용자에게 표시: `⚠️ 시맨틱 검색을 사용할 수 없습니다. LLM 기반 검색으로 대체합니다.` (에러에 `memory_insufficient` hint가 있으면 `(메모리 부족)` 명시) → 기존 방식(_index.md Summary 기반 LLM 판단)으로 관련 파일 최대 5개 선택
-4. **Cascading Specificity 적용**: 읽은 wiki 내용과 $DOCS_DIR 산출물 간 충돌 시 $DOCS_DIR 우선
+   - From the result JSON's `results` array, read only files with `score` >= 0.5
+   - If `stale_warning` is present, display it to the user (recommend index refresh)
+   - **Fallback**: On search failure (no index / module not installed / insufficient memory) → display to the user: `⚠️ Semantic search is unavailable. Falling back to LLM-based search.` (if the error includes a `memory_insufficient` hint, append `(insufficient memory)`) → use the legacy approach (_index.md summary-based LLM judgment) to select up to 5 related files
+4. **Apply Cascading Specificity**: When wiki content conflicts with $DOCS_DIR artifacts, $DOCS_DIR takes precedence
 
-> 4-Step은 INDEX.md → 4개 _index.md → 관련 파일 최대 5개를 읽는다.
+> 4-Step reads INDEX.md → 4 _index.md files → up to 5 related files.
 
-## Cascading Specificity 규칙
+## Cascading Specificity Rules
 
-정보 충돌 시 우선순위:
+Priority when information conflicts:
 ```
-$DOCS_DIR (현재 태스크 산출물) > project/.jarfis (프로젝트 프로필/컨텍스트) > wiki/ (조직 누적 지식) > INDEX.md (목차)
+$DOCS_DIR (current task artifacts) > project/.jarfis (project profile/context) > wiki/ (accumulated org knowledge) > INDEX.md (table of contents)
 ```
 
-- 이번 태스크가 **다루는 주제**: $DOCS_DIR 산출물이 최신이므로 wiki보다 우선
-- 이번 태스크가 **다루지 않는 주제**: wiki 내용이 유효 — 참조하여 일관성 유지
+- Topics **covered by this task**: $DOCS_DIR artifacts are the most current and take precedence over wiki
+- Topics **not covered by this task**: Wiki content remains valid — reference it to maintain consistency
