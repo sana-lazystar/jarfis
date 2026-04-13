@@ -1,70 +1,72 @@
-# JARFIS Health Check — 좀비 프로세스 진단 및 정리
+# JARFIS Health Check — Zombie Process Diagnosis and Cleanup
 
-시스템 헬스체크를 수행합니다. 인자: $ARGUMENTS
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
+
+Perform a system health check. Arguments: $ARGUMENTS
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### Step 1: 스크립트 존재 확인
+### Step 1: Verify Script Exists
 
-`~/.claude/scripts/claude-cleanup.sh` 파일이 존재하는지 확인하세요.
-존재하지 않으면 다음 메시지를 출력하고 종료하세요:
+Check whether the file `~/.claude/scripts/claude-cleanup.sh` exists.
+If it does not exist, display the following message and exit:
 
 ```
-[JARFIS Health] cleanup 스크립트가 설치되지 않았습니다.
-경로: ~/.claude/scripts/claude-cleanup.sh
+[JARFIS Health] The cleanup script is not installed.
+Path: ~/.claude/scripts/claude-cleanup.sh
 
-⚠️ claude-cleanup.sh는 JARFIS 외부 스크립트입니다 (JARFIS 리포지토리에 미포함).
-별도로 설치하거나, install.sh를 재실행하거나, /jarfis:version으로 업데이트하세요.
-이 스크립트 없이도 JARFIS의 다른 기능은 정상 동작합니다.
+⚠️ claude-cleanup.sh is an external script (not included in the JARFIS repository).
+Install it separately, re-run install.sh, or update via /jarfis:version.
+Other JARFIS features work normally without this script.
 ```
 
-### Step 2: 모드 판별
+### Step 2: Determine Mode
 
-`$ARGUMENTS`를 확인하여 실행 모드를 결정하세요:
+Check `$ARGUMENTS` to determine the execution mode:
 
-| 인자 | 모드 | 동작 |
-|------|------|------|
-| (없음) | 진단 모드 | 현황 표시만 |
-| `--clean` | 정리 모드 | 바로 정리 실행 (확인 없음) |
+| Argument | Mode | Behavior |
+|----------|------|----------|
+| (none) | Diagnostic mode | Display status only |
+| `--clean` | Cleanup mode | Run cleanup immediately (no confirmation) |
 
-### Step 3: 진단 실행
+### Step 3: Run Diagnostics
 
-Bash로 `~/.claude/scripts/claude-cleanup.sh`를 실행하세요 (인자 없이, 진단 모드).
+Execute `~/.claude/scripts/claude-cleanup.sh` via Bash (no arguments, diagnostic mode).
 
-실행 결과를 파싱하여 다음 정보를 추출하세요:
-- 활성 프로세스 수
-- 좀비 프로세스 수
-- 회수 가능 메모리량
+Parse the output to extract the following information:
+- Number of active processes
+- Number of zombie processes
+- Reclaimable memory
 
-### Step 4: 결과 요약 출력
+### Step 4: Display Summary
 
-다음 형식으로 결과를 표시하세요:
+Display the results in the following format:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   JARFIS Health Check
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  활성 Claude 프로세스: N개
-  좀비 Claude 프로세스: N개
-  회수 가능 메모리:     ~NMB
+  Active Claude processes:    N
+  Zombie Claude processes:    N
+  Reclaimable memory:         ~NMB
 
-  (스크립트 원본 출력은 위에 표시됨)
+  (Original script output is shown above)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Step 5: 정리 실행 (모드에 따라)
+### Step 5: Execute Cleanup (depending on mode)
 
-**진단 모드** (인자 없음):
-- 좀비가 있으면 안내 메시지를 추가로 표시:
+**Diagnostic mode** (no arguments):
+- If zombies are found, display an additional guidance message:
   ```
-  정리하려면: /jarfis:sys-health --clean
+  To clean up: /jarfis:sys-health --clean
   ```
-- 좀비가 없으면 그대로 종료
+- If no zombies are found, exit as-is
 
-**정리 모드** (`--clean`):
-- 좀비가 0개이면 "좀비 프로세스가 없습니다. 정리할 것이 없습니다." 출력 후 종료
-- 좀비가 있으면 확인 없이 바로 `~/.claude/scripts/claude-cleanup.sh --kill`을 실행
-- 정리 결과를 요약 출력
+**Cleanup mode** (`--clean`):
+- If there are 0 zombies, display "No zombie processes found. Nothing to clean up." and exit
+- If zombies exist, immediately run `~/.claude/scripts/claude-cleanup.sh --kill` without confirmation
+- Display a summary of the cleanup results

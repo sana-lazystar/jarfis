@@ -1,40 +1,41 @@
 ---
 name: jarfis:locale-set
-description: "JARFIS Locale Set — locale 설정 변경"
+description: "JARFIS Locale Set — Change locale setting"
 ---
 
-# JARFIS Locale Set — locale 설정
+# JARFIS Locale Set — Change Locale
+<!-- locale: en -->
 
-사용자 요청: $ARGUMENTS
+User request: $ARGUMENTS
 
-## 사용법
+## Usage
 
 ```
 /jarfis:locale-set <language_code>
 ```
 
-지원 언어: `ko` (Korean), `en` (English), `ja` (Japanese)
+Supported languages: `ko` (Korean), `en` (English), `ja` (Japanese)
 
-## 실행 로직
+## Execution Logic
 
-1. `$ARGUMENTS`에서 언어 코드를 파싱한다.
-   - 유효한 코드: `ko`, `en`, `ja`
-   - 유효하지 않은 코드 → 에러 메시지: `"Unsupported locale: {input}. Supported: ko, en, ja"`
-   - 인자 없음 → 현재 locale 표시 (`/jarfis:locale`과 동일 동작)
+1. Parse the language code from `$ARGUMENTS`.
+   - Valid codes: `ko`, `en`, `ja`
+   - Invalid code: show error message `"Unsupported locale: {input}. Supported: ko, en, ja"`
+   - No argument: display the current locale (same behavior as `/jarfis:locale`)
 
-2. 현재 워크스페이스에서 `.jarfis-state.json`을 찾는다:
-   - CWD 또는 가장 최근 워크플로우의 `$DOCS_DIR`
+2. Look for `.jarfis-state.json` in the current workspace:
+   - CWD or the most recent workflow's `$DOCS_DIR`
 
-3. `.jarfis-state.json`이 존재하면:
+3. If `.jarfis-state.json` exists:
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py state set "$STATE_FILE" "locale" "$LANGUAGE_CODE"
    ```
 
-4. `.jarfis-state.json`이 없으면:
-   - 메시지 출력: `"No active JARFIS workflow. Locale will be applied on next /jarfis:work execution."`
-   - 이 경우 설정은 저장되지 않지만, 다음 `/jarfis:work` 실행 시 Phase 0에서 auto-detect 된다.
+4. If `.jarfis-state.json` does not exist:
+   - Display message: `"No active JARFIS workflow. Locale will be applied on next /jarfis:work execution."`
+   - In this case the setting is not persisted, but it will be auto-detected in Phase 0 on the next `/jarfis:work` run.
 
-5. 확인 메시지 출력:
+5. Display confirmation message:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      JARFIS Locale Updated
@@ -46,8 +47,8 @@ description: "JARFIS Locale Set — locale 설정 변경"
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-## 동작 범위
+## Scope of Effect
 
-- locale 변경은 **현재 워크플로우**에만 적용된다.
-- 다음 `/jarfis:work` 실행 시 Phase 0에서 다시 auto-detect 또는 재설정.
-- JARFIS 내부 추론/지시 언어는 항상 English (변경 불가).
+- Locale changes apply only to the **current workflow**.
+- On the next `/jarfis:work` run, locale will be auto-detected or reset in Phase 0.
+- JARFIS internal reasoning/instruction language is always English (not configurable).

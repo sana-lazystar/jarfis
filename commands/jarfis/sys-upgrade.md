@@ -1,82 +1,84 @@
-# JARFIS Upgrade — 학습 항목 관리 및 시스템 적용
+# JARFIS Upgrade — Learning Item Management and System Application
 
-`$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 학습 항목을 관리하고, 실제 에이전트/워크플로우 프롬프트에 적용합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-> **`{JARFIS_SOURCE}` 결정**: `~/.claude/.jarfis-source` 파일을 읽어 JARFIS Git repo 경로를 확인한다. 없으면 `~/repos/jarfis`를 기본값으로 사용한다.
+Manages learning items in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) and applies them to actual agent/workflow prompts.
+
+> **`{JARFIS_SOURCE}` resolution**: Read `~/.claude/.jarfis-source` to find the JARFIS Git repo path. If absent, default to `~/repos/jarfis`.
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### Step 1: 학습 파일 로드
+### Step 1: Load Learning File
 
-`$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) 파일을 읽어라.
-파일이 없으면 "학습 파일이 아직 없습니다. `/jarfis` 워크플로우를 먼저 실행하세요."라고 안내하고 종료하라.
+Read the `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) file.
+If the file does not exist, inform the user: "No learning file found yet. Please run the `/jarfis` workflow first." and terminate.
 
-파일이 존재하면, 섹션별로 파싱하여 현재 학습 목록을 사용자에게 보여줘라:
+If the file exists, parse it by section and display the current learning list to the user:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-JARFIS Learnings — 현재 학습 목록
+JARFIS Learnings — Current Learning List
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 ## Agent Hints
 
 ### Backend Engineer
-1. (항목 내용)
-2. (항목 내용)
+1. (item content)
+2. (item content)
 
 ### Frontend Engineer
-1. (항목 내용)
+1. (item content)
 ...
 
 ## Workflow Patterns
-1. (항목 내용)
+1. (item content)
 ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Step 2: 액션 선택
+### Step 2: Select Action
 
-AskUserQuestion을 사용하여 다음 중 하나를 선택하게 하라:
+Use AskUserQuestion to let the user choose one of the following:
 
 ```
-question: "어떤 작업을 수행할까요?"
+question: "What action would you like to perform?"
 header: "Action"
 options:
-  - label: "학습 적용 (Recommended)"
-    description: "학습 항목을 에이전트/워크플로우 프롬프트에 반영합니다"
-  - label: "항목 관리"
-    description: "학습 항목 추가/수정/삭제"
-  - label: "전체 비우기"
-    description: "학습 파일의 모든 항목을 제거합니다 (구조는 유지)"
-  - label: "종료"
-    description: "종료합니다"
+  - label: "Apply Learnings (Recommended)"
+    description: "Reflect learning items into agent/workflow prompts"
+  - label: "Manage Items"
+    description: "Add/edit/delete learning items"
+  - label: "Clear All"
+    description: "Remove all items from the learning file (structure preserved)"
+  - label: "Exit"
+    description: "Exit"
 ```
 
-### Step 3: 액션별 처리
+### Step 3: Action-Specific Processing
 
 ---
 
-#### [학습 적용] 선택 시
+#### When [Apply Learnings] is selected
 
-학습 항목을 실제 에이전트 프롬프트와 워크플로우에 반영하는 핵심 기능이다.
-3개 독립 블록으로 구성되며, 각 블록은 실패 시 해당 블록부터 재실행 가능하다.
+The core function that reflects learning items into actual agent prompts and workflows.
+Composed of 3 independent blocks; each block can be re-executed from its starting point on failure.
 
 ---
 
-##### 블록 1: 분석 (Scope 분류 + Dialectic Review)
+##### Block 1: Analysis (Scope Classification + Dialectic Review)
 
-> 입력: learnings.md 학습 항목
-> 출력: 각 항목에 `[universal]`/`[project]` scope 태깅 완료
+> Input: Learning items from learnings.md
+> Output: Each item tagged with `[universal]`/`[project]` scope
 
-**1-1. 적용 대상 매핑**
+**1-1. Target Mapping**
 
-학습 항목을 적용 대상 파일에 매핑하라:
+Map learning items to their target files:
 
-| learnings 섹션 | 적용 대상 파일 |
-|---------------|---------------|
+| learnings Section | Target File |
+|-------------------|-------------|
 | `Agent Hints > Frontend Engineer` | `~/.claude/agents/jarfis/senior-frontend-engineer.md` |
 | `Agent Hints > Backend Engineer` | `~/.claude/agents/jarfis/senior-backend-engineer.md` |
 | `Agent Hints > QA Engineer` | `~/.claude/agents/jarfis/senior-qa-engineer.md` |
@@ -86,211 +88,211 @@ options:
 | `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/senior-ux-designer.md` |
 | `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/senior-product-owner.md` |
 | `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
-| `Workflow Patterns` | `learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
+| `Workflow Patterns` | Kept in `learnings.md` (not copied to work.md — dynamically loaded during Phase 0) |
 
-**1-2. Scope 자동 분류**
+**1-2. Automatic Scope Classification**
 
-각 학습 항목에 scope를 자동 분류한다:
+Automatically classify each learning item by scope:
 
-- 특정 파일 경로/디렉토리/한정 표현("이 프로젝트에서") → `[project]`
-- 범용 도구/기법/원칙 → `[universal]`
-- 판단 불가 → `[ambiguous]`
+- Specific file paths/directories/qualifying expressions ("in this project") → `[project]`
+- General-purpose tools/techniques/principles → `[universal]`
+- Indeterminate → `[ambiguous]`
 
-분류 결과를 사용자에게 표시한다.
+Display the classification results to the user.
 
-**1-3. Dialectic Review (ambiguous 항목만)**
+**1-3. Dialectic Review (ambiguous items only)**
 
-> ※ Dialectic Review 절차는 sys-implement.md §Step 1.5를 따른다 (정본).
-> **Delta**: upgrade에서는 ambiguous 항목의 scope 판단에만 적용한다.
-> - Advocate prompt: "이 학습 항목이 범용 원칙인 이유를 논증하세요"
-> - Critic prompt: "이 학습 항목이 프로젝트 종속인 이유를 논증하세요"
-> - 모든 항목이 명확 분류 시 → 토론 SKIP
-
----
-
-##### 블록 2: 계획 (적용 계획 표시 + 범위 선택)
-
-> 입력: 블록 1의 scope 분류 결과
-> 출력: 사용자가 승인한 적용 대상 항목 목록
-
-**2-1. 적용 계획 표시**
-
-scope별로 매핑하여 보여준다: Universal 적용 (에이전트 Learned Rules) + Project-Specific 적용 (.jarfis/project-context.md). Workflow Patterns는 learnings.md에 유지되며 Phase 0에서 동적 로드된다.
-
-**2-2. 적용 범위 선택**
-
-AskUserQuestion으로 "전체 적용" 또는 "선택 적용" (multiSelect: true)을 선택하게 한다.
+> Note: The Dialectic Review procedure follows sys-implement.md §Step 1.5 (canonical source).
+> **Delta**: In upgrade, it is applied only for scope determination of ambiguous items.
+> - Advocate prompt: "Argue why this learning item is a universal principle"
+> - Critic prompt: "Argue why this learning item is project-specific"
+> - If all items are clearly classified → SKIP the debate
 
 ---
 
-##### 블록 3: 실행 (적용 + 정리 + 버전 범프 + 동기화)
+##### Block 2: Plan (Display Application Plan + Scope Selection)
 
-> 입력: 블록 2에서 승인된 항목 목록
-> 출력: 에이전트/워크플로우 파일 갱신 + 버전 범프 + repo 동기화
+> Input: Scope classification results from Block 1
+> Output: User-approved list of items to apply
 
-**3-1. 에이전트 파일 적용**
+**2-1. Display Application Plan**
 
-> **⚠️ 에이전트 보호 규칙 (화이트리스트)**: 에이전트 파일에서 upgrade가 수정할 수 있는 대상은 **`## Learned Rules` 섹션만**이다. 그 외 모든 섹션(Core Identity, Mindset, Judgment, Escalation, Behavioral Guidelines, Output Format, 역할별 전문 섹션 등)은 **읽기 전용**이다. 다른 섹션에 학습 항목을 삽입하거나, 기존 섹션의 내용을 수정하지 않는다.
+Show the mapping by scope: Universal application (agent Learned Rules) + Project-Specific application (.jarfis/project-context.md). Workflow Patterns are kept in learnings.md and dynamically loaded during Phase 0.
 
-| 학습 scope | 적용 대상 |
-|-----------|----------|
-| `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md`의 `## Learned Rules` |
-| `[project]` Agent Hints | `./.jarfis/project-context.md`의 해당 역할 섹션 |
+**2-2. Select Application Scope**
 
-- `[universal]`: 에이전트 파일의 `## Learned Rules` 섹션에 추가 (없으면 생성). 중복 체크.
-- `[project]`: `.jarfis/project-context.md`에 추가 (없으면 파일/섹션 생성). 중복 체크.
-- 날짜 정보 `(YYYY-MM-DD)` 는 적용 시 제거.
+Use AskUserQuestion to let the user choose "Apply All" or "Selective Apply" (multiSelect: true).
 
-**3-2. 워크플로우 파일 적용**
+---
 
-| 학습 scope | 적용 대상 |
-|-----------|----------|
-| `[universal]` Workflow Patterns | `learnings.md`에 유지 (work.md에 복사하지 않음 — Phase 0에서 동적 로드) |
-| `[project]` Workflow Patterns | `./.jarfis/project-context.md`의 Workflow 섹션 |
+##### Block 3: Execution (Apply + Cleanup + Version Bump + Sync)
 
-- 중복 체크. 날짜/확인 횟수 제거.
+> Input: Approved item list from Block 2
+> Output: Agent/workflow files updated + version bump + repo sync
 
-**3-3. 적용 후 정리**
+**3-1. Apply to Agent Files**
 
-AskUserQuestion으로 learnings 파일 처리를 선택:
-- "적용된 항목만 비우기 (Recommended)" / "그대로 유지" / "전체 비우기"
-- 비우기 시: 섹션 헤더 유지, 항목(`-`줄)만 제거.
+> **⚠️ Agent Protection Rule (Whitelist)**: The only section upgrade may modify in agent files is **`## Learned Rules`**. All other sections (Core Identity, Mindset, Judgment, Escalation, Behavioral Guidelines, Output Format, role-specific expert sections, etc.) are **read-only**. Do not insert learning items into or modify the content of other sections.
 
-**3-4. 버전 범프 (PATCH)**
+| Learning Scope | Target |
+|---------------|--------|
+| `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md` → `## Learned Rules` |
+| `[project]` Agent Hints | `./.jarfis/project-context.md` → corresponding role section |
+
+- `[universal]`: Add to the `## Learned Rules` section of the agent file (create if absent). Check for duplicates.
+- `[project]`: Add to `.jarfis/project-context.md` (create file/section if absent). Check for duplicates.
+- Remove date metadata `(YYYY-MM-DD)` when applying.
+
+**3-2. Apply to Workflow Files**
+
+| Learning Scope | Target |
+|---------------|--------|
+| `[universal]` Workflow Patterns | Kept in `learnings.md` (not copied to work.md — dynamically loaded during Phase 0) |
+| `[project]` Workflow Patterns | `./.jarfis/project-context.md` → Workflow section |
+
+- Check for duplicates. Remove date/confirmation count metadata.
+
+**3-3. Post-Application Cleanup**
+
+Use AskUserQuestion to choose how to handle the learnings file:
+- "Clear applied items only (Recommended)" / "Keep as-is" / "Clear all"
+- When clearing: preserve section headers, remove only item lines (lines starting with `-`).
+
+**3-4. Version Bump (PATCH)**
 
 ```bash
-python3 ~/.claude/scripts/jarfis_cli.py version patch "upgrade: 학습 적용 (적용 내역 요약)"
+python3 ~/.claude/scripts/jarfis_cli.py version patch "upgrade: apply learnings (application summary)"
 ```
 
-**3-5. Repo 동기화**
+**3-5. Repo Sync**
 
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py sync
 ```
 
-적용 결과를 보여주고 Step 2로 돌아가라.
+Display the application results and return to Step 2.
 
 ---
 
-#### [항목 관리] 선택 시
+#### When [Manage Items] is selected
 
-AskUserQuestion으로 세부 액션을 선택하게 하라:
+Use AskUserQuestion to let the user choose a sub-action:
 
 ```
-question: "어떤 관리 작업을 수행할까요?"
+question: "What management action would you like to perform?"
 header: "Manage"
 options:
-  - label: "항목 삭제"
-    description: "불필요한 학습 항목을 제거합니다"
-  - label: "항목 수정"
-    description: "기존 학습 내용을 업데이트합니다"
-  - label: "항목 추가"
-    description: "새로운 학습을 직접 입력합니다"
+  - label: "Delete Items"
+    description: "Remove unnecessary learning items"
+  - label: "Edit Items"
+    description: "Update existing learning content"
+  - label: "Add Items"
+    description: "Manually enter new learnings"
 ```
 
-##### [삭제]
+##### [Delete]
 
-1. 전체 학습 항목을 번호와 함께 나열하라 (섹션 구분 포함).
-2. AskUserQuestion의 **multiSelect: true**를 사용하여 삭제할 항목들을 선택하게 하라.
-   - 각 option의 label은 항목 번호와 내용 요약 (예: "[FE-1] img 태그 인덴테이션 검증")
-   - description은 전체 항목 내용
-3. 선택된 항목들을 `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)에서 제거하라.
-4. 삭제 결과를 보여주고 Step 2로 돌아가라.
+1. List all learning items with numbers (grouped by section).
+2. Use AskUserQuestion with **multiSelect: true** to let the user select items to delete.
+   - Each option label: item number and content summary (e.g., "[FE-1] img tag indentation check")
+   - description: full item content
+3. Remove the selected items from `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`).
+4. Display the deletion results and return to Step 2.
 
-##### [수정]
+##### [Edit]
 
-1. 전체 학습 항목을 번호와 함께 나열하라.
-2. AskUserQuestion을 사용하여 수정할 항목 **하나**를 선택하게 하라.
-3. 선택된 항목의 현재 내용을 보여주고, AskUserQuestion으로 새 내용을 입력받아라.
-   - question: "새로운 내용을 입력해주세요 (현재: [현재 내용 요약])"
-   - "Other"를 통해 자유 입력
-4. 입력받은 내용으로 `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 해당 항목을 교체하라.
-5. 수정 결과를 보여주고 Step 2로 돌아가라.
+1. List all learning items with numbers.
+2. Use AskUserQuestion to let the user select **one** item to edit.
+3. Show the current content of the selected item and use AskUserQuestion to receive new content.
+   - question: "Enter the new content (Current: [current content summary])"
+   - Allow free input via "Other"
+4. Replace the corresponding item in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) with the input.
+5. Display the edit results and return to Step 2.
 
-##### [추가]
+##### [Add]
 
-1. AskUserQuestion을 사용하여 추가할 섹션을 선택하게 하라:
+1. Use AskUserQuestion to let the user select which section to add to:
    ```
-   question: "어느 섹션에 추가할까요?"
+   question: "Which section should this be added to?"
    header: "Section"
    options:
      - label: "Backend Engineer"
-       description: "백엔드 개발 관련 학습"
+       description: "Backend development learnings"
      - label: "Frontend Engineer"
-       description: "프론트엔드 개발 관련 학습"
+       description: "Frontend development learnings"
      - label: "QA Engineer"
-       description: "QA/테스트 관련 학습"
+       description: "QA/testing learnings"
      - label: "Workflow Patterns"
-       description: "워크플로우 판단 패턴"
+       description: "Workflow decision patterns"
    ```
-   - "Other"를 통해 Tech Lead, Security Engineer 등 다른 섹션도 입력 가능
-2. AskUserQuestion으로 학습 내용을 입력받아라.
-   - question: "추가할 학습 내용을 입력해주세요"
-   - "Other"를 통해 자유 입력
-3. 오늘 날짜를 자동 추가하여 `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)의 해당 섹션에 항목을 추가하라.
-   - 형식: `- (입력 내용) (YYYY-MM-DD)`
-   - Workflow Patterns의 경우: `- (입력 내용) (YYYY-MM-DD, 확인 1회)`
-4. 추가 결과를 보여주고 Step 2로 돌아가라.
+   - Other sections (Tech Lead, Security Engineer, etc.) can be entered via "Other"
+2. Use AskUserQuestion to receive the learning content.
+   - question: "Enter the learning content to add"
+   - Allow free input via "Other"
+3. Auto-append today's date and add the item to the corresponding section in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`).
+   - Format: `- (input content) (YYYY-MM-DD)`
+   - For Workflow Patterns: `- (input content) (YYYY-MM-DD, confirmed 1 time)`
+4. Display the addition results and return to Step 2.
 
 ---
 
-#### [전체 비우기] 선택 시
+#### When [Clear All] is selected
 
-1. AskUserQuestion으로 확인하라:
+1. Confirm with AskUserQuestion:
    ```
-   question: "정말로 모든 학습 항목을 비울까요? 이 작업은 되돌릴 수 없습니다."
+   question: "Are you sure you want to clear all learning items? This action cannot be undone."
    header: "Confirm"
    options:
-     - label: "비우기 실행"
-       description: "모든 항목을 제거합니다 (섹션 구조는 유지)"
-     - label: "취소"
-       description: "아무것도 하지 않고 돌아갑니다"
+     - label: "Execute Clear"
+       description: "Remove all items (section structure preserved)"
+     - label: "Cancel"
+       description: "Return without doing anything"
    ```
-2. "비우기 실행" 선택 시: `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`)에서 모든 항목(`-`로 시작하는 줄)을 제거하라. 섹션 헤더(`#`, `##`, `###`)는 유지하라.
-3. 결과를 보여주고 Step 2로 돌아가라.
+2. If "Execute Clear" is selected: Remove all items (lines starting with `-`) from `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`). Preserve section headers (`#`, `##`, `###`).
+3. Display the results and return to Step 2.
 
 ---
 
-#### [종료] 선택 시
+#### When [Exit] is selected
 
-최종 변경 요약을 보여주고 종료하라:
+Display the final change summary and terminate:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-JARFIS Upgrade 완료
+JARFIS Upgrade Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-변경 사항:
-- 적용: N건 (에이전트 M개 파일, 워크플로우 K건)
-- 삭제: N건
-- 수정: N건
-- 추가: N건
-- learnings 비우기: Y/N
+Changes:
+- Applied: N items (M agent files, K workflow items)
+- Deleted: N items
+- Edited: N items
+- Added: N items
+- Learnings cleared: Y/N
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-버전 범프가 실행되었으면, **Commit + Push 명령어를 생성하여 사용자에게 제공한다** (직접 실행하지 않음):
-- `git status`와 `git diff --stat`으로 repo의 변경 파일을 확인한다.
-- 변경된 파일만 명시적으로 `git add`에 나열한다.
-- 커밋 메시지: `upgrade: [적용 내역 요약] (v{새버전})`
-- 버전 범프가 있었으면 태그 + `--tags` 포함
-- `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` 포함
-- heredoc 대신 큰따옴표로 감싼 한 줄 메시지 사용 (쉘 호환성)
+If a version bump was executed, **generate a Commit + Push command and provide it to the user** (do not execute directly):
+- Check the repo's changed files with `git status` and `git diff --stat`.
+- Explicitly list only changed files in `git add`.
+- Commit message: `upgrade: [application summary] (v{new_version})`
+- If a version bump occurred, include tag + `--tags`
+- Include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+- Use a double-quoted single-line message instead of heredoc (shell compatibility)
 
 ```
-📋 아래 명령어를 복사해서 실행하세요:
+📋 Copy and run the command below:
 
-git add [파일1] [파일2] ... && git commit -m "upgrade: [요약] (v{버전})
+git add [file1] [file2] ... && git commit -m "upgrade: [summary] (v{version})
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} && git push origin main --tags
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{version} && git push origin main --tags
 ```
 
 ---
 
-## 주의사항
+## Notes
 
-- 파일 수정은 매 액션 완료 시마다 즉시 저장하라 (중간에 종료해도 손실 없도록).
-- 섹션이 존재하지 않으면 새로 생성하라 (예: Security Engineer 섹션이 없는데 추가 요청 시).
-- 항목 삭제 후 빈 섹션이 되면 섹션 헤더는 유지하되 항목만 제거하라.
-- 파일 형식(마크다운 리스트, 날짜 형식 등)을 기존 형식과 일관되게 유지하라.
-- **적용 시 중복 체크**: 이미 대상 파일의 `Learned Rules` 섹션에 유사한 내용이 있으면 스킵하고 사용자에게 알려라.
-- **적용 시 날짜 제거**: learnings의 날짜/확인 횟수 메타데이터는 프롬프트에 포함하지 마라.
+- Save file modifications immediately after each action completes (to prevent data loss if terminated mid-process).
+- If a section does not exist, create it (e.g., if a Security Engineer section is missing but an addition is requested).
+- If a section becomes empty after item deletion, preserve the section header but remove only the items.
+- Maintain consistency with existing file format (markdown lists, date format, etc.).
+- **Duplicate check on apply**: If similar content already exists in the target file's `Learned Rules` section, skip it and inform the user.
+- **Remove dates on apply**: Do not include learnings date/confirmation count metadata in prompts.

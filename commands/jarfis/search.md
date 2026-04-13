@@ -1,90 +1,92 @@
-# JARFIS Search — 시맨틱 검색
+# JARFIS Search — Semantic Search
 
-> meetings, works, wiki를 시맨틱 검색합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+> Perform semantic search across meetings, works, and wiki.
+
+User request: $ARGUMENTS
 
 ---
 
-## 플래그 파싱
+## Flag Parsing
 
-`$ARGUMENTS`에서 플래그와 쿼리를 분리한다:
+Separate flags and query from `$ARGUMENTS`:
 
-| 플래그 | 의미 |
-|--------|------|
-| `--meetings` | meetings만 검색 |
-| `--works` | works만 검색 |
-| `--wiki` | wiki만 검색 |
-| (없음) | 전체 검색 (기본) |
+| Flag | Meaning |
+|------|---------|
+| `--meetings` | Search meetings only |
+| `--works` | Search works only |
+| `--wiki` | Search wiki only |
+| (none) | Search all (default) |
 
-복수 플래그 가능: `--meetings --works 검색어` → meetings + works만 검색
+Multiple flags allowed: `--meetings --works query` searches meetings + works only
 
-**순서**: 플래그가 먼저, 쿼리가 뒤. 예: `/jarfis:search --works 교환반품`
+**Order**: Flags first, query after. Example: `/jarfis:search --works return policy`
 
-## 실행
+## Execution
 
-### 1. 쿼리 추출
+### 1. Extract Query
 
-플래그를 제거한 나머지를 `$QUERY`로 사용한다.
-`$QUERY`가 비어있으면 AskUserQuestion으로 검색어를 입력받는다.
+Remove flags from the input; the remainder is `$QUERY`.
+If `$QUERY` is empty, use AskUserQuestion to prompt for a search term.
 
-### 2. scope 결정
+### 2. Determine Scope
 
-- 플래그 없음 → `all`
-- `--meetings` → `meetings`
-- `--works` → `works`
-- `--wiki` → `wiki`
-- 복수 플래그 → 해당 scope들만 검색 (CLI를 각각 호출 후 결과 합산)
+- No flags: `all`
+- `--meetings`: `meetings`
+- `--works`: `works`
+- `--wiki`: `wiki`
+- Multiple flags: Search only the specified scopes (call CLI for each, then merge results)
 
-### 3. 검색 실행
+### 3. Run Search
 
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py search {scope} "{$QUERY}" --top-k 10 --pretty
 ```
 
-복수 scope인 경우 (`--meetings --works` 등):
+For multiple scopes (e.g., `--meetings --works`):
 ```bash
-# 각각 JSON으로 호출하여 결과 합산
+# Call each as JSON and merge results
 python3 ~/.claude/scripts/jarfis_cli.py search meetings "{$QUERY}" --top-k 5
 python3 ~/.claude/scripts/jarfis_cli.py search works "{$QUERY}" --top-k 5
 ```
-결과를 score 순으로 합산하여 사람 읽기용으로 표시.
+Merge results by score and display in human-readable format.
 
-### 4. 결과 표시
+### 4. Display Results
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  검색: "{$QUERY}"
+  Search: "{$QUERY}"
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  1. [meetings] 20260326-API-GET-Tanstack-도입/summary.md
-     score: 0.87  |  section: 핵심 결정사항
-     TanStack Query 도입하여 GET API를...
+  1. [meetings] 20260326-API-GET-Tanstack-migration/summary.md
+     score: 0.87  |  section: Key Decisions
+     Adopted TanStack Query for GET APIs...
 
   2. [works] 20260326-feature-IWS26H1-417/prd.md
-     score: 0.82  |  section: 배경
+     score: 0.82  |  section: Background
      ...
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-결과가 없으면:
+If no results:
 ```
-  결과 없음. 인덱스가 최신인지 확인하세요: /jarfis:search-index --current
+  No results found. Verify the index is up to date: /jarfis:search-index --current
 ```
 
-검색 실패 시 (에러 JSON 반환):
-- `hint`가 `memory_insufficient`이면:
+If the search fails (error JSON returned):
+- If `hint` is `memory_insufficient`:
   ```
-  ⚠️ 시맨틱 검색을 사용할 수 없습니다 (메모리 부족). 다른 앱을 종료 후 재시도하거나, 파일을 직접 탐색합니다.
+  ⚠️ Semantic search is unavailable (insufficient memory). Close other apps and retry, or files will be browsed directly.
   ```
-  → `_index.md` 기반으로 관련 파일을 LLM 판단하여 직접 읽고 답변한다.
-- `hint`가 `/jarfis:search-setup`이면 → 기존대로 설치 안내
+  Then use `_index.md` to identify relevant files via LLM judgment and read them directly to answer.
+- If `hint` is `/jarfis:search-setup`: Guide the user to install as before
 
-### 5. 상세 보기 안내
+### 5. Detail View Guidance
 
-결과 하단에 안내:
+Display at the bottom of results:
 ```
-  💡 파일 내용을 보려면 해당 파일 경로를 말씀해주세요.
+  💡 To view file contents, just mention the file path.
 ```
-사용자가 파일 경로를 언급하면 해당 파일을 읽어서 보여준다.
+If the user mentions a file path, read and display that file.

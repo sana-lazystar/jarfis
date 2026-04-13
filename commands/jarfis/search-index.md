@@ -1,44 +1,46 @@
 # JARFIS Search Index
 
-> 등록된 Org의 wiki, meetings, works 시맨틱 인덱스를 일괄 생성/갱신합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+> Batch-create or refresh semantic indexes for wiki, meetings, and works across registered Orgs.
+
+User request: $ARGUMENTS
 
 ---
 
-## 사전 조건
+## Prerequisites
 
-- `/jarfis:search-setup` 완료 (sentence-transformers 설치)
-- `/jarfis:org-init` 완료 (Org 등록 + wiki 구조 생성)
+- `/jarfis:search-setup` completed (sentence-transformers installed)
+- `/jarfis:org-init` completed (Org registered + wiki structure created)
 
-## 플래그 파싱
+## Flag Parsing
 
-- `$ARGUMENTS`에 `--current` 플래그가 있으면 → 현재 Org만 인덱싱
-- 플래그 없으면 → 전체 Org 인덱싱 (기본)
+- If `$ARGUMENTS` contains the `--current` flag: Index current Org only
+- No flag: Index all Orgs (default)
 
-## 실행 흐름
+## Execution Flow
 
-### 1. venv 확인
+### 1. Check venv
 
 ```bash
 test -d ~/.claude/.jarfis-venv && echo "OK" || echo "MISSING"
 ```
 
-`MISSING`이면 안내하고 중단:
+If `MISSING`, inform the user and abort:
 ```
-sentence-transformers가 설치되지 않았습니다.
-먼저 /jarfis:search-setup 을 실행하세요.
+sentence-transformers is not installed.
+Please run /jarfis:search-setup first.
 ```
 
-### 2. Org 목록 로드
+### 2. Load Org List
 
-**`--current` 모드**: `jarfis_cli.py preflight`로 현재 Org만 확인
+**`--current` mode**: Use `jarfis_cli.py preflight` to identify the current Org only
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py preflight
 ```
-JSON의 `org_root`와 `org_dir`을 사용하여 현재 Org 1개만 대상으로 한다.
+Use `org_root` and `org_dir` from the JSON to target only the current Org.
 
-**전체 모드** (기본):
+**Full mode** (default):
 ```bash
 python3 -c "
 import json, os
@@ -63,22 +65,22 @@ else:
 "
 ```
 
-**Org가 0개인 경우** — 안내하고 중단:
+**If 0 Orgs are registered** — inform the user and abort:
 ```
-등록된 Organization이 없습니다.
-먼저 /jarfis:org-init 으로 Org을 등록하세요.
+No registered Organizations found.
+Please register an Org first with /jarfis:org-init.
 ```
 
-### 3. Org별 일괄 인덱싱
+### 3. Batch Indexing per Org
 
-각 Org에 대해 **wiki, meetings, works** 3종을 순차 인덱싱한다:
+For each Org, sequentially index all 3 types: **wiki, meetings, works**.
 
-**3-1. 인덱스 상태 확인**:
+**3-1. Check index status**:
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py search status --org-root {org_root}
 ```
 
-**3-2. 인덱싱 실행** (stale이거나 미인덱싱인 scope만):
+**3-2. Run indexing** (only for scopes that are stale or not yet indexed):
 
 ```bash
 # Wiki
@@ -91,34 +93,34 @@ python3 ~/.claude/scripts/jarfis_cli.py search index meetings --org-root {org_ro
 python3 ~/.claude/scripts/jarfis_cli.py search index works --org-root {org_root}
 ```
 
-최초 실행 시 bge-m3 모델 다운로드 안내:
+On first run, display the bge-m3 model download notice:
 ```
-Note: 최초 실행 시 bge-m3 모델이 자동 다운로드됩니다 (~2GB).
+Note: On first run, the bge-m3 model will be downloaded automatically (~2GB).
 ```
 
-### 4. 결과 보고
+### 4. Report Results
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Search Index 완료
+  Search Index Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   {org_name}:
-    ✅ wiki     — {files}파일, {chunks}청크
-    ✅ meetings — {files}파일, {chunks}청크
-    ✅ works    — {files}파일, {chunks}청크
-    ⏭️ wiki     — 최신 (스킵)
+    ✅ wiki     — {files} files, {chunks} chunks
+    ✅ meetings — {files} files, {chunks} chunks
+    ✅ works    — {files} files, {chunks} chunks
+    ⏭️ wiki     — Up to date (skipped)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-실패한 scope이 있으면 에러 메시지를 함께 표시:
+If any scope failed, display the error message alongside:
 ```
-  ❌ {scope} — {에러 메시지}
+  ❌ {scope} — {error message}
 ```
 
-에러에 `memory_insufficient` hint가 포함된 경우 → 전체 인덱싱 중단 + 경고:
+If the error includes a `memory_insufficient` hint: Abort all indexing + show warning:
 ```
-  ⚠️ 메모리 부족으로 인덱싱을 중단합니다.
-  가용 메모리: {N}GB / 최소 필요: 4GB
-  다른 앱(VS Code, Chrome, Figma 등)을 종료한 후 다시 시도하세요.
-  또는 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정할 수 있습니다.
+  ⚠️ Indexing aborted due to insufficient memory.
+  Available memory: {N}GB / Minimum required: 4GB
+  Close other apps (VS Code, Chrome, Figma, etc.) and try again.
+  Alternatively, adjust the threshold via the JARFIS_MEMORY_THRESHOLD_GB environment variable.
 ```

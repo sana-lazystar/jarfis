@@ -1,292 +1,294 @@
-# JARFIS Implement — JARFIS 시스템 자체 수정
+# JARFIS Implement — Self-Modification of JARFIS System
 
-JARFIS 시스템의 명령어, 구조, 기능을 수정하거나 추가하는 전용 명령어입니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+A dedicated command for modifying or adding commands, structures, and features of the JARFIS system.
+
+User request: $ARGUMENTS
 
 ---
 
-> **🔒 스텝 강제 실행 규칙**
+> **🔒 Mandatory Step Execution Rule**
 >
-> 이 워크플로우의 **모든 Step은 순서대로 실행**해야 합니다. 어떤 Step도 스킵하거나 건너뛸 수 없습니다.
-> 코딩(Step 2) 완료 후 반드시 Step 3 → 3.5 → 4 → 5를 실행하세요.
-> 각 Step 완료 시 다음 Step으로 명시적으로 진행하세요.
+> **All Steps in this workflow must be executed in order.** No Step may be skipped or bypassed.
+> After completing coding (Step 2), you must execute Step 3 → 3.5 → 4 → 5.
+> Explicitly proceed to the next Step upon completing each one.
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### Step 0: 시스템 현황 파악
+### Step 0: Assess System State
 
-1. `~/.claude/commands/jarfis/jarfis-index.md`를 읽어 현재 JARFIS 시스템 구조를 파악하세요.
-2. 읽은 내용을 기반으로 사용자 요청이 어떤 파일에 영향을 주는지 판단하세요.
-3. **탐색 최소화**: 인덱스에 이미 있는 정보로 충분하면 추가 탐색하지 마세요.
-4. **Git repo 확인**: `~/.claude/.jarfis-source`를 읽어 JARFIS Git repo 경로를 확인하세요. 없으면 `~/repos/jarfis`를 기본으로 사용하세요.
+1. Read `~/.claude/commands/jarfis/jarfis-index.md` to understand the current JARFIS system structure.
+2. Based on what you read, determine which files are affected by the user's request.
+3. **Minimize exploration**: If the index already provides sufficient information, do not explore further.
+4. **Check Git repo**: Read `~/.claude/.jarfis-source` to find the JARFIS Git repo path. If absent, default to `~/repos/jarfis`.
 
-> ⚠️ **동기화 방향**: JARFIS의 active 파일은 `~/.claude/`에 있습니다.
-> 수정은 반드시 `~/.claude/`에서 하고, Step 4에서 `jarfis_cli.py sync`로 repo에 동기화합니다.
-> repo를 직접 수정하면 active 시스템에 반영되지 않습니다.
+> ⚠️ **Sync direction**: JARFIS active files live in `~/.claude/`.
+> Always make modifications in `~/.claude/`, then sync to the repo via `jarfis_cli.py sync` in Step 4.
+> Directly modifying the repo will not be reflected in the active system.
 
-→ Step 1로 진행
+→ Proceed to Step 1
 
-### Step 1: 영향 범위 분석
+### Step 1: Impact Scope Analysis
 
-사용자 요청을 분석하여 다음을 판단하세요:
+Analyze the user's request and determine the following:
 
-| 작업 유형 | 영향 대상 |
-|-----------|-----------|
-| 명령어 이름 변경 | 해당 파일 rename + 참조하는 모든 파일 + `jarfis.md` |
-| 새 명령어 추가 | 새 md 파일 생성 + `jarfis.md` 목록 추가 |
-| 기존 명령어 수정 | 해당 md 파일 |
-| 명령어 삭제 | 파일 삭제 + 참조 제거 + `jarfis.md` 목록 제거 |
-| 구조 변경 | 인덱스의 "내부 참조 관계" 참고하여 영향 파일 식별 |
-| 에이전트 프롬프트 수정 | `prompts/*.md` (work.md에서 외부화된 Phase별 프롬프트) |
-| 에이전트 역할 수정 | `~/.claude/agents/jarfis/*.md` (Agent 도구용 역할 프롬프트) |
+| Task Type | Affected Targets |
+|-----------|-----------------|
+| Command rename | Rename the file + all referencing files + `jarfis.md` |
+| New command | Create new md file + add to `jarfis.md` listing |
+| Modify existing command | The relevant md file |
+| Delete command | Delete file + remove references + remove from `jarfis.md` listing |
+| Structural change | Identify affected files using "Internal Reference Map" in the index |
+| Agent prompt modification | `prompts/*.md` (Phase-specific prompts externalized from work.md) |
+| Agent role modification | `~/.claude/agents/jarfis/*.md` (Role prompts for Agent tool) |
 
-**🔒 필수**: 아래 배너를 반드시 출력한 후 다음 Step으로 진행하세요. 배너 없이 Step 2로 넘어가지 마세요.
+**🔒 Required**: You must display the banner below before proceeding to the next Step. Do not move to Step 2 without the banner.
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Implement — 영향 범위
+  JARFIS Implement — Impact Scope
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 요청: [요약]
-📂 수정 대상: [파일 목록]
-🔗 참조 갱신: [영향 받는 파일 목록]
+📋 Request: [summary]
+📂 Files to modify: [file list]
+🔗 References to update: [affected file list]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-→ Step 1.5로 진행
+→ Proceed to Step 1.5
 
-### Step 1.5: Dialectic Review (래칫 수렴)
+### Step 1.5: Dialectic Review (Ratchet Convergence)
 
-변경안을 반복 검증하여 더 나은 결과물로 수렴시키는 래칫 게이트이다.
-찬성/반대 의견을 절충하는 것이 아니라, 검증 → 이력 기록 → 개선 → 재검증 루프를 돌린다.
+A ratchet gate that iteratively verifies the proposed change to converge toward a better outcome.
+Rather than compromising between pro/con opinions, it runs a verify → log → improve → re-verify loop.
 
-**게이트 진입 조건 판단**:
-1. `$ARGUMENTS`에 리뷰 플래그가 있으면 따른다:
-   - `--review=major` → 래칫 필수
-   - `--review=minor` → 래칫 실행
-   - `--review=patch` → 래칫 스킵 → Step 2로 이동
-2. 플래그가 없으면 JARFIS가 변경 규모를 판단한다:
-   - 수정 대상 파일 1개 이하 & 내용 변경만(구조 변경 없음) → AskUserQuestion:
+**Gate entry condition**:
+1. If `$ARGUMENTS` contains a review flag, follow it:
+   - `--review=major` → ratchet required
+   - `--review=minor` → run ratchet
+   - `--review=patch` → skip ratchet → move to Step 2
+2. If no flag is present, JARFIS determines the change magnitude:
+   - 1 or fewer files to modify & content-only change (no structural change) → AskUserQuestion:
      ```
-     question: "가벼운 업데이트로 보입니다. Dialectic Review를 진행하시겠어요?"
+     question: "This looks like a lightweight update. Would you like to run a Dialectic Review?"
      header: "Review"
      options:
-       - label: "스킵 (Recommended)"
-         description: "래칫 없이 바로 수정을 진행합니다"
-       - label: "래칫 실행"
-         description: "검증 래칫으로 변경안을 수렴시킵니다"
+       - label: "Skip (Recommended)"
+         description: "Proceed directly without the ratchet"
+       - label: "Run Ratchet"
+         description: "Converge the proposal through verification ratchet"
      ```
-   - 수정 대상 파일 2개 이상 또는 구조 변경 → 래칫 실행
+   - 2 or more files to modify, or structural change → run ratchet
 
-**래칫 수렴 흐름** (래칫 실행 시):
+**Ratchet convergence flow** (when ratchet is executed):
 
-**0. 초기화**
+**0. Initialization**
 
 ```
-$REVIEW_LOG = []          # 라운드별 이슈 이력 (누적)
+$REVIEW_LOG = []          # Cumulative per-round issue history
 $ROUND = 0
 $MAX_ROUNDS = 3           # major: 3, minor: 2
-$CHANGE_PROPOSAL = 원안   # 현재 변경안 (라운드마다 개선)
+$CHANGE_PROPOSAL = original   # Current proposal (improved each round)
 ```
 
-- **외부 래칫 이력 수집**: `$ARGUMENTS`에 참조된 plan.md, brainstorm.md 등에서 이미 ACCEPT/REJECT/DEFER 판정이 내려진 항목이 있으면 `$PRIOR_RATCHET`으로 정리. 없으면 빈 문자열.
+- **Collect external ratchet history**: If `$ARGUMENTS` references plan.md, brainstorm.md, etc. with items already marked ACCEPT/REJECT/DEFER, compile them into `$PRIOR_RATCHET`. Otherwise, leave empty.
 
-**1. 라운드 루프** (Round 0 ~ $MAX_ROUNDS-1)
+**1. Round Loop** (Round 0 ~ $MAX_ROUNDS-1)
 
-각 라운드에서:
+For each round:
 
-**1a. 분석** (Agent tool, subagent_type: `jarfis-advocate`):
+**1a. Analysis** (Agent tool, subagent_type: `jarfis-advocate`):
 - prompt:
   ```
-  다음 JARFIS 변경안을 분석하세요: [$CHANGE_PROPOSAL].
-  현재 시스템 상태: [index 요약].
+  Analyze the following JARFIS change proposal: [$CHANGE_PROPOSAL].
+  Current system state: [index summary].
 
-  [Round 1+일 때만:]
-  ## 이전 라운드 이력
+  [Round 1+ only:]
+  ## Previous Round History
   $REVIEW_LOG
 
-  이전 이슈가 올바르게 반영되었는지 확인하고,
-  변경안의 강점과 추가 개선 가능성을 분석하세요.
+  Verify that previous issues have been properly addressed,
+  and analyze the strengths and further improvement potential of the proposal.
   ```
 
-**1b. 검증** (Agent tool, subagent_type: `jarfis-critic`):
+**1b. Verification** (Agent tool, subagent_type: `jarfis-critic`):
 - prompt:
   ```
-  다음 JARFIS 변경안을 검증하세요: [$CHANGE_PROPOSAL].
-  분석 결과: [advocate 결과].
+  Verify the following JARFIS change proposal: [$CHANGE_PROPOSAL].
+  Analysis results: [advocate results].
 
-  [Round 1+일 때만:]
-  ## 이전 라운드 이력 (이미 판정된 항목은 재소송 금지)
+  [Round 1+ only:]
+  ## Previous Round History (re-litigation of resolved items is prohibited)
   $REVIEW_LOG
 
-  [$PRIOR_RATCHET가 있을 때만:]
-  ## 외부 래칫 이력 (재소송 금지)
+  [$PRIOR_RATCHET exists only:]
+  ## External Ratchet History (re-litigation prohibited)
   $PRIOR_RATCHET
 
-  각 이슈에 대해 아래 형식으로 판정하세요:
-  - [ID] 이슈 설명 → ACCEPT(현안 충분) / IMPROVE(구체적 개선안 제시) / REJECT(근본 재설계)
-  이전 라운드에서 ACCEPT된 항목을 다시 문제 삼지 마세요.
+  For each issue, provide a verdict in the following format:
+  - [ID] Issue description → ACCEPT(current plan is sufficient) / IMPROVE(provide specific improvement) / REJECT(fundamental redesign needed)
+  Do not re-raise items that were ACCEPTed in previous rounds.
   ```
 
-**1c. 오케스트레이터 판정** (직접 수행):
-- Critic 결과의 각 이슈를 검토:
-  - `$PRIOR_RATCHET`에 이미 답이 있는 지적 → **래칫 위반 — 무시** (이력에 "RATCHET_VIOLATION" 기록)
-  - 이전 라운드에서 ACCEPT된 항목 재소송 → **래칫 위반 — 무시**
-  - 신규 ACCEPT → 이력에 기록 (개선 불필요)
-  - 신규 IMPROVE → 이력에 기록 + 변경안에 반영할 목록에 추가
-  - 신규 REJECT → 이력에 기록 + 사용자 판단 요청
+**1c. Orchestrator Verdict** (performed directly):
+- Review each issue from the Critic's results:
+  - Issue already answered in `$PRIOR_RATCHET` → **ratchet violation — ignore** (log as "RATCHET_VIOLATION")
+  - Re-litigation of previously ACCEPTed item → **ratchet violation — ignore**
+  - New ACCEPT → log (no improvement needed)
+  - New IMPROVE → log + add to list of changes to apply to proposal
+  - New REJECT → log + request user decision
 
-- `$REVIEW_LOG`에 추가:
+- Append to `$REVIEW_LOG`:
   ```
   Round N: {issues: [{id, verdict, description, resolution}], improve_count, accept_count}
   ```
 
-**1d. 수렴 판정**:
-- IMPROVE가 0개 & REJECT가 0개 → **수렴** → 루프 종료
-- IMPROVE만 있음 → 오케스트레이터가 **$CHANGE_PROPOSAL에 개선점 반영** → 다음 라운드
-- REJECT 있음 → 사용자에게 이슈 + 대안 제시 → AskUserQuestion (계속/방향전환/중단)
-- `$ROUND >= $MAX_ROUNDS` 도달 → 사용자에게 잔여 이슈 요약 + AskUserQuestion
+**1d. Convergence Check**:
+- 0 IMPROVE & 0 REJECT → **converged** → exit loop
+- IMPROVE only → orchestrator **applies improvements to $CHANGE_PROPOSAL** → next round
+- REJECT present → present issues + alternatives to user → AskUserQuestion (continue/pivot/abort)
+- `$ROUND >= $MAX_ROUNDS` reached → summarize remaining issues for user + AskUserQuestion
 
-**2. 수렴 결과 표시**
+**2. Display Convergence Results**
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Dialectic Review — 수렴
+  JARFIS Dialectic Review — Converged
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📋 변경안: [최종 수렴된 변경안 요약]
-🔄 라운드: [N]회 검증 후 수렴
+📋 Proposal: [final converged proposal summary]
+🔄 Rounds: Converged after [N] verification rounds
 
-┌─ 래칫 이력 ───────────────────────────┐
-│ Round 0: [이슈 N개] → ACCEPT M, IMPROVE K │
-│ Round 1: [이슈 N개] → ACCEPT M, IMPROVE K │
+┌─ Ratchet History ─────────────────────┐
+│ Round 0: [N issues] → ACCEPT M, IMPROVE K │
+│ Round 1: [N issues] → ACCEPT M, IMPROVE K │
 │ ...                                     │
-│ Round N: [이슈 0개] → 수렴              │
+│ Round N: [0 issues] → Converged         │
 └─────────────────────────────────────────┘
 
-✅ 수렴된 결정:
-   - [ACCEPT된 항목 요약]
-🔧 반영된 개선:
-   - [IMPROVE → 반영된 항목 요약]
-🔒 래칫 보호:
-   - [RATCHET_VIOLATION으로 무시된 항목 (있으면)]
+✅ Converged Decisions:
+   - [Summary of ACCEPTed items]
+🔧 Applied Improvements:
+   - [Summary of IMPROVE → applied items]
+🔒 Ratchet Protection:
+   - [Items ignored as RATCHET_VIOLATION (if any)]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-수렴 또는 사용자 승인 후 → Step 2로 진행
+After convergence or user approval → Proceed to Step 2
 
-### Step 2: 수정 실행
+### Step 2: Execute Modifications
 
-> ⚠️ **수정 위치**: 반드시 `~/.claude/` 경로의 파일을 수정하세요.
-> `~/repos/jarfis/` (Git repo)를 직접 수정하지 마세요. repo는 Step 4에서 자동 동기화됩니다.
+> ⚠️ **Modification location**: Always modify files at the `~/.claude/` path.
+> Do not directly modify `~/repos/jarfis/` (Git repo). The repo is auto-synced in Step 4.
 
-> 🧪 **Python TDD 규칙**: `~/.claude/scripts/jarfis/*.py` 또는 `jarfis_cli.py`를 수정하는 경우, 반드시 **Test-Driven Development**를 따르세요:
-> 1. **테스트 먼저**: `tests/test_*.py`에 실패하는 테스트를 먼저 작성하거나 기존 테스트를 수정
-> 2. **코드 수정**: 테스트가 통과하도록 프로덕션 코드 수정
-> 3. **전체 실행**: `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`로 전체 테스트 통과 확인
-> 4. 새 함수/서브커맨드 추가 시 → 대응하는 테스트 필수
-> 5. 비-Python 수정(프롬프트, 템플릿 등)에는 이 규칙을 적용하지 않는다
+> 🧪 **Python TDD Rule**: When modifying `~/.claude/scripts/jarfis/*.py` or `jarfis_cli.py`, you must follow **Test-Driven Development**:
+> 1. **Tests first**: Write failing tests in `tests/test_*.py` first, or modify existing tests
+> 2. **Code change**: Modify production code until tests pass
+> 3. **Full run**: Verify all tests pass with `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`
+> 4. When adding new functions/subcommands → corresponding tests are mandatory
+> 5. This rule does not apply to non-Python modifications (prompts, templates, etc.)
 
-1. 필요한 파일만 읽어서 수정하세요.
-2. 인덱스의 "수정 시 체크리스트"를 따르세요.
-3. 명령어 추가/삭제/이름 변경 시 `jarfis.md`(메인 도우미)도 반드시 갱신하세요.
-4. **프롬프트 외부화 구조 주의**: work.md의 에이전트 프롬프트는 `prompts/*.md`에 외부화되어 있습니다.
-   - work.md의 Phase별 워크플로우 **흐름/규칙**을 수정할 때 → work.md 직접 수정
-   - Phase별 에이전트에게 전달하는 **Task prompt 내용**을 수정할 때 → `prompts/phase{N}.md` 수정
-   - work.md에서 `> 📄 프롬프트:` 참조와 prompts/ 파일의 실제 내용이 일치하는지 확인
+1. Read and modify only the necessary files.
+2. Follow the "Modification Checklist" in the index.
+3. When adding/deleting/renaming commands, you must also update `jarfis.md` (main helper).
+4. **Note the externalized prompt structure**: Agent prompts in work.md are externalized to `prompts/*.md`.
+   - To modify Phase-specific workflow **flow/rules** in work.md → edit work.md directly
+   - To modify **task prompt content** sent to Phase-specific agents → edit `prompts/phase{N}.md`
+   - Verify that `> 📄 Prompt:` references in work.md match the actual content in prompts/ files
 
-→ 수정 완료 후 반드시 Step 3으로 진행 (여기서 멈추지 마세요)
+→ After completing modifications, you must proceed to Step 3 (do not stop here)
 
-### Step 3: 인덱스 갱신
+### Step 3: Update Index
 
-**반드시** `~/.claude/commands/jarfis/jarfis-index.md`를 수정 결과에 맞게 갱신하세요:
+You **must** update `~/.claude/commands/jarfis/jarfis-index.md` to reflect the modifications:
 
-- 파일 구조 트리 갱신 (파일 추가/삭제/이름 변경 시 줄 수 포함)
-- 명령어 매핑 테이블 갱신
-- 산출물/데이터 파일 갱신 (새 데이터 파일이 생긴 경우)
-- 내부 참조 관계 갱신
-- `Last updated` 날짜를 오늘로 변경
+- Update the file structure tree (include line counts for added/deleted/renamed files)
+- Update the command mapping table
+- Update artifacts/data files (if new data files were created)
+- Update internal reference relationships
+- Change the `Last updated` date to today
 
-→ Step 3.5로 진행
+→ Proceed to Step 3.5
 
-### Step 3.5: 버전 범프
+### Step 3.5: Version Bump
 
-수정이 완료되면 버전을 범프하세요. AskUserQuestion으로 범프 유형을 선택하게 하세요:
+After modifications are complete, bump the version. Use AskUserQuestion to let the user choose the bump type:
 
 ```
-question: "버전을 어떻게 올릴까요? (현재: v{현재버전})"
+question: "How should the version be bumped? (Current: v{current_version})"
 header: "Version"
 options:
   - label: "PATCH (Recommended)"
-    description: "프롬프트/템플릿 내용 변경 (X.Y.Z+1)"
+    description: "Prompt/template content change (X.Y.Z+1)"
   - label: "MINOR"
-    description: "새 명령어/에이전트 추가 (X.Y+1.0)"
+    description: "New command/agent added (X.Y+1.0)"
   - label: "MAJOR"
-    description: "Phase 구조 변경/호환 깨짐 (X+1.0.0)"
+    description: "Phase structure change/breaking (X+1.0.0)"
   - label: "Skip"
-    description: "버전 범프를 건너뜁니다"
+    description: "Skip the version bump"
 ```
 
-"Skip"이 아닌 경우, `jarfis_cli.py version`을 사용하세요:
+If not "Skip", use `jarfis_cli.py version`:
 ```bash
-python3 ~/.claude/scripts/jarfis_cli.py version <patch|minor|major> "implement: 변경 내역 요약"
+python3 ~/.claude/scripts/jarfis_cli.py version <patch|minor|major> "implement: change summary"
 ```
-- 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
-- 출력 JSON의 `previous`/`new` 버전을 결과 보고에 포함한다.
+- The script auto-updates VERSION, .jarfis-version, jarfis-index.md Version, and CHANGELOG.md.
+- Include the `previous`/`new` version from the output JSON in the results report.
 
-→ Step 4로 진행
+→ Proceed to Step 4
 
-### Step 4: Repo 동기화 (자동)
+### Step 4: Repo Sync (Automatic)
 
-**반드시** 다음 스크립트를 실행하여 `~/.claude/` → `{repo_path}/` 동기화를 수행한다:
+You **must** run the following script to sync `~/.claude/` → `{repo_path}/`:
 
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py sync
 ```
 
-이 스크립트는:
-- `~/.claude/.jarfis-source`에서 repo 경로를 자동 읽기 (없으면 `~/repos/jarfis`)
-- commands, agents, hooks, scripts, statusline 전체를 diff 비교 후 변경분만 복사
-- `.distill-backup/`, 로컬 전용 파일은 자동 제외
-- 결과를 자동 보고
+This script:
+- Auto-reads the repo path from `~/.claude/.jarfis-source` (defaults to `~/repos/jarfis` if absent)
+- Diff-compares commands, agents, hooks, scripts, and statusline, then copies only changes
+- Auto-excludes `.distill-backup/` and local-only files
+- Auto-reports results
 
-**주의**: 이 Step은 스크립트 한 줄 실행이다. 수동 복사하지 말 것.
-파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
+**Note**: This Step is a single script execution. Do not copy manually.
+If files were deleted, manually delete them from the repo after running the script.
 
-→ Step 5로 진행
+→ Proceed to Step 5
 
-### Step 5: 결과 보고 + Commit 명령어
+### Step 5: Results Report + Commit Command
 
-1. `git status`와 `git diff --stat`으로 변경 파일을 확인한다.
-2. 결과 배너를 출력한다:
+1. Check changed files with `git status` and `git diff --stat`.
+2. Display the results banner:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Implement 완료
+  JARFIS Implement Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-✅ 수정 내역:
-   - [변경 사항 1]
-   - [변경 사항 2]
-📂 수정된 파일:
-   - [파일 경로]: [변경 요약]
-🔄 인덱스 갱신 완료
-🔄 Repo 동기화 완료
+✅ Changes:
+   - [Change 1]
+   - [Change 2]
+📂 Modified files:
+   - [file path]: [change summary]
+🔄 Index updated
+🔄 Repo sync complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-3. **Commit + Push 명령어를 생성하여 사용자에게 제공한다** (직접 실행하지 않음):
-   - `git add`에 변경된 파일만 명시적으로 나열
-   - 커밋 메시지: `implement: [변경 요약] (v{새버전})`
-   - 버전 범프가 있었으면 태그 + `--tags` 포함
-   - `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` 포함
-   - heredoc 대신 큰따옴표로 감싼 한 줄 메시지 사용 (쉘 호환성)
+3. **Generate a Commit + Push command and provide it to the user** (do not execute directly):
+   - Explicitly list only changed files in `git add`
+   - Commit message: `implement: [change summary] (v{new_version})`
+   - If a version bump occurred, include tag + `--tags`
+   - Include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+   - Use a double-quoted single-line message instead of heredoc (shell compatibility)
 
 ```
-📋 아래 명령어를 복사해서 실행하세요:
+📋 Copy and run the command below:
 
-git add [파일1] [파일2] ... && git commit -m "implement: [요약] (v{버전})
+git add [file1] [file2] ... && git commit -m "implement: [summary] (v{version})
 
-Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} && git push origin main --tags
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{version} && git push origin main --tags
 ```

@@ -1,242 +1,244 @@
 # JARFIS Level Check — AI-Native Developer Maturity Assessment
 
-> 리서치 기반 프레임워크(AIDMM + AI-MM SET + Anthropic Agentic Coding Report)로 AI-native 개발자 성숙도를 평가합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
+
+> Assess AI-native developer maturity using a research-based framework (AIDMM + AI-MM SET + Anthropic Agentic Coding Report).
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### Step 1: 자동 수집 (로컬 데스크탑 조사)
+### Step 1: Automated Collection (Local Desktop Survey)
 
-JARFIS 자체 수집 스크립트를 실행하여 데이터를 수집한다. 외부 의존성 없음.
+Run the JARFIS collection script to gather data. No external dependencies.
 
 ```bash
 python3 ~/.claude/scripts/jarfis/level_check.py
-# 또는 전체 세션 분석 (최근 30일 제한 해제):
+# Or full session analysis (no 30-day limit):
 python3 ~/.claude/scripts/jarfis/level_check.py --all
 ```
 
-수집 항목 (JSON 출력):
-- `sessions`, `avg_prompts` — 세션 수, 세션당 평균 프롬프트
-- `tools` — 도구별 호출 수 (Bash, Read, Edit, Agent 등)
-- `skills.total`, `skills.usage` — 스킬 파일 수 + 스킬별 사용 횟수
-- `mcp.total`, `mcp.servers` — MCP 서버 수 + 서버별 호출 횟수
-- `agents.custom`, `agents.personas`, `agents.dialectic`, `agents.delegations`, `agents.types` — 에이전트 상세
-- `hooks.total`, `hooks.events`, `hooks.names` — 훅 상세
-- `memory.total`, `memory.types` — 메모리 수 + 유형 분포
-- `claude_md.total_lines`, `claude_md.files` — 프로젝트별 CLAUDE.md 합산
-- `models` — 모델 사용 비율
-- `permissions.mode` — 권한 모드
-- `orchestration.jarfis`, `orchestration.omc`, `orchestration.superclaude`, `orchestration.custom` — 오케스트레이션 시스템 감지
-- `domains.packs`, `domains.skills` — 도메인 팩/스킬 수
-- `wiki` — Wiki 시스템 존재 여부
-- `tests` — 테스트 함수 수
-- `plugins` — 플러그인 수
+Collected items (JSON output):
+- `sessions`, `avg_prompts` — session count, average prompts per session
+- `tools` — call count per tool (Bash, Read, Edit, Agent, etc.)
+- `skills.total`, `skills.usage` — skill file count + usage count per skill
+- `mcp.total`, `mcp.servers` — MCP server count + call count per server
+- `agents.custom`, `agents.personas`, `agents.dialectic`, `agents.delegations`, `agents.types` — agent details
+- `hooks.total`, `hooks.events`, `hooks.names` — hook details
+- `memory.total`, `memory.types` — memory count + type distribution
+- `claude_md.total_lines`, `claude_md.files` — total CLAUDE.md lines across projects
+- `models` — model usage ratios
+- `permissions.mode` — permission mode
+- `orchestration.jarfis`, `orchestration.omc`, `orchestration.superclaude`, `orchestration.custom` — orchestration system detection
+- `domains.packs`, `domains.skills` — domain pack/skill count
+- `wiki` — wiki system presence
+- `tests` — test function count
+- `plugins` — plugin count
 
-자동 수집 결과를 `$AUTO_DATA`에 저장하고, 사용자에게 요약을 보여준다:
+Store the automated collection results in `$AUTO_DATA` and show the user a summary:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Level Check — 자동 수집 완료
+  JARFIS Level Check — Automated Collection Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📊 세션: {N}개 | 평균 프롬프트: {N}/세션
-🔧 스킬: {N}개 | 훅: {N}개 | MCP: {N}개
-🤖 에이전트: {N}종 ({N}회 위임)
-🧠 메모리: {N}개
-📁 CLAUDE.md: {N}줄 (전체 프로젝트 합산)
+📊 Sessions: {N} | Avg prompts: {N}/session
+🔧 Skills: {N} | Hooks: {N} | MCP: {N}
+🤖 Agents: {N} types ({N} delegations)
+🧠 Memory: {N}
+📁 CLAUDE.md: {N} lines (total across projects)
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-→ Step 2로 진행
+Proceed to Step 2
 
-### Step 2: 수동 입력 (인터뷰)
+### Step 2: Manual Input (Interview)
 
-자동 수집으로 파악 불가능한 항목을 AskUserQuestion으로 질문한다. **한 번에 모든 질문을 제시**하여 사용자가 한꺼번에 답변할 수 있게 한다.
+Use AskUserQuestion to ask about items that cannot be determined from automated collection. **Present all questions at once** so the user can answer them in one go.
 
 ```
-아래 7개 질문에 답해주세요. 번호만 적고 간단히 답하셔도 됩니다.
+Please answer the following 7 questions. You can simply write the number and a brief answer.
 
-1. AI를 SDLC 어느 단계까지 활용하시나요?
-   a) 코딩만  b) 코딩+테스트  c) 기획~테스트  d) 기획~배포  e) 기획~모니터링 전체
+1. Which stages of the SDLC do you use AI for?
+   a) Coding only  b) Coding + testing  c) Planning through testing  d) Planning through deployment  e) Entire lifecycle including monitoring
 
-2. 커스텀 에이전트를 직접 설계하고 운영한 경험이 있나요?
-   a) 없음  b) 1~3개  c) 4~10개  d) 10개+  e) 오케스트레이션 시스템까지 구축
+2. Have you designed and operated custom agents?
+   a) None  b) 1-3  c) 4-10  d) 10+  e) Built an orchestration system
 
-3. AI 에이전트가 자율적으로 작업하도록 위임하는 수준은?
-   a) 위임 안 함  b) 단일 작업 위임  c) 멀티스텝 위임  d) 병렬 에이전트  e) End-to-End 자율
+3. To what degree do you delegate autonomous work to AI agents?
+   a) No delegation  b) Single-task delegation  c) Multi-step delegation  d) Parallel agents  e) End-to-end autonomous
 
-4. AI 출력의 품질 검증을 어떻게 하시나요? (복수 선택 가능)
-   a) 눈으로 확인  b) 자동 테스트  c) CI/CD 연동  d) 변증법 리뷰 (찬반)  e) 자동 학습 축적
+4. How do you verify AI output quality? (multiple selections allowed)
+   a) Manual review  b) Automated tests  c) CI/CD integration  d) Dialectic review (pro/con)  e) Automated learning accumulation
 
-5. 세션 간 지식을 어떻게 유지하시나요? (복수 선택 가능)
-   a) 유지 안 함  b) 메모리/CLAUDE.md  c) 도메인 인코딩(스킬/템플릿)  d) Wiki/문서화 시스템  e) 자동 회고+학습 루프
+5. How do you maintain knowledge across sessions? (multiple selections allowed)
+   a) Not maintained  b) Memory/CLAUDE.md  c) Domain encoding (skills/templates)  d) Wiki/documentation system  e) Automated retrospective + learning loop
 
-6. AI가 AI를 개선하는 자기 수정 루프가 있나요?
-   a) 없음  b) 프롬프트 수동 개선  c) AI로 프롬프트 최적화  d) AI가 자체 시스템을 수정  e) 자율 진화 루프
+6. Do you have a self-improvement loop where AI improves AI?
+   a) None  b) Manual prompt refinement  c) AI-assisted prompt optimization  d) AI modifies its own system  e) Autonomous evolution loop
 
-7. 팀/조직 수준에서 AI-native 프로세스를 운영하시나요?
-   a) 개인만  b) 팀 내 공유  c) 팀 표준으로 운영  d) 조직 전체 표준  e) 비엔지니어도 사용
+7. Do you operate AI-native processes at the team/organization level?
+   a) Individual only  b) Shared within team  c) Team standard  d) Organization-wide standard  e) Non-engineers also use it
 ```
 
-→ Step 3으로 진행
+Proceed to Step 3
 
-### Step 3: 점수 산출
+### Step 3: Score Calculation
 
-7개 차원별 10점 만점으로 평가한다. **자동 수집 데이터 + 수동 입력 답변**을 종합하여 점수를 산출한다.
+Evaluate on a 10-point scale across 7 dimensions. Derive scores by combining **automated collection data + manual input answers**.
 
-#### 평가 프레임워크
+#### Evaluation Framework
 
-| 차원 | 가중치 | 평가 기준 |
-|------|--------|----------|
-| **D1. AI Literacy & Tool Adoption** | 10% | 모델 선택 전략, 도구 수, 사용 빈도, bypass 비율, 세션 깊이 |
-| **D2. Workflow & SDLC Integration** | 20% | 인터뷰 Q1 + 자동 수집(스킬 사용 패턴, SDLC 커버리지) |
-| **D3. Agent Design & Orchestration** | 25% | 인터뷰 Q2+Q3 + 자동 수집(에이전트 수/종류/위임 횟수) |
-| **D4. Tooling Infrastructure** | 15% | 자동 수집(MCP, 훅, 스킬, 커맨드, CLAUDE.md 줄 수) |
-| **D5. Quality & Safety Governance** | 15% | 인터뷰 Q4 + 자동 수집(훅 중 safety/quality 관련, 테스트 에이전트) |
-| **D6. Knowledge Persistence** | 10% | 인터뷰 Q5 + 자동 수집(메모리 수, 메모리 유형 분포) |
-| **D7. Meta-Engineering** | 5% | 인터뷰 Q6 + 자동 수집(sys-implement 사용 횟수, 자기 수정 패턴) |
+| Dimension | Weight | Criteria |
+|-----------|--------|----------|
+| **D1. AI Literacy & Tool Adoption** | 10% | Model selection strategy, tool count, usage frequency, bypass ratio, session depth |
+| **D2. Workflow & SDLC Integration** | 20% | Interview Q1 + automated data (skill usage patterns, SDLC coverage) |
+| **D3. Agent Design & Orchestration** | 25% | Interview Q2+Q3 + automated data (agent count/types/delegation count) |
+| **D4. Tooling Infrastructure** | 15% | Automated data (MCP, hooks, skills, commands, CLAUDE.md line count) |
+| **D5. Quality & Safety Governance** | 15% | Interview Q4 + automated data (safety/quality-related hooks, test agents) |
+| **D6. Knowledge Persistence** | 10% | Interview Q5 + automated data (memory count, memory type distribution) |
+| **D7. Meta-Engineering** | 5% | Interview Q6 + automated data (sys-implement usage count, self-modification patterns) |
 
-#### 채점 가이드 (각 차원 0~10점)
+#### Scoring Guide (0-10 per dimension)
 
 **D1. AI Literacy & Tool Adoption**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | AI 도구 미사용 또는 기본 ChatGPT만 |
-| 3~4 | Copilot/Claude 기본 사용, 세션 <10 |
-| 5~6 | 100+ 세션, MCP 2~3개, 프롬프트 <20/세션 |
-| 7~8 | 100+ 세션, MCP 5+개, 프롬프트 30+/세션, 모델 전략적 선택 |
-| 9~10 | 200+ 세션, MCP 7+개, 프롬프트 50+/세션, bypass 90%+, 최상위 모델 사용 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | No AI tools or basic ChatGPT only |
+| 3-4 | Basic Copilot/Claude usage, sessions <10 |
+| 5-6 | 100+ sessions, 2-3 MCP servers, prompts <20/session |
+| 7-8 | 100+ sessions, 5+ MCP servers, 30+ prompts/session, strategic model selection |
+| 9-10 | 200+ sessions, 7+ MCP servers, 50+ prompts/session, 90%+ bypass, top-tier model usage |
 
 **D2. Workflow & SDLC Integration**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | AI 미사용 또는 코딩 보조만 |
-| 3~4 | 코딩+테스트에 AI 활용 |
-| 5~6 | 기획~테스트까지 AI 활용, 일부 자동화 |
-| 7~8 | 기획~배포까지 AI 통합, SDLC 파이프라인 구축 |
-| 9~10 | 전체 SDLC를 AI 워크플로우로 운영, 선언적 프로세스 정의 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | No AI usage or coding assistance only |
+| 3-4 | AI used for coding + testing |
+| 5-6 | AI used from planning through testing, partial automation |
+| 7-8 | AI integrated from planning through deployment, SDLC pipeline built |
+| 9-10 | Entire SDLC operated as AI workflows, declarative process definitions |
 
 **D3. Agent Design & Orchestration**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | 에이전트 미사용 |
-| 3~4 | 기본 에이전트 활용 (general-purpose) |
-| 5~6 | 커스텀 에이전트 1~3개, 단일 작업 위임 |
-| 7~8 | 커스텀 에이전트 4~10개, 병렬 위임, 페르소나 설계 |
-| 9~10 | 10개+ 에이전트, 오케스트레이션 시스템, 변증법 리뷰, End-to-End 자율 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | No agent usage |
+| 3-4 | Basic agent usage (general-purpose) |
+| 5-6 | 1-3 custom agents, single-task delegation |
+| 7-8 | 4-10 custom agents, parallel delegation, persona design |
+| 9-10 | 10+ agents, orchestration system, dialectic review, end-to-end autonomous |
 
 **D4. Tooling Infrastructure**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | 기본 설정만 |
-| 3~4 | CLAUDE.md 작성, 기본 MCP 연동 |
-| 5~6 | 커스텀 스킬 제작, 훅 3+개, MCP 3+개 |
-| 7~8 | 도메인 스킬, 템플릿 시스템, CI 연동, CLAUDE.md 500줄+ |
-| 9~10 | 풀스택 인프라 (스킬 30+, 훅 5+, MCP 7+, 도메인 팩, 커맨드 50+) |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | Default settings only |
+| 3-4 | CLAUDE.md written, basic MCP integration |
+| 5-6 | Custom skills created, 3+ hooks, 3+ MCP servers |
+| 7-8 | Domain skills, template system, CI integration, 500+ lines in CLAUDE.md |
+| 9-10 | Full-stack infra (30+ skills, 5+ hooks, 7+ MCP, domain packs, 50+ commands) |
 
 **D5. Quality & Safety Governance**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | 검증 없이 AI 출력 수용 |
-| 3~4 | 수동 리뷰만 |
-| 5~6 | 자동 테스트 + CI 연동 |
-| 7~8 | safety 훅, quality gate, 구조화된 검증 루프 |
-| 9~10 | 변증법 리뷰(찬반), 자동 학습 축적, 래칫 수렴, 20+ 라운드 검증 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | Accept AI output without verification |
+| 3-4 | Manual review only |
+| 5-6 | Automated tests + CI integration |
+| 7-8 | Safety hooks, quality gates, structured verification loops |
+| 9-10 | Dialectic review (pro/con), automated learning accumulation, ratchet convergence, 20+ round verification |
 
 **D6. Knowledge Persistence**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | 세션 간 지식 유지 없음 |
-| 3~4 | CLAUDE.md만 사용 |
-| 5~6 | 메모리 10+개, 프로젝트별 CLAUDE.md |
-| 7~8 | 도메인 인코딩(스킬/템플릿), 문서화 시스템 |
-| 9~10 | Wiki 시스템, 자동 회고+학습 루프, 메모리 25+개, 크로스 세션 연속성 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | No cross-session knowledge retention |
+| 3-4 | CLAUDE.md only |
+| 5-6 | 10+ memories, per-project CLAUDE.md |
+| 7-8 | Domain encoding (skills/templates), documentation system |
+| 9-10 | Wiki system, automated retrospective + learning loop, 25+ memories, cross-session continuity |
 
 **D7. Meta-Engineering**
-| 점수 | 기준 |
-|------|------|
-| 0~2 | AI를 도구로만 사용 |
-| 3~4 | 프롬프트를 수동으로 개선 |
-| 5~6 | AI로 프롬프트/설정 최적화 (distill 등) |
-| 7~8 | AI가 자체 시스템을 수정 (sys-implement) |
-| 9~10 | 자율 진화 루프, AI가 AI를 위한 시스템을 만드는 재귀 구조 |
+| Score | Criteria |
+|-------|----------|
+| 0-2 | AI used as a tool only |
+| 3-4 | Manual prompt refinement |
+| 5-6 | AI-assisted prompt/config optimization (distill, etc.) |
+| 7-8 | AI modifies its own system (sys-implement) |
+| 9-10 | Autonomous evolution loop, recursive structure where AI builds systems for AI |
 
-#### 가중 합산
+#### Weighted Sum
 
 ```
-총점 = D1×0.10 + D2×0.20 + D3×0.25 + D4×0.15 + D5×0.15 + D6×0.10 + D7×0.05
+Total = D1×0.10 + D2×0.20 + D3×0.25 + D4×0.15 + D5×0.15 + D6×0.10 + D7×0.05
 ```
 
-조직 보너스 (인터뷰 Q7):
-- a) 개인만 → +0.0
-- b) 팀 내 공유 → +0.1
-- c) 팀 표준 → +0.2
-- d) 조직 전체 → +0.3
-- e) 비엔지니어도 사용 → +0.5
+Organization bonus (Interview Q7):
+- a) Individual only → +0.0
+- b) Shared within team → +0.1
+- c) Team standard → +0.2
+- d) Organization-wide → +0.3
+- e) Non-engineers also use it → +0.5
 
-**최종 점수 = min(총점 + 조직 보너스, 10.0)**
+**Final Score = min(Total + Organization bonus, 10.0)**
 
-→ Step 4로 진행
+Proceed to Step 4
 
-### Step 4: 결과 출력
+### Step 4: Output Results
 
-#### 등급 체계
+#### Level System
 
-| Level | 명칭 | 점수 범위 | AIDMM 매핑 | AI-MM SET 매핑 |
-|-------|------|----------|-----------|--------------|
-| Lv.0 | Human-Only | 0 ~ 1.0 | Level 0 | - |
-| Lv.1 | AI-Curious | 1.0 ~ 3.0 | Level 0~1 | Exploratory |
-| Lv.2 | AI-Assisted | 3.0 ~ 5.0 | Level 1 | Applied |
-| Lv.3 | AI-Collaborative | 5.0 ~ 6.5 | Level 2 | Standardized |
-| Lv.4 | AI-Delegated | 6.5 ~ 8.0 | Level 3 | Strategic |
-| Lv.5 | AI-Orchestrator | 8.0 ~ 9.5 | Level 3~4 | Strategic+ |
-| Lv.6 | AI-Native | 9.5 ~ 10.0 | Level 4 | Transformational |
+| Level | Title | Score Range | AIDMM Mapping | AI-MM SET Mapping |
+|-------|-------|------------|---------------|-------------------|
+| Lv.0 | Human-Only | 0 - 1.0 | Level 0 | - |
+| Lv.1 | AI-Curious | 1.0 - 3.0 | Level 0-1 | Exploratory |
+| Lv.2 | AI-Assisted | 3.0 - 5.0 | Level 1 | Applied |
+| Lv.3 | AI-Collaborative | 5.0 - 6.5 | Level 2 | Standardized |
+| Lv.4 | AI-Delegated | 6.5 - 8.0 | Level 3 | Strategic |
+| Lv.5 | AI-Orchestrator | 8.0 - 9.5 | Level 3-4 | Strategic+ |
+| Lv.6 | AI-Native | 9.5 - 10.0 | Level 4 | Transformational |
 
-#### 출력 형식
+#### Output Format
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   JARFIS Level Check — AI-Native Maturity
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  Lv.{N} {명칭}    {점수}/10
-  {프로그레스 바 20칸}  {퍼센트}%
+  Lv.{N} {title}    {score}/10
+  {progress bar 20 chars}  {percent}%
 
-  ┌─ 차원별 점수 ──────────────────────────────┐
-  │ D1 Tool Adoption      {점수}/10  {바}      │
-  │ D2 SDLC Integration   {점수}/10  {바}      │
-  │ D3 Agent Orchestration {점수}/10  {바}      │
-  │ D4 Tooling Infra       {점수}/10  {바}      │
-  │ D5 Quality Governance  {점수}/10  {바}      │
-  │ D6 Knowledge Persist   {점수}/10  {바}      │
-  │ D7 Meta-Engineering    {점수}/10  {바}      │
+  ┌─ Dimension Scores ───────────────────────────┐
+  │ D1 Tool Adoption      {score}/10  {bar}      │
+  │ D2 SDLC Integration   {score}/10  {bar}      │
+  │ D3 Agent Orchestration {score}/10  {bar}      │
+  │ D4 Tooling Infra       {score}/10  {bar}      │
+  │ D5 Quality Governance  {score}/10  {bar}      │
+  │ D6 Knowledge Persist   {score}/10  {bar}      │
+  │ D7 Meta-Engineering    {score}/10  {bar}      │
   └─────────────────────────────────────────────┘
 
-  조직 보너스: +{N} ({수준})
+  Organization bonus: +{N} ({level})
 
-  📊 자동 수집 요약:
-     세션 {N} | 에이전트 {N}종 {N}회 | MCP {N}개
-     스킬 {N} | 훅 {N} | 메모리 {N}
+  📊 Automated collection summary:
+     Sessions {N} | Agents {N} types {N} delegations | MCP {N}
+     Skills {N} | Hooks {N} | Memory {N}
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  참조: AIDMM (DEV Community) · AI-MM SET (Gigacore)
-  참조: Anthropic 2026 Agentic Coding Trends Report
+  Ref: AIDMM (DEV Community) · AI-MM SET (Gigacore)
+  Ref: Anthropic 2026 Agentic Coding Trends Report
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-#### 다음 레벨 가이드
+#### Next Level Guide
 
-현재 레벨에서 다음 레벨로 올라가기 위한 구체적 제안을 1~3개 제시한다:
+Provide 1-3 specific suggestions for advancing to the next level:
 
 ```
-  🎯 Lv.{N+1} {다음 명칭}으로 가려면:
-     1. {구체적 제안}
-     2. {구체적 제안}
-     3. {구체적 제안}
+  🎯 To reach Lv.{N+1} {next title}:
+     1. {specific suggestion}
+     2. {specific suggestion}
+     3. {specific suggestion}
 ```
 
-예시:
-- Lv.2→3: "CLAUDE.md를 프로젝트에 추가하고, MCP 서버 2개 이상 연동해보세요"
-- Lv.3→4: "커스텀 에이전트를 만들어 반복 작업을 위임해보세요"
-- Lv.4→5: "멀티에이전트 오케스트레이션으로 SDLC 파이프라인을 구축해보세요"
-- Lv.5→6: "팀/조직 전체에 AI-native 프로세스를 표준화하세요"
+Examples:
+- Lv.2 to 3: "Add CLAUDE.md to your project and integrate at least 2 MCP servers"
+- Lv.3 to 4: "Create custom agents and delegate repetitive tasks to them"
+- Lv.4 to 5: "Build an SDLC pipeline with multi-agent orchestration"
+- Lv.5 to 6: "Standardize AI-native processes across your entire team/organization"

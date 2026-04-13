@@ -1,144 +1,146 @@
-# JARFIS Continue — 완료된 워크플로우 이어서 작업
+# JARFIS Continue — Resume and Follow Up on a Completed Workflow
 
-사용자가 다음 후속 작업을 요청했습니다: $ARGUMENTS
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-이전 워크플로우의 산출물과 브랜치를 재활용하여 효율적으로 후속 작업을 수행합니다.
+The user has requested the following follow-up work: $ARGUMENTS
 
-**플래그 옵션:**
-- `--workflow {경로}` — 워크플로우 디렉토리를 직접 지정 (예: `{JARFIS_SOURCE}/.personal/orgs/Medistream/works/20260310-feat-결제-시스템`)
-- `--mode fix|extend` — 모드를 명시적으로 지정 (자동 분류 없이 바로 해당 모드 실행)
+This workflow reuses artifacts and branches from a previous workflow to efficiently perform follow-up tasks.
+
+**Flag Options:**
+- `--workflow {path}` — Specify the workflow directory directly (e.g., `{JARFIS_SOURCE}/.personal/orgs/Medistream/works/20260310-feat-payment-system`)
+- `--mode fix|extend` — Explicitly specify the mode (skips auto-classification and runs the given mode directly)
 
 ---
 
-## Step 0: 이전 워크플로우 탐색
+## Step 0: Locate Previous Workflow
 
-**0-0. `$ARGUMENTS`에서 플래그를 파싱한다:**
-- `--workflow {경로}` → `$WORKFLOW_PATH`에 저장, `$ARGUMENTS`에서 플래그 제거
-- `--mode fix|extend` → `$FORCED_MODE`에 저장, `$ARGUMENTS`에서 플래그 제거
-- 플래그가 없으면 각각 빈 값
+**0-0. Parse flags from `$ARGUMENTS`:**
+- `--workflow {path}` → Store in `$WORKFLOW_PATH`, remove the flag from `$ARGUMENTS`
+- `--mode fix|extend` → Store in `$FORCED_MODE`, remove the flag from `$ARGUMENTS`
+- If no flags are present, each value remains empty
 
-**0-1. 워크플로우 선택:**
+**0-1. Workflow Selection:**
 
-`$WORKFLOW_PATH`가 지정된 경우:
-- 해당 경로에 `.jarfis-state.json`이 존재하는지 확인한다.
-- 존재하면 해당 워크플로우를 선택한다 (완료 여부 무관 — 사용자가 명시적으로 지정했으므로).
-- 존재하지 않으면: "지정된 경로에 워크플로우가 없습니다: `{$WORKFLOW_PATH}`" 출력 후 종료.
+If `$WORKFLOW_PATH` is specified:
+- Check whether `.jarfis-state.json` exists at that path.
+- If it exists, select that workflow (regardless of completion status — the user explicitly specified it).
+- If it does not exist: print "No workflow found at the specified path: `{$WORKFLOW_PATH}`" and exit.
 
-`$WORKFLOW_PATH`가 없는 경우 (자동 탐색 — jarfis_cli.py state 사용):
+If `$WORKFLOW_PATH` is not provided (automatic discovery — using jarfis_cli.py state):
 
-1. 완료된 워크플로우를 스크립트로 검색한다 (전체 Org 워크스페이스 자동 스캔):
+1. Search for completed workflows via script (automatic scan across all Org workspaces):
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py state list-workflows --completed-only
    ```
-   JSON 출력의 `workflows` 배열에서 각 워크플로우의 `work_name`, `project_name`, `started_at`, `docs_dir`을 확인한다.
+   From the `workflows` array in the JSON output, examine each workflow's `work_name`, `project_name`, `started_at`, and `docs_dir`.
 
-2. `count`가 0이면 "완료된 워크플로우가 없습니다" 출력 후 종료.
+2. If `count` is 0, print "No completed workflows found" and exit.
 
-3. **워크플로우가 1개**: 자동 선택
-   **워크플로우가 2개 이상**: AskUserQuestion으로 선택:
+3. **1 workflow**: Auto-select
+   **2+ workflows**: Select via AskUserQuestion:
    ```
-   question: "어떤 워크플로우를 이어서 진행하시겠어요?"
+   question: "Which workflow would you like to continue?"
    header: "Workflow"
    options:
-     - label: "{작업물명1} ({날짜})"
-       description: "{PRD 요약 or project_name}"
-     - label: "{작업물명2} ({날짜})"
-       description: "{PRD 요약 or project_name}"
+     - label: "{work_name_1} ({date})"
+       description: "{PRD summary or project_name}"
+     - label: "{work_name_2} ({date})"
+       description: "{PRD summary or project_name}"
    ```
-   **워크플로우가 0개**: "완료된 워크플로우가 없습니다. `/jarfis:work`로 새 워크플로우를 시작하세요." 출력 후 종료.
+   **0 workflows**: Print "No completed workflows found. Start a new workflow with `/jarfis:work`." and exit.
 
-4. 선택된 워크플로우의 상태 파일에서 다음을 복원한다:
-   - `$DOCS_DIR` — 산출물 디렉토리
-   - `$WORK_NAME` — 작업물명
-   - `$BRANCH` — Git 브랜치명
-   - `required_roles` — 필요 역할
-   - `workspace` — 프로젝트 구조
+4. Restore the following from the selected workflow's state file:
+   - `$DOCS_DIR` — Artifacts directory
+   - `$WORK_NAME` — Work item name
+   - `$BRANCH` — Git branch name
+   - `required_roles` — Required roles
+   - `workspace` — Project structure
 
-5. 이전 워크플로우의 핵심 산출물을 빠르게 읽는다:
-   - `$DOCS_DIR/prd.md` — PRD (기획 요약)
-   - `$DOCS_DIR/tasks.md` — 태스크 분해 (완료된 항목 확인)
-   - `$DOCS_DIR/architecture.md` — 아키텍처 (첫 50줄만, 개요 파악용)
+5. Quickly read the previous workflow's key artifacts:
+   - `$DOCS_DIR/prd.md` — PRD (planning summary)
+   - `$DOCS_DIR/tasks.md` — Task breakdown (check completed items)
+   - `$DOCS_DIR/architecture.md` — Architecture (first 50 lines only, for overview purposes)
 
-6. **Pre-flight 검증** — 스크립트로 컨텍스트/프로필/Org 존재 여부를 확인:
+6. **Pre-flight Validation** — Verify context/profile/Org existence via script:
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
-   JSON 출력의 `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki`로 각 파일을 로드한다. work.md Phase 0 "주입 규칙"과 동일: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (없으면 빈 문자열)
+   From the JSON output, use `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki` to load each file. Same injection rules as work.md Phase 0: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (empty string if not available)
 
-   **0-0.5. Wiki 로딩** (Org 등록 시 — `org_root` non-null + `has_wiki`=true):
-   > 📄 프롬프트: `prompts/wiki-loading.md` 참조
-   - **Fix 모드** (`$FORCED_MODE`="fix" 또는 자동 분류 후): **2-Step 경량 로딩** — INDEX.md + 관련 _index.md만
-   - **Extend 모드** (`$FORCED_MODE`="extend" 또는 자동 분류 후): **4-Step 전체 로딩** — work.md와 동일
-   - 모드 미결정 시: Step 1 모드 분류 후 해당 모드의 wiki 로딩 실행
+   **0-0.5. Wiki Loading** (when Org is registered — `org_root` non-null + `has_wiki`=true):
+   > See prompt: `prompts/wiki-loading.md`
+   - **Fix mode** (`$FORCED_MODE`="fix" or after auto-classification): **2-Step lightweight loading** — INDEX.md + relevant _index.md only
+   - **Extend mode** (`$FORCED_MODE`="extend" or after auto-classification): **4-Step full loading** — same as work.md
+   - If mode is undetermined: Run wiki loading for the appropriate mode after Step 1 classification
 
 ---
 
-## Step 1: 후속 작업 분류
+## Step 1: Classify Follow-up Work
 
-### 플래그로 모드가 지정된 경우
+### When mode is specified via flag
 
-`$FORCED_MODE`가 있으면 자동 분류를 건너뛰고 해당 모드로 바로 진행한다.
+If `$FORCED_MODE` is set, skip auto-classification and proceed directly with that mode.
 
-### 자동 분류 (플래그 없는 경우)
+### Auto-classification (when no flag is provided)
 
-사용자의 요청(`$ARGUMENTS`)과 이전 워크플로우 컨텍스트를 분석하여 모드를 판단한다.
+Analyze the user's request (`$ARGUMENTS`) and the previous workflow context to determine the mode.
 
-| 신호 | 모드 |
-|------|------|
-| "수정", "버그", "fix", "고쳐", "안 돼", "에러", "테스트 실패" | **Fix** |
-| "추가", "기능", "새로", "확장", "더", "리팩토링" | **Extend** |
-| 판단 불가 | AskUserQuestion |
+| Signal | Mode |
+|--------|------|
+| "fix", "bug", "broken", "error", "not working", "test failing" | **Fix** |
+| "add", "feature", "new", "extend", "more", "refactoring" | **Extend** |
+| Cannot determine | AskUserQuestion |
 
-### 판단 불가 시 AskUserQuestion:
+### AskUserQuestion when classification is uncertain:
 ```
-question: "어떤 유형의 후속 작업인가요?"
+question: "What type of follow-up work is this?"
 header: "Mode"
 options:
-  - label: "Fix — 수정/버그 수정"
-    description: "기존 구현의 문제 수정. 설계 변경 없이 Phase 4→5→6 실행"
-  - label: "Extend — 기능 추가/확장"
-    description: "기존 설계 위에 새 기능 추가. Phase 1→2→4→5→6 경량 실행"
+  - label: "Fix — Bug fix / Correction"
+    description: "Fix issues in the existing implementation. Runs Phase 4→5→6 without design changes"
+  - label: "Extend — Add / Expand features"
+    description: "Add new features on top of existing design. Runs lightweight Phase 1→2→4→5→6"
 ```
 
-### 모드별 실행 흐름 요약
+### Execution Flow Summary by Mode
 
 ```
-Fix 모드:
-  Step 2: 수정 사항 정리 → Step 4: 구현 → Step 5: 리뷰 → Step 6: 회고
+Fix mode:
+  Step 2: Prepare fix items → Step 4: Implement → Step 5: Review → Step 6: Retrospective
 
-Extend 모드:
-  Step 2: PRD 보강 → Step 3: 설계 보강 → Step 4: 구현 → Step 5: 리뷰 → Step 6: 회고
+Extend mode:
+  Step 2: Enhance PRD → Step 3: Enhance design → Step 4: Implement → Step 5: Review → Step 6: Retrospective
 ```
 
 ---
 
-## Step 2: 작업 준비
+## Step 2: Work Preparation
 
-### Git 브랜치 확인
+### Git Branch Check
 
-1. 현재 브랜치가 `$BRANCH`인지 확인한다.
-   - 아니면: `git checkout $BRANCH` 실행
-   - 브랜치가 삭제되었거나 없으면: 기본 브랜치(main/develop)에서 새 브랜치 `$WORK_NAME-follow-up` 생성
+1. Verify the current branch is `$BRANCH`.
+   - If not: run `git checkout $BRANCH`
+   - If the branch has been deleted or does not exist: create a new branch `$WORK_NAME-follow-up` from the default branch (main/develop)
 
-2. uncommitted 변경사항 확인 → 있으면 사용자에게 경고
+2. Check for uncommitted changes → warn the user if any exist
 
-### 상태 파일 갱신
+### State File Update
 
-`.jarfis-state.json`에 follow-up 정보를 추가한다:
+Add follow-up information to `.jarfis-state.json`:
 ```json
 {
   "current_phase": "follow-up",
   "follow_up": {
     "mode": "fix|extend",
-    "description": "$ARGUMENTS 요약",
+    "description": "$ARGUMENTS summary",
     "started_at": "ISO8601",
     "iteration": 1
   }
 }
 ```
-(`iteration`은 같은 워크플로우에서 continue를 반복 실행할 때 증가)
+(`iteration` increments when continue is run repeatedly on the same workflow)
 
-기존 `follow_up` 필드가 있으면 `iteration`을 +1 한다.
+If a `follow_up` field already exists, increment `iteration` by 1.
 
 ---
 
@@ -146,92 +148,92 @@ Extend 모드:
 
 ### Prompt & Template Path Resolution
 
-| 참조 패턴 | 절대 경로 |
-|-----------|----------|
+| Reference Pattern | Absolute Path |
+|-------------------|---------------|
 | `prompts/*.md` | `~/.claude/commands/jarfis/prompts/*.md` |
 | `templates/*.md` | `~/.claude/commands/jarfis/templates/*.md` |
 
-> ⚠️ `$JARFIS_SOURCE`(Git repo)가 아닌 `~/.claude/`가 기준이다.
+> Warning: The base path is `~/.claude/`, NOT `$JARFIS_SOURCE` (Git repo).
 
 ### Agent Model Routing
 
-> ※ 모든 에이전트의 모델은 work.md "Execution Rules > Agent Mapping" 테이블(SSOT)을 따른다.
-> 이 파일의 인라인 model 힌트는 가독성 보조이며, 불일치 시 work.md가 우선한다.
+> Note: All agent models follow the work.md "Execution Rules > Agent Mapping" table (SSOT).
+> Inline model hints in this file are for readability only; in case of conflict, work.md takes precedence.
 
 ---
 
-## Step 3: Fix 모드 실행
+## Step 3: Fix Mode Execution
 
-> **Wiki 참조** (Org 등록 시): 2-Step 경량 로딩 완료 상태. 수정 시 wiki의 기존 결정(ADR, API 계약 등)과 일치하는 방향으로 수정한다.
+> **Wiki Reference** (when Org is registered): 2-Step lightweight loading is complete. When making fixes, align with existing decisions in the wiki (ADRs, API contracts, etc.).
 
-### 3-1. 수정 사항 정리
+### 3-1. Organize Fix Items
 
-사용자의 수정 요청을 분석하여 수정 대상을 정리한다:
+Analyze the user's fix request and organize the targets:
 
-Fix 모드 배너를 표시한다: 원본 기획, 수정 사항, 산출물 경로, 브랜치.
+Display the Fix mode banner: original plan, fix items, artifacts path, branch.
 
-1. `$DOCS_DIR/tasks.md`를 읽어 기존 태스크 구조를 파악한다.
-2. 수정 사항을 기존 역할(BE/FE/DevOps)에 매핑하여 fix 태스크를 생성한다.
-3. 기존 `tasks.md`에 `## Follow-up Fix (#{iteration})` 섹션을 **추가**한다:
+1. Read `$DOCS_DIR/tasks.md` to understand the existing task structure.
+2. Map fix items to existing roles (BE/FE/DevOps) and create fix tasks.
+3. **Append** a `## Follow-up Fix (#{iteration})` section to the existing `tasks.md`:
    ```markdown
    ## Follow-up Fix (#1)
-   > 요청: {수정 사항 요약}
+   > Request: {fix items summary}
 
    ### BE Tasks
-   - [ ] FIX-BE-1: {수정 내용}
+   - [ ] FIX-BE-1: {fix description}
 
    ### FE Tasks
-   - [ ] FIX-FE-1: {수정 내용}
+   - [ ] FIX-FE-1: {fix description}
    ```
 
-### 3-2. 구현 (Phase 4 재활용) — Fix 테스트 래칫
+### 3-2. Implementation (Reusing Phase 4) — Fix Test Ratchet
 
-work.md의 Phase 4 에이전트 프롬프트(`prompts/phase4.md`)를 사용하되, 다음을 조정한다:
+Use work.md's Phase 4 agent prompt (`prompts/phase4.md`) with the following adjustments:
 
-- **태스크 소스**: `tasks.md`의 `## Follow-up Fix` 섹션만 실행
-- **기존 코드 참조**: 이전 Phase 4에서 구현한 코드가 이미 있으므로, 해당 코드 기반으로 수정
-- **커밋 형식**: `jarfis(fix/BE-N):`, `jarfis(fix/FE-N):`
+- **Task source**: Execute only the `## Follow-up Fix` section of `tasks.md`
+- **Existing code reference**: Code from the previous Phase 4 already exists; make modifications based on that code
+- **Commit format**: `jarfis(fix/BE-N):`, `jarfis(fix/FE-N):`
 
-**Fix 테스트 래칫** (오케스트레이터 직접 실행):
+**Fix Test Ratchet** (executed directly by the orchestrator):
 
-**3-2a. Baseline 기록** (구현 시작 전):
-1. 프로젝트 테스트 러너 감지 (project-profile scripts 참조, 또는 원본 워크플로우의 `ratchet.phase4_tests.test_command`)
-2. 테스트 러너 존재 시 → 에이전트에게 전체 테스트 실행 + `[TEST_RESULT: passed={N}, failed={N}, total={N}]` 보고 지시
-   → `fix_baseline_pass_rate` = passed/total 기록
-3. 테스트 러너 미존재 → 래칫 비활성, 기존 흐름 유지
+**3-2a. Record Baseline** (before implementation begins):
+1. Detect the project test runner (refer to project-profile scripts, or the original workflow's `ratchet.phase4_tests.test_command`)
+2. If a test runner exists → instruct the agent to run all tests + report `[TEST_RESULT: passed={N}, failed={N}, total={N}]`
+   → Record `fix_baseline_pass_rate` = passed/total
+3. If no test runner exists → disable ratchet, continue with existing flow
 
-**3-2b. 에이전트 구현 실행**:
+**3-2b. Agent Implementation Execution**:
 
-에이전트 실행 (model: **sonnet** — 구현 역할):
-- `required_roles`에서 fix 태스크가 있는 역할만 실행
-- 각 에이전트에게 전달할 컨텍스트:
-  - `$DOCS_DIR/prd.md` — 원본 PRD
-  - `$DOCS_DIR/architecture.md` — 아키텍처
-  - `$DOCS_DIR/tasks.md` — 태스크 (Follow-up Fix 섹션 중심)
-  - `$LEARNINGS` — 해당 역할 Agent Hints
-  - `$PROJECT_CONTEXT` — 프로젝트 컨텍스트
-  - `$BE_PROJECT_PROFILE` / `$FE_PROJECT_PROFILE` — 해당 역할의 프로젝트 프로필 (존재 시)
+Run agents (model: **sonnet** — implementation role):
+- Execute only roles from `required_roles` that have fix tasks
+- Context to pass to each agent:
+  - `$DOCS_DIR/prd.md` — Original PRD
+  - `$DOCS_DIR/architecture.md` — Architecture
+  - `$DOCS_DIR/tasks.md` — Tasks (focus on Follow-up Fix section)
+  - `$LEARNINGS` — Agent Hints for the relevant role
+  - `$PROJECT_CONTEXT` — Project context
+  - `$BE_PROJECT_PROFILE` / `$FE_PROJECT_PROFILE` — Project profile for the relevant role (if available)
 
-**3-2c. 래칫 검증** (구현 완료 후, 래칫 활성화 시만):
-1. 에이전트에게 전체 테스트 실행 + 보고 지시 → `fix_current_pass_rate` 측정
-2. **래칫 판정**:
-   - fix_current_pass_rate >= fix_baseline_pass_rate → **ACCEPT** → 3-3 리뷰 진행
+**3-2c. Ratchet Verification** (after implementation, only when ratchet is active):
+1. Instruct the agent to run all tests + report → measure `fix_current_pass_rate`
+2. **Ratchet Decision**:
+   - fix_current_pass_rate >= fix_baseline_pass_rate → **ACCEPT** → proceed to 3-3 review
    - fix_current_pass_rate < fix_baseline_pass_rate → **REJECT**:
-     - `git stash`로 변경사항 저장
-     - 에이전트에게: "Fix가 기존 테스트 N개를 깨뜨림: [목록]. `git stash pop`으로 코드를 복원한 뒤, 기존 테스트를 유지하면서 수정하라." 재지시
-     - **최대 1회 재시도**
-3. 재시도 후에도 실패 → AskUserQuestion:
+     - Save changes with `git stash`
+     - Re-instruct the agent: "The fix broke N existing tests: [list]. Run `git stash pop` to restore the code, then fix while preserving existing tests."
+     - **Maximum 1 retry**
+3. If still failing after retry → AskUserQuestion:
    ```
-   question: "Fix가 기존 테스트를 깨뜨립니다 (통과율: {baseline}% → {current}%). 어떻게 할까요?"
+   question: "The fix is breaking existing tests (pass rate: {baseline}% → {current}%). How would you like to proceed?"
    header: "Fix Ratchet"
    options:
-     - label: "계속 진행"
-       description: "테스트 하락을 인정하고 리뷰로 진행합니다"
-     - label: "중단"
-       description: "Fix를 취소하고 코드를 원복합니다"
+     - label: "Continue anyway"
+       description: "Accept the test regression and proceed to review"
+     - label: "Abort"
+       description: "Cancel the fix and revert code changes"
    ```
 
-**상태 기록** (`.jarfis-state.json`):
+**State Recording** (`.jarfis-state.json`):
 ```
 jarfis_cli.py state set-nested "$DOCS_DIR/.jarfis-state.json" "follow_up.ratchet" '{
   "fix_baseline_pass_rate": <0.0-1.0>,
@@ -240,94 +242,94 @@ jarfis_cli.py state set-nested "$DOCS_DIR/.jarfis-state.json" "follow_up.ratchet
 }'
 ```
 
-### 3-3. 리뷰 (Phase 5 경량 실행)
+### 3-3. Review (Lightweight Phase 5)
 
-work.md의 Phase 5를 경량으로 실행한다:
+Run work.md's Phase 5 in lightweight mode:
 
-- **Tech Lead 리뷰만** 실행 (model: **opus** — 추론/분석 역할) (QA/Security는 원본에서 이미 통과했으므로 스킵)
-  - 단, 보안 관련 수정이면 Security도 실행 (model: **opus**)
-- 리뷰 결과를 `$DOCS_DIR/review.md`에 `## Follow-up Review (#N)` 섹션으로 추가
-- 수정 필요 시 → 3-2로 돌아가 재수정 (최대 2회)
+- **Tech Lead review only** (model: **opus** — reasoning/analysis role) (QA/Security are skipped since they already passed in the original)
+  - Exception: also run Security (model: **opus**) if the fix involves security-related changes
+- Append review results to `$DOCS_DIR/review.md` as a `## Follow-up Review (#N)` section
+- If fixes are needed → return to 3-2 for re-implementation (maximum 2 iterations)
 
-### 3-4. 🔒 게이트: 사용자 컨펌
+### 3-4. Gate: User Confirmation
 
-수정 내역 요약 + 리뷰 결과 표시 → AskUserQuestion: 승인(회고→완료) / 추가 수정 / 회고 없이 종료
+Display fix summary + review results → AskUserQuestion: Approve (retrospective → complete) / Request additional fixes / Finish without retrospective
 
-### 3-5. 회고 (Phase 6 경량)
+### 3-5. Retrospective (Lightweight Phase 6)
 
-`prompts/phase6.md`를 참조하되 (tech-lead, model: **opus**), 회고 범위를 fix 작업으로 한정한다:
-- "이번 Fix에서 어떤 문제가 있었고, 원본 워크플로우에서 어떻게 예방할 수 있었을까?"
-- 회고 결과를 `$DOCS_DIR/retrospective.md`에 `## Follow-up Retrospective (#N)` 섹션으로 추가
-- 학습 항목이 있으면 `learnings.md`에 추가
+Refer to `prompts/phase6.md` (tech-lead, model: **opus**), scoping the retrospective to the fix work:
+- "What issues arose during this fix, and how could they have been prevented in the original workflow?"
+- Append retrospective results to `$DOCS_DIR/retrospective.md` as a `## Follow-up Retrospective (#N)` section
+- If there are learning items, add them to `learnings.md`
 
-**Wiki 갱신** (Org 등록 시): 디폴트 "안 함". AskUserQuestion으로 사용자 선택 시에만 wiki 2-트랙 갱신 실행.
+**Wiki Update** (when Org is registered): Default is "skip". Only run wiki 2-track update when the user opts in via AskUserQuestion.
 
-**Workflow Metrics 기록** (best-effort):
-`$JARFIS_ORG_DIR/workflow-metrics.tsv`에 경량 메트릭을 append한다. `prompts/phase6.md` Step 6-2.5의 TSV 형식을 따르되:
+**Workflow Metrics Recording** (best-effort):
+Append lightweight metrics to `$JARFIS_ORG_DIR/workflow-metrics.tsv`. Follow the TSV format from `prompts/phase6.md` Step 6-2.5, with:
 - `follow_up_mode` = `"fix"`
-- `follow_up_iteration` = `.jarfis-state.json`의 `follow_up.iteration`
-- 나머지 필드는 원본 워크플로우 state에서 추출 (빈 칸 허용)
+- `follow_up_iteration` = `follow_up.iteration` from `.jarfis-state.json`
+- Remaining fields extracted from the original workflow state (blanks are acceptable)
 
 ---
 
-## Step 4: Extend 모드 실행
+## Step 4: Extend Mode Execution
 
-> **Wiki 참조** (Org 등록 시): 4-Step 전체 로딩 완료 상태. 각 Phase에서 work.md와 동일 수준으로 wiki 참조.
-> Phase 6 회고: wiki **항상 갱신** (2-트랙, work.md와 동일).
+> **Wiki Reference** (when Org is registered): 4-Step full loading is complete. Reference the wiki at the same level as work.md in each Phase.
+> Phase 6 retrospective: wiki is **always updated** (2-track, same as work.md).
 
-### 4-1. PRD 보강 (Phase 1 경량)
+### 4-1. PRD Enhancement (Lightweight Phase 1)
 
-Extend 모드 배너를 표시한다: 원본 기획, 확장 내용, 산출물 경로, 브랜치.
+Display the Extend mode banner: original plan, extension content, artifacts path, branch.
 
-> 📄 프롬프트: `prompts/continue-extend.md`를 읽어서 PO/Architect/TL 에이전트에 전달한다.
+> See prompt: read `prompts/continue-extend.md` and pass it to the PO/Architect/TL agents.
 
-PO (senior-product-owner, model: **opus**)에게 PO Prompt로 호출.
-PO의 역질문이 있으면 사용자에게 전달 → 답변 후 PRD 보강 완료.
+Call PO (senior-product-owner, model: **opus**) with the PO Prompt.
+If the PO has clarifying questions, relay them to the user → complete PRD enhancement after answers are received.
 
-### 4-2. 설계 보강 (Phase 2 경량)
+### 4-2. Design Enhancement (Lightweight Phase 2)
 
-Architect (technical-architect, model: **opus**)에게 Architect Prompt로 호출.
-Tech Lead (tech-lead, model: **opus**)에게 Tech Lead Prompt로 호출.
-QA (senior-qa-engineer, model: **opus**)에게 QA Prompt로 호출 — test-strategy.md 존재 시만. Extension Test Strategy 추가.
+Call Architect (technical-architect, model: **opus**) with the Architect Prompt.
+Call Tech Lead (tech-lead, model: **opus**) with the Tech Lead Prompt.
+Call QA (senior-qa-engineer, model: **opus**) with the QA Prompt — only when test-strategy.md exists. Add Extension Test Strategy.
 
-### 4-3. 🔒 게이트: 사용자 컨펌 (설계 리뷰)
+### 4-3. Gate: User Confirmation (Design Review)
 
-확장 설계 산출물(prd.md Extension, architecture.md Extension, tasks.md Extension Tasks) 요약 표시 → AskUserQuestion: 승인 / 수정 요청 / 중단
+Display a summary of extension design artifacts (prd.md Extension, architecture.md Extension, tasks.md Extension Tasks) → AskUserQuestion: Approve / Request changes / Abort
 
-### 4-4. 구현 (Phase 4 재활용)
+### 4-4. Implementation (Reusing Phase 4)
 
-Fix 모드의 3-2와 동일하되:
-- **태스크 소스**: `tasks.md`의 `## Extension Tasks` 섹션
-- **커밋 형식**: `jarfis(ext/BE-N):`, `jarfis(ext/FE-N):`
+Same as Fix mode's 3-2, with the following differences:
+- **Task source**: `## Extension Tasks` section of `tasks.md`
+- **Commit format**: `jarfis(ext/BE-N):`, `jarfis(ext/FE-N):`
 
-### 4-5. 리뷰 (Phase 5 실행)
+### 4-5. Review (Phase 5 Execution)
 
-work.md의 Phase 5를 실행하되:
-- 리뷰 범위를 Extension 태스크로 한정
-- Tech Lead (model: **opus**) + QA (model: **opus**) 리뷰 실행 (새 기능이므로 QA 필요)
-- Security (model: **opus**)는 보안 관련 변경이 있을 때만 실행
-- 리뷰 결과를 `$DOCS_DIR/review.md`에 `## Extension Review (#N)` 섹션으로 추가
+Run work.md's Phase 5 with the following adjustments:
+- Scope the review to Extension tasks
+- Run Tech Lead (model: **opus**) + QA (model: **opus**) review (QA is needed since this involves new features)
+- Run Security (model: **opus**) only when there are security-related changes
+- Append review results to `$DOCS_DIR/review.md` as an `## Extension Review (#N)` section
 
-### 4-6. 🔒 게이트: 최종 컨펌
+### 4-6. Gate: Final Confirmation
 
-Fix 모드의 3-4와 동일한 형식.
+Same format as Fix mode's 3-4.
 
-### 4-7. 회고 (Phase 6 경량)
+### 4-7. Retrospective (Lightweight Phase 6)
 
-Fix 모드의 3-5와 동일하되, 회고 관점을 확장 작업에 맞춤:
-- "확장 기능이 기존 아키텍처와 잘 통합되었는가?"
-- "확장 시 발견된 기존 설계의 개선점은?"
+Same as Fix mode's 3-5, with the retrospective perspective tailored to extension work:
+- "Did the extension integrate well with the existing architecture?"
+- "Were any improvement opportunities discovered in the existing design during extension?"
 
-**Workflow Metrics 기록** (best-effort):
-`$JARFIS_ORG_DIR/workflow-metrics.tsv`에 경량 메트릭을 append한다. `prompts/phase6.md` Step 6-2.5의 TSV 형식을 따르되:
+**Workflow Metrics Recording** (best-effort):
+Append lightweight metrics to `$JARFIS_ORG_DIR/workflow-metrics.tsv`. Follow the TSV format from `prompts/phase6.md` Step 6-2.5, with:
 - `follow_up_mode` = `"extend"`
-- `follow_up_iteration` = `.jarfis-state.json`의 `follow_up.iteration`
-- 나머지 필드는 원본 워크플로우 state에서 추출 (빈 칸 허용)
+- `follow_up_iteration` = `follow_up.iteration` from `.jarfis-state.json`
+- Remaining fields extracted from the original workflow state (blanks are acceptable)
 
 ---
 
-## Step 5: 완료
+## Step 5: Completion
 
-완료 배너를 표시한다: 원본 작업물명, 모드(Fix/Extend), iteration, 변경 사항 요약, 산출물 경로, 브랜치.
+Display the completion banner: original work item name, mode (Fix/Extend), iteration, change summary, artifacts path, branch.
 
-상태 파일의 `follow_up.status`를 `"completed"`로 갱신한다.
+Update `follow_up.status` in the state file to `"completed"`.

@@ -1,160 +1,162 @@
-# JARFIS Update — 프로젝트 프로필 증분 갱신
+# JARFIS Update — Incremental Project Profile Refresh
 
-기존 `./.jarfis/project-profile.md`를 기반으로, 변경된 부분만 감지하여 최소한의 분석으로 프로필을 갱신합니다.
-전체 재분석이 필요하면 `/jarfis:project-init`을 사용하세요.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+Detect only changed portions based on the existing `./.jarfis/project-profile.md` and refresh the profile with minimal re-analysis.
+For a full re-analysis, use `/jarfis:project-init`.
+
+User request: $ARGUMENTS
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### Step 0: 사전 검증
+### Step 0: Pre-validation
 
-1. `./.jarfis/project-profile.md` 존재 여부를 확인하세요.
-2. **파일이 없으면** 즉시 안내하고 중단:
+1. Check whether `./.jarfis/project-profile.md` exists.
+2. **If the file is missing**, inform the user immediately and abort:
    ```
-   ⚠️ 기존 프로필이 없습니다. `/jarfis:project-init`을 먼저 실행하세요.
+   ⚠️ No existing profile found. Please run `/jarfis:project-init` first.
    ```
-3. 파일이 있으면 **전체 내용을 읽어** 기존 프로필을 파악하세요.
-4. 프로필 헤더에서 기존 depth (`basic` / `medium` / `deep`), type (`BE` / `FE` / `Fullstack`), 그리고 `Last-Commit` hash를 추출하세요.
+3. If the file exists, **read the entire contents** to understand the existing profile.
+4. Extract the existing depth (`basic` / `medium` / `deep`), type (`BE` / `FE` / `Fullstack`), and `Last-Commit` hash from the profile header.
 
-### Step 1: 변경 범위 감지
+### Step 1: Detect Change Scope
 
-다음 방법들을 **순서대로** 시도하여 마지막 프로필 생성 이후 변경된 파일 목록을 확보하세요:
+Try the following methods **in order** to obtain the list of files changed since the last profile generation:
 
-**방법 A: Git commit hash 기반 (우선)**
+**Method A: Git commit hash based (preferred)**
 
-프로필 헤더에서 `Last-Commit` hash를 추출하고, 해당 커밋 이후의 변경만 정확히 감지:
+Extract the `Last-Commit` hash from the profile header and detect only changes since that commit:
 
-**A-1. Hash 유효성 검증** (hash가 있는 경우):
+**A-1. Validate hash** (if hash exists):
 ```bash
 git rev-parse --verify <last-commit-hash>^{commit} 2>/dev/null
 ```
-- 성공 → A-2로 진행
-- 실패 (rebase/force-push로 hash가 사라진 경우) → 경고를 출력하고 날짜 기반 fallback 사용:
+- Success: Proceed to A-2
+- Failure (hash missing due to rebase/force-push): Display a warning and fall back to date-based detection:
   ```
-  ⚠️ Last-Commit hash (<hash>)가 현재 히스토리에 없습니다 (rebase/force-push 가능성).
-     날짜 기반 fallback으로 전환합니다.
+  ⚠️ Last-Commit hash (<hash>) is not in the current history (possible rebase/force-push).
+     Falling back to date-based detection.
   ```
 
-**A-2. Hash 기반 변경 감지**:
+**A-2. Hash-based change detection**:
 ```bash
 git log <last-commit-hash>..HEAD --name-only --pretty=format: | sort -u
 ```
 
-**A-3. `Last-Commit` 헤더가 없는 경우** (기존 프로필 호환):
+**A-3. If no `Last-Commit` header exists** (legacy profile compatibility):
 ```bash
-# 날짜 기반 fallback — 경고를 출력하여 사용자에게 인지시킴
-# ⚠️ Last-Commit 미기록 프로필입니다. 날짜 기반 감지를 사용합니다. 이번 갱신 후 hash가 기록됩니다.
+# Date-based fallback — warn the user
+# ⚠️ Profile has no Last-Commit record. Using date-based detection. The hash will be recorded after this refresh.
 git log --since="YYYY-MM-DD" --name-only --pretty=format: | sort -u
 ```
 
-어떤 방법이든 git log 결과가 비어있으면 staged/unstaged 변경도 확인:
+If git log results are empty regardless of method, also check staged/unstaged changes:
 ```bash
 git diff --name-only HEAD
 git diff --name-only --cached
 ```
 
-**방법 B: Git 불가 시 (fallback)**
-프로필 파일의 수정 시각보다 최근에 수정된 주요 파일들을 탐색:
-- 매니페스트: `package.json`, `pom.xml`, `go.mod` 등
-- 설정: `tsconfig.json`, `.eslintrc.*`, `serverless.yml` 등
-- 소스 디렉토리의 구조적 변경 (새 디렉토리, 삭제된 디렉토리)
+**Method B: When Git is unavailable (fallback)**
+Scan for key files modified more recently than the profile file:
+- Manifests: `package.json`, `pom.xml`, `go.mod`, etc.
+- Config: `tsconfig.json`, `.eslintrc.*`, `serverless.yml`, etc.
+- Structural changes in source directories (new or deleted directories)
 
-### Step 2: 영향 받는 섹션 매핑
+### Step 2: Map Affected Sections
 
-변경된 파일들을 프로필 섹션에 매핑하세요:
+Map changed files to profile sections:
 
-| 변경 유형 | 영향 섹션 |
-|-----------|-----------|
-| `package.json`, `go.mod` 등 매니페스트 | Tech Stack, Key Dependencies |
-| 디렉토리 추가/삭제/이동 | Directory Structure |
-| 스크립트 변경 (`package.json` scripts) | Scripts & Commands |
-| 설정 파일 변경 (eslint, tsconfig 등) | Config Summary |
-| 새 라우트/페이지 파일 추가/삭제 | API Routes / Pages |
-| 모델/스키마 파일 변경 | Data Models |
-| 모듈 추가/삭제/이동 | Module Map, Business Logic Summary |
-| 공통 컴포넌트/유틸 변경 | Reusable Components |
-| 아키텍처 패턴 변경 (미들웨어, 인증 등) | Architecture |
-| TODO/FIXME 추가/제거 | Notes & Caveats |
-| 네이밍 패턴, import 규칙 변경 | Coding Conventions |
+| Change Type | Affected Section |
+|-------------|-----------------|
+| `package.json`, `go.mod`, etc. (manifests) | Tech Stack, Key Dependencies |
+| Directories added/removed/moved | Directory Structure |
+| Script changes (`package.json` scripts) | Scripts & Commands |
+| Config file changes (eslint, tsconfig, etc.) | Config Summary |
+| New route/page files added/removed | API Routes / Pages |
+| Model/schema file changes | Data Models |
+| Modules added/removed/moved | Module Map, Business Logic Summary |
+| Shared component/utility changes | Reusable Components |
+| Architecture pattern changes (middleware, auth, etc.) | Architecture |
+| TODO/FIXME additions/removals | Notes & Caveats |
+| Naming pattern or import rule changes | Coding Conventions |
 
-**변경 없음 판정:** 위 매핑에 해당하는 변경이 없으면 Step 5(조기 종료)로 이동.
+**No changes detected:** If no changes map to any section above, proceed to Step 5 (early exit).
 
-감지 결과를 표시하세요:
+Display the detection results:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Update — 변경 감지
+  JARFIS Update — Change Detection
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📂 프로젝트: [프로젝트명]
-📊 기존 깊이: [depth]
-📝 변경 파일: [N]개
-🔄 갱신 섹션: [섹션 목록]
-⏭️ 유지 섹션: [섹션 목록]
+📂 Project: [project name]
+📊 Existing depth: [depth]
+📝 Changed files: [N]
+🔄 Sections to refresh: [section list]
+⏭️ Sections unchanged: [section list]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### Step 3: 섹션별 증분 분석
+### Step 3: Incremental Section Analysis
 
-**갱신 대상 섹션만** 재분석하세요. `/jarfis:project-init`의 해당 Step과 동일한 기준으로 분석하되:
+Re-analyze **only the sections flagged for refresh**. Use the same criteria as the corresponding Step in `/jarfis:project-init`, but:
 
-- 기존 프로필의 depth를 유지 (basic이면 basic 범위만)
-- 기존 프로필에서 해당 depth에 포함되지 않았던 섹션은 추가하지 않음
-- 변경되지 않은 섹션은 기존 내용을 **그대로 유지**
+- Maintain the existing profile's depth (if basic, only analyze basic-scope sections)
+- Do not add sections that were not included in the existing profile at that depth
+- **Preserve unchanged sections exactly as-is**
 
-**분석 범위 참고 (depth별):**
+**Analysis scope reference (by depth):**
 - `basic`: Tech Stack, Directory Structure, Scripts & Commands, Config Summary
 - `medium`: basic + Coding Conventions, API Routes / Pages, Data Models, Module Map
 - `deep`: medium + Architecture, Business Logic Summary, Reusable Components, Notes & Caveats
 
-### Step 4: 프로필 갱신
+### Step 4: Update Profile
 
-기존 `./.jarfis/project-profile.md`를 갱신하세요:
+Update the existing `./.jarfis/project-profile.md`:
 
-1. 헤더의 날짜를 오늘로 업데이트
-2. `Generated by` 라인을 다음으로 변경:
+1. Update the date in the header to today
+2. Change the `Generated by` line to:
    ```
    > Updated by `/jarfis:project-update` on YYYY-MM-DD (original: YYYY-MM-DD by `/jarfis:project-init`)
    ```
-3. `Last-Commit` 헤더를 현재 HEAD commit hash로 업데이트:
+3. Update the `Last-Commit` header with the current HEAD commit hash:
    ```bash
    git rev-parse --short HEAD
    ```
-   결과를 `> Last-Commit: <short-hash>` 형태로 기록 (기존에 없으면 추가)
-4. 갱신 대상 섹션만 새 내용으로 교체
-5. 나머지 섹션은 기존 내용 유지
+   Record the result as `> Last-Commit: <short-hash>` (add if not already present)
+4. Replace only the sections flagged for refresh with new content
+5. Keep all other sections unchanged
 
-**작성 원칙:**
-- `/jarfis:project-init`과 동일한 문서 형식 및 서술 스타일 유지
-- 토큰 효율 최우선: 코드 복사 금지, 구조와 패턴을 서술
-- 모든 파일 경로는 프로젝트 루트 기준 상대경로
+**Writing principles:**
+- Maintain the same document format and writing style as `/jarfis:project-init`
+- Token efficiency is the top priority: no code copying, describe structure and patterns
+- All file paths should be relative to the project root
 
-### Step 5: 결과 보고
+### Step 5: Report Results
 
-**변경이 있는 경우:**
+**When changes exist:**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Update 완료
+  JARFIS Update Complete
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📂 프로젝트: [프로젝트명]
-📊 깊이: [depth] (유지)
-🔄 갱신된 섹션:
-   - [섹션명]: [변경 요약 한줄]
-   - [섹션명]: [변경 요약 한줄]
-⏭️ 유지된 섹션: [N]개
-📄 산출물: ./.jarfis/project-profile.md
+📂 Project: [project name]
+📊 Depth: [depth] (unchanged)
+🔄 Refreshed sections:
+   - [section name]: [one-line change summary]
+   - [section name]: [one-line change summary]
+⏭️ Unchanged sections: [N]
+📄 Output: ./.jarfis/project-profile.md
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-**변경이 없는 경우 (조기 종료):**
+**When no changes exist (early exit):**
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Update — 변경 없음
+  JARFIS Update — No Changes
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-📂 프로젝트: [프로젝트명]
-✅ 프로필이 최신 상태입니다.
-   마지막 생성: YYYY-MM-DD
-   변경된 파일: 0개
+📂 Project: [project name]
+✅ Profile is up to date.
+   Last generated: YYYY-MM-DD
+   Changed files: 0
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

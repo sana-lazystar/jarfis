@@ -1,29 +1,31 @@
-# /jarfis:wiki-storyboard — 디자인 카탈로그 브라우징
+# /jarfis:wiki-storyboard — Design Catalog Browsing
 
-사용자가 디자인 카탈로그를 열려고 합니다: $ARGUMENTS
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-## 목적
-워크플로우 외 시점에서도 서비스의 전체 디자인 현황을 브라우저에서 확인.
+The user wants to open the design catalog: $ARGUMENTS
 
-## 전제 조건
-- Organization 등록 완료 (`org-profile.md` 존재)
-- `wiki/DESIGN/pages/{project}/` 에 시안 존재 (최소 1회 이상 워크플로우 완료)
+## Purpose
+View the overall design status of a service in the browser, outside of a workflow context.
 
-## 흐름
+## Prerequisites
+- Organization registration complete (`org-profile.md` exists)
+- Design mockups exist in `wiki/DESIGN/pages/{project}/` (at least one workflow completed)
 
-1. **Org 확인**
+## Flow
+
+1. **Check Org**
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py org info $(pwd)
    ```
-   - 실패 시: "Organization이 등록되지 않았습니다. `/jarfis:work`를 먼저 실행하세요." 출력 후 종료
+   - On failure: Display "Organization is not registered. Please run `/jarfis:work` first." and exit
 
-2. **FE 프로젝트 목록 추출**
-   - `org info` JSON의 `projects` 배열에서 FE/Fullstack 타입 프로젝트만 필터링
-   - 프로젝트가 0개면: "FE 프로젝트가 없습니다." 출력 후 종료
+2. **Extract FE Project List**
+   - Filter only FE/Fullstack type projects from the `projects` array in the `org info` JSON
+   - If 0 projects: Display "No FE projects found." and exit
 
-3. **프로젝트 선택** (AskUserQuestion)
+3. **Select Project** (AskUserQuestion)
    ```
-   question: "디자인 카탈로그를 열 프로젝트를 선택하세요:"
+   question: "Select a project to open the design catalog:"
    header: "Design"
    options:
      - label: "{project_1}"
@@ -31,15 +33,15 @@
      - label: "{project_2}"
        description: "{project_2_path}"
    ```
-   - 프로젝트가 1개면 자동 선택
+   - If only 1 project, select it automatically
 
-4. **카탈로그 열기**
+4. **Open Catalog**
    ```bash
    open {org_root}/.jarfis/wiki/DESIGN/pages/{selected_project}/_index.html
    ```
-   - `_index.html` 미존재 시: "시안이 아직 없습니다. `/jarfis:work`에서 Phase 3을 완료하세요." 출력
+   - If `_index.html` does not exist: Display "No mockups yet. Complete Phase 3 in `/jarfis:work`."
 
-5. **결과 표시**
+5. **Display Result**
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━
    📖 Design Catalog: {project}

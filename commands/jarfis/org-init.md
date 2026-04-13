@@ -1,101 +1,103 @@
-# JARFIS Org Init — Organization 초기화
+# JARFIS Org Init — Organization Initialization
 
-새 Organization을 초기화합니다. 하위 프로젝트를 자동 스캔하고 wiki 구조를 생성합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+Initialize a new Organization. Automatically scan sub-projects and create the wiki structure.
+
+User request: $ARGUMENTS
 
 ---
 
-## Step 1: 경로 결정
+## Step 1: Determine Path
 
 AskUserQuestion:
 ```
-question: "Organization root 경로를 선택하세요 (하위 프로젝트들을 포함하는 상위 디렉토리)"
+question: "Select the Organization root path (the parent directory that contains sub-projects)"
 header: "Org Root"
 options:
-  - label: "현재 디렉토리"
-    description: "{현재 CWD 절대경로}"
-  - label: "경로 직접 입력"
-    description: "다른 경로를 지정합니다"
+  - label: "Current directory"
+    description: "{current CWD absolute path}"
+  - label: "Enter path manually"
+    description: "Specify a different path"
 ```
 
-"경로 직접 입력" 선택 시 → AskUserQuestion으로 경로 입력받기 (Other 사용)
+If "Enter path manually" is selected: Use AskUserQuestion to receive the path input (use Other)
 
-`$ORG_ROOT` 변수에 선택된 절대경로를 저장한다.
+Store the selected absolute path in `$ORG_ROOT`.
 
 ---
 
-## Step 2: Organization 이름 결정
+## Step 2: Determine Organization Name
 
-`$ORG_ROOT`의 디렉토리명을 기본값으로 제안한다.
+Suggest the directory name of `$ORG_ROOT` as the default.
 
 AskUserQuestion:
 ```
-question: "Organization 이름을 정해주세요"
+question: "Choose a name for the Organization"
 header: "Org Name"
 options:
-  - label: "{$ORG_ROOT의 디렉토리명}"
-    description: "디렉토리 이름을 그대로 사용합니다"
-  - label: "직접 입력"
-    description: "다른 이름을 지정합니다"
+  - label: "{directory name of $ORG_ROOT}"
+    description: "Use the directory name as-is"
+  - label: "Enter manually"
+    description: "Specify a different name"
 ```
 
-"직접 입력" 선택 시 → AskUserQuestion으로 이름 입력받기 (Other 사용)
+If "Enter manually" is selected: Use AskUserQuestion to receive the name input (use Other)
 
-`$ORG_NAME` 변수에 저장한다.
+Store the result in `$ORG_NAME`.
 
 ---
 
-## Step 3: 프로젝트 스캔
+## Step 3: Scan Projects
 
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py org init "$ORG_ROOT"
 ```
 
-JSON 출력의 `projects` 배열을 사용자에게 표시:
+Display the `projects` array from the JSON output to the user:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Organization 초기화: {$ORG_NAME}
+  Organization Init: {$ORG_NAME}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 📂 Root: {$ORG_ROOT}
-🔍 감지된 프로젝트:
+🔍 Detected projects:
    - {name} ({type}) — {relative_path}
    - {name} ({type}) — {relative_path}
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-프로젝트가 0개이면:
+If 0 projects are detected:
 ```
-하위 프로젝트가 감지되지 않았습니다.
-각 프로젝트에서 /jarfis:project-init을 먼저 실행해주세요.
+No sub-projects were detected.
+Please run /jarfis:project-init in each project first.
 ```
-출력 후 종료.
+Then exit.
 
 ---
 
-## Step 4: 확인 및 생성
+## Step 4: Confirm and Create
 
 AskUserQuestion:
 ```
-question: "위 프로젝트들로 Organization '{$ORG_NAME}'을 생성할까요?"
+question: "Create Organization '{$ORG_NAME}' with the projects listed above?"
 header: "Confirm"
 options:
-  - label: "생성"
-    description: "org-profile.md + wiki 구조를 생성합니다"
-  - label: "취소"
-    description: "초기화를 취소합니다"
+  - label: "Create"
+    description: "Generate org-profile.md + wiki structure"
+  - label: "Cancel"
+    description: "Cancel initialization"
 ```
 
-"생성" 선택 시:
+If "Create" is selected:
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py org init "$ORG_ROOT" --confirm --name "$ORG_NAME"
 ```
 
-결과 배너:
+Result banner:
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Organization 생성 완료
+  Organization Created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 📂 {$ORG_ROOT}/.jarfis/org-profile.md
 📚 {$ORG_ROOT}/.jarfis/wiki/
@@ -105,9 +107,9 @@ python3 ~/.claude/scripts/jarfis_cli.py org init "$ORG_ROOT" --confirm --name "$
    ├── TA/_index.md
    └── QA/_index.md
 
-다음 단계:
+Next steps:
   1. cd {project_path} && /jarfis:project-init
-  2. 시맨틱 검색 활성화 (선택):
+  2. Enable semantic search (optional):
      /jarfis:search-setup → /jarfis:search-index
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

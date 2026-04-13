@@ -473,9 +473,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [3.4.0] - 2026-04-13
+## [3.5.0] - 2026-04-13
 
-- implement: Agent personas migrated to English — all 20 agent files (11 senior + 9 persona) converted with $LOCALE directive
+- implement: Core workflow + system commands migrated to English — work.md, work-continue, work-meeting, sys-implement/upgrade/distill/health/version, project-init/update, org/org-init, search/search-index/search-setup, level-check, wiki-storyboard, jarfis-index, jarfis.md, locale/locale-set (20 files)
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

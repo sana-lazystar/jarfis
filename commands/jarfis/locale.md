@@ -1,19 +1,20 @@
 ---
 name: jarfis:locale
-description: "JARFIS Locale — 현재 locale 설정 조회"
+description: "JARFIS Locale — View current locale setting"
 ---
 
-# JARFIS Locale — 현재 locale 조회
+# JARFIS Locale — View Current Locale
+<!-- locale: en -->
 
-현재 JARFIS 워크플로우의 locale 설정을 표시합니다.
+Displays the current locale setting for the JARFIS workflow.
 
-## 실행 로직
+## Execution Logic
 
-1. 현재 워크스페이스에서 `.jarfis-state.json`을 찾는다:
-   - CWD에 `.jarfis-state.json`이 있으면 사용
-   - 없으면 `$DOCS_DIR/.jarfis-state.json` 탐색 (가장 최근 워크플로우)
+1. Look for `.jarfis-state.json` in the current workspace:
+   - Use `.jarfis-state.json` if it exists in CWD
+   - Otherwise, search `$DOCS_DIR/.jarfis-state.json` (most recent workflow)
 
-2. `.jarfis-state.json`이 존재하고 `locale` 필드가 있으면:
+2. If `.jarfis-state.json` exists and contains a `locale` field:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      JARFIS Locale Configuration
@@ -23,7 +24,7 @@ description: "JARFIS Locale — 현재 locale 설정 조회"
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-3. `.jarfis-state.json`이 없거나 `locale` 필드가 없으면:
+3. If `.jarfis-state.json` does not exist or lacks a `locale` field:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      JARFIS Locale Configuration
@@ -36,10 +37,10 @@ description: "JARFIS Locale — 현재 locale 설정 조회"
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-## 언어 코드 매핑
+## Language Code Mapping
 
-| 코드 | 언어명 |
-|------|--------|
+| Code | Language |
+|------|----------|
 | `ko` | Korean |
 | `en` | English |
 | `ja` | Japanese |

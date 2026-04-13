@@ -1,14 +1,16 @@
-# JARFIS Org — Organization 목록 및 정보
+# JARFIS Org — Organization List and Info
 
-등록된 전체 Organization 목록을 표시합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+Display the full list of registered Organizations.
+
+User request: $ARGUMENTS
 
 ---
 
-## 실행
+## Execution
 
-0. 미등록 Org 자동 발견 — 등록된 Org의 부모 디렉토리에서 형제 Org을 스캔한다:
+0. Auto-discover unregistered Orgs — Scan sibling directories of registered Orgs' parent directories:
 ```bash
 python3 -c "
 import sys, os
@@ -17,12 +19,12 @@ from jarfis.organization import discover_unregistered_orgs
 discovered = discover_unregistered_orgs()
 if discovered:
     for d in discovered:
-        print(f'  [AUTO] {d[\"name\"]} 발견 → 자동 등록 ({d[\"root\"]})')
+        print(f'  [AUTO] {d[\"name\"]} discovered → auto-registered ({d[\"root\"]})')
 "
 ```
-발견된 Org이 있으면 결과를 출력한다.
+If any Orgs are discovered, display the results.
 
-1. orgs.json에서 등록된 Org 목록을 읽는다:
+1. Read the registered Org list from orgs.json:
 ```bash
 python3 -c "
 import json, os
@@ -46,51 +48,51 @@ else:
 "
 ```
 
-2. 현재 CWD의 Org 컨텍스트도 확인한다:
+2. Also check the Org context for the current CWD:
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py org info $(pwd)
 ```
 
-3. 결과를 조합하여 출력한다:
+3. Combine the results and display:
 
-### Org이 1개 이상 등록된 경우
+### When 1 or more Orgs are registered
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
   JARFIS Organizations
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-📋 등록된 Org: {count}개
+📋 Registered Orgs: {count}
 
-  {org_name} ← 현재 (CWD가 이 Org 안일 때만 표시)
+  {org_name} ← current (shown only when CWD is inside this Org)
     📂 {root}
-    📋 Projects: N개
-    📚 Wiki: 있음/없음
+    📋 Projects: N
+    📚 Wiki: available/none
 
   {org_name}
     📂 {root}
-    📋 Projects: N개
-    📚 Wiki: 있음/없음
+    📋 Projects: N
+    📚 Wiki: available/none
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-각 Org에 대해 `jarfis_cli.py org info {root}`를 실행하여 프로젝트 수와 wiki 여부를 확인한다.
-CWD가 특정 Org의 root 하위에 있으면 해당 Org에 `← 현재` 표시를 붙인다.
+For each Org, run `jarfis_cli.py org info {root}` to check the project count and wiki availability.
+If CWD is under a specific Org's root, append `← current` to that Org.
 
-### Org이 0개인 경우
+### When 0 Orgs are registered
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-  Organization 미등록
+  No Organization Registered
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-등록된 Organization이 없습니다.
+No registered Organizations found.
 
-Organization을 등록하면:
-  • 여러 프로젝트의 ADR·정책·디자인이 wiki에 누적됩니다
-  • 새 워크플로우 시작 시 기존 지식이 자동 주입됩니다
-  • 서비스 전체 디자인 카탈로그를 확인할 수 있습니다
+Registering an Organization enables:
+  • ADRs, policies, and designs accumulate in the wiki across projects
+  • Existing knowledge is automatically injected when starting new workflows
+  • View a unified design catalog for the entire service
 
-등록하기: /jarfis:org-init
+Register now: /jarfis:org-init
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

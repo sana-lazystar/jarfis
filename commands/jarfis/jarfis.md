@@ -1,72 +1,74 @@
-# JARFIS — 사용 가능한 명령어 도움말
+# JARFIS — Available Commands Help
 
-JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을 사용자에게 보여주세요.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
+
+JARFIS command helper. Display the following list of available commands to the user.
 
 ---
 
-다음을 그대로 출력하세요:
+Display the following as-is:
 
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   JARFIS - IT Team Workflow Orchestration
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-  사용 가능한 명령어:
+  Available commands:
 
   /jarfis:org
-    Organization 정보 확인 (미등록 시 등록 안내)
+    View Organization info (registration guidance if not set up)
   /jarfis:org-init
-    Organization 신규 생성 (프로젝트 스캔 + wiki 구조)
-    wiki 지식 누적 → 프로젝트 간 ADR·정책·디자인 자동 공유
+    Create a new Organization (project scan + wiki structure)
+    Wiki knowledge accumulates → ADRs, policies, designs auto-shared across projects
   /jarfis:project-init [--depth basic|medium|deep]
-    프로젝트 프로필 생성 (최초 1회, 각 프로젝트에서)
+    Generate project profile (one-time, per project)
   /jarfis:project-update
-    프로필 증분 갱신 (Git 이력 기반, 수시)
-  /jarfis:work-meeting [기획 주제]
-    PO+TL 기획 킥오프 미팅 (아이디어 탐색, 선택)
-  /jarfis:work [기획 내용]
-    전체 워크플로우 실행 (기획→설계→구현→리뷰→회고)
-  /jarfis:work-continue [후속 작업] [--mode fix|extend]
-    완료된 워크플로우 이어서 작업 (버그 수정 / 기능 확장)
+    Incremental profile refresh (Git history based, run anytime)
+  /jarfis:work-meeting [topic]
+    PO+TL planning kickoff meeting (idea exploration, selection)
+  /jarfis:work [description]
+    Run full workflow (plan → design → implement → review → retrospective)
+  /jarfis:work-continue [follow-up] [--mode fix|extend]
+    Continue a completed workflow (bug fix / feature extension)
   /jarfis:wiki-storyboard                          [Org]
-    서비스 전체 디자인 카탈로그 브라우저 확인
+    Browse the service-wide design catalog
 
-  /jarfis:search [--meetings] [--works] [--wiki] 검색어  [Org]
-    시맨틱 통합 검색 (meetings + works + wiki)
+  /jarfis:search [--meetings] [--works] [--wiki] query  [Org]
+    Unified semantic search (meetings + works + wiki)
   /jarfis:search-setup                              [Org]
-    시맨틱 검색 활성화 (sentence-transformers 설치)
+    Enable semantic search (install sentence-transformers)
   /jarfis:search-index [--current]                  [Org]
-    전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki + meetings + works)
+    Batch-create/refresh semantic indexes for all Orgs (wiki + meetings + works)
 
-  /jarfis:locale          현재 locale 설정 조회
-  /jarfis:locale-set      locale 설정 (ko/en/ja)
+  /jarfis:locale          View current locale setting
+  /jarfis:locale-set      Set locale (ko/en/ja)
 
-  /jarfis:level-check     AI-native 개발자 성숙도 평가
-  /jarfis:sys-upgrade     학습 항목 관리 + 에이전트 적용
-  /jarfis:sys-distill     토큰 효율 분석 + 최적화
-  /jarfis:sys-implement   JARFIS 시스템 자체 수정
-  /jarfis:sys-version     버전 확인 + 업데이트
-  /jarfis:sys-health      좀비 프로세스 진단/정리
+  /jarfis:level-check     AI-native developer maturity assessment
+  /jarfis:sys-upgrade     Manage learning items + apply to agents
+  /jarfis:sys-distill     Token efficiency analysis + optimization
+  /jarfis:sys-implement   Modify the JARFIS system itself
+  /jarfis:sys-version     Check version + update
+  /jarfis:sys-health      Diagnose/clean up zombie processes
 
-  [Org] = Organization 등록 필요
-    Org 등록 시 work/work-continue/work-meeting에 wiki 지식 자동 주입,
-    Phase 6 회고에서 산출물이 wiki에 자동 누적됩니다.
+  [Org] = Organization registration required
+    With Org registration, wiki knowledge is auto-injected into work/work-continue/work-meeting,
+    and Phase 6 retrospective outputs automatically accumulate in the wiki.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  예시 A — Organization 사용 (권장):
+  Example A — With Organization (recommended):
     cd ~/your-company-name
-    /jarfis:org-init                      ← Org 등록 (최초 1회)
+    /jarfis:org-init                      ← Register Org (one-time)
     cd ~/your-company-name/my-project
-    /jarfis:project-init                  ← 프로젝트별 최초 1회
-    /jarfis:work-meeting 결제 시스템 리뉴얼
-    /jarfis:work 결제 시스템 리뉴얼
-    /jarfis:work-continue 카드 결제 오류 수정
-    /jarfis:wiki-storyboard              ← 디자인 카탈로그 확인
+    /jarfis:project-init                  ← One-time per project
+    /jarfis:work-meeting payment system renewal
+    /jarfis:work payment system renewal
+    /jarfis:work-continue fix card payment error
+    /jarfis:wiki-storyboard              ← View design catalog
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  예시 B — Org 없이 바로 시작:
+  Example B — Quick start without Org:
     cd ~/my-project
     /jarfis:project-init
-    /jarfis:work 게시판 CRUD + 댓글
-    /jarfis:work-continue 댓글 알림 기능 추가 --mode extend
+    /jarfis:work bulletin board CRUD + comments
+    /jarfis:work-continue add comment notifications --mode extend
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

@@ -1,38 +1,40 @@
-# JARFIS Distill — 프롬프트 증류 (정리/최적화)
+# JARFIS Distill — Prompt Distillation (Cleanup/Optimization)
 
-JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 템플릿 외부화 + 규칙 통합을 수행합니다.
+> **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-사용자 요청: $ARGUMENTS
+Analyzes token efficiency of JARFIS prompt files and performs deduplication, template externalization, and rule consolidation.
+
+User request: $ARGUMENTS
 
 ---
 
-## 실행 흐름
+## Execution Flow
 
-### D-0: 측정 (Before)
+### D-0: Measurement (Before)
 
-0. **시스템 현황 파악**
-   - `~/.claude/commands/jarfis/jarfis-index.md`를 먼저 읽어 현재 JARFIS 파일 구조를 파악한다.
-   - 인덱스의 "파일 구조"와 "명령어 매핑"을 기반으로 제외 대상을 결정한다.
-   - **인덱스에 새 명령어가 추가된 경우**: 역할을 확인하여 워크플로우 프롬프트인지 메타 도구인지 판단하고, 메타 도구는 제외 목록에 추가한다.
+0. **Assess System State**
+   - First read `~/.claude/commands/jarfis/jarfis-index.md` to understand the current JARFIS file structure.
+   - Use the index's "File Structure" and "Command Mapping" to determine exclusion targets.
+   - **If new commands have been added to the index**: Check their role to determine whether they are workflow prompts or meta tools, and add meta tools to the exclusion list.
 
-1. **파일별 토큰 비용 측정** — `jarfis_cli.py measure` 사용 (LLM이 파일을 직접 읽지 않고 측정 결과만 받음)
+1. **Per-file token cost measurement** — use `jarfis_cli.py measure` (LLM does not read files directly; it only receives measurement results)
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py measure \
      --exclude sys-distill.md,sys-sys-implement.md,jarfis-index.md,sys-health.md,sys-upgrade.md,sys-version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md \
      --diagnostics
    ```
-   - 스크립트가 스캔하는 범위: `commands/jarfis/`, `agents/jarfis/`, `commands/jarfis.md` (재귀, `.distill-backup/` 제외)
-   - 제외 대상: 메타 도구 (`sys-distill.md`, `sys-sys-implement.md`, `jarfis-index.md`, `sys-health.md`, `sys-upgrade.md`, `sys-version.md`)
-   - 출력 JSON에서 `files[].{name, lines, tokens_est}` + `total` + `index_mismatches`를 파싱하여 테이블로 표시
-   - `index_mismatches`가 있으면 경고를 출력한다
-   - `--diagnostics` 옵션으로 D-1 진단에 필요한 코드블록/헤더/프롬프트 패턴 정보도 함께 수집
-   - 결과를 테이블로 출력:
+   - Scan scope: `commands/jarfis/`, `agents/jarfis/`, `commands/jarfis.md` (recursive, `.distill-backup/` excluded)
+   - Exclusions: meta tools (`sys-distill.md`, `sys-sys-implement.md`, `jarfis-index.md`, `sys-health.md`, `sys-upgrade.md`, `sys-version.md`)
+   - Parse `files[].{name, lines, tokens_est}` + `total` + `index_mismatches` from the output JSON and display as a table
+   - If `index_mismatches` exist, output a warning
+   - The `--diagnostics` option also collects codeblock/header/prompt pattern info needed for D-1 diagnostics
+   - Display results as a table:
      ```
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-       JARFIS Distill — Before 측정
+       JARFIS Distill — Before Measurement
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     파일명              줄수    토큰추정
+     Filename            Lines   Est. Tokens
      work.md              427    4,558
      work-meeting.md           183    1,872
      ...
@@ -41,272 +43,272 @@ JARFIS 프롬프트 파일들의 토큰 효율을 분석하고, 중복 제거 + 
      ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
      ```
 
-2. **대상 파일 결정** (위 제외 대상을 뺀 워크플로우 파일만 후보)
-   - `$ARGUMENTS`가 있으면: 해당 파일만 분석 (예: `work.md`)
-   - `$ARGUMENTS`가 없으면: 토큰 비용 상위 3개 파일을 대상으로 제안
-   - AskUserQuestion으로 대상 확인:
+2. **Determine target files** (only workflow files remain after excluding the above)
+   - If `$ARGUMENTS` is provided: analyze only the specified file (e.g., `work.md`)
+   - If `$ARGUMENTS` is empty: suggest the top 3 files by token cost as targets
+   - Confirm targets with AskUserQuestion:
      ```
-     "다음 파일을 증류 대상으로 분석합니다:
+     "The following files will be analyzed for distillation:
       1. work.md (16,527tok)
       2. work-meeting.md (2,972tok)
-      진행할까요?"
+      Proceed?"
      ```
 
-### D-1: 진단
+### D-1: Diagnostics
 
-대상 파일 각각에 대해 다음 6가지 진단을 수행한다 (진단 6은 에이전트 파일에만 적용).
-**D-0에서 `--diagnostics` 옵션으로 수집한 `diagnostics` 데이터를 활용**하여, 기계적 카운팅은 스크립트 출력에서 읽고 의미 분석만 LLM이 수행한다.
+Perform the following 6 diagnostics for each target file (Diagnostic 6 applies only to agent files).
+**Leverage `diagnostics` data collected via the `--diagnostics` option in D-0** — mechanical counting is read from script output while only semantic analysis is performed by the LLM.
 
-#### 1. 인라인 템플릿 탐지
-- D-0 스크립트 출력의 `diagnostics.codeblock_lines`와 `diagnostics.codeblock_ratio`를 참조한다.
-- `codeblock_ratio`가 0.50을 넘으면 "템플릿 과다 인라인" 경고.
-- 비율이 높은 파일만 직접 읽어 코드블록의 위치, 크기, 소속 Phase를 기록한다.
+#### 1. Inline Template Detection
+- Reference `diagnostics.codeblock_lines` and `diagnostics.codeblock_ratio` from the D-0 script output.
+- If `codeblock_ratio` exceeds 0.50, warn "excessive inline templates."
+- Only read files with high ratios directly to record the position, size, and owning Phase of code blocks.
 
-#### 2. 에이전트 프롬프트 탐지
-- D-0 스크립트 출력의 `diagnostics.prompt_patterns`를 참조한다. (`📄 프롬프트:`, `📄 템플릿:`, `Task prompt:` 패턴의 라인 번호 목록)
-- 프롬프트 패턴이 있는 파일만 해당 라인 주변을 읽어 줄 수, 토큰 추정, 소속 Phase를 기록한다.
-- 15줄 이상인 프롬프트를 "외부화 후보"로 표시한다.
+#### 2. Agent Prompt Detection
+- Reference `diagnostics.prompt_patterns` from the D-0 script output. (Line number list of `📄 Prompt:`, `📄 Template:`, `Task prompt:` patterns)
+- Only read the surrounding lines of files with prompt patterns to record line count, estimated tokens, and owning Phase.
+- Mark prompts of 15+ lines as "externalization candidates."
 
-#### 3. 중복 규칙 탐지 (LLM 의미 분석 — 스크립트 대체 불가)
-- 동일/유사 문장이 2회 이상 등장하는 패턴을 찾는다.
-  - 키워드 기반: 같은 개념어(예: `.jarfis-state.json`, `AskUserQuestion`)가 규칙 맥락에서 N회 이상 등장
-  - 규칙 반복: "반드시 ~ 한다", "~ 해야 한다" 패턴의 유사 문장
-- 각 중복 그룹의 위치와 내용을 기록한다.
+#### 3. Duplicate Rule Detection (LLM semantic analysis — cannot be replaced by script)
+- Find patterns where identical/similar sentences appear 2+ times.
+  - Keyword-based: same conceptual terms (e.g., `.jarfis-state.json`, `AskUserQuestion`) appearing N+ times in rule context
+  - Rule repetition: similar sentences with patterns like "must always ~", "should ~"
+- Record the location and content of each duplicate group.
 
-#### 4. 구조 분석
-- D-0 스크립트 출력의 `diagnostics.headers`를 참조한다. (`##` 레벨 헤더의 라인 번호 + 텍스트 목록)
-- 헤더를 "워크플로우 규칙"과 "산출물 템플릿"으로 분류한다:
-  - Phase N, Execution Rules, Workflow Overview 등 → 규칙
-  - 나머지 (산출물 양식명) → 템플릿
-- 두 유형이 같은 레벨에 섞여있으면 "구조 혼재" 경고.
+#### 4. Structural Analysis
+- Reference `diagnostics.headers` from the D-0 script output. (Line number + text list of `##`-level headers)
+- Classify headers as "workflow rules" or "artifact templates":
+  - Phase N, Execution Rules, Workflow Overview, etc. → rules
+  - Remaining (artifact format names) → templates
+- If both types are mixed at the same level, warn "structural mixing."
 
-#### 5. 표현 밀도 분석
-- **출력 포맷 과다**: `diagnostics.codeblock_lines`에서 코드블록 비중이 높은 파일을 선별 → 해당 파일만 읽어 출력 예시 비율 확인. 전체의 20%를 넘으면 "출력 예시 과다" 경고.
-- **섹션 압축 가능성**: `diagnostics.headers`의 헤더 간 줄 수 차이로 섹션 크기를 추정. 큰 섹션만 읽어 "규칙 밀도"(규칙 수 / 줄 수)를 계산. 밀도가 0.1 미만이면 "저밀도 섹션"으로 표시.
-- **압축 불가 마커**: `<!-- no-condense -->` 주석이 있는 섹션은 압축 대상에서 제외한다.
+#### 5. Expression Density Analysis
+- **Excessive output format**: Select files with high code block ratio from `diagnostics.codeblock_lines` → read only those files to check output example ratio. Warn "excessive output examples" if it exceeds 20% of the total.
+- **Section compression potential**: Estimate section sizes from line gaps between headers in `diagnostics.headers`. Read only large sections to calculate "rule density" (rules / lines). Mark as "low-density section" if density is below 0.1.
+- **No-compress marker**: Exclude sections with `<!-- no-condense -->` comments from compression targets.
 
-#### 6. 에이전트 추상화 분석 (`agents/jarfis/*.md` 전용)
-- 이 진단은 `~/.claude/agents/jarfis/` 내 에이전트 파일에만 적용한다. 워크플로우 파일은 건너뛴다.
-- **⚠️ 에이전트 보호 규칙 (화이트리스트)**: 에이전트 파일에서 distill이 분석/수정할 수 있는 대상은 **`## Learned Rules` 섹션만**이다. 그 외 모든 섹션(Core Identity, Mindset & Disposition, Judgment Framework, Escalation Criteria, Behavioral Guidelines, Communication Style, Self-Verification, Output Format, 역할별 전문 섹션 등)은 **전체 읽기 전용**이다. condense/restructure/삭제/이동하지 않는다.
-- **프로젝트 한정 규칙 탐지**: `## Learned Rules` 섹션의 각 규칙에 upgrade의 scope 분류 기준을 적용한다:
-  - 특정 파일 경로/컴포넌트명/프로젝트명 언급 → `[project]`
-  - 특정 프레임워크 버전/설정 + 한정 표현 → `[project]`
-  - 범용 도구/기법/원칙 → `[universal]` (정상)
-- **상위 패턴 부재 탐지**: `[project]`로 분류된 규칙에서 추상화 가능한 상위 원칙이 같은 에이전트의 `[universal]` 규칙에 이미 존재하는지 확인한다. 없으면 "상위 패턴 미등록"으로 표시한다.
-  - 예: `moreden-pcweb commitlint가 한국어만 허용` → 상위: "프로젝트의 commitlint 설정을 커밋 전 확인하라" 부재
-- **에이전트 간 규칙 중복**: 여러 에이전트의 Learned Rules에서 같은 개념의 규칙이 반복되는지 확인한다. 같은 파일명/패턴이 2개↑ 에이전트에 등장하면 "크로스 에이전트 중복"으로 표시한다.
+#### 6. Agent Abstraction Analysis (`agents/jarfis/*.md` only)
+- This diagnostic applies only to agent files under `~/.claude/agents/jarfis/`. Skip workflow files.
+- **⚠️ Agent Protection Rule (Whitelist)**: The only section distill may analyze/modify in agent files is **`## Learned Rules`**. All other sections (Core Identity, Mindset & Disposition, Judgment Framework, Escalation Criteria, Behavioral Guidelines, Communication Style, Self-Verification, Output Format, role-specific expert sections, etc.) are **entirely read-only**. Do not condense/restructure/delete/move them.
+- **Project-specific rule detection**: Apply upgrade's scope classification criteria to each rule in the `## Learned Rules` section:
+  - Mentions specific file paths/component names/project names → `[project]`
+  - Specific framework versions/configurations + qualifying expressions → `[project]`
+  - General-purpose tools/techniques/principles → `[universal]` (normal)
+- **Missing parent pattern detection**: For rules classified as `[project]`, check whether an abstractable parent principle already exists among `[universal]` rules in the same agent. If absent, mark as "parent pattern not registered."
+  - Example: `moreden-pcweb commitlint only allows Korean` → parent: "Check the project's commitlint settings before committing" is absent
+- **Cross-agent rule duplication**: Check whether rules with the same concept are repeated across multiple agents' Learned Rules. If the same filename/pattern appears in 2+ agents, mark as "cross-agent duplication."
 
-#### 진단 결과 출력
+#### Diagnostic Results Output
 ```
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  JARFIS Distill — 진단 결과: [파일명]
+  JARFIS Distill — Diagnostic Results: [filename]
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-📊 인라인 템플릿: N개 코드블록, ~X,XXX토큰 (전체의 XX%)
-   외부화 후보: [목록]
+📊 Inline Templates: N code blocks, ~X,XXX tokens (XX% of total)
+   Externalization candidates: [list]
 
-📊 에이전트 프롬프트: N개, ~X,XXX토큰
-   외부화 후보: [목록]
+📊 Agent Prompts: N prompts, ~X,XXX tokens
+   Externalization candidates: [list]
 
-📊 중복 규칙: N개 그룹
-   - [규칙 요약]: L123, L456, L789에서 반복
+📊 Duplicate Rules: N groups
+   - [rule summary]: repeated at L123, L456, L789
 
-📊 구조 혼재: ## 헤더 N개 중 M개가 산출물 템플릿
+📊 Structural Mixing: M of N ## headers are artifact templates
 
-📊 표현 밀도: 저밀도 섹션 N개, 출력 예시 과다 M개
-   압축 후보: [목록]
+📊 Expression Density: N low-density sections, M excessive output examples
+   Compression candidates: [list]
 
-📊 에이전트 추상화 (agents/ 파일만):
-   [project] N개 규칙 — 프로젝트 한정 (이동 후보)
-   [universal] M개 규칙 — 범용 (정상)
-   상위 패턴 미등록: K건
-   크로스 에이전트 중복: J건
+📊 Agent Abstraction (agents/ files only):
+   [project] N rules — project-specific (migration candidates)
+   [universal] M rules — general-purpose (normal)
+   Missing parent patterns: K items
+   Cross-agent duplication: J items
 
-🎯 증류 예상 효과: ~XX,XXX tok → ~X,XXX tok (XX% 절감)
+🎯 Estimated distillation impact: ~XX,XXX tok → ~X,XXX tok (XX% reduction)
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
 
-### D-2: 증류 계획 수립
+### D-2: Develop Distillation Plan
 
-> **⚠️ 커맨드 파일 보호 규칙**: `commands/jarfis/*.md` 및 `commands/jarfis/prompts/*.md`는 distill의 **분석/측정 대상이지만, 수정 대상이 아니다**. 커맨드 파일의 Step/Phase/Gate 구조, 배너 포맷, 실행 로직은 워크플로우 정확성에 직결되므로, condense-section/compress-expression 등 어떤 축약 액션도 적용하지 않는다. 커맨드 파일에 토큰 절약이 필요하면, distill은 제안만 하고 실제 수정은 `/jarfis:sys-implement`를 통해서만 수행한다.
+> **⚠️ Command File Protection Rule**: `commands/jarfis/*.md` and `commands/jarfis/prompts/*.md` are **analysis/measurement targets for distill, but not modification targets**. The Step/Phase/Gate structure, banner formats, and execution logic in command files are critical to workflow correctness, so no condensation action (condense-section/compress-expression, etc.) may be applied. If token savings are needed in command files, distill may only suggest changes; actual modifications must be performed through `/jarfis:sys-implement`.
 
-진단 결과를 기반으로 증류 액션 목록을 생성한다:
+Generate a distillation action list based on the diagnostic results:
 
-| 액션 유형 | 설명 | 예시 |
-|-----------|------|------|
-| `externalize-template` | 인라인 템플릿을 별도 파일로 분리 | PRD 템플릿 → `templates/prd.md` |
-| `externalize-prompt` | 에이전트 프롬프트를 별도 파일로 분리 | Phase 5 QA 프롬프트 → `prompts/phase5-qa.md` |
-| `consolidate-rule` | 중복 규칙을 한 곳에 통합 | 상태 관리 → Execution Rules에만 |
-| `restructure-headers` | 산출물 헤더 레벨 조정 | `##` → 코드블록 내부 또는 별도 파일 |
-| `condense-section` | 저밀도 섹션의 장황한 표현을 핵심만 남겨 압축 | 42줄 전문가 소환 프로토콜 → 15줄 압축본 |
-| `compress-expression` | 출력 포맷 예시를 최소화 | 20줄 코드블록 포맷 예시 → 5줄 핵심 구조만 |
-| `abstract-rule` | 프로젝트 한정 규칙에서 상위 패턴 추출 + 원본 이동 | `moreden commitlint 한국어` → universal: `commitlint 설정 사전 확인`, project → `project-context.md`로 이동 |
-| `deduplicate-agent-rule` | 에이전트 간 중복 규칙 통합 | FE+TL 양쪽의 `CartWidget` 관련 규칙 → TL에만 유지 |
+| Action Type | Description | Example |
+|-------------|-------------|---------|
+| `externalize-template` | Extract inline template to a separate file | PRD template → `templates/prd.md` |
+| `externalize-prompt` | Extract agent prompt to a separate file | Phase 5 QA prompt → `prompts/phase5-qa.md` |
+| `consolidate-rule` | Consolidate duplicate rules to a single location | State management → Execution Rules only |
+| `restructure-headers` | Adjust artifact header levels | `##` → inside code block or separate file |
+| `condense-section` | Compress verbose low-density sections to essentials only | 42-line expert summoning protocol → 15-line condensed version |
+| `compress-expression` | Minimize output format examples | 20-line code block format example → 5-line core structure only |
+| `abstract-rule` | Extract parent pattern from project-specific rule + move original | `moreden commitlint Korean` → universal: `check commitlint settings before commit`, project → move to `project-context.md` |
+| `deduplicate-agent-rule` | Consolidate cross-agent duplicate rules | `CartWidget` rule in both FE+TL → keep in TL only |
 
-각 액션에 대해:
-- 원본 위치 (파일명, 라인 범위)
-- 대상 위치 (새 파일 경로 또는 통합 위치)
-- 원본에 남길 참조 문구 (예: "`templates/prd.md` 템플릿을 로드하여 사용")
-- 예상 절감 토큰
+For each action:
+- Source location (filename, line range)
+- Target location (new file path or consolidation point)
+- Reference text to leave in the original (e.g., "Load `templates/prd.md` template for use as artifact format")
+- Estimated token savings
 
-계획을 AskUserQuestion으로 확인:
+Confirm the plan with AskUserQuestion:
 ```
-"다음 증류 액션을 수행합니다:
+"The following distillation actions will be performed:
 
- 1. [externalize-template] PRD 템플릿 → templates/prd.md (~480tok 절감)
- 2. [externalize-prompt] Phase 5 QA → prompts/phase5-qa.md (~230tok 절감)
- 3. [consolidate-rule] 상태 관리 규칙 3곳 → Execution Rules 1곳 (~400tok 절감)
+ 1. [externalize-template] PRD template → templates/prd.md (~480tok savings)
+ 2. [externalize-prompt] Phase 5 QA → prompts/phase5-qa.md (~230tok savings)
+ 3. [consolidate-rule] State management rules in 3 locations → 1 location in Execution Rules (~400tok savings)
  ...
- 총 예상 절감: ~X,XXXtok (XX%)
+ Total estimated savings: ~X,XXXtok (XX%)
 
- 진행할까요?"
+ Proceed?"
 ```
-- 옵션: "전체 진행" / "선택적 진행" / "취소"
-- "선택적 진행" 시 개별 액션 선택 가능
+- Options: "Proceed with all" / "Selective proceed" / "Cancel"
+- "Selective proceed" allows individual action selection
 
-### D-2.5: Dialectic Review (토론 게이트)
+### D-2.5: Dialectic Review (Debate Gate)
 
-> ※ Dialectic Review 절차는 sys-implement.md §Step 1.5를 따른다 (정본).
-> **Delta**: distill에서는 예상 토큰 절감률로 게이트 진입을 판단한다.
+> Note: The Dialectic Review procedure follows sys-implement.md §Step 1.5 (canonical source).
+> **Delta**: In distill, the gate entry is determined by the estimated token reduction rate.
 
-**게이트 진입 조건**:
-- 예상 토큰 절감률 30% 이상 → 토론 실행
-- 30% 미만 → 토론 SKIP → D-3으로 이동
+**Gate entry condition**:
+- Estimated token reduction rate 30% or higher → run debate
+- Below 30% → SKIP debate → move to D-3
 
-**Delta (distill 고유)**:
-- Advocate prompt: "증류 계획의 토큰 절감 효과와 유지보수성 향상을 분석하세요"
-- Critic prompt: "외부화로 인한 맥락 손실 위험, 에이전트 참조 누락 가능성을 분석하세요"
+**Delta (distill-specific)**:
+- Advocate prompt: "Analyze the token savings effectiveness and maintainability improvements of the distillation plan"
+- Critic prompt: "Analyze the risk of context loss from externalization and potential for missed agent references"
 
-### D-3: 증류 실행
+### D-3: Execute Distillation
 
-승인된 액션을 순서대로 실행한다:
+Execute approved actions in order:
 
-#### externalize-template 실행
-1. 대상 코드블록/섹션을 별도 `.md` 파일로 추출한다.
-   - 저장 위치: `~/.claude/commands/jarfis/templates/[이름].md`
-2. 원본에서 해당 내용을 삭제하고, 참조 문구로 대체한다:
+#### externalize-template execution
+1. Extract the target code block/section to a separate `.md` file.
+   - Save location: `~/.claude/commands/jarfis/templates/[name].md`
+2. Delete the content from the original and replace with a reference:
    ```
-   > 📄 템플릿: `templates/[이름].md`를 읽어서 산출물 양식으로 사용한다.
+   > 📄 Template: Read `templates/[name].md` and use as artifact format.
    ```
-3. 원본 파일이 해당 템플릿을 사용하는 Phase의 에이전트 프롬프트에 파일 경로를 추가한다.
+3. Add the file path to the agent prompt of the Phase that uses the template in the original file.
 
-#### externalize-prompt 실행
-1. 에이전트 프롬프트 코드블록을 별도 `.md` 파일로 추출한다.
-   - 저장 위치: `~/.claude/commands/jarfis/prompts/[phase]-[역할].md`
-2. 원본에서 해당 프롬프트를 삭제하고, 로드 지시로 대체한다:
+#### externalize-prompt execution
+1. Extract the agent prompt code block to a separate `.md` file.
+   - Save location: `~/.claude/commands/jarfis/prompts/[phase]-[role].md`
+2. Delete the prompt from the original and replace with a load directive:
    ```
-   > 📄 프롬프트: `prompts/[phase]-[역할].md`를 읽어서 에이전트에 전달한다.
-   ```
-
-#### consolidate-rule 실행
-1. 중복 규칙 중 가장 완전한 버전을 "정본"으로 선택한다.
-2. 나머지 위치에서 중복 내용을 삭제하고, 정본 참조로 대체한다:
-   ```
-   > ※ 상태 관리 규칙은 "Execution Rules > Workflow State Management" 참조.
+   > 📄 Prompt: Read `prompts/[phase]-[role].md` and pass to the agent.
    ```
 
-#### restructure-headers 실행
-1. 산출물 템플릿 헤더의 `##` 레벨을 `###` 이하로 낮추거나, 외부화된 경우 헤더 자체를 제거한다.
+#### consolidate-rule execution
+1. Select the most complete version among duplicate rules as the "canonical" version.
+2. Delete duplicate content from remaining locations and replace with a canonical reference:
+   ```
+   > Note: For state management rules, see "Execution Rules > Workflow State Management".
+   ```
 
-#### condense-section 실행
-1. 저밀도 섹션의 내용을 분석하여 **핵심 규칙/지시만 남기고** 장황한 설명, 과도한 예시, 에지케이스 상세 기술을 제거한다.
-2. 압축 원칙: 의미 보존 — 에이전트가 동일하게 동작할 수 있는 최소한의 지시로 축약한다.
-3. `<!-- no-condense -->` 마커가 있는 섹션은 건너뛴다.
+#### restructure-headers execution
+1. Lower the `##` level of artifact template headers to `###` or below, or remove the header entirely if externalized.
 
-#### compress-expression 실행
-1. 출력 포맷 예시 코드블록에서 **구조(헤더, 섹션 구분)**만 남기고 샘플 데이터/장식을 제거한다.
-   - Before: 20줄 전체 포맷 예시 → After: 5줄 구조 스켈레톤
-2. 포맷의 의도가 불명확해지지 않는 선에서 최대한 줄인다.
+#### condense-section execution
+1. Analyze the content of low-density sections and **keep only core rules/directives**, removing verbose explanations, excessive examples, and detailed edge case descriptions.
+2. Compression principle: Preserve semantics — condense to the minimum directives needed for agents to behave identically.
+3. Skip sections with the `<!-- no-condense -->` marker.
 
-#### abstract-rule 실행
-1. `[project]`로 분류된 규칙에서 **상위 패턴(범용 원칙)**을 추출한다.
-   - 예: `moreden-pcweb commitlint가 한국어만 허용` → `프로젝트의 commitlint/lint 설정을 커밋 전 확인하라`
-2. 추출된 상위 패턴을 에이전트 `## Learned Rules` 섹션에 `[universal]` 규칙으로 추가한다.
-3. 원본 프로젝트 한정 규칙을 에이전트에서 **제거**하고, 해당 프로젝트의 `./.jarfis/project-context.md`의 `## Project-Specific Learned Rules` 섹션으로 이동한다.
-   - project-context.md가 없거나 해당 섹션이 없으면: AskUserQuestion으로 이동 대상을 확인하거나 규칙을 삭제할지 결정.
-4. 상위 패턴이 이미 `[universal]` 규칙에 존재하면: 원본만 제거 (상위 패턴 추가 불필요).
+#### compress-expression execution
+1. In output format example code blocks, **keep only structure (headers, section dividers)** and remove sample data/decorations.
+   - Before: 20-line full format example → After: 5-line structure skeleton
+2. Minimize as much as possible without making the format's intent unclear.
 
-#### deduplicate-agent-rule 실행
-1. 크로스 에이전트 중복으로 탐지된 규칙 중 **가장 관련 높은 에이전트**(해당 규칙의 주 도메인)에만 유지한다.
-2. 나머지 에이전트에서는 해당 규칙을 제거한다.
+#### abstract-rule execution
+1. Extract the **parent pattern (universal principle)** from rules classified as `[project]`.
+   - Example: `moreden-pcweb commitlint only allows Korean` → `Check the project's commitlint/lint settings before committing`
+2. Add the extracted parent pattern as a `[universal]` rule to the agent's `## Learned Rules` section.
+3. **Remove** the original project-specific rule from the agent and move it to the project's `./.jarfis/project-context.md` under the `## Project-Specific Learned Rules` section.
+   - If project-context.md or the section does not exist: Use AskUserQuestion to confirm the migration target or decide whether to delete the rule.
+4. If the parent pattern already exists in `[universal]` rules: only remove the original (no need to add the parent pattern).
 
-### D-4: 측정 (After) + 리포트
+#### deduplicate-agent-rule execution
+1. Among rules detected as cross-agent duplicates, keep only in the **most relevant agent** (the primary domain for that rule).
+2. Remove the rule from all other agents.
 
-1. **After 측정** — `jarfis_cli.py measure`로 재측정 (D-0과 동일, `--diagnostics` 불필요):
+### D-4: Measurement (After) + Report
+
+1. **After measurement** — re-measure with `jarfis_cli.py measure` (same as D-0, `--diagnostics` not needed):
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py measure \
      --exclude sys-distill.md,sys-sys-implement.md,jarfis-index.md,sys-health.md,sys-upgrade.md,sys-version.md \
      --index ~/.claude/commands/jarfis/jarfis-index.md
    ```
-   - D-0의 Before 데이터와 After 데이터를 `files[].{name, tokens_est}`로 비교한다.
+   - Compare Before data from D-0 with After data using `files[].{name, tokens_est}`.
 
-2. **Before/After 비교 리포트 출력**:
+2. **Before/After comparison report output**:
    ```
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-     JARFIS Distill 완료
+     JARFIS Distill Complete
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-   📊 Before / After 비교:
-   파일명              Before    After     절감
+   📊 Before / After Comparison:
+   Filename            Before    After     Reduction
    work.md             16,527    5,800    -65%
    ...
    ─────────────────────────────────────────
    TOTAL               29,234   XX,XXX    -XX%
 
-   ✅ 수행된 액션:
-      - [externalize-template] N건
-      - [externalize-prompt] N건
-      - [consolidate-rule] N건
+   ✅ Actions Performed:
+      - [externalize-template] N items
+      - [externalize-prompt] N items
+      - [consolidate-rule] N items
 
-   📂 생성된 파일:
+   📂 Files Created:
       - templates/prd.md
       - templates/tasks.md
       - prompts/phase5-qa.md
       ...
 
-   🔄 인덱스 갱신 완료
+   🔄 Index updated
 
    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
    ```
 
-3. **인덱스 갱신**: `jarfis-index.md`를 수정 결과에 맞게 갱신한다.
+3. **Update index**: Update `jarfis-index.md` to reflect the modification results.
 
-4. **버전 범프 (PATCH)** — `jarfis_cli.py version` 사용:
+4. **Version bump (PATCH)** — use `jarfis_cli.py version`:
    ```bash
-   python3 ~/.claude/scripts/jarfis_cli.py version patch "distill: 토큰 최적화 (증류 내역 요약)"
+   python3 ~/.claude/scripts/jarfis_cli.py version patch "distill: token optimization (distillation summary)"
    ```
-   - 스크립트가 VERSION, .jarfis-version, jarfis-index.md Version, CHANGELOG.md를 자동 갱신한다.
-   - 출력 JSON의 `previous`/`new` 버전을 리포트에 포함한다.
+   - The script auto-updates VERSION, .jarfis-version, jarfis-index.md Version, and CHANGELOG.md.
+   - Include the `previous`/`new` version from the output JSON in the report.
 
-5. **Repo 동기화**: 반드시 sync 스크립트를 실행한다:
+5. **Repo sync**: You must run the sync script:
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py sync
    ```
-   파일 삭제가 있었다면, 스크립트 실행 후 repo에서도 수동 삭제한다.
+   If files were deleted, manually delete them from the repo after running the script.
 
-6. **Commit + Push 명령어 제공** (직접 실행하지 않음):
-   - `git status`와 `git diff --stat`으로 repo의 변경 파일을 확인한다.
-   - 변경된 파일만 명시적으로 `git add`에 나열한다.
-   - 커밋 메시지: `distill: [증류 내역 요약] (v{새버전})`
-   - 버전 범프가 있었으면 태그 + `--tags` 포함
-   - `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>` 포함
-   - heredoc 대신 큰따옴표로 감싼 한 줄 메시지 사용 (쉘 호환성)
+6. **Provide Commit + Push command** (do not execute directly):
+   - Check the repo's changed files with `git status` and `git diff --stat`.
+   - Explicitly list only changed files in `git add`.
+   - Commit message: `distill: [distillation summary] (v{new_version})`
+   - If a version bump occurred, include tag + `--tags`
+   - Include `Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>`
+   - Use a double-quoted single-line message instead of heredoc (shell compatibility)
 
    ```
-   📋 아래 명령어를 복사해서 실행하세요:
+   📋 Copy and run the command below:
 
-   git add [파일1] [파일2] ... && git commit -m "distill: [요약] (v{버전})
+   git add [file1] [file2] ... && git commit -m "distill: [summary] (v{version})
 
-   Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{버전} && git push origin main --tags
+   Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{version} && git push origin main --tags
    ```
 
 ---
 
-## 증류 원칙
+## Distillation Principles
 
-1. **의미 보존**: 증류 전후로 워크플로우의 동작은 동일해야 한다. 규칙을 삭제하지 않고 통합/이동만 한다.
-2. **참조 연결**: 외부화된 내용은 반드시 원본에 로드 지시를 남긴다.
-3. **단계적 실행**: 사용자가 각 액션을 검토하고 선택할 수 있어야 한다.
-4. **측정 기반**: 감으로 정리하지 않고, 토큰 비용을 실측하여 효과를 검증한다.
-5. **롤백 가능**: Git 이력으로 롤백한다 (별도 백업 불필요).
+1. **Preserve semantics**: Workflow behavior must remain identical before and after distillation. Rules are consolidated/moved, never deleted.
+2. **Maintain reference links**: Externalized content must always leave a load directive in the original.
+3. **Incremental execution**: The user must be able to review and select each action.
+4. **Measurement-driven**: Do not tidy up by intuition; verify effectiveness by measuring actual token costs.
+5. **Rollback capable**: Use Git history for rollback (no separate backup needed).
