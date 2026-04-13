@@ -229,7 +229,7 @@ class TestEnsureProjectInOrgProfile:
             for p in projects:
                 rows += f"| {p} | {p} | unknown | {p}/.jarfis/project-profile.md |\n"
         else:
-            rows = "| (없음) | | | |\n"
+            rows = "| (none) | | | |\n"
         (jarfis / "org-profile.md").write_text(
             f"---\norg: {org_name}\nroot: {org_root}\n---\n\n"
             f"# Organization Profile\n\n## Projects\n\n"

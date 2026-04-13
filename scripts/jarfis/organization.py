@@ -86,7 +86,7 @@ def _create_org_files(org_root, projects, org_name=None):
     for p in projects:
         project_rows += f"| {p['name']} | {p['path']} | {p['type']} | {p['path']}/.jarfis/project-profile.md |\n"
     if not project_rows:
-        project_rows = "| (없음) | | | |\n"
+        project_rows = "| (none) | | | |\n"
 
     with open(profile_path, "w") as f:
         f.write(f"""---
@@ -111,31 +111,31 @@ created: {today}
         f.write(f"""# Wiki Index
 
 ## Quick Reference
-- 총 파일: 0개 (PO: 0, DESIGN: 0, TA: 0, QA: 0)
-- 최근 갱신: {today} (Organization 초기화)
-- 주요 변경: 초기 구조 생성
+- Total files: 0 (PO: 0, DESIGN: 0, TA: 0, QA: 0)
+- Last updated: {today} (Organization initialized)
+- Major changes: Initial structure created
 
-## 사용 가이드
-- 정보 우선순위: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
-- 이번 태스크가 다루는 주제: $DOCS_DIR 우선. 안 다루는 주제: wiki 유효.
+## Usage Guide
+- Information priority: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
+- Topics covered by current task: $DOCS_DIR first. Other topics: wiki is valid.
 
 ## Directory Map
 
 ### PO/ (0 files)
-핵심: (없음)
-상세: PO/_index.md
+Key: (none)
+Details: PO/_index.md
 
 ### DESIGN/ (0 files)
-핵심: (없음)
-상세: DESIGN/_index.md
+Key: (none)
+Details: DESIGN/_index.md
 
 ### TA/ (0 files)
-핵심: (없음)
-상세: TA/_index.md
+Key: (none)
+Details: TA/_index.md
 
 ### QA/ (0 files)
-핵심: (없음)
-상세: QA/_index.md
+Key: (none)
+Details: QA/_index.md
 """)
     created_files.append(index_path)
 
@@ -149,7 +149,7 @@ created: {today}
 
 | File | Summary | Projects | Updated |
 |------|---------|----------|---------|
-| (없음) | | | |
+| (none) | | | |
 """)
         created_files.append(section_index)
 
@@ -337,7 +337,7 @@ def ensure_project_in_org_profile(org_root, project_dir):
     # Add row to table
     new_row = f"| {name} | {rel_path} | {proj_type} | {rel_path}/.jarfis/project-profile.md |"
     # Remove empty placeholder row if present
-    content = content.replace("| (없음) | | | |", "")
+    content = content.replace("| (none) | | | |", "")
     # Insert before the last line or at end of table
     if content.rstrip().endswith("|"):
         content = content.rstrip() + "\n" + new_row + "\n"
@@ -429,7 +429,7 @@ def cmd_info(args):
         json_output({
             "registered": False,
             "org_root": org_root,
-            "message": "Organization이 등록되지 않았습니다.",
+            "message": "Organization is not registered.",
         })
         return
 

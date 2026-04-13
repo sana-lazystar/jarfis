@@ -153,11 +153,11 @@ def update_readme(repo_path):
         cmds = []
         in_section = False
         for line in index_content.split("\n"):
-            if "명령어 매핑" in line:
+            if "Command Mapping" in line:
                 in_section = True
                 continue
             if in_section:
-                if line.startswith("|") and "명령어" not in line and "---" not in line:
+                if line.startswith("|") and "Command" not in line and "---" not in line:
                     cols = [c.strip() for c in line.split("|")]
                     if len(cols) >= 5 and cols[1] and cols[3]:
                         cmds.append((cols[1], cols[3]))
@@ -187,7 +187,7 @@ def update_readme(repo_path):
         in_section = False
         in_block = False
         for line in index_content.split("\n"):
-            if "파일 구조" in line:
+            if "File Structure" in line:
                 in_section = True
                 continue
             if in_section:
@@ -198,7 +198,7 @@ def update_readme(repo_path):
                     break
                 if in_block:
                     # Strip size annotations
-                    clean = re.sub(r"\s*\(\d+줄[^)]*\)", "", line)
+                    clean = re.sub(r"\s*\(\d+\s*(줄|lines)[^)]*\)", "", line)
                     clean = re.sub(r"\s*\[NEW\]", "", clean)
                     clean = clean.rstrip()
                     struct_lines.append(clean)
@@ -209,10 +209,10 @@ def update_readme(repo_path):
                 "```",
             ] + struct_lines + [
                 "```\n",
-                "**설계 원칙**:\n",
-                "- **워크플로우 흐름**은 `work.md`에, **에이전트 프롬프트**는 `prompts/`에, **산출물 양식**은 `templates/`에 분리",
-                "- 에이전트 역할 프롬프트(`agents/`)와 워크플로우 프롬프트(`prompts/`)는 별개 — 역할은 고정, 태스크는 Phase마다 다름",
-                "- 학습 데이터는 로컬에만 존재 (Git repo에 포함되지 않음)",
+                "**Design Principles**:\n",
+                "- **Workflow flow** in `work.md`, **agent prompts** in `prompts/`, **output templates** in `templates/` — separated",
+                "- Agent role prompts (`agents/`) and workflow prompts (`prompts/`) are separate — roles are fixed, tasks vary per Phase",
+                "- Learning data exists only locally (not included in Git repo)",
             ]
             arch_content = "\n".join(arch_lines)
             readme = _replace_section(readme, "<!-- JARFIS-ARCHITECTURE-START -->", "<!-- JARFIS-ARCHITECTURE-END -->", arch_content)
@@ -228,7 +228,7 @@ def update_readme(repo_path):
             version_section = version_match.group(1).rstrip()
             changes_lines = [
                 "## Latest Changes\n",
-                "> 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.\n",
+                "> See [CHANGELOG.md](./CHANGELOG.md) for full change history.\n",
                 version_section,
             ]
             changes_content = "\n".join(changes_lines)
@@ -238,9 +238,9 @@ def update_readme(repo_path):
         with open(readme_path, "w") as f:
             f.write(readme)
         updated = 1
-        print(f"📝 README.md: 섹션 갱신")
+        print(f"📝 README.md: sections updated")
     else:
-        print(f"📝 README.md: 이미 최신 (변경 없음)")
+        print(f"📝 README.md: already up-to-date (no changes)")
 
     return updated
 
@@ -265,8 +265,8 @@ def main(args):
     update_readme(repo_path)
 
     if synced > 0:
-        print(f"🔄 Repo 동기화: {synced}개 파일 → {repo_path}")
+        print(f"🔄 Repo sync: {synced} files → {repo_path}")
         for c in changes:
             print(c)
     else:
-        print(f"✅ Repo 동기화: 이미 최신 (변경 없음)")
+        print(f"✅ Repo sync: already up-to-date (no changes)")

@@ -276,7 +276,7 @@ class TestFormatPretty:
         data = {"query": "없는검색어", "results": []}
         pretty = format_pretty(data)
         assert "없는검색어" in pretty
-        assert "결과 없음" in pretty
+        assert "No results" in pretty
 
     def test_stale_warning(self):
         data = {

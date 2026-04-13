@@ -146,7 +146,7 @@ def main(args):
 
             # Prompt pattern detection
             prompt_patterns = []
-            prompt_re = re.compile(r"📄 프롬프트:|📄 템플릿:|Task prompt:|prompt:")
+            prompt_re = re.compile(r"📄 Prompt:|📄 Template:|Task prompt:|prompt:")
             for idx, line in enumerate(content_lines, 1):
                 if prompt_re.search(line):
                     prompt_patterns.append({"line": idx, "text": line.strip()})

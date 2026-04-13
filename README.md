@@ -259,27 +259,28 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 <!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                   | Description                                            |
-| ------------------------- | ------------------------------------------------------ |
-| `/jarfis:work-meeting`    | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
-| `/jarfis:work`            | 기획→설계→구현→리뷰 전체 워크플로우                                   |
-| `/jarfis:project-init`    | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
-| `/jarfis:project-update`  | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
-| `/jarfis:sys-upgrade`     | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
-| `/jarfis:sys-health`      | 좀비 Claude 프로세스 진단/정리                                   |
-| `/jarfis:sys-distill`     | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
-| `/jarfis:work-continue`   | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
-| `/jarfis:org`             | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트)                |
-| `/jarfis:org-init`        | Organization 초기화 (스캔 + wiki 생성)                        |
-| `/jarfis:wiki-storyboard` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
-| `/jarfis:search-setup`    | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)           |
-| `/jarfis:search`          | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능)                 |
-| `/jarfis:search-index`    | 전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki+meetings+works)          |
-| `/jarfis:level-check`     | AI-native 개발자 성숙도 평가 (자동 수집 + 인터뷰, 7차원 10점)            |
-| `/jarfis:locale`          | 현재 locale 설정 조회                                        |
-| `/jarfis:locale-set`      | locale 설정 변경 (ko/en/ja)                                |
-| `/jarfis:sys-implement`   | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
-| `/jarfis:sys-version`     | 버전 확인/업데이트/특정 버전 설치                                    |
+| Command                   | Description                                                                                 |
+| ------------------------- | ------------------------------------------------------------------------------------------- |
+| `/jarfis`                 | Display command list                                                                        |
+| `/jarfis:work-meeting`    | Planning kickoff meeting (PO/TL open discussion -> artifact generation)                     |
+| `/jarfis:work`            | Full workflow: planning -> design -> implementation -> review                               |
+| `/jarfis:project-init`    | Project analysis -> generate `./.jarfis/project-profile.md`                                 |
+| `/jarfis:project-update`  | Incremental profile update (commit hash-based, date fallback)                               |
+| `/jarfis:sys-upgrade`     | Learning item CRUD + apply to agent/workflow prompts                                        |
+| `/jarfis:sys-health`      | Zombie Claude process diagnosis/cleanup                                                     |
+| `/jarfis:sys-distill`     | Prompt distillation — token efficiency analysis/optimization                                |
+| `/jarfis:work-continue`   | Follow-up on completed workflows (Fix/Extend mode, --workflow/--mode flags)                 |
+| `/jarfis:org`             | Full registered Org list (orgs.json based, CWD highlight)                                   |
+| `/jarfis:org-init`        | Organization initialization (scan + wiki creation)                                          |
+| `/jarfis:wiki-storyboard` | Design catalog browsing (wiki/DESIGN -> browser)                                            |
+| `/jarfis:search-setup`    | Semantic search installation (venv + sentence-transformers one-step)                        |
+| `/jarfis:search`          | Semantic unified search (meetings+works+wiki, filterable)                                   |
+| `/jarfis:search-index`    | Full Org semantic index batch creation/refresh (wiki+meetings+works)                        |
+| `/jarfis:level-check`     | AI-native developer maturity assessment (auto-collection + interview, 7-dimension 10-point) |
+| `/jarfis:locale`          | View current locale setting                                                                 |
+| `/jarfis:locale-set`      | Change locale setting (ko/en/ja)                                                            |
+| `/jarfis:sys-implement`   | JARFIS system self-modification/feature addition + version bump                             |
+| `/jarfis:sys-version`     | Version check/update/install specific version                                               |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -361,65 +362,65 @@ bash install.sh --version 1.0.0
 
 ```
 ~/.claude/commands/
-├── jarfis.md                      # 메인 도우미 — 명령어 목록 + 예시 A/B
+├── jarfis.md                      # Main helper — command list + examples A/B
 └── jarfis/
-    ├── jarfis-index.md            # 이 파일 — JARFIS 시스템 현황
-    ├── sys-implement.md               # JARFIS 자체 수정 명령어 + Dialectic Review 래칫 수렴 (분석→검증→이력→개선 루프) + Python TDD 규칙
-    ├── work-meeting.md                 # 기획 킥오프 미팅 + wiki 로딩 + --prev-meeting 이전 미팅 참조 (PO/TL 토론, 230줄)
-    ├── work.md                    # 핵심: 워크플로우 오케스트레이션 (~830줄, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain 분기)
-    ├── project-init.md            # 프로젝트 프로필 생성
-    ├── project-update.md          # 프로필 증분 갱신 — commit hash 기반 변경 감지
-    ├── sys-upgrade.md                 # 학습 항목 관리 + 3블록 독립 구조 + Dialectic Review + 에이전트 화이트리스트 보호
-    ├── sys-distill.md                 # 프롬프트 증류 + 에이전트 화이트리스트 보호 + 커맨드 분석 전용 + Dialectic Review
-    ├── sys-version.md                 # 버전 관리/업데이트
-    ├── work-continue.md                # 완료된 워크플로우 후속 작업 — Fix/Extend + Fix 테스트 래칫 + wiki 2/4-Step + Workflow Metrics
-    ├── org.md                     # Organization 전체 목록 — orgs.json 기반 + 미등록 Org 자동 발견 + CWD 하이라이트
-    ├── org-init.md                # Organization 초기화 — 스캔 + wiki 생성 + 시맨틱 인덱스 안내
-    ├── wiki-storyboard.md              # 디자인 카탈로그 브라우징 명령어
-    ├── search.md                 # 시맨틱 통합 검색 — meetings/works/wiki 필터링 + 메모리 부족 LLM 폴백
-    ├── search-setup.md     # 시맨틱 검색 설치 — venv + sentence-transformers 원스텝
-    ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드
-    ├── level-check.md                 # AI-native 개발자 성숙도 평가 — level_check.py 자체 수집 + 인터뷰, 7차원 10점
-    ├── sys-health.md                  # 좀비 프로세스 진단
-    ├── locale.md                      # Locale 조회 — 현재 워크플로우 언어 설정 표시
-    ├── locale-set.md                  # Locale 설정 — ko/en/ja 언어 변경
-    ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
-    │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙
-    │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안
-    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path 프롬프트 (복수 Figma 페이지 병렬 처리, 섹션별 v5 생성, Step 3-F0~3-F4)
-    │   ├── phase4.md              # Phase 4 Implementation 프롬프트 + TDD Step 4-0.5 + Ratchet + TEST_RESULT/TEST_MODIFIED 보고
-    │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev 서버 체크
-    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status 주입 + TDD 경량화 + test_modifications 검증 + Fix 원설계 참조 + UX Designer 이중 비교
-    │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-트랙 갱신 + 시맨틱 인덱스 갱신
-    │   ├── wiki-loading.md        # Wiki 로딩 공통 모듈 — 2-Step/4-Step + 시맨틱 검색
-    │   └── continue-extend.md    # Continue Extend 모드 PO/Architect/TL/QA 프롬프트
-    ├── domains/                   # v3.0 Domain Pack 인프라
-    │   ├── _schema.yaml           # Domain Pack 규격 (Published Language, EP1-7)
-    │   ├── web.yaml               # Web Development 도메인 팩
-    │   ├── web/skills/            # Web 도메인 Skills
-    │   │   ├── react.md           # React 패턴 + 상태관리 + Next.js
+    ├── jarfis-index.md            # This file — JARFIS system overview
+    ├── sys-implement.md               # JARFIS self-modification command + Dialectic Review ratchet convergence (analyze→verify→history→improve loop) + Python TDD rules
+    ├── work-meeting.md                 # Planning kickoff meeting + wiki loading + --prev-meeting previous meeting reference (PO/TL discussion, 230 lines)
+    ├── work.md                    # Core: workflow orchestration (~830 lines, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain branching)
+    ├── project-init.md            # Project profile creation
+    ├── project-update.md          # Incremental profile update — commit hash-based change detection
+    ├── sys-upgrade.md                 # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection
+    ├── sys-distill.md                 # Prompt distillation + agent whitelist protection + command analysis only + Dialectic Review
+    ├── sys-version.md                 # Version management/updates
+    ├── work-continue.md                # Follow-up on completed workflows — Fix/Extend + Fix test ratchet + wiki 2/4-Step + Workflow Metrics
+    ├── org.md                     # Full organization list — orgs.json based + unregistered Org auto-discovery + CWD highlight
+    ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide
+    ├── wiki-storyboard.md              # Design catalog browsing command
+    ├── search.md                 # Semantic unified search — meetings/works/wiki filtering + low-memory LLM fallback
+    ├── search-setup.md     # Semantic search installation — venv + sentence-transformers one-step
+    ├── search-index.md    # Full Org semantic index batch creation/refresh — wiki+meetings+works + --current + memory guard
+    ├── level-check.md                 # AI-native developer maturity assessment — level_check.py auto-collection + interview, 7-dimension 10-point
+    ├── sys-health.md                  # Zombie process diagnosis
+    ├── locale.md                      # Locale query — display current workflow language setting
+    ├── locale-set.md                  # Locale setting — change language to ko/en/ja
+    ├── prompts/                   # Externalized agent prompts (generated by distill)
+    │   ├── phase1.md              # Phase 1 Discovery prompt + PO wiki reference + additional tasks + $MEETING_EXTRA injection + PRD Ratchet rules
+    │   ├── phase2.md              # Phase 2&3 Architecture/UX prompt + wiki reference + HTML mockup
+    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path prompt (parallel multi-Figma page processing, per-section v5 generation, Step 3-F0~3-F4)
+    │   ├── phase4.md              # Phase 4 Implementation prompt + TDD Step 4-0.5 + Ratchet + TEST_RESULT/TEST_MODIFIED reporting
+    │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + dev server check
+    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status injection + TDD lightweight + test_modifications validation + Fix original design reference + UX Designer dual comparison
+    │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-track update + semantic index refresh
+    │   ├── wiki-loading.md        # Wiki loading shared module — 2-Step/4-Step + semantic search
+    │   └── continue-extend.md    # Continue Extend mode PO/Architect/TL/QA prompt
+    ├── domains/                   # v3.0 Domain Pack infrastructure
+    │   ├── _schema.yaml           # Domain Pack specification (Published Language, EP1-7)
+    │   ├── web.yaml               # Web Development domain pack
+    │   ├── web/skills/            # Web domain Skills
+    │   │   ├── react.md           # React patterns + state management + Next.js
     │   │   ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
-    │   │   ├── browser.md         # 크로스 브라우저 + 성능 + 모바일
-    │   │   ├── nodejs.md          # Node.js 런타임 + TypeScript + DB
-    │   │   ├── express.md         # Express/NestJS + API 설계
-    │   │   └── biome-lint.md      # Biome 린팅/포매팅 패턴
-    │   ├── desktop.yaml           # Desktop Development (Tauri) 도메인 팩
-    │   └── desktop/skills/        # Desktop 도메인 Skills
+    │   │   ├── browser.md         # Cross-browser + performance + mobile
+    │   │   ├── nodejs.md          # Node.js runtime + TypeScript + DB
+    │   │   ├── express.md         # Express/NestJS + API design
+    │   │   └── biome-lint.md      # Biome linting/formatting patterns
+    │   ├── desktop.yaml           # Desktop Development (Tauri) domain pack
+    │   └── desktop/skills/        # Desktop domain Skills
     │       ├── rust.md            # Ownership/borrowing, error handling, async
     │       ├── tauri-backend.md   # #[tauri::command], IPC, serde, plugins
-    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView 제약
-    │       └── cargo-clippy.md    # Clippy 규칙, deny 설정
-    └── templates/                 # 외부화된 산출물 템플릿 (distill이 생성)
-        ├── jarfis-state-schema.md # .jarfis-state.json 구조 스키마 + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
-        ├── learnings.md           # jarfis-learnings.md 템플릿 — Universal/Project-Specific 구조
-        ├── project-context.md     # project-context.md 템플릿
-        ├── project-profile.md     # 프로젝트 프로필 템플릿 + org 역참조
-        ├── meeting-artifacts.md   # 미팅 산출물 4종 템플릿
-        ├── org-profile.md         # Organization 프로필 템플릿
-        ├── wiki-index.md          # Wiki INDEX.md 초기 템플릿
-        ├── wiki-section-index.md  # Wiki 섹션 _index.md 템플릿
-        ├── ux-direction.md        # UX 방향서 템플릿
-        └── design-html-meta.md    # HTML 시안 메타 주석 템플릿
+    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView constraints
+    │       └── cargo-clippy.md    # Clippy rules, deny configuration
+    └── templates/                 # Externalized artifact templates (generated by distill)
+        ├── jarfis-state-schema.md # .jarfis-state.json structure schema + PRD ratchet + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
+        ├── learnings.md           # jarfis-learnings.md template — Universal/Project-Specific structure
+        ├── project-context.md     # project-context.md template
+        ├── project-profile.md     # Project profile template + org back-reference
+        ├── meeting-artifacts.md   # Meeting artifact 4-type templates
+        ├── org-profile.md         # Organization profile template
+        ├── wiki-index.md          # Wiki INDEX.md initial template
+        ├── wiki-section-index.md  # Wiki section _index.md template
+        ├── ux-direction.md        # UX direction document template
+        └── design-html-meta.md    # HTML mockup meta comment template
 
 ~/.claude/agents/jarfis/           # JARFIS agent prompts (referenced by work.md) — ALL ENGLISH + $LOCALE output
 ├── personas/                      # v3.0 Persona — role-specific cognitive frameworks
@@ -445,11 +446,11 @@ bash install.sh --version 1.0.0
 └── senior-ux-designer.md          # UX/brand design + SVG assets + quality gate + Figma rules agent
 ```
 
-**설계 원칙**:
+**Design Principles**:
 
-- **워크플로우 흐름**은 `work.md`에, **에이전트 프롬프트**는 `prompts/`에, **산출물 양식**은 `templates/`에 분리
-- 에이전트 역할 프롬프트(`agents/`)와 워크플로우 프롬프트(`prompts/`)는 별개 — 역할은 고정, 태스크는 Phase마다 다름
-- 학습 데이터는 로컬에만 존재 (Git repo에 포함되지 않음)
+- **Workflow flow** in `work.md`, **agent prompts** in `prompts/`, **output templates** in `templates/` — separated
+- Agent role prompts (`agents/`) and workflow prompts (`prompts/`) are separate — roles are fixed, tasks vary per Phase
+- Learning data exists only locally (not included in Git repo)
 <!-- JARFIS-ARCHITECTURE-END -->
 
 ---
@@ -471,11 +472,11 @@ Semantic Versioning을 따릅니다.
 <!-- JARFIS-LATEST-CHANGES-START -->
 ## Latest Changes
 
-> 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
+> See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.5.1] - 2026-04-13
+## [3.5.2] - 2026-04-13
 
-- implement: Templates and domain skills migrated to English — 10 templates + 13 domain/skill files
+- implement: Python scripts and hooks migrated to English — 8 source files + 3 test files + 1 hook
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -55,7 +55,7 @@ def main(args):
     if has_profile:
         log(f"Profile found: {profile_path}")
     else:
-        warnings.append("프로젝트 프로필이 없습니다. /jarfis:project-init으로 생성하세요.")
+        warnings.append("No project profile found. Create one with /jarfis:project-init.")
         profile_path = None
         log("Profile not found")
 
@@ -104,14 +104,14 @@ def main(args):
             uncommitted = len([l for l in result.stdout.strip().split("\n") if l.strip()])
             if uncommitted > 0:
                 has_uncommitted = True
-                warnings.append(f"커밋되지 않은 변경 {uncommitted}개가 있습니다.")
+                warnings.append(f"{uncommitted} uncommitted changes detected.")
             log(f"Git: branch={branch}, uncommitted={uncommitted}")
     except FileNotFoundError:
-        warnings.append("Git 저장소가 아닙니다.")
+        warnings.append("Not a Git repository.")
         log("Git not available")
 
-    if not git_available and "Git 저장소가 아닙니다." not in warnings:
-        warnings.append("Git 저장소가 아닙니다.")
+    if not git_available and "Not a Git repository." not in warnings:
+        warnings.append("Not a Git repository.")
 
     # Org detection
     org_root = find_org_root(project_dir)
@@ -131,7 +131,7 @@ def main(args):
             has_wiki = True
             wiki_index = wiki_index_path
         else:
-            warnings.append("Organization이 등록되었으나 wiki/INDEX.md가 없습니다.")
+            warnings.append("Organization is registered but wiki/INDEX.md is missing.")
 
         # Resolve org name and auto-register if needed
         org_name = _resolve_org_name(project_dir)

@@ -161,7 +161,7 @@ for org_entry in os.listdir(orgs_dir):
 
 if has_incomplete:
     print()
-    print('> Wiki 미반영 워크플로우가 있습니다. /jarfis:work 실행 시 Phase 0에서 갱신 여부를 확인합니다.')
+    print('> Unreflected workflows exist in wiki. On next /jarfis:work run, Phase 0 will check whether to update.')
 " 2>/dev/null
 fi
 

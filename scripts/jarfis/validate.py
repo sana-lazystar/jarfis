@@ -167,17 +167,17 @@ def main(args):
         required_roles = data.get("required_roles", {})
         ux_needed = required_roles.get("ux_designer", False)
 
-        # Phase 1 완료 + UX Designer 필요 → ux-direction.md 존재 확인
+        # Phase 1 complete + UX Designer needed → check ux-direction.md exists
         if phases.get("1", {}).get("status") == "completed" and ux_needed:
             ux_dir_path = os.path.join(docs_dir, "ux-direction.md")
             if docs_dir and not os.path.isfile(ux_dir_path):
-                all_warnings.append("Phase 1 완료 + UX Designer 필요이나 ux-direction.md 없음")
+                all_warnings.append("Phase 1 complete + UX Designer needed but ux-direction.md missing")
 
-        # Phase 3 완료 + UX Designer 필요 → design/ 디렉토리 존재 확인
+        # Phase 3 complete + UX Designer needed → check design/ directory exists
         if phases.get("3", {}).get("status") == "completed" and ux_needed:
             design_dir = os.path.join(docs_dir, "design")
             if docs_dir and not os.path.isdir(design_dir):
-                all_warnings.append("Phase 3 완료 + UX Designer 필요이나 design/ 디렉토리 없음")
+                all_warnings.append("Phase 3 complete + UX Designer needed but design/ directory missing")
 
     # 4. Wiki structure validation (optional, warning only)
     if os.path.isfile(state_file):
@@ -205,7 +205,7 @@ def main(args):
             for wf in wiki_files:
                 full_path = os.path.join(wiki_dir, wf)
                 if not os.path.isfile(full_path):
-                    all_warnings.append(f"Wiki 구조 누락: {wf}")
+                    all_warnings.append(f"Wiki structure missing: {wf}")
 
     # 5. Git status
     if os.path.isfile(state_file):

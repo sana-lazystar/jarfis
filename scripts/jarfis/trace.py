@@ -1,10 +1,10 @@
 """JARFIS Trace — performance tracing for agent invocations.
 
-Monitor App의 주요 데이터 소스. audit.jsonl과 관심사 분리:
-- audit.jsonl = 워크플로우 이벤트 (Phase 전환, 게이트 결과)
-- traces.jsonl = 성능 메트릭 (토큰 수, 소요 시간, 에이전트별 상세)
+Primary data source for Monitor App. Separated concerns from audit.jsonl:
+- audit.jsonl = workflow events (Phase transitions, gate results)
+- traces.jsonl = performance metrics (token counts, elapsed time, per-agent details)
 
-Note (P9): traces.jsonl은 복구 소스가 아님. 누락/손상 시 기능 영향 없음.
+Note (P9): traces.jsonl is not a recovery source. Missing/corrupt files have no functional impact.
 """
 
 import json

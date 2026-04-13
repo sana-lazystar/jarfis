@@ -115,11 +115,11 @@ def _ensure_dependencies():
         mps_gb = _get_mps_allocated_gb()
         effective = available - mps_gb
         if effective < threshold:
-            mps_note = f" (MPS GPU: {mps_gb:.1f}GB 사용 중)" if mps_gb > 0.1 else ""
+            mps_note = f" (MPS GPU: {mps_gb:.1f}GB in use)" if mps_gb > 0.1 else ""
             json_error(
-                f"메모리 부족: 가용 {effective:.1f}GB{mps_note} / 최소 {threshold:.0f}GB 필요. "
-                "SentenceTransformer를 로드할 수 없습니다. "
-                "다른 앱을 종료하거나 JARFIS_MEMORY_THRESHOLD_GB 환경변수로 임계값을 조정하세요.",
+                f"Insufficient memory: available {effective:.1f}GB{mps_note} / minimum {threshold:.0f}GB required. "
+                "Cannot load SentenceTransformer. "
+                "Close other apps or adjust threshold via JARFIS_MEMORY_THRESHOLD_GB env variable.",
                 hint="memory_insufficient",
             )
 
@@ -535,7 +535,7 @@ def format_pretty(data):
         lines.append("")
 
     if not results:
-        lines.append("  결과 없음")
+        lines.append("  No results")
     else:
         for i, r in enumerate(results, 1):
             source = r.get("source", "?")

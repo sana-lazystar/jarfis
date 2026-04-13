@@ -23,7 +23,7 @@ class TestPreflight:
         main([str(tmp_path)])
         output = json.loads(capsys.readouterr().out)
         assert output["has_profile"] is False
-        assert any("프로필" in w for w in output["warnings"])
+        assert any("No project profile" in w for w in output["warnings"])
 
     def test_profile_found(self, jarfis_env, tmp_path, capsys):
         jarfis_dir = tmp_path / ".jarfis"
@@ -126,7 +126,7 @@ class TestPreflight:
         (jarfis_dir / "org-profile.md").write_text(
             "---\norg: AutoAddOrg\n---\n\n# Organization Profile\n\n## Projects\n\n"
             "| Name | Path | Type | Profile |\n|------|------|------|---------|"
-            "\n| (없음) | | | |\n"
+            "\n| (none) | | | |\n"
         )
         wiki = jarfis_dir / "wiki"
         wiki.mkdir()

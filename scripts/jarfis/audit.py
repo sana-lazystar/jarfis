@@ -1,10 +1,10 @@
 """JARFIS Audit — append-only event log for workflow observability.
 
-Hybrid state model (래칫 R2):
-- state.json: 직접 기록, 현재 상태 즉시 조회 (기존 유지)
-- audit.jsonl: append-only 감사 로그, 디버깅/Monitor App용
+Hybrid state model (Ratchet R2):
+- state.json: direct write, immediate current-state lookup (unchanged)
+- audit.jsonl: append-only audit log, for debugging/Monitor App
 
-Note (P9): audit.jsonl은 복구 소스가 아님. 누락/손상 시 기능 영향 없음.
+Note (P9): audit.jsonl is not a recovery source. Missing/corrupt files have no functional impact.
 """
 
 import json

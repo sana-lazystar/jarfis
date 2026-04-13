@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.2] - 2026-04-13
+
+- implement: Python scripts and hooks migrated to English — 8 source files + 3 test files + 1 hook
+
 ## [3.5.1] - 2026-04-13
 
 - implement: Templates and domain skills migrated to English — 10 templates + 13 domain/skill files
