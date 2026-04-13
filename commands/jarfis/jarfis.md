@@ -38,6 +38,9 @@ JARFIS 명령어 도우미입니다. 아래 사용 가능한 명령어 목록을
   /jarfis:search-index [--current]                  [Org]
     전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki + meetings + works)
 
+  /jarfis:locale          현재 locale 설정 조회
+  /jarfis:locale-set      locale 설정 (ko/en/ja)
+
   /jarfis:level-check     AI-native 개발자 성숙도 평가
   /jarfis:sys-upgrade     학습 항목 관리 + 에이전트 적용
   /jarfis:sys-distill     토큰 효율 분석 + 최적화
