@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.4.0] - 2026-04-13
+
+- implement: Agent personas migrated to English — all 20 agent files (11 senior + 9 persona) converted with $LOCALE directive
+
 ## [3.3.0] - 2026-04-13
 
 - implement: Phase prompts migrated to English — all 9 prompt files (phase1-6, phase3-figma, phase4-5, continue-extend, wiki-loading) converted with Locale Output directive

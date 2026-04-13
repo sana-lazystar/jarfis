@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-13 | Version: 3.3.0
+> 수동 편집하지 마세요. Last updated: 2026-04-13 | Version: 3.4.0
 
 ## 파일 구조
 ```
@@ -66,28 +66,28 @@
         ├── ux-direction.md        # UX 방향서 템플릿 (36줄) [NEW]
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿 (27줄) [NEW]
 
-~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
-├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크 [NEW]
-│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
-│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
-│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
-│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
-│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
-│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
-│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
-│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
-│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
-├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트 (55줄)
-├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트 (56줄)
-├── senior-backend-engineer.md     # BE 구현 에이전트 (102줄)
-├── senior-frontend-engineer.md    # FE 구현 에이전트 (120줄)
-├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트 (92줄)
-├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트 (142줄)
-├── tech-lead.md                   # TL 코드베이스 건강 + 기술 판단 에이전트 (213줄)
-├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트 (168줄)
-├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트 (191줄)
-├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트 (183줄)
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 + reference.png 생성 규칙 + Figma 8규칙 에이전트
+~/.claude/agents/jarfis/           # JARFIS agent prompts (referenced by work.md) — ALL ENGLISH + $LOCALE output
+├── personas/                      # v3.0 Persona — role-specific cognitive frameworks
+│   ├── product-owner.md           # PO perspective (business value, JTBD)
+│   ├── technical-architect.md     # Architect perspective (system design, trade-offs)
+│   ├── tech-lead.md               # TL perspective (code quality, technical judgment)
+│   ├── frontend-developer.md      # FE perspective (browser/UI, design fidelity)
+│   ├── backend-developer.md       # BE perspective (systems thinking, DB, API)
+│   ├── devops-engineer.md         # DevOps perspective (infra, reliability, cost)
+│   ├── ux-designer.md             # UX perspective (user empathy, visual hierarchy)
+│   ├── qa-engineer.md             # QA perspective (quality, risk, compatibility)
+│   └── security-engineer.md       # Security perspective (threat modeling, defensive coding)
+├── jarfis-advocate.md             # Dialectic Review — change advocate agent
+├── jarfis-critic.md               # Dialectic Review — change critic agent
+├── senior-backend-engineer.md     # BE implementation agent
+├── senior-frontend-engineer.md    # FE implementation agent
+├── senior-devops-sre-engineer.md  # DevOps implementation agent
+├── senior-product-owner.md        # PO decision-making / PRD / UX direction agent
+├── tech-lead.md                   # TL codebase health + technical judgment agent
+├── technical-architect.md         # Architecture design + technical strategy agent
+├── senior-security-engineer.md    # Security review + defensive coding verification agent
+├── senior-qa-engineer.md          # QA review + risk assessment agent
+└── senior-ux-designer.md          # UX/brand design + SVG assets + quality gate + Figma rules agent
 ```
 
 ## 명령어 매핑

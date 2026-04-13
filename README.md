@@ -263,23 +263,23 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | ------------------------- | ------------------------------------------------------ |
 | `/jarfis:work-meeting`    | 기획 킥오프 미팅 (PO/TL 자유 토론 → 산출물 생성)                       |
 | `/jarfis:work`            | 기획→설계→구현→리뷰 전체 워크플로우                                   |
-| `/jarfis:work-continue`   | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
 | `/jarfis:project-init`    | 프로젝트 분석 → `./.jarfis/project-profile.md` 생성            |
 | `/jarfis:project-update`  | 기존 프로필 증분 갱신 (commit hash 기반, 날짜 fallback)             |
+| `/jarfis:sys-upgrade`     | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
+| `/jarfis:sys-health`      | 좀비 Claude 프로세스 진단/정리                                   |
+| `/jarfis:sys-distill`     | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
+| `/jarfis:work-continue`   | 완료된 워크플로우 후속 작업 (Fix/Extend 모드, --workflow/--mode 플래그) |
 | `/jarfis:org`             | 등록된 전체 Org 목록 (orgs.json 기반, CWD 하이라이트)                |
 | `/jarfis:org-init`        | Organization 초기화 (스캔 + wiki 생성)                        |
 | `/jarfis:wiki-storyboard` | 디자인 카탈로그 브라우징 (wiki/DESIGN → 브라우저)                     |
-| `/jarfis:search`          | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능)                 |
 | `/jarfis:search-setup`    | 시맨틱 검색 설치 (venv + sentence-transformers 원스텝)           |
+| `/jarfis:search`          | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능)                 |
 | `/jarfis:search-index`    | 전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki+meetings+works)          |
+| `/jarfis:level-check`     | AI-native 개발자 성숙도 평가 (자동 수집 + 인터뷰, 7차원 10점)            |
 | `/jarfis:locale`          | 현재 locale 설정 조회                                        |
 | `/jarfis:locale-set`      | locale 설정 변경 (ko/en/ja)                                |
-| `/jarfis:level-check`     | AI-native 개발자 성숙도 평가 (자동 수집 + 인터뷰, 7차원 10점)            |
-| `/jarfis:sys-upgrade`     | 학습항목 CRUD + 에이전트/워크플로우 프롬프트에 적용                        |
-| `/jarfis:sys-distill`     | 프롬프트 증류 — 토큰 효율 분석/최적화                                 |
 | `/jarfis:sys-implement`   | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프                         |
 | `/jarfis:sys-version`     | 버전 확인/업데이트/특정 버전 설치                                    |
-| `/jarfis:sys-health`      | 좀비 Claude 프로세스 진단/정리                                   |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -421,28 +421,28 @@ bash install.sh --version 1.0.0
         ├── ux-direction.md        # UX 방향서 템플릿
         └── design-html-meta.md    # HTML 시안 메타 주석 템플릿
 
-~/.claude/agents/jarfis/           # JARFIS 에이전트 프롬프트 (work.md에서 참조)
-├── personas/                      # v3.0 Persona — 역할별 인지 프레임워크
-│   ├── product-owner.md           # PO 관점 (비즈니스 가치, JTBD)
-│   ├── technical-architect.md     # 아키텍트 관점 (시스템 설계, 트레이드오프)
-│   ├── tech-lead.md               # TL 관점 (코드 품질, 기술 판단)
-│   ├── frontend-developer.md      # FE 관점 (브라우저/UI, 디자인 충실도)
-│   ├── backend-developer.md       # BE 관점 (시스템 사고, DB, API)
-│   ├── devops-engineer.md         # DevOps 관점 (인프라, 안정성, 비용)
-│   ├── ux-designer.md             # UX 관점 (사용자 공감, 시각 계층)
-│   ├── qa-engineer.md             # QA 관점 (품질, 리스크, 호환성)
-│   └── security-engineer.md       # 보안 관점 (위협 모델링, 방어적 코딩)
-├── jarfis-advocate.md             # Dialectic Review — 변경 옹호 에이전트
-├── jarfis-critic.md               # Dialectic Review — 변경 비판 에이전트
-├── senior-backend-engineer.md     # BE 구현 에이전트
-├── senior-frontend-engineer.md    # FE 구현 에이전트
-├── senior-devops-sre-engineer.md  # DevOps 구현 에이전트
-├── senior-product-owner.md        # PO 의사결정/PRD/UX방향서 에이전트
-├── tech-lead.md                   # TL 코드베이스 건강 + 기술 판단 에이전트
-├── technical-architect.md         # 아키텍처 설계 + 기술 전략 에이전트
-├── senior-security-engineer.md    # 보안 리뷰 + 방어적 코딩 검증 에이전트
-├── senior-qa-engineer.md          # QA 리뷰 + 리스크 판단 에이전트
-└── senior-ux-designer.md          # UX/브랜드 디자인 + SVG 에셋 + 품질 게이트 + reference.png 생성 규칙 + Figma 8규칙 에이전트
+~/.claude/agents/jarfis/           # JARFIS agent prompts (referenced by work.md) — ALL ENGLISH + $LOCALE output
+├── personas/                      # v3.0 Persona — role-specific cognitive frameworks
+│   ├── product-owner.md           # PO perspective (business value, JTBD)
+│   ├── technical-architect.md     # Architect perspective (system design, trade-offs)
+│   ├── tech-lead.md               # TL perspective (code quality, technical judgment)
+│   ├── frontend-developer.md      # FE perspective (browser/UI, design fidelity)
+│   ├── backend-developer.md       # BE perspective (systems thinking, DB, API)
+│   ├── devops-engineer.md         # DevOps perspective (infra, reliability, cost)
+│   ├── ux-designer.md             # UX perspective (user empathy, visual hierarchy)
+│   ├── qa-engineer.md             # QA perspective (quality, risk, compatibility)
+│   └── security-engineer.md       # Security perspective (threat modeling, defensive coding)
+├── jarfis-advocate.md             # Dialectic Review — change advocate agent
+├── jarfis-critic.md               # Dialectic Review — change critic agent
+├── senior-backend-engineer.md     # BE implementation agent
+├── senior-frontend-engineer.md    # FE implementation agent
+├── senior-devops-sre-engineer.md  # DevOps implementation agent
+├── senior-product-owner.md        # PO decision-making / PRD / UX direction agent
+├── tech-lead.md                   # TL codebase health + technical judgment agent
+├── technical-architect.md         # Architecture design + technical strategy agent
+├── senior-security-engineer.md    # Security review + defensive coding verification agent
+├── senior-qa-engineer.md          # QA review + risk assessment agent
+└── senior-ux-designer.md          # UX/brand design + SVG assets + quality gate + Figma rules agent
 ```
 
 **설계 원칙**:
@@ -473,9 +473,9 @@ Semantic Versioning을 따릅니다.
 
 > 전체 변경 이력은 [CHANGELOG.md](./CHANGELOG.md)를 참조하세요.
 
-## [3.3.0] - 2026-04-13
+## [3.4.0] - 2026-04-13
 
-- implement: Phase prompts migrated to English — all 9 prompt files (phase1-6, phase3-figma, phase4-5, continue-extend, wiki-loading) converted with Locale Output directive
+- implement: Agent personas migrated to English — all 20 agent files (11 senior + 9 persona) converted with $LOCALE directive
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
