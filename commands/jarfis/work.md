@@ -100,7 +100,27 @@ Phase T: Triage → Phase 0: Pre-flight → Phase 1: Discovery 🔒
 
 ### 실행 순서
 
-0. **작업물명 입력 및 Git 브랜치 설정**
+0. **Locale Detection + 작업물명 입력 + Git 브랜치 설정**
+
+   **0-a-0. Locale Detection (최선두)**
+
+   사용자 대면 출력 언어를 결정한다. JARFIS 내부 추론/지시는 항상 English.
+
+   1. `.jarfis-state.json`이 이미 존재하고 `locale` 필드가 있으면 → 그 값을 `$LOCALE`로 사용
+   2. 아직 없으면 (새 워크플로우) → `$ARGUMENTS`의 텍스트에서 언어를 규칙 기반으로 감지:
+      - 한글 문자(U+AC00~U+D7AF)가 1자 이상 포함 → `$LOCALE = "ko"`
+      - 일본어 문자(히라가나 U+3040~U+309F 또는 가타카나 U+30A0~U+30FF)가 1자 이상 포함 → `$LOCALE = "ja"`
+      - 위 두 경우 모두 아닌 경우 → `$LOCALE = "en"`
+   3. 감지된 `$LOCALE`을 `.jarfis-state.json` 초기화 후 기록 (Step 0-a에서 state init 이후):
+      ```bash
+      python3 ~/.claude/scripts/jarfis_cli.py state set "$DOCS_DIR/.jarfis-state.json" "locale" "$LOCALE"
+      ```
+   4. `$LOCALE`은 이후 모든 Phase에서 에이전트의 응답 언어를 제어하는 데 사용된다.
+      에이전트에게 프롬프트를 전달할 때 다음 지시를 포함:
+      `"Present ALL user-facing output in $LOCALE language."`
+
+   > **기본값**: `$LOCALE`이 결정되지 않으면 `"ko"` (기존 동작과 동일)
+   > **오버라이드**: `/jarfis:locale-set <code>`로 워크플로우 중 언제든 변경 가능
 
    **0-a. 작업물명 입력**
    - AskUserQuestion으로 작업물명(`$WORK_INPUT`)을 입력받는다 (예: `feat/TICKET-123`, `fix/BUG-456`).

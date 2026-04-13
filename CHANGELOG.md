@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.2.0] - 2026-04-13
+
+- implement: Locale infrastructure — locale/locale-set commands, state schema locale field, Phase 0 locale detection
+
 ## [3.1.2] - 2026-04-10
 
 - implement: level_check.py self-contained data collection (remove collect.py dependency)

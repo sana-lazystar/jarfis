@@ -10,6 +10,7 @@
   "docs_dir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
   "branch": "feat/TICKET-123",
   "status": "in-progress",
+  "locale": "ko",
   "key_decisions": ["REST over GraphQL — 기존 팀 경험", "PostgreSQL — 기존 인프라 활용"],
   "branches": {
     "backend": "feat/TICKET-123",
@@ -154,6 +155,13 @@ Phase 4 TDD 코드 품질 래칫 상태. `tdd_enabled: true`일 때만 생성. A
 - `task_index`: 현재까지 래칫을 통과한 태스크 수
 - `test_modifications`: 구현 에이전트가 테스트 파일을 수정한 기록 배열. 각 항목: `file`(경로), `task`(태스크ID), `reason`(커밋 메시지). Phase 5 QA에서 타당성 검증 대상
 - `history`: 태스크별 래칫 판정 이력. `task`: 태스크ID, `pass_rate`: 판정 시점 통과율, `action`: `accept`(통과율 유지/개선), `reject`(통과율 하락→재시도), `skipped_after_max_retries`(2회 실패→진행), `attempt`: 재시도 시 시도 횟수
+
+### locale
+워크플로우의 사용자 언어 설정. Phase 0에서 auto-detect 또는 `/jarfis:locale`로 명시 설정.
+- 기본값: `"ko"`
+- 허용값: `"ko"`, `"en"`, `"ja"` (추후 확장 가능)
+- JARFIS 내부 추론/지시는 항상 English. 이 필드는 사용자 대면 출력 언어만 결정한다.
+- Phase 0에서 `$LOCALE` 변수로 설정되어 이후 모든 Phase에서 에이전트의 응답 언어를 제어.
 
 ### 최상위 status
 워크플로우 전체 상태를 나타낸다.

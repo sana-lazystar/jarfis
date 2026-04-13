@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > 이 파일은 `/jarfis:sys-implement` 실행 시 자동으로 읽히며, 수정 완료 후 자동 갱신됩니다.
-> 수동 편집하지 마세요. Last updated: 2026-04-10 | Version: 3.1.2
+> 수동 편집하지 마세요. Last updated: 2026-04-13 | Version: 3.2.0
 
 ## 파일 구조
 ```
@@ -26,6 +26,8 @@
     ├── search-index.md    # 전체 Org 시맨틱 인덱스 일괄 생성/갱신 — wiki+meetings+works + --current + 메모리 가드 (124줄)
     ├── level-check.md                 # AI-native 개발자 성숙도 평가 — level_check.py 자체 수집 + 인터뷰, 7차원 10점 (195줄)
     ├── sys-health.md                  # 좀비 프로세스 진단 (70줄)
+    ├── locale.md                      # Locale 조회 — 현재 워크플로우 언어 설정 표시 [NEW]
+    ├── locale-set.md                  # Locale 설정 — ko/en/ja 언어 변경 [NEW]
     ├── prompts/                   # 외부화된 에이전트 프롬프트 (distill이 생성)
     │   ├── phase1.md              # Phase 1 Discovery 프롬프트 + PO wiki 참조 + 추가 태스크 + $MEETING_EXTRA 주입 + PRD Ratchet 규칙 (209줄)
     │   ├── phase2.md              # Phase 2&3 Architecture/UX 프롬프트 + wiki 참조 + HTML 시안 (214줄)
@@ -107,6 +109,8 @@
 | `/jarfis:search` | `jarfis/search.md` | 시맨틱 통합 검색 (meetings+works+wiki, 필터 가능) |
 | `/jarfis:search-index` | `jarfis/search-index.md` | 전체 Org 시맨틱 인덱스 일괄 생성/갱신 (wiki+meetings+works) |
 | `/jarfis:level-check` | `jarfis/level-check.md` | AI-native 개발자 성숙도 평가 (자동 수집 + 인터뷰, 7차원 10점) |
+| `/jarfis:locale` | `jarfis/locale.md` | 현재 locale 설정 조회 |
+| `/jarfis:locale-set` | `jarfis/locale-set.md` | locale 설정 변경 (ko/en/ja) |
 | `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS 시스템 자체 수정/기능 추가 + 버전 범프 |
 | `/jarfis:sys-version` | `jarfis/sys-version.md` | 버전 확인/업데이트/특정 버전 설치 |
 
