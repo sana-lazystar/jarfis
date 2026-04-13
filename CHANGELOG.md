@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.5.1] - 2026-04-13
+
+- implement: Templates and domain skills migrated to English — 10 templates + 13 domain/skill files
+
 ## [3.5.0] - 2026-04-13
 
 - implement: Core workflow + system commands migrated to English — work.md, work-continue, work-meeting, sys-implement/upgrade/distill/health/version, project-init/update, org/org-init, search/search-index/search-setup, level-check, wiki-storyboard, jarfis-index, jarfis.md, locale/locale-set (20 files)

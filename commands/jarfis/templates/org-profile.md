@@ -1,7 +1,7 @@
 # Organization Profile Template
 
-아래 구조로 `{org_root}/.jarfis/org-profile.md`를 생성한다.
-프론트매터에 org, root, created를 정의하고, projects: 섹션에 하위 프로젝트를 등록한다.
+Create `{org_root}/.jarfis/org-profile.md` with the structure below.
+Define org, root, and created in the frontmatter, and register sub-projects in the projects: section.
 
 ```markdown
 ---

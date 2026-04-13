@@ -1,86 +1,86 @@
 # Meeting Artifacts Templates
 
-## 1. summary.md — 미팅 요약
+## 1. summary.md — Meeting Summary
 
 ```yaml
 ---
 type: meeting-summary
-idea: "$ARGUMENTS 원문"
+idea: "$ARGUMENTS original text"
 meeting_name: "$MEETING_NAME"
 date: "YYYY-MM-DD"
-participants: [PO, TL, 소환된 전문가 목록]
+participants: [PO, TL, list of summoned experts]
 status: completed
 ---
 ```
 
 ```markdown
-# $MEETING_NAME 미팅 요약
+# $MEETING_NAME Meeting Summary
 
-## 한줄 요약
-(3~5줄 이내의 핵심 요약)
+## One-Line Summary
+(Core summary in 3-5 lines)
 
-## 핵심 결정사항
-- (주요 결정 1~3개 bullet)
+## Key Decisions
+- (1-3 major decision bullets)
 
-## 다음 단계
-- (work 진행 시 참고할 핵심 사항)
+## Next Steps
+- (Key points to reference when proceeding with work)
 ```
 
-## 2. meeting-notes.md — 토픽별 정리된 회의록
+## 2. meeting-notes.md — Topic-Organized Meeting Notes
 
 ```markdown
-# $MEETING_NAME 회의록
+# $MEETING_NAME Meeting Notes
 
-**일시**: YYYY-MM-DD
-**참석자**: PO, TL [, 소환된 전문가]
+**Date**: YYYY-MM-DD
+**Participants**: PO, TL [, summoned experts]
 
-## 토픽 1: [토픽명]
-### 논의 내용
-- (핵심 논의 포인트 정리)
+## Topic 1: [Topic Name]
+### Discussion
+- (Key discussion points)
 
-### 합의 사항
-- (합의된 내용)
+### Agreements
+- (Agreed-upon items)
 
-### 미결 사항
-- (결론 나지 않은 부분)
+### Open Items
+- (Unresolved items)
 
-## 토픽 2: [토픽명]
+## Topic 2: [Topic Name]
 ...
 
-## 기타 논의
-- (분류하기 어려운 기타 논의 사항)
+## Other Discussion
+- (Miscellaneous discussion items that are hard to categorize)
 ```
 
-## 3. decisions.md — 의사결정 추적표
+## 3. decisions.md — Decision Tracking Table
 
 ```markdown
-# $MEETING_NAME 의사결정
+# $MEETING_NAME Decisions
 
-| # | 결정 사항 | 근거 | 고려된 대안 | 결정자 | 상태 |
-|---|----------|------|-----------|--------|------|
-| 1 | (결정 내용) | (왜 이렇게 결정했나) | (검토한 다른 옵션) | PO/TL/합의 | 확정/잠정 |
+| # | Decision | Rationale | Alternatives Considered | Decided By | Status |
+|---|----------|-----------|------------------------|------------|--------|
+| 1 | (Decision content) | (Why this was decided) | (Other options reviewed) | PO/TL/Consensus | Confirmed/Tentative |
 | 2 | ... | ... | ... | ... | ... |
 
-## 잠정 결정 상세
-(잠정 결정에 대한 추가 설명이 필요한 경우 여기에 기술)
+## Tentative Decision Details
+(Additional explanation for tentative decisions, if needed)
 
-## 미결 사항
-- [ ] (아직 결정하지 못한 사항 1)
-- [ ] (아직 결정하지 못한 사항 2)
+## Open Items
+- [ ] (Undecided item 1)
+- [ ] (Undecided item 2)
 ```
 
-## 4. tech-research.md — 전문가 조사 결과 (조건부)
+## 4. tech-research.md — Expert Research Results (Conditional)
 
-이 파일은 미팅 중 전문가가 소환된 경우에만 생성한다.
+This file is only generated when an expert was summoned during the meeting.
 
 ```markdown
-# $MEETING_NAME 기술 조사
+# $MEETING_NAME Technical Research
 
-## 조사 1: [전문가 유형] — [주제]
-**질문**: ...
-**분석 결과**: ...
-**권고사항**: ...
+## Research 1: [Expert Type] — [Topic]
+**Question**: ...
+**Analysis Results**: ...
+**Recommendations**: ...
 
-## 조사 2: [전문가 유형] — [주제]
+## Research 2: [Expert Type] — [Topic]
 ...
 ```

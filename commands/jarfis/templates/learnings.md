@@ -4,56 +4,56 @@
 # JARFIS Learnings
 
 ## Agent Hints
-(역할별로 구분, "다음에 이렇게 하라" 형태로 작성. 각 항목에 [universal] 또는 [project] 태그 포함)
+(Organized by role, written in "do this next time" format. Each item includes a [universal] or [project] tag)
 
 ### Frontend Engineer
 
 #### Universal
-- (범용 학습 내용) (날짜)
+- (Universal learning) (date)
 
 #### Project-Specific
-- (프로젝트 전용 학습 내용) (날짜)
+- (Project-specific learning) (date)
 
 ### Backend Engineer
 
 #### Universal
-- (범용 학습 내용) (날짜)
+- (Universal learning) (date)
 
 #### Project-Specific
-- (프로젝트 전용 학습 내용) (날짜)
+- (Project-specific learning) (date)
 
 ### QA Engineer
 
 #### Universal
-- (범용 학습 내용) (날짜)
+- (Universal learning) (date)
 
 #### Project-Specific
-- (프로젝트 전용 학습 내용) (날짜)
+- (Project-specific learning) (date)
 
-### (기타 역할...)
+### (Other roles...)
 
 ## Workflow Patterns
-(워크플로우 판단에 도움이 되는 패턴)
+(Patterns that help with workflow decisions)
 
 ### Universal
-- (범용 패턴) (날짜, 확인 횟수)
+- (Universal pattern) (date, confirmation count)
 
 ### Project-Specific
-- (프로젝트 전용 패턴) (날짜, 확인 횟수)
+- (Project-specific pattern) (date, confirmation count)
 
 ## Universal
-(v3.0 도메인 플러그인용 — 모든 도메인에 적용되는 규칙. domain.py compose()가 자동 로드)
-- (범용 규칙) (날짜)
+(For v3.0 domain plugins — rules that apply to all domains. Automatically loaded by domain.py compose())
+- (Universal rule) (date)
 
 ## web
-(웹 도메인 전용 규칙. domain="web" 프로젝트에서만 로드)
-- (웹 규칙) (날짜)
+(Web domain-specific rules. Loaded only for domain="web" projects)
+- (Web rule) (date)
 
 ## desktop
-(데스크탑 도메인 전용 규칙)
-- (데스크탑 규칙) (날짜)
+(Desktop domain-specific rules)
+- (Desktop rule) (date)
 
 ## game
-(게임 도메인 전용 규칙)
-- (게임 규칙) (날짜)
+(Game domain-specific rules)
+- (Game rule) (date)
 ```
