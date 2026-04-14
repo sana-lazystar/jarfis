@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-14 | Version: 3.8.0
+> Do not edit manually. Last updated: 2026-04-14 | Version: 3.8.1
 
 ## File Structure
 ```
@@ -194,7 +194,6 @@
 - `~/.claude/agents/jarfis/*.md` -> referenced by work.md via Agent tool (BE/FE/DevOps/QA/PO/TL/Architect/Security/UX)
 - `~/.claude/agents/jarfis/jarfis-advocate.md` -> referenced during Dialectic Review in sys-implement.md/sys-upgrade.md/sys-distill.md (change advocacy)
 - `~/.claude/agents/jarfis/jarfis-critic.md` -> referenced during Dialectic Review in sys-implement.md/sys-upgrade.md/sys-distill.md (change criticism)
-- `work-continue.md` -> reads `.jarfis-state.json` (previous workflow lookup) + reuses work.md Phase 4/5/6 + references `prompts/phase4.md`, `prompts/phase5.md`, `prompts/phase6.md` + references `prompts/continue-extend.md` (Extend mode) + references work.md Agent Mapping (model routing SSOT) + loads project-profile.md/project-context.md (same as work.md Phase 0)
 - `sys-implement.md` -> reads/updates `jarfis-index.md` + bumps VERSION/CHANGELOG
 - `sys-version.md` -> references `.jarfis-version`, `.jarfis-source`, Git repo VERSION/CHANGELOG
 - `sys-distill.md` -> calls `jarfis_cli.py version patch` on completion
@@ -204,8 +203,8 @@
 - `jarfis_cli.py version` -> used in sys-implement.md/sys-distill.md/sys-upgrade.md for auto-updating VERSION/CHANGELOG/__init__.py
 - `jarfis_cli.py sync` -> includes README update (jarfis-index.md + CHANGELOG.md -> README.md section update)
 - `jarfis_cli.py meetings` -> used in work.md Phase 0 to query recent N meetings as JSON (for AskUserQuestion meeting selection)
-- `jarfis_cli.py preflight` -> used in work.md Phase 0 / work-continue.md Step 0 / work-meeting.md M-0 for profile/learnings/context/git status pre-validation
-- `jarfis_cli.py state` -> used across work.md all Phases / work-continue.md Step 0 for .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
+- `jarfis_cli.py preflight` -> used in work.md Phase 0 / work-meeting.md M-0 for profile/rule/context/git status pre-validation
+- `jarfis_cli.py state` -> used across work.md all Phases for .jarfis-state.json CRUD (init/read/set/set-nested/list-workflows)
 - `jarfis_cli.py detect` -> used in project-init.md Step 0 / work.md Phase 0 for framework/language auto-detection
 - `jarfis-pre-compact.sh` -> backs up `.jarfis-state.json` + meeting files from `$JARFIS_ORG_DIR` (auto-executed on auto-compact, shell-only hook)
 - `jarfis-safety.sh` -> PreToolUse(Bash) blocking: force push, --no-verify, direct commit to main/master | warning: .env, rm -rf, credentials, curl|bash (kill switch: JARFIS_SAFETY_HOOK=0)

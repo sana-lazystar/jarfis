@@ -103,6 +103,8 @@ Organize these guidelines so that BE/FE/DevOps agents can reference them during 
 
 **Step 4-0.5: Test-First Writing (TDD Red Phase)** (senior-qa-engineer) — **Conditional Execution**
 
+> **Context injection for QA (4-0.5)**: **project-rule** + project-profile (BE/FE) + test-strategy.md + tasks.md + api-spec.md (cond) + architecture.md. No project-context, no wiki-cache.
+
 > Execution conditions: Run only when ALL of the following are met.
 > 1. `$DOCS_DIR/test-strategy.md` exists
 > 2. test-strategy.md contains 3 or more P0 test scenarios

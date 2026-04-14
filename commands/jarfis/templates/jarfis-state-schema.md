@@ -190,7 +190,7 @@ Represents the progress state of each Phase.
 ## workflow-metrics.tsv Format
 
 Location: `$JARFIS_ORG_DIR/workflow-metrics.tsv`
-Created at: Phase 6 Step 6-2.5 (work.md) or after Fix/Extend retrospective (work-continue.md)
+Created at: Phase 6 Step 6-2.5 (work.md)
 Design rationale: AutoResearch results.tsv pattern — quantitative learning loop across workflows
 
 TSV header (tab-separated):
@@ -215,7 +215,7 @@ workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning
 
 ## follow_up.ratchet
 
-Test ratchet state for work-continue Fix mode. A lightweight version of Unit 3 (Phase 4 TDD ratchet).
+Test ratchet state for Fix mode (legacy). A lightweight version of Unit 3 (Phase 4 TDD ratchet).
 Compares pass rates before and after Fix implementation in projects with a test runner to prevent fix cascades.
 
 ```json

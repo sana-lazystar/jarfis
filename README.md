@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.8.0] - 2026-04-14
+## [3.8.1] - 2026-04-14
 
-- implement: Phase 4+4.5+5 — meeting expert context, sys-upgrade stale refs, work-continue removed
+- implement: cleanup stale work-continue refs, add phase4 QA context injection note
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
