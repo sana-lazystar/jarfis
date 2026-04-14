@@ -48,7 +48,7 @@ def _resolve_org_name(project_dir=None):
     if project_dir:
         org_root = find_org_root(project_dir)
         if org_root:
-            profile = os.path.join(org_root, ".jarfis", "org-profile.md")
+            profile = os.path.join(org_root, ".jarfis-org", "org-profile.md")
             if os.path.isfile(profile):
                 with open(profile) as f:
                     for line in f:
@@ -133,12 +133,12 @@ def read_file_stripped(path):
 def find_org_root(project_dir):
     """Find Organization root by traversing up to 5 parent directories.
 
-    Looks for .jarfis/org-profile.md to identify the org root.
+    Looks for .jarfis-org/org-profile.md to identify the org root.
     Returns the org root path or None if not found.
     """
     current = os.path.abspath(project_dir)
     for _ in range(5):
-        org_profile = os.path.join(current, ".jarfis", "org-profile.md")
+        org_profile = os.path.join(current, ".jarfis-org", "org-profile.md")
         if os.path.isfile(org_profile):
             return current
         parent = os.path.dirname(current)

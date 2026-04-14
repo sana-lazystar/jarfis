@@ -264,7 +264,7 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 | `/jarfis`                   | Display command list                                                                        |
 | `/jarfis:work-meeting`      | Planning kickoff meeting (PO/TL open discussion -> artifact generation)                     |
 | `/jarfis:work`              | Full workflow: planning -> design -> implementation -> review                               |
-| `/jarfis:project-init`      | Project analysis -> generate `./.jarfis/project-profile.md`                                 |
+| `/jarfis:project-init`      | Project analysis -> generate `./.jarfis-project/project-profile.md`                         |
 | `/jarfis:project-update`    | Incremental profile update (commit hash-based, date fallback)                               |
 | `/jarfis:sys-upgrade`       | Learning item CRUD + apply to agent/workflow prompts                                        |
 | `/jarfis:sys-health`        | Zombie Claude process diagnosis/cleanup                                                     |
@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.8.1] - 2026-04-14
+## [3.9.0] - 2026-04-14
 
-- implement: cleanup stale work-continue refs, add phase4 QA context injection note
+- implement: rename .jarfis/ to .jarfis-project/ and .jarfis-org/
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

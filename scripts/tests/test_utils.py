@@ -70,7 +70,7 @@ class TestResolveOrgName:
         org_root = tmp_path / "org"
         project = org_root / "project1"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: MyOrg\nroot: /path\n---\n")
         assert _resolve_org_name(str(project)) == "MyOrg"
@@ -79,7 +79,7 @@ class TestResolveOrgName:
         org_root = tmp_path / "FallbackName"
         project = org_root / "proj"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("# No frontmatter\n")
         assert _resolve_org_name(str(project)) == "FallbackName"
@@ -94,7 +94,7 @@ class TestGetOrgDir:
         org_root = tmp_path / "org"
         project = org_root / "project1"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
         result = get_org_dir(str(project))
@@ -124,7 +124,7 @@ class TestGetLearningsPath:
         org_root = tmp_path / "org"
         project = org_root / "proj"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
         result = get_learnings_path(str(project))
@@ -185,7 +185,7 @@ class TestReadFileStripped:
 
 class TestFindOrgRoot:
     def test_finds_org_root_in_current_dir(self, tmp_path):
-        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir = tmp_path / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("org: test")
         assert find_org_root(str(tmp_path)) == str(tmp_path)
@@ -194,7 +194,7 @@ class TestFindOrgRoot:
         org_root = tmp_path / "org"
         project = org_root / "project1" / "src"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("org: test")
         assert find_org_root(str(project)) == str(org_root)
@@ -205,7 +205,7 @@ class TestFindOrgRoot:
     def test_stops_after_5_levels(self, tmp_path):
         deep = tmp_path / "a" / "b" / "c" / "d" / "e" / "f" / "g"
         deep.mkdir(parents=True)
-        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir = tmp_path / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("org: test")
         assert find_org_root(str(deep)) is None

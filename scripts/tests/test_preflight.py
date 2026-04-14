@@ -26,7 +26,7 @@ class TestPreflight:
         assert any("No project profile" in w for w in output["warnings"])
 
     def test_profile_found(self, jarfis_env, tmp_path, capsys):
-        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir = tmp_path / ".jarfis-project"
         jarfis_dir.mkdir()
         (jarfis_dir / "project-profile.md").write_text("# Profile")
         main([str(tmp_path)])
@@ -34,7 +34,7 @@ class TestPreflight:
         assert output["has_profile"] is True
 
     def test_context_found(self, jarfis_env, tmp_path, capsys):
-        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir = tmp_path / ".jarfis-project"
         jarfis_dir.mkdir()
         (jarfis_dir / "project-context.md").write_text("# Context")
         main([str(tmp_path)])
@@ -42,7 +42,7 @@ class TestPreflight:
         assert output["has_context"] is True
 
     def test_rule_found(self, jarfis_env, capsys, tmp_path):
-        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir = tmp_path / ".jarfis-project"
         jarfis_dir.mkdir(exist_ok=True)
         (jarfis_dir / "project-rule.md").write_text("")
         main([str(tmp_path)])
@@ -63,7 +63,7 @@ class TestPreflight:
         org_root = tmp_path / "org"
         project = org_root / "project1"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("org: test")
         wiki_dir = jarfis_dir / "wiki"
@@ -86,7 +86,7 @@ class TestPreflight:
         org_root = tmp_path / "new-org"
         project = org_root / "project1"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: NewAutoOrg\n---\n")
         wiki_dir = jarfis_dir / "wiki"
@@ -115,7 +115,7 @@ class TestPreflight:
         org_root = tmp_path / "existing-org"
         project = org_root / "project1"
         project.mkdir(parents=True)
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
 
@@ -127,7 +127,7 @@ class TestPreflight:
     def test_org_auto_adds_project_to_profile(self, jarfis_env, tmp_path, capsys):
         """Org detected, project has profile but not in org-profile.md table → auto-add."""
         org_root = tmp_path / "org"
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir(parents=True)
         (jarfis_dir / "org-profile.md").write_text(
             "---\norg: AutoAddOrg\n---\n\n# Organization Profile\n\n## Projects\n\n"
@@ -139,7 +139,7 @@ class TestPreflight:
         (wiki / "INDEX.md").write_text("# Wiki")
         # Create project with profile
         proj = org_root / "my-project"
-        proj_jarfis = proj / ".jarfis"
+        proj_jarfis = proj / ".jarfis-project"
         proj_jarfis.mkdir(parents=True)
         (proj_jarfis / "project-profile.md").write_text("# Project Profile: my-project\n\n> Type: frontend\n")
 

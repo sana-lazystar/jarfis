@@ -11,7 +11,7 @@ Create `{org_root}/wiki/INDEX.md` with the structure below.
 - Major changes: Initial structure created
 
 ## Usage Guide
-- Information priority: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
+- Information priority: $DOCS_DIR > project/.jarfis-project/ > .jarfis-org/wiki/ > INDEX.md
 - Topics covered by current task: $DOCS_DIR takes priority. Topics not covered: wiki remains valid.
 
 ## Directory Map

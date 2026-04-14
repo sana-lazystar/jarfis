@@ -120,7 +120,7 @@ cwd = os.getcwd()
 org_root = None
 current = cwd
 for _ in range(5):
-    if os.path.isfile(os.path.join(current, '.jarfis', 'org-profile.md')):
+    if os.path.isfile(os.path.join(current, '.jarfis-org', 'org-profile.md')):
         org_root = current
         break
     parent = os.path.dirname(current)

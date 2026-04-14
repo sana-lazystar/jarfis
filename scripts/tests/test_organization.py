@@ -11,7 +11,7 @@ from jarfis.organization import EXCLUDE_DIRS, _scan_projects, cmd_init, cmd_info
 class TestScanProjects:
     def test_finds_project_with_profile(self, tmp_path):
         proj = tmp_path / "project1"
-        jarfis_dir = proj / ".jarfis"
+        jarfis_dir = proj / ".jarfis-project"
         jarfis_dir.mkdir(parents=True)
         (jarfis_dir / "project-profile.md").write_text(
             "# Project Profile: MyApp\n\n> Type: frontend\n"
@@ -26,7 +26,7 @@ class TestScanProjects:
         assert results == []
 
     def test_excludes_node_modules(self, tmp_path):
-        nm = tmp_path / "node_modules" / "some-pkg" / ".jarfis"
+        nm = tmp_path / "node_modules" / "some-pkg" / ".jarfis-project"
         nm.mkdir(parents=True)
         (nm / "project-profile.md").write_text("# Should not find")
         results = _scan_projects(str(tmp_path))
@@ -34,7 +34,7 @@ class TestScanProjects:
 
     def test_multiple_projects(self, tmp_path):
         for name in ["proj-a", "proj-b", "proj-c"]:
-            jarfis = tmp_path / name / ".jarfis"
+            jarfis = tmp_path / name / ".jarfis-project"
             jarfis.mkdir(parents=True)
             (jarfis / "project-profile.md").write_text(f"# Project Profile: {name}")
         results = _scan_projects(str(tmp_path))
@@ -43,7 +43,7 @@ class TestScanProjects:
 
 class TestCmdInit:
     def test_scan_only_without_confirm(self, tmp_path, capsys):
-        proj = tmp_path / "project1" / ".jarfis"
+        proj = tmp_path / "project1" / ".jarfis-project"
         proj.mkdir(parents=True)
         (proj / "project-profile.md").write_text("# Project Profile: P1")
         cmd_init([str(tmp_path)])
@@ -51,13 +51,13 @@ class TestCmdInit:
         assert output["action"] == "scan"
         assert output["project_count"] == 1
         # No files should be created
-        assert not os.path.isfile(os.path.join(str(tmp_path), ".jarfis", "org-profile.md"))
+        assert not os.path.isfile(os.path.join(str(tmp_path), ".jarfis-org", "org-profile.md"))
 
     def test_creates_org_files_with_confirm(self, jarfis_env, capsys):
         # Use jarfis_env to isolate HOME — prevents writing to real orgs.json
         base = os.path.dirname(jarfis_env["claude_dir"])  # tmp root
         org_root = os.path.join(base, "test-org-root")
-        proj = os.path.join(org_root, "project1", ".jarfis")
+        proj = os.path.join(org_root, "project1", ".jarfis-project")
         os.makedirs(proj, exist_ok=True)
         with open(os.path.join(proj, "project-profile.md"), "w") as f:
             f.write("# Project Profile: P1\n\n> Type: backend\n> Last-Commit: abc123\n")
@@ -68,11 +68,11 @@ class TestCmdInit:
         assert output["org_name"] == "TestInitOrg"
 
         # Verify created files
-        assert os.path.isfile(os.path.join(org_root, ".jarfis", "org-profile.md"))
-        assert os.path.isfile(os.path.join(org_root, ".jarfis", "wiki", "INDEX.md"))
+        assert os.path.isfile(os.path.join(org_root, ".jarfis-org", "org-profile.md"))
+        assert os.path.isfile(os.path.join(org_root, ".jarfis-org", "wiki", "INDEX.md"))
         for section in ["PO", "DESIGN", "TA", "QA"]:
             assert os.path.isfile(
-                os.path.join(org_root, ".jarfis", "wiki", section, "_index.md")
+                os.path.join(org_root, ".jarfis-org", "wiki", section, "_index.md")
             )
 
     def test_error_on_missing_dir(self):
@@ -83,7 +83,7 @@ class TestCmdInit:
 class TestCmdScan:
     def test_scans_projects(self, tmp_path, capsys):
         for name in ["a", "b"]:
-            jarfis = tmp_path / name / ".jarfis"
+            jarfis = tmp_path / name / ".jarfis-project"
             jarfis.mkdir(parents=True)
             (jarfis / "project-profile.md").write_text(f"# Project Profile: {name}")
         cmd_scan([str(tmp_path)])
@@ -98,7 +98,7 @@ class TestCmdInfo:
         assert output["registered"] is False
 
     def test_registered_org(self, tmp_path, capsys):
-        jarfis = tmp_path / ".jarfis"
+        jarfis = tmp_path / ".jarfis-org"
         jarfis.mkdir()
         (jarfis / "org-profile.md").write_text("---\norg: TestOrg\n---\n# Org")
         wiki = jarfis / "wiki"
@@ -154,7 +154,7 @@ class TestOrgsJson:
         assert result is False
 
     def test_cmd_init_registers_org(self, jarfis_env, tmp_path, capsys):
-        proj = tmp_path / "project1" / ".jarfis"
+        proj = tmp_path / "project1" / ".jarfis-project"
         proj.mkdir(parents=True)
         (proj / "project-profile.md").write_text(
             "# Project Profile: P1\n\n> Type: backend\n> Last-Commit: abc\n"
@@ -173,14 +173,14 @@ class TestDiscoverUnregisteredOrgs:
         parent = tmp_path / "Integration"
         # OrgA: registered
         org_a = parent / "OrgA" / "Projects"
-        org_a_jarfis = org_a / ".jarfis"
+        org_a_jarfis = org_a / ".jarfis-org"
         org_a_jarfis.mkdir(parents=True)
         (org_a_jarfis / "org-profile.md").write_text("---\norg: OrgA\n---\n")
         register_org("OrgA", str(org_a))
 
         # OrgB: exists but NOT registered
         org_b = parent / "OrgB" / "Projects"
-        org_b_jarfis = org_b / ".jarfis"
+        org_b_jarfis = org_b / ".jarfis-org"
         org_b_jarfis.mkdir(parents=True)
         (org_b_jarfis / "org-profile.md").write_text("---\norg: OrgB\n---\n")
 
@@ -198,7 +198,7 @@ class TestDiscoverUnregisteredOrgs:
         """Already registered orgs are not re-discovered."""
         parent = tmp_path / "Integration"
         org_a = parent / "OrgA" / "Projects"
-        org_a_jarfis = org_a / ".jarfis"
+        org_a_jarfis = org_a / ".jarfis-org"
         org_a_jarfis.mkdir(parents=True)
         (org_a_jarfis / "org-profile.md").write_text("---\norg: OrgA\n---\n")
         register_org("OrgA", str(org_a))
@@ -222,12 +222,12 @@ class TestEnsureProjectInOrgProfile:
     def _make_org_with_profile(self, tmp_path, org_name="TestOrg", projects=None):
         """Helper: create org-profile.md with a project table."""
         org_root = tmp_path / "org"
-        jarfis = org_root / ".jarfis"
+        jarfis = org_root / ".jarfis-org"
         jarfis.mkdir(parents=True)
         rows = ""
         if projects:
             for p in projects:
-                rows += f"| {p} | {p} | unknown | {p}/.jarfis/project-profile.md |\n"
+                rows += f"| {p} | {p} | unknown | {p}/.jarfis-project/project-profile.md |\n"
         else:
             rows = "| (none) | | | |\n"
         (jarfis / "org-profile.md").write_text(
@@ -243,7 +243,7 @@ class TestEnsureProjectInOrgProfile:
         org_root = self._make_org_with_profile(tmp_path, projects=["proj-a"])
         # Create new project with profile
         new_proj = org_root / "proj-b"
-        new_jarfis = new_proj / ".jarfis"
+        new_jarfis = new_proj / ".jarfis-project"
         new_jarfis.mkdir(parents=True)
         (new_jarfis / "project-profile.md").write_text(
             "# Project Profile: proj-b\n\n> Type: frontend\n"
@@ -251,7 +251,7 @@ class TestEnsureProjectInOrgProfile:
         result = ensure_project_in_org_profile(str(org_root), str(new_proj))
         assert result is True
         # Verify table now contains proj-b
-        profile = (org_root / ".jarfis" / "org-profile.md").read_text()
+        profile = (org_root / ".jarfis-org" / "org-profile.md").read_text()
         assert "proj-b" in profile
 
     def test_skips_already_registered(self, tmp_path):
@@ -265,7 +265,7 @@ class TestEnsureProjectInOrgProfile:
         org_root = self._make_org_with_profile(tmp_path)
         proj = org_root / "proj-no-profile"
         proj.mkdir(parents=True)
-        # No .jarfis/project-profile.md
+        # No .jarfis-project/project-profile.md
         result = ensure_project_in_org_profile(str(org_root), str(proj))
         assert result is False
 

@@ -1,6 +1,6 @@
 # Organization Profile Template
 
-Create `{org_root}/.jarfis/org-profile.md` with the structure below.
+Create `{org_root}/.jarfis-org/org-profile.md` with the structure below.
 Define org, root, and created in the frontmatter, and register sub-projects in the projects: section.
 
 ```markdown
@@ -16,5 +16,5 @@ created: {date}
 
 | Name | Path | Type | Profile |
 |------|------|------|---------|
-| {project_name} | {relative_path} | {type} | .jarfis/project-profile.md |
+| {project_name} | {relative_path} | {type} | .jarfis-project/project-profile.md |
 ```

@@ -50,7 +50,7 @@ def main(args):
     warnings = []
 
     # Profile check
-    profile_path = os.path.join(project_dir, ".jarfis", "project-profile.md")
+    profile_path = os.path.join(project_dir, ".jarfis-project", "project-profile.md")
     has_profile = os.path.isfile(profile_path)
     if has_profile:
         log(f"Profile found: {profile_path}")
@@ -60,7 +60,7 @@ def main(args):
         log("Profile not found")
 
     # Project rule check (user-defined, highest priority)
-    rule_path = os.path.join(project_dir, ".jarfis", "project-rule.md")
+    rule_path = os.path.join(project_dir, ".jarfis-project", "project-rule.md")
     has_rule = os.path.isfile(rule_path)
     if has_rule:
         log(f"Rule found: {rule_path}")
@@ -69,7 +69,7 @@ def main(args):
         log("Rule not found")
 
     # Project context check
-    context_path = os.path.join(project_dir, ".jarfis", "project-context.md")
+    context_path = os.path.join(project_dir, ".jarfis-project", "project-context.md")
     has_context = os.path.isfile(context_path)
     if has_context:
         log(f"Context found: {context_path}")
@@ -123,10 +123,10 @@ def main(args):
     org_auto_registered = False
 
     if org_root:
-        org_profile = os.path.join(org_root, ".jarfis", "org-profile.md")
+        org_profile = os.path.join(org_root, ".jarfis-org", "org-profile.md")
         if not os.path.isfile(org_profile):
             org_profile = None
-        wiki_index_path = os.path.join(org_root, ".jarfis", "wiki", "INDEX.md")
+        wiki_index_path = os.path.join(org_root, ".jarfis-org", "wiki", "INDEX.md")
         if os.path.isfile(wiki_index_path):
             has_wiki = True
             wiki_index = wiki_index_path
@@ -153,7 +153,7 @@ def main(args):
     # Meetings check
     has_meetings = False
     if check_meetings:
-        meetings_dir = os.path.join(project_dir, ".jarfis", "meetings")
+        meetings_dir = os.path.join(project_dir, ".jarfis-project", "meetings")
         if os.path.isdir(meetings_dir):
             for root, dirs, files in os.walk(meetings_dir):
                 if "summary.md" in files:

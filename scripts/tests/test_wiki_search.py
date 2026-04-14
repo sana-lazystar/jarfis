@@ -161,7 +161,7 @@ class TestResolveSearchDirs:
         # Simulate org structure
         org_root = tmp_path / "org-project"
         org_root.mkdir()
-        jarfis_dir = org_root / ".jarfis"
+        jarfis_dir = org_root / ".jarfis-org"
         jarfis_dir.mkdir()
         wiki_dir = jarfis_dir / "wiki"
         wiki_dir.mkdir()
@@ -181,7 +181,7 @@ class TestResolveSearchDirs:
     def test_missing_wiki_excluded(self, tmp_path):
         org_root = tmp_path / "org-project"
         org_root.mkdir()
-        # No .jarfis/wiki/ directory
+        # No .jarfis-org/wiki/ directory
 
         org_dir = tmp_path / "org-workspace"
         org_dir.mkdir()

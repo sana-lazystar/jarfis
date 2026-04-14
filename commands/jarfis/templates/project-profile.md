@@ -1,6 +1,6 @@
 # Project Profile Template
 
-Create `./.jarfis/project-profile.md` with the structure below.
+Create `./.jarfis-project/project-profile.md` with the structure below.
 Do not include sections that were not analyzed at the given depth (no empty sections).
 
 ```markdown

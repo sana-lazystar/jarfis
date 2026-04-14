@@ -117,7 +117,7 @@ Display the classification results to the user.
 
 **2-1. Display Application Plan**
 
-Show the mapping by scope: Universal application (agent Learned Rules) + Project-Specific application (.jarfis/project-context.md). Workflow Patterns are kept in learnings.md and applied via sys-upgrade only, not loaded at runtime.
+Show the mapping by scope: Universal application (agent Learned Rules) + Project-Specific application (.jarfis-project/project-context.md). Workflow Patterns are kept in learnings.md and applied via sys-upgrade only, not loaded at runtime.
 
 **2-2. Select Application Scope**
 
@@ -137,10 +137,10 @@ Use AskUserQuestion to let the user choose "Apply All" or "Selective Apply" (mul
 | Learning Scope | Target |
 |---------------|--------|
 | `[universal]` Agent Hints | `~/.claude/agents/jarfis/{role}.md` → `## Learned Rules` |
-| `[project]` Agent Hints | `./.jarfis/project-context.md` → corresponding role section |
+| `[project]` Agent Hints | `./.jarfis-project/project-context.md` → corresponding role section |
 
 - `[universal]`: Add to the `## Learned Rules` section of the agent file (create if absent). Check for duplicates.
-- `[project]`: Add to `.jarfis/project-context.md` (create file/section if absent). Check for duplicates.
+- `[project]`: Add to `.jarfis-project/project-context.md` (create file/section if absent). Check for duplicates.
 - Remove date metadata `(YYYY-MM-DD)` when applying.
 
 **3-2. Apply to Workflow Files**
@@ -148,7 +148,7 @@ Use AskUserQuestion to let the user choose "Apply All" or "Selective Apply" (mul
 | Learning Scope | Target |
 |---------------|--------|
 | `[universal]` Workflow Patterns | Kept in `learnings.md` (not copied to work.md — applied via sys-upgrade only, not loaded at runtime) |
-| `[project]` Workflow Patterns | `./.jarfis/project-context.md` → Workflow section |
+| `[project]` Workflow Patterns | `./.jarfis-project/project-context.md` → Workflow section |
 
 - Check for duplicates. Remove date/confirmation count metadata.
 

@@ -22,7 +22,7 @@ EXCLUDE_DIRS = {
 
 
 def _scan_projects(org_root):
-    """Recursively scan for projects with .jarfis/project-profile.md."""
+    """Recursively scan for projects with .jarfis-project/project-profile.md."""
     projects = []
     org_root = os.path.abspath(org_root)
 
@@ -30,7 +30,7 @@ def _scan_projects(org_root):
         # Prune excluded directories
         dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
-        jarfis_dir = os.path.join(root, ".jarfis")
+        jarfis_dir = os.path.join(root, ".jarfis-project")
         profile_path = os.path.join(jarfis_dir, "project-profile.md")
 
         if os.path.isfile(profile_path):
@@ -59,7 +59,7 @@ def _scan_projects(org_root):
                 "path": rel_path,
                 "absolute_path": root,
                 "type": proj_type,
-                "profile": os.path.join(rel_path, ".jarfis", "project-profile.md"),
+                "profile": os.path.join(rel_path, ".jarfis-project", "project-profile.md"),
             })
 
             # Don't descend into project subdirectories
@@ -71,7 +71,7 @@ def _scan_projects(org_root):
 def _create_org_files(org_root, projects, org_name=None):
     """Create Organization files: org-profile.md, wiki structure."""
     org_root = os.path.abspath(org_root)
-    jarfis_dir = os.path.join(org_root, ".jarfis")
+    jarfis_dir = os.path.join(org_root, ".jarfis-org")
     wiki_dir = os.path.join(jarfis_dir, "wiki")
     if not org_name:
         org_name = os.path.basename(org_root)
@@ -84,7 +84,7 @@ def _create_org_files(org_root, projects, org_name=None):
     profile_path = os.path.join(jarfis_dir, "org-profile.md")
     project_rows = ""
     for p in projects:
-        project_rows += f"| {p['name']} | {p['path']} | {p['type']} | {p['path']}/.jarfis/project-profile.md |\n"
+        project_rows += f"| {p['name']} | {p['path']} | {p['type']} | {p['path']}/.jarfis-project/project-profile.md |\n"
     if not project_rows:
         project_rows = "| (none) | | | |\n"
 
@@ -116,7 +116,7 @@ created: {today}
 - Major changes: Initial structure created
 
 ## Usage Guide
-- Information priority: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
+- Information priority: $DOCS_DIR > project/.jarfis-project/ > .jarfis-org/wiki/ > INDEX.md
 - Topics covered by current task: $DOCS_DIR first. Other topics: wiki is valid.
 
 ## Directory Map
@@ -155,7 +155,7 @@ Details: QA/_index.md
 
     # 4. Update project profiles with org: field
     for p in projects:
-        profile_path = os.path.join(p["absolute_path"], ".jarfis", "project-profile.md")
+        profile_path = os.path.join(p["absolute_path"], ".jarfis-project", "project-profile.md")
         if os.path.isfile(profile_path):
             with open(profile_path) as f:
                 content = f.read()
@@ -229,7 +229,7 @@ def discover_unregistered_orgs():
     """Scan parent directories of registered orgs for unregistered sibling orgs.
 
     For each registered org, goes up to the grandparent directory and scans
-    all descendants (up to 4 levels) for .jarfis/org-profile.md files.
+    all descendants (up to 4 levels) for .jarfis-org/org-profile.md files.
     Any found org not in orgs.json is auto-registered.
 
     Returns list of newly discovered orgs: [{"name": ..., "root": ...}, ...]
@@ -262,7 +262,7 @@ def discover_unregistered_orgs():
                 continue
             dirs[:] = [d for d in dirs if d not in EXCLUDE_DIRS]
 
-            profile_path = os.path.join(root, ".jarfis", "org-profile.md")
+            profile_path = os.path.join(root, ".jarfis-org", "org-profile.md")
             if os.path.isfile(profile_path):
                 abs_root = os.path.abspath(root)
                 if abs_root in registered_roots:
@@ -295,19 +295,19 @@ def discover_unregistered_orgs():
 def ensure_project_in_org_profile(org_root, project_dir):
     """Ensure a project is listed in org-profile.md's Projects table.
 
-    If the project has a .jarfis/project-profile.md but is not in the
+    If the project has a .jarfis-project/project-profile.md but is not in the
     org-profile.md table, adds a new row. Returns True if added, False if
     already present or not applicable.
     """
     org_root = os.path.abspath(org_root)
     project_dir = os.path.abspath(project_dir)
-    profile_path = os.path.join(org_root, ".jarfis", "org-profile.md")
+    profile_path = os.path.join(org_root, ".jarfis-org", "org-profile.md")
 
     if not os.path.isfile(profile_path):
         return False
 
     # Check project has its own profile
-    proj_profile = os.path.join(project_dir, ".jarfis", "project-profile.md")
+    proj_profile = os.path.join(project_dir, ".jarfis-project", "project-profile.md")
     if not os.path.isfile(proj_profile):
         return False
 
@@ -335,7 +335,7 @@ def ensure_project_in_org_profile(org_root, project_dir):
         pass
 
     # Add row to table
-    new_row = f"| {name} | {rel_path} | {proj_type} | {rel_path}/.jarfis/project-profile.md |"
+    new_row = f"| {name} | {rel_path} | {proj_type} | {rel_path}/.jarfis-project/project-profile.md |"
     # Remove empty placeholder row if present
     content = content.replace("| (none) | | | |", "")
     # Insert before the last line or at end of table
@@ -423,7 +423,7 @@ def cmd_info(args):
         json_error("Usage: jarfis org info <org_root>")
 
     org_root = os.path.abspath(org_root)
-    profile_path = os.path.join(org_root, ".jarfis", "org-profile.md")
+    profile_path = os.path.join(org_root, ".jarfis-org", "org-profile.md")
 
     if not os.path.isfile(profile_path):
         json_output({
@@ -445,7 +445,7 @@ def cmd_info(args):
             break
 
     # Check wiki
-    wiki_dir = os.path.join(org_root, ".jarfis", "wiki")
+    wiki_dir = os.path.join(org_root, ".jarfis-org", "wiki")
     has_wiki = os.path.isfile(os.path.join(wiki_dir, "INDEX.md"))
 
     # Scan current projects

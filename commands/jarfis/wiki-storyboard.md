@@ -37,7 +37,7 @@ View the overall design status of a service in the browser, outside of a workflo
 
 4. **Open Catalog**
    ```bash
-   open {org_root}/.jarfis/wiki/DESIGN/pages/{selected_project}/_index.html
+   open {org_root}/.jarfis-org/wiki/DESIGN/pages/{selected_project}/_index.html
    ```
    - If `_index.html` does not exist: Display "No mockups yet. Complete Phase 3 in `/jarfis:work`."
 

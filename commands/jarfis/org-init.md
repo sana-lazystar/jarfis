@@ -99,8 +99,8 @@ Result banner:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
   Organization Created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-📂 {$ORG_ROOT}/.jarfis/org-profile.md
-📚 {$ORG_ROOT}/.jarfis/wiki/
+📂 {$ORG_ROOT}/.jarfis-org/org-profile.md
+📚 {$ORG_ROOT}/.jarfis-org/wiki/
    ├── INDEX.md
    ├── PO/_index.md
    ├── DESIGN/_index.md

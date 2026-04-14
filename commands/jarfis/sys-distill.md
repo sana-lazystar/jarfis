@@ -225,7 +225,7 @@ Execute approved actions in order:
 1. Extract the **parent pattern (universal principle)** from rules classified as `[project]`.
    - Example: `moreden-pcweb commitlint only allows Korean` → `Check the project's commitlint/lint settings before committing`
 2. Add the extracted parent pattern as a `[universal]` rule to the agent's `## Learned Rules` section.
-3. **Remove** the original project-specific rule from the agent and move it to the project's `./.jarfis/project-context.md` under the `## Project-Specific Learned Rules` section.
+3. **Remove** the original project-specific rule from the agent and move it to the project's `./.jarfis-project/project-context.md` under the `## Project-Specific Learned Rules` section.
    - If project-context.md or the section does not exist: Use AskUserQuestion to confirm the migration target or decide whether to delete the rule.
 4. If the parent pattern already exists in `[universal]` rules: only remove the original (no need to add the parent pattern).
 

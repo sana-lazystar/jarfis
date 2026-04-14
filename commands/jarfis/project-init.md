@@ -2,7 +2,7 @@
 
 > **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-Analyze the project in the current directory and generate `./.jarfis/project-profile.md`.
+Analyze the project in the current directory and generate `./.jarfis-project/project-profile.md`.
 This profile is injected into sub-agents when running `/jarfis:work`, saving codebase exploration tokens and generating code that follows project conventions.
 
 User request: $ARGUMENTS
@@ -133,7 +133,7 @@ Analyze the following items:
 
 ### Step 4: Generate Profile Document
 
-Save the analysis results to `./.jarfis/project-profile.md`.
+Save the analysis results to `./.jarfis-project/project-profile.md`.
 
 > Use the template at `templates/project-profile.md` as the output format.
 
@@ -149,9 +149,9 @@ Save the analysis results to `./.jarfis/project-profile.md`.
 
 ### Step 4.5: Ensure project-rule.md Exists
 
-Check if `./.jarfis/project-rule.md` exists. If not, create an empty file:
+Check if `./.jarfis-project/project-rule.md` exists. If not, create an empty file:
 ```bash
-touch ./.jarfis/project-rule.md
+touch ./.jarfis-project/project-rule.md
 ```
 Do not write any content, do not ask the user, do not provide guidance. Just ensure the file exists.
 
@@ -164,7 +164,7 @@ Do not write any content, do not ask the user, do not provide guidance. Just ens
 📂 Project: [project name]
 🔍 Type: [BE/FE/Fullstack]
 📊 Depth: [basic/medium/deep]
-📄 Output: ./.jarfis/project-profile.md
+📄 Output: ./.jarfis-project/project-profile.md
 
 This profile is automatically referenced when running /jarfis:work.
 Re-run /jarfis:project-init if the project structure changes significantly.

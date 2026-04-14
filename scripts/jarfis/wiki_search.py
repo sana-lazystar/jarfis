@@ -22,7 +22,7 @@ import time
 from .utils import find_org_root, get_org_dir, json_error, json_output
 
 # --- Constants ---
-WIKI_REL = os.path.join(".jarfis", "wiki")
+WIKI_REL = os.path.join(".jarfis-org", "wiki")
 VECTORS_FILE = ".vectors.npz"
 META_FILE = ".vectors-meta.json"
 DEFAULT_TOP_K = 5
@@ -255,7 +255,7 @@ def resolve_search_dirs(org_root=None, org_dir=None):
     """Resolve search directories for each scope.
 
     Args:
-        org_root: Organization root (project root with .jarfis/). For wiki.
+        org_root: Organization root (project root with .jarfis-org/). For wiki.
         org_dir: Organization workspace dir (.personal/orgs/{org}/). For meetings/works.
 
     Returns:

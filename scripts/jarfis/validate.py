@@ -194,7 +194,7 @@ def main(args):
                 break
         org_root = find_org_root(check_dir)
         if org_root:
-            wiki_dir = os.path.join(org_root, ".jarfis", "wiki")
+            wiki_dir = os.path.join(org_root, ".jarfis-org", "wiki")
             wiki_files = [
                 "INDEX.md",
                 os.path.join("PO", "_index.md"),

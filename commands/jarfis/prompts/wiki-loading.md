@@ -7,11 +7,11 @@
 ## Prerequisites
 
 - `preflight` JSON's `org_root` is non-null
-- `{org_root}/.jarfis/wiki/INDEX.md` exists
+- `{org_root}/.jarfis-org/wiki/INDEX.md` exists
 
 ## 2-Step Lightweight Loading (for Fix mode)
 
-1. **Read INDEX.md**: Read `{org_root}/.jarfis/wiki/INDEX.md` to identify Quick Reference + Directory Map
+1. **Read INDEX.md**: Read `{org_root}/.jarfis-org/wiki/INDEX.md` to identify Quick Reference + Directory Map
 2. **Selectively load relevant sections only**: Read only the `_index.md` of sections related to the current task
    - e.g.: FE bug fix → DESIGN/_index.md + QA/_index.md
    - e.g.: BE API change → TA/_index.md + QA/_index.md
@@ -38,7 +38,7 @@
 
 Priority when information conflicts:
 ```
-$DOCS_DIR (current task artifacts) > project/.jarfis (project profile/context) > wiki/ (accumulated org knowledge) > INDEX.md (table of contents)
+$DOCS_DIR (current task artifacts) > project/.jarfis-project/ (project profile/context) > .jarfis-org/wiki/ (accumulated org knowledge) > INDEX.md (table of contents)
 ```
 
 - Topics **covered by this task**: $DOCS_DIR artifacts are the most current and take precedence over wiki

@@ -69,7 +69,7 @@ Artifacts are stored in `$JARFIS_ORG_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/`
 > Note: See "Execution Rules > Org Dir Resolution" for `$JARFIS_ORG_DIR` resolution rules.
 
 - Determine `$DOCS_DIR` at workflow start and store its **absolute path** in the `docs_dir` field of `.jarfis-state.json`.
-- **Per-project files** (`project-profile.md`, `project-context.md`) are stored in each project's `.jarfis/`.
+- **Per-project files** (`project-profile.md`, `project-context.md`) are stored in each project's `.jarfis-project/`.
 
 | Phase | File | Description | Conditional |
 |-------|------|-------------|-------------|
@@ -94,9 +94,9 @@ Artifacts are stored in `$JARFIS_ORG_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/`
 
 | File | Location | Description |
 |------|----------|-------------|
-| `project-rule.md` | `./.jarfis/project-rule.md` | **Per-project** — Coding rules/conventions for BE, FE, DevOps, QA, TL agents |
+| `project-rule.md` | `./.jarfis-project/project-rule.md` | **Per-project** — Coding rules/conventions for BE, FE, DevOps, QA, TL agents |
 | `learnings.md` | `$JARFIS_ORG_DIR/learnings.md` | **Per-Org** — Agent Hints + Workflow Patterns (sys-upgrade를 통해서만 사후 적용, 런타임 로딩 안 함) |
-| `project-context.md` | `./.jarfis/project-context.md` | **Per-project** — Knowledge specific to this codebase |
+| `project-context.md` | `./.jarfis-project/project-context.md` | **Per-project** — Knowledge specific to this codebase |
 
 ---
 
@@ -238,9 +238,9 @@ Resolve file paths and generate wiki cache for downstream Phase use.
 
    **2-3. Cascading Specificity Rule Injection**
    - When Org is registered, inject the following rule into all agent prompts:
-   > Information priority: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
+   > Information priority: $DOCS_DIR > project/.jarfis-project/ > .jarfis-org/wiki/ > INDEX.md
    > Topics covered by this task: $DOCS_DIR takes precedence. Topics not covered: wiki is authoritative.
-3. Record project profile paths only (lazy loading — do NOT read content here): `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` → `$BE_PROFILE_PATH`, `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` → `$FE_PROFILE_PATH`. Content is read at agent spawn time.
+3. Record project profile paths only (lazy loading — do NOT read content here): `$BACKEND_PROJECT_DIR/.jarfis-project/project-profile.md` → `$BE_PROFILE_PATH`, `$FRONTEND_PROJECT_DIR/.jarfis-project/project-profile.md` → `$FE_PROFILE_PATH`. Content is read at agent spawn time.
 
 **Injection Rules (Lazy Loading):**
 
@@ -747,7 +747,7 @@ Read retrospective.md and distribute to the following two files:
 
 Management rules: Append to existing file (update if duplicate), remove outdated entries, record dates
 
-**2. Project Context — `./.jarfis/project-context.md`**
+**2. Project Context — `./.jarfis-project/project-context.md`**
 > Template: Read `templates/project-context.md` and use as the artifact format.
 > **Scope**: Project-specific learnings (e.g., codebase patterns, architecture decisions, team conventions). Record [project]-tagged items from retrospective.md directly here.
 
