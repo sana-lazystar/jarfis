@@ -1,6 +1,6 @@
 # Wiki Loading — Shared Module
 
-> This file is a shared wiki-loading module referenced by work.md, continue.md, and meeting.md.
+> This file is a shared wiki-loading module referenced by work.md and meeting.md.
 > **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
 > Only runs in projects registered under an Org.
 

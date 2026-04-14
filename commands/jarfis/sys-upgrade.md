@@ -88,7 +88,7 @@ Map learning items to their target files:
 | `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/senior-ux-designer.md` |
 | `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/senior-product-owner.md` |
 | `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
-| `Workflow Patterns` | Kept in `learnings.md` (not copied to work.md — dynamically loaded during Phase 0) |
+| `Workflow Patterns` | Kept in `learnings.md` (not copied to work.md — applied via sys-upgrade only, not loaded at runtime) |
 
 **1-2. Automatic Scope Classification**
 
@@ -117,7 +117,7 @@ Display the classification results to the user.
 
 **2-1. Display Application Plan**
 
-Show the mapping by scope: Universal application (agent Learned Rules) + Project-Specific application (.jarfis/project-context.md). Workflow Patterns are kept in learnings.md and dynamically loaded during Phase 0.
+Show the mapping by scope: Universal application (agent Learned Rules) + Project-Specific application (.jarfis/project-context.md). Workflow Patterns are kept in learnings.md and applied via sys-upgrade only, not loaded at runtime.
 
 **2-2. Select Application Scope**
 
@@ -147,7 +147,7 @@ Use AskUserQuestion to let the user choose "Apply All" or "Selective Apply" (mul
 
 | Learning Scope | Target |
 |---------------|--------|
-| `[universal]` Workflow Patterns | Kept in `learnings.md` (not copied to work.md — dynamically loaded during Phase 0) |
+| `[universal]` Workflow Patterns | Kept in `learnings.md` (not copied to work.md — applied via sys-upgrade only, not loaded at runtime) |
 | `[project]` Workflow Patterns | `./.jarfis/project-context.md` → Workflow section |
 
 - Check for duplicates. Remove date/confirmation count metadata.

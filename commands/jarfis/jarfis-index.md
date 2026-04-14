@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-14 | Version: 3.7.0
+> Do not edit manually. Last updated: 2026-04-14 | Version: 3.8.0
 
 ## File Structure
 ```
@@ -17,7 +17,7 @@
     ├── sys-upgrade.md                 # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection (296 lines)
     ├── sys-distill.md                 # Prompt distillation + agent whitelist protection + command analysis only + Dialectic Review (312 lines)
     ├── sys-version.md                 # Version management/updates (158 lines)
-    ├── work-continue.md                # Follow-up on completed workflows — Fix/Extend + Fix test ratchet + wiki 2/4-Step + Workflow Metrics (333 lines)
+    # work-continue.md — REMOVED in v3.7.1 (use /jarfis:work instead)
     ├── org.md                     # Full organization list — orgs.json based + unregistered Org auto-discovery + CWD highlight (96 lines)
     ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide (114 lines)
     ├── wiki-storyboard.md              # Design catalog browsing command (48 lines)
@@ -37,7 +37,7 @@
     │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status injection + context injection notes + 5-0/5-2/5-3 separation (325 lines)
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-track update + semantic index refresh (152 lines)
     │   ├── wiki-loading.md        # Wiki loading shared module — 2-Step/4-Step + semantic search (44 lines)
-    │   └── continue-extend.md    # Continue Extend mode PO/Architect/TL/QA prompt (95 lines)
+    │   # continue-extend.md — REMOVED in v3.7.1
     ├── domains/                   # v3.0 Domain Pack infrastructure [NEW]
     │   ├── _schema.yaml           # Domain Pack specification (Published Language, EP1-7)
     │   ├── web.yaml               # Web Development domain pack
@@ -101,7 +101,7 @@
 | `/jarfis:sys-upgrade` | `jarfis/sys-upgrade.md` | Learning item CRUD + apply to agent/workflow prompts |
 | `/jarfis:sys-health` | `jarfis/sys-health.md` | Zombie Claude process diagnosis/cleanup |
 | `/jarfis:sys-distill` | `jarfis/sys-distill.md` | Prompt distillation — token efficiency analysis/optimization |
-| `/jarfis:work-continue` | `jarfis/work-continue.md` | Follow-up on completed workflows (Fix/Extend mode, --workflow/--mode flags) |
+| ~~`/jarfis:work-continue`~~ | REMOVED v3.7.1 | Use `/jarfis:work` instead |
 | `/jarfis:org` | `jarfis/org.md` | Full registered Org list (orgs.json based, CWD highlight) |
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization initialization (scan + wiki creation) |
 | `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | Design catalog browsing (wiki/DESIGN -> browser) |

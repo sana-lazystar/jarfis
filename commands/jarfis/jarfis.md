@@ -28,8 +28,6 @@ Display the following as-is:
     PO+TL planning kickoff meeting (idea exploration, selection)
   /jarfis:work [description]
     Run full workflow (plan → design → implement → review → retrospective)
-  /jarfis:work-continue [follow-up] [--mode fix|extend]
-    Continue a completed workflow (bug fix / feature extension)
   /jarfis:wiki-storyboard                          [Org]
     Browse the service-wide design catalog
 
@@ -51,7 +49,7 @@ Display the following as-is:
   /jarfis:sys-health      Diagnose/clean up zombie processes
 
   [Org] = Organization registration required
-    With Org registration, wiki knowledge is auto-injected into work/work-continue/work-meeting,
+    With Org registration, wiki knowledge is auto-injected into work/work-meeting,
     and Phase 6 retrospective outputs automatically accumulate in the wiki.
 
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -62,13 +60,12 @@ Display the following as-is:
     /jarfis:project-init                  ← One-time per project
     /jarfis:work-meeting payment system renewal
     /jarfis:work payment system renewal
-    /jarfis:work-continue fix card payment error
     /jarfis:wiki-storyboard              ← View design catalog
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   Example B — Quick start without Org:
     cd ~/my-project
     /jarfis:project-init
     /jarfis:work bulletin board CRUD + comments
-    /jarfis:work-continue add comment notifications --mode extend
+    /jarfis:work add comment notifications
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```

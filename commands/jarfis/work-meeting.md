@@ -199,8 +199,13 @@ PO/TL autonomously summon experts when specialized knowledge is needed.
 
 > Note: Each agent's model follows the work.md Agent Mapping (SSOT).
 
+**Context injection for experts** (lazy loading — read from disk at spawn time):
+- QA/DevOps experts: **project-rule** + project-profile + project-context
+- TA/Security/UX experts: project-profile + project-context (NO project-rule — principle 3-1)
+- All experts: NO wiki-cache (orchestrator includes relevant excerpts in discussion context instead)
+
 **Procedure:**
-1. PO/TL naturally announce the summoning → call via Agent tool (model per work.md Agent Mapping, passing: planning topic, 2-3 lines of discussion context, specific question, project context)
+1. PO/TL naturally announce the summoning → call via Agent tool (model per work.md Agent Mapping, passing: planning topic, 2-3 lines of discussion context, specific question, + above context injection per role)
 2. PO/TL naturally integrate the expert's response into the meeting
 3. Record research results cumulatively in `$MEETING_DIR/tech-research.md` (expert type, topic, question, answer summary, recommendations)
 

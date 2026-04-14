@@ -259,28 +259,28 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 <!-- JARFIS-COMMANDS-START -->
 ## Commands
 
-| Command                   | Description                                                                                 |
-| ------------------------- | ------------------------------------------------------------------------------------------- |
-| `/jarfis`                 | Display command list                                                                        |
-| `/jarfis:work-meeting`    | Planning kickoff meeting (PO/TL open discussion -> artifact generation)                     |
-| `/jarfis:work`            | Full workflow: planning -> design -> implementation -> review                               |
-| `/jarfis:project-init`    | Project analysis -> generate `./.jarfis/project-profile.md`                                 |
-| `/jarfis:project-update`  | Incremental profile update (commit hash-based, date fallback)                               |
-| `/jarfis:sys-upgrade`     | Learning item CRUD + apply to agent/workflow prompts                                        |
-| `/jarfis:sys-health`      | Zombie Claude process diagnosis/cleanup                                                     |
-| `/jarfis:sys-distill`     | Prompt distillation — token efficiency analysis/optimization                                |
-| `/jarfis:work-continue`   | Follow-up on completed workflows (Fix/Extend mode, --workflow/--mode flags)                 |
-| `/jarfis:org`             | Full registered Org list (orgs.json based, CWD highlight)                                   |
-| `/jarfis:org-init`        | Organization initialization (scan + wiki creation)                                          |
-| `/jarfis:wiki-storyboard` | Design catalog browsing (wiki/DESIGN -> browser)                                            |
-| `/jarfis:search-setup`    | Semantic search installation (venv + sentence-transformers one-step)                        |
-| `/jarfis:search`          | Semantic unified search (meetings+works+wiki, filterable)                                   |
-| `/jarfis:search-index`    | Full Org semantic index batch creation/refresh (wiki+meetings+works)                        |
-| `/jarfis:level-check`     | AI-native developer maturity assessment (auto-collection + interview, 7-dimension 10-point) |
-| `/jarfis:locale`          | View current locale setting                                                                 |
-| `/jarfis:locale-set`      | Change locale setting (ko/en/ja)                                                            |
-| `/jarfis:sys-implement`   | JARFIS system self-modification/feature addition + version bump                             |
-| `/jarfis:sys-version`     | Version check/update/install specific version                                               |
+| Command                     | Description                                                                                 |
+| --------------------------- | ------------------------------------------------------------------------------------------- |
+| `/jarfis`                   | Display command list                                                                        |
+| `/jarfis:work-meeting`      | Planning kickoff meeting (PO/TL open discussion -> artifact generation)                     |
+| `/jarfis:work`              | Full workflow: planning -> design -> implementation -> review                               |
+| `/jarfis:project-init`      | Project analysis -> generate `./.jarfis/project-profile.md`                                 |
+| `/jarfis:project-update`    | Incremental profile update (commit hash-based, date fallback)                               |
+| `/jarfis:sys-upgrade`       | Learning item CRUD + apply to agent/workflow prompts                                        |
+| `/jarfis:sys-health`        | Zombie Claude process diagnosis/cleanup                                                     |
+| `/jarfis:sys-distill`       | Prompt distillation — token efficiency analysis/optimization                                |
+| ~~`/jarfis:work-continue`~~ | Use `/jarfis:work` instead                                                                  |
+| `/jarfis:org`               | Full registered Org list (orgs.json based, CWD highlight)                                   |
+| `/jarfis:org-init`          | Organization initialization (scan + wiki creation)                                          |
+| `/jarfis:wiki-storyboard`   | Design catalog browsing (wiki/DESIGN -> browser)                                            |
+| `/jarfis:search-setup`      | Semantic search installation (venv + sentence-transformers one-step)                        |
+| `/jarfis:search`            | Semantic unified search (meetings+works+wiki, filterable)                                   |
+| `/jarfis:search-index`      | Full Org semantic index batch creation/refresh (wiki+meetings+works)                        |
+| `/jarfis:level-check`       | AI-native developer maturity assessment (auto-collection + interview, 7-dimension 10-point) |
+| `/jarfis:locale`            | View current locale setting                                                                 |
+| `/jarfis:locale-set`        | Change locale setting (ko/en/ja)                                                            |
+| `/jarfis:sys-implement`     | JARFIS system self-modification/feature addition + version bump                             |
+| `/jarfis:sys-version`       | Version check/update/install specific version                                               |
 <!-- JARFIS-COMMANDS-END -->
 
 ---
@@ -373,7 +373,7 @@ bash install.sh --version 1.0.0
     ├── sys-upgrade.md                 # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection
     ├── sys-distill.md                 # Prompt distillation + agent whitelist protection + command analysis only + Dialectic Review
     ├── sys-version.md                 # Version management/updates
-    ├── work-continue.md                # Follow-up on completed workflows — Fix/Extend + Fix test ratchet + wiki 2/4-Step + Workflow Metrics
+    # work-continue.md — REMOVED in v3.7.1 (use /jarfis:work instead)
     ├── org.md                     # Full organization list — orgs.json based + unregistered Org auto-discovery + CWD highlight
     ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide
     ├── wiki-storyboard.md              # Design catalog browsing command
@@ -393,7 +393,7 @@ bash install.sh --version 1.0.0
     │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status injection + context injection notes + 5-0/5-2/5-3 separation
     │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-track update + semantic index refresh
     │   ├── wiki-loading.md        # Wiki loading shared module — 2-Step/4-Step + semantic search
-    │   └── continue-extend.md    # Continue Extend mode PO/Architect/TL/QA prompt
+    │   # continue-extend.md — REMOVED in v3.7.1
     ├── domains/                   # v3.0 Domain Pack infrastructure
     │   ├── _schema.yaml           # Domain Pack specification (Published Language, EP1-7)
     │   ├── web.yaml               # Web Development domain pack
@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.7.0] - 2026-04-14
+## [3.8.0] - 2026-04-14
 
-- implement: Phase 3 — context injection matrix, lazy loading, scope guard, handoff/agent-status injection
+- implement: Phase 4+4.5+5 — meeting expert context, sys-upgrade stale refs, work-continue removed
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
