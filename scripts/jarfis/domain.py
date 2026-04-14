@@ -6,8 +6,8 @@ Subcommands:
     list                         List installed domain packs
     detect <project_dir>         Auto-detect project domain
     agents <domain> <phase>      Get agents for a phase
-    compose <domain> <role> <task> [learnings] [context]
-                                 Compose Persona + Skills + Rules
+    compose <domain> <role> <task>
+                                 Compose Persona + Skills
     validate <domain>            Validate domain pack integrity
     scaffold <domain>            Generate skeleton domain pack
     install                      Install domain packs to ~/.claude/
@@ -288,13 +288,14 @@ def agents(domain_name, phase, domains_dir=None):
 
 
 def compose(domain_name, role_name, task,
-            learnings_path=None, project_context_path=None,
             domains_dir=None):
-    """Compose Persona + Skills + Rules into an agent prompt.
+    """Compose Persona + Skills into an agent prompt.
+
+    Project-level files (rule, context, profile) are injected by the
+    orchestrator separately, not by compose().
 
     F1/F2: Graceful degradation on errors.
     R4: Token budget enforcement with first-skill guarantee (W1-1).
-    R3: Tag-based rule filtering.
     W1-2: CJK-aware token estimation.
     W1-3/S1: Null/missing/string skills handling.
 
@@ -412,24 +413,10 @@ def compose(domain_name, role_name, task,
                 "reason": "external_not_found",
             })
 
-    # 3. Rules loading (tag filtering)
-    rules_content = ""
-    if learnings_path or project_context_path:
-        rules_content = load_filtered_rules(
-            learnings_path, project_context_path,
-            domain=domain_name,
-            framework_tags=_extract_framework_tags(skill_list),
-            always_include_untagged=config.get("rules", {}).get(
-                "always_include_untagged", True
-            ),
-        )
-
-    # 4. Compose prompt
+    # 3. Compose prompt (persona + skills only)
     sections = []
     if skills_content.strip():
         sections.append(f"## Active Skills\n{skills_content}")
-    if rules_content.strip():
-        sections.append(f"## Team Rules\n{rules_content}")
     sections.append(f"## Task\n{task}")
 
     prompt = "\n\n".join(sections)
@@ -442,63 +429,6 @@ def compose(domain_name, role_name, task,
         "truncated_skills": truncated_skills,
         "fallback": False,
     }
-
-
-def _extract_framework_tags(skills):
-    """Extract framework tags from skill names for rule filtering."""
-    # Skill names themselves serve as tags
-    return [s for s in skills if isinstance(s, str)]
-
-
-def load_filtered_rules(learnings_path, project_context_path,
-                        domain="", framework_tags=None,
-                        always_include_untagged=True):
-    """Load and filter rules from learnings.md and project-context.md.
-
-    R3: Tag-based filtering to prevent attention dilution.
-    F9: Handles missing sections gracefully (empty list).
-
-    Rule sections in learnings.md:
-    - ## Universal → always loaded
-    - ## {domain} → loaded when domain matches
-    - ## Agent Hints → legacy format, loaded as-is
-
-    Returns:
-        Formatted rules string.
-    """
-    rules_lines = []
-
-    # 1. learnings.md
-    if learnings_path and os.path.isfile(learnings_path):
-        content = _read_file_safe(learnings_path)
-        if content:
-            # Parse ## Universal section
-            universal = _extract_section(content, "Universal")
-            if universal:
-                rules_lines.append("### Universal Rules")
-                rules_lines.append(universal)
-
-            # Parse ## {domain} section
-            if domain:
-                domain_section = _extract_section(content, domain)
-                if domain_section:
-                    rules_lines.append(f"### {domain} Rules")
-                    rules_lines.append(domain_section)
-
-            # Legacy: ## Agent Hints (v2.5 compat)
-            agent_hints = _extract_section(content, "Agent Hints")
-            if agent_hints:
-                rules_lines.append("### Agent Hints (legacy)")
-                rules_lines.append(agent_hints)
-
-    # 2. project-context.md (always loaded — project-level overrides)
-    if project_context_path and os.path.isfile(project_context_path):
-        context_content = _read_file_safe(project_context_path)
-        if context_content:
-            rules_lines.append("### Project Rules")
-            rules_lines.append(context_content)
-
-    return "\n\n".join(rules_lines)
 
 
 def _extract_section(content, heading):
@@ -848,12 +778,10 @@ def main(args):
     elif subcmd == "compose":
         if len(subargs) < 3:
             json_output({
-                "error": "Usage: jarfis domain compose <domain> <role> <task> [learnings] [context]"
+                "error": "Usage: jarfis domain compose <domain> <role> <task>"
             })
             sys.exit(1)
-        learnings = subargs[3] if len(subargs) > 3 else None
-        context = subargs[4] if len(subargs) > 4 else None
-        result = compose(subargs[0], subargs[1], subargs[2], learnings, context)
+        result = compose(subargs[0], subargs[1], subargs[2])
         json_output(result)
 
     elif subcmd == "validate":

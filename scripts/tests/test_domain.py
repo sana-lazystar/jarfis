@@ -8,7 +8,6 @@ import pytest
 from jarfis.domain import (
     list_domains, detect, agents, compose, validate, scaffold, install,
     estimate_tokens, _resolve_skill_path, _extract_section,
-    load_filtered_rules,
 )
 
 
@@ -81,23 +80,6 @@ def project_with_react(tmp_path):
     return str(proj)
 
 
-@pytest.fixture
-def learnings_file(tmp_path):
-    """Create a learnings.md with domain sections."""
-    path = tmp_path / "learnings.md"
-    path.write_text("""# Learnings
-
-## Universal
-- [U-001] 커밋 메시지는 한글로
-
-## web
-- [W-001] React key prop 주의
-- [W-002] TanStack Query 사용
-
-## desktop
-- [D-001] IPC 1MB 제한
-""")
-    return str(path)
 
 
 # ── list_domains ──
@@ -230,13 +212,12 @@ class TestCompose:
         assert result["fallback"] is False
         assert result["loaded_skills"] == []
 
-    def test_compose_with_rules(self, domains_env, learnings_file):
+    def test_compose_no_rules_section(self, domains_env):
+        """compose() should NOT include Team Rules section (persona+skills only)."""
         result = compose("web", "frontend_engineer", "task",
-                         learnings_path=learnings_file,
                          domains_dir=domains_env)
-        assert "Universal Rules" in result["prompt_content"]
-        assert "커밋 메시지는 한글로" in result["prompt_content"]
-        assert "web Rules" in result["prompt_content"]
+        assert "## Team Rules" not in result["prompt_content"]
+        assert "## Active Skills" in result["prompt_content"]
 
     def test_compose_token_budget(self, domains_env):
         """R4: Skills exceeding budget should be truncated."""
@@ -383,35 +364,6 @@ class TestScaffold:
 
         scaffold("test", str(domains_dir))
         assert open(yaml_path).read() == original
-
-
-# ── load_filtered_rules ──
-
-class TestLoadFilteredRules:
-    def test_loads_universal(self, learnings_file):
-        result = load_filtered_rules(learnings_file, None, domain="web")
-        assert "커밋 메시지는 한글로" in result
-
-    def test_loads_domain_section(self, learnings_file):
-        result = load_filtered_rules(learnings_file, None, domain="web")
-        assert "React key prop" in result
-
-    def test_ignores_other_domain(self, learnings_file):
-        result = load_filtered_rules(learnings_file, None, domain="web")
-        assert "IPC 1MB" not in result
-
-    def test_missing_learnings(self, tmp_path):
-        """F9: Missing file should return empty, not crash."""
-        result = load_filtered_rules(str(tmp_path / "nope.md"), None, domain="web")
-        assert result == ""
-
-    def test_missing_domain_section(self, tmp_path):
-        """F9: Missing ## section should return empty."""
-        path = tmp_path / "learn.md"
-        path.write_text("# Learnings\n## Universal\n- rule1\n")
-        result = load_filtered_rules(str(path), None, domain="game")
-        assert "rule1" in result  # Universal still loaded
-        assert "game" not in result.lower() or "game Rules" not in result
 
 
 # ── _resolve_skill_path ──

@@ -147,6 +147,14 @@ Save the analysis results to `./.jarfis/project-profile.md`.
   ```
   Record the result as `> Last-Commit: <short-hash>`
 
+### Step 4.5: Ensure project-rule.md Exists
+
+Check if `./.jarfis/project-rule.md` exists. If not, create an empty file:
+```bash
+touch ./.jarfis/project-rule.md
+```
+Do not write any content, do not ask the user, do not provide guidance. Just ensure the file exists.
+
 ### Step 5: Report Results
 
 ```

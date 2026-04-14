@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.5.2] - 2026-04-13
+## [3.6.0] - 2026-04-14
 
-- implement: Python scripts and hooks migrated to English — 8 source files + 3 test files + 1 hook
+- implement: Phase 1 migration — compose() persona+skills only, preflight has_rule, project-rule.md creation
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

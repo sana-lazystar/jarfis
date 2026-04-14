@@ -132,6 +132,14 @@ Update the existing `./.jarfis/project-profile.md`:
 - Token efficiency is the top priority: no code copying, describe structure and patterns
 - All file paths should be relative to the project root
 
+### Step 4.5: Ensure project-rule.md Exists
+
+Check if `./.jarfis/project-rule.md` exists. If not, create an empty file:
+```bash
+touch ./.jarfis/project-rule.md
+```
+Do not write any content, do not ask the user, do not provide guidance. Just ensure the file exists.
+
 ### Step 5: Report Results
 
 **When changes exist:**

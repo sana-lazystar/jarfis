@@ -13,7 +13,7 @@ import subprocess
 import sys
 
 from .organization import ensure_project_in_org_profile, read_orgs, register_org
-from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_learnings_path, get_source_path, get_org_dir, json_output, STANDALONE_ORG
+from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_source_path, get_org_dir, json_output, STANDALONE_ORG
 
 
 def main(args):
@@ -59,14 +59,14 @@ def main(args):
         profile_path = None
         log("Profile not found")
 
-    # Learnings check
-    learnings_path = get_learnings_path(project_dir)
-    has_learnings = os.path.isfile(learnings_path)
-    if has_learnings:
-        log(f"Learnings found: {learnings_path}")
+    # Project rule check (user-defined, highest priority)
+    rule_path = os.path.join(project_dir, ".jarfis", "project-rule.md")
+    has_rule = os.path.isfile(rule_path)
+    if has_rule:
+        log(f"Rule found: {rule_path}")
     else:
-        learnings_path = None
-        log("Learnings not found")
+        rule_path = None
+        log("Rule not found")
 
     # Project context check
     context_path = os.path.join(project_dir, ".jarfis", "project-context.md")
@@ -165,8 +165,8 @@ def main(args):
         "project_dir": project_dir,
         "profile_path": profile_path,
         "has_profile": has_profile,
-        "has_learnings": has_learnings,
-        "learnings_path": learnings_path,
+        "has_rule": has_rule,
+        "rule_path": rule_path,
         "has_context": has_context,
         "context_path": context_path,
         "git_available": git_available,

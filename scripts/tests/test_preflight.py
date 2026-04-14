@@ -14,7 +14,7 @@ class TestPreflight:
         output = json.loads(capsys.readouterr().out)
         assert "project_dir" in output
         assert "has_profile" in output
-        assert "has_learnings" in output
+        assert "has_rule" in output
         assert "has_context" in output
         assert "git_available" in output
         assert "warnings" in output
@@ -41,12 +41,18 @@ class TestPreflight:
         output = json.loads(capsys.readouterr().out)
         assert output["has_context"] is True
 
-    def test_learnings_found(self, jarfis_env, capsys, tmp_path):
-        # Learnings are now at .personal/orgs/_standalone/learnings.md
-        # The fixture already creates this file
+    def test_rule_found(self, jarfis_env, capsys, tmp_path):
+        jarfis_dir = tmp_path / ".jarfis"
+        jarfis_dir.mkdir(exist_ok=True)
+        (jarfis_dir / "project-rule.md").write_text("")
         main([str(tmp_path)])
         output = json.loads(capsys.readouterr().out)
-        assert output["has_learnings"] is True
+        assert output["has_rule"] is True
+
+    def test_rule_not_found(self, jarfis_env, capsys, tmp_path):
+        main([str(tmp_path)])
+        output = json.loads(capsys.readouterr().out)
+        assert output["has_rule"] is False
 
     def test_non_git_dir_warns(self, jarfis_env, tmp_path, capsys):
         main([str(tmp_path)])

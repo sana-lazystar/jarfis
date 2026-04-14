@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.0] - 2026-04-14
+
+- implement: Phase 1 migration — compose() persona+skills only, preflight has_rule, project-rule.md creation
+
 ## [3.5.2] - 2026-04-13
 
 - implement: Python scripts and hooks migrated to English — 8 source files + 3 test files + 1 hook
