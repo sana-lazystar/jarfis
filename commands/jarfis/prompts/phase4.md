@@ -56,6 +56,10 @@ Conditional (use fallback if absent):
 
 > The rules below apply to all BE/FE/DevOps implementation agent prompts.
 > Deliver this section alongside each agent prompt.
+>
+> **Context injection for BE/FE/DevOps**: **project-rule** + project-context + project-profile + domain compose (Skills) + tasks.md (PRIMARY) + architecture.md + api-spec.md (cond) + prd.md (REFERENCE ONLY) + design/ (FE) + scope guard + Phase 2 handoff injection.
+>
+> **Phase 2 Handoff**: Inject `phases.2.handoff` (key_decisions, warnings, unresolved) from `.jarfis-state.json` into each implementation agent prompt. See "Phase 2 Handoff" section above.
 
 > **Reminder**: All output in $LOCALE language.
 
@@ -64,6 +68,11 @@ Common Implementation Rules:
 - Work based on the files specified in each task's 'Target Files' (no unnecessary codebase exploration)
 - Follow the project profile conventions if a project profile exists
 - Satisfy every task's 'Completion Criteria', 'Tests', and 'Security' requirements
+- prd.md is REFERENCE ONLY — follow tasks.md as the primary implementation guide
+
+─── Scope Guard (BE/FE/DevOps only) ───
+요구사항에 명시된 범위만 구현한다. 범위 밖의 추상화, 일반화, 선제적 리팩토링은 하지 않는다.
+───────────────────────────────
 
 Git Auto-Commit (per task):
 - On task completion, git add changed files + commit
@@ -75,6 +84,9 @@ Git Auto-Commit (per task):
 ---
 
 **Step 4-0: Security Pre-Review** (senior-security-engineer)
+
+> **Context injection for Security**: .wiki-cache.md + architecture.md + tasks.md. No project-rule, no project-context, no project-profile.
+
 ```
 Task prompt:
 "Read $DOCS_DIR/architecture.md and $DOCS_DIR/tasks.md, then write pre-implementation security guidelines.

@@ -25,6 +25,10 @@ DevOps: $PHASE4_AGENTS.devops (completed | skipped | failed)
 
 ---
 
+**Step 5-0: API Contract Automated Verification** (tech-lead) — Only when api-spec.md exists
+
+> **Context injection for TL (5-0)**: **project-rule** + project-profile + api-spec.md + actual code + Phase 4 agent status injection. No project-context, no wiki-cache.
+
 Tech Lead (tech-lead):
 ```
 Task prompt:
@@ -47,6 +51,13 @@ Verification Items:
 Save results to $DOCS_DIR/api-contract-check.md.
 Clearly flag any mismatches."
 ```
+
+**Step 5-1: Parallel Review** (3-4 agents run simultaneously)
+
+> **Context injection for TL (5-1)**: **project-rule** + project-profile + code + tasks.md + architecture.md + api-contract-check.md + deployment-plan.md + Phase 4 agent status.
+> **Context injection for QA (5-1)**: **project-rule** + project-profile + code + prd.md + test-strategy.md + design/ (cond) + Phase 4 agent status.
+> **Context injection for Security (5-1)**: code + architecture.md + Phase 4 agent status. No project-rule, no project-context, no project-profile.
+> **Context injection for UX (5-1)**: design/ + reference.png + FE code + Phase 4 agent status. No project-rule, no project-context, no project-profile.
 
 > **Reminder**: All output in $LOCALE language.
 
@@ -210,6 +221,10 @@ On 3+ repetitions, strongly recommend design re-review.
 
 ---
 
+**Step 5-2: Root Cause Diagnosis** (tech-lead) — when "Fix and re-review" is selected
+
+> **Context injection for TL (5-2 Diagnosis)**: review.md + api-contract-check.md. NO project-rule (analytical exception — root cause diagnosis is analytical synthesis, not code production). No project-context, no project-profile.
+
 > **Reminder**: All output in $LOCALE language.
 
 Tech Lead (tech-lead):
@@ -257,7 +272,10 @@ Regression Prevention: (tests to add or structural improvements)
 "
 ```
 
-BE/FE Fix Agents (execute only when diagnosis.md contains fix directives for the respective role):
+**Step 5-3: Fix Implementation** (BE/FE — execute only when diagnosis.md contains fix directives for the respective role)
+
+> **Context injection for BE/FE (5-3 Fix)**: **project-rule** + project-context + project-profile + diagnosis.md (PRIMARY) + architecture.md + tasks.md. No wiki-cache.
+
 - BE: senior-backend-engineer, working directory $BACKEND_PROJECT_DIR
 - FE: senior-frontend-engineer, working directory $FRONTEND_PROJECT_DIR
 ```

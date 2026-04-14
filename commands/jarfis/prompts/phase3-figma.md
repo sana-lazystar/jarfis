@@ -45,6 +45,7 @@ figma_pages example:
    - Save to `$DOCS_DIR/design/{page_path}/reference.png`
 
 4. **Common Component Detection** (first page only — subsequent pages reuse results):
+   > **Context injection**: project-profile for component detection. No project-rule, no project-context, no wiki-cache.
    - Among top 1-2 level INSTANCE nodes in the YAML node tree:
      - Nodes whose names contain `Header/Footer/GNB/Navigation`
      - Name matching against shared components registered in project-profile.md

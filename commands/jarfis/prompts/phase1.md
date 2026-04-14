@@ -5,6 +5,9 @@
 > **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
 
 **Step 1-0: PO Wiki Reference** (senior-product-owner, only when Org is registered)
+
+> **Context injection**: Specific PO/ wiki sub-files ONLY. No project-rule, no project-context, no project-profile, no wiki-cache.
+
 ```
 Task prompt:
 "Check the following files in PO/ wiki:
@@ -17,6 +20,9 @@ If there are conflicts, escalate them."
 ```
 
 **Step 1-1: PO Counter-Questions** (senior-product-owner)
+
+> **Context injection**: project-context + .wiki-cache.md + meeting files (100L/file, 200L total cap on extras). No project-rule, no project-profile.
+
 ```
 Task prompt:
 "The user has requested the following feature: $ARGUMENTS
@@ -53,6 +59,9 @@ Organize and present the list of counter-questions to the user."
 ```
 
 **Step 1-1.5: Working Backwards Document** (senior-product-owner)
+
+> **Context injection**: Meeting context only ($MEETING_NOTES, $MEETING_DECISIONS, $MEETING_EXTRA) — conditional. No project-rule, no project-context, no project-profile, no wiki-cache.
+
 ```
 Task prompt:
 "Based on the user's feature description and counter-question answers, create a Working Backwards document before writing the PRD.
@@ -87,6 +96,11 @@ Write in the following format:
 
 Save the result to $DOCS_DIR/press-release.md."
 ```
+
+**Step 1-2: PRD Writing + Feasibility Assessment** (parallel execution)
+
+> **Context injection for PO (PRD)**: project-context + project-profile + .wiki-cache.md + meeting context. No project-rule.
+> **Context injection for TA (Feasibility)**: project-context + project-profile + .wiki-cache.md. No project-rule.
 
 PO (senior-product-owner):
 ```
@@ -168,6 +182,8 @@ Add the results to the 'Technical Feasibility Assessment' section of $DOCS_DIR/p
 ```
 
 **Step 1-3: PO Additional Tasks** (senior-product-owner, optional)
+
+> **Context injection**: project-context + .wiki-cache.md. No project-rule, no project-profile.
 
 After passing Gate 1, execute based on user-selected tasks:
 

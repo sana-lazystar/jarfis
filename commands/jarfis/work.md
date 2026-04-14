@@ -47,6 +47,9 @@ Classify the user's request (`$ARGUMENTS` + conversation context) into one of th
 - When continuing existing work, branch from the **original feature branch** rather than `develop` (check the `branch` field in `.jarfis-state.json`).
 - Record `base_branch` in `.jarfis-state.json` to track branching history.
 
+### Type B Prerequisite
+- When executing Type B (partial), **Phase 0 preflight + wiki loading must still run before the target Phase**. The orchestrator must execute Phase 0 infrastructure steps (path resolution, wiki cache generation) before jumping to any target Phase.
+
 ---
 
 ## Workflow Overview
@@ -91,15 +94,16 @@ Artifacts are stored in `$JARFIS_ORG_DIR/works/{YYYYMMDD}-{type}-{ticket-name}/`
 
 | File | Location | Description |
 |------|----------|-------------|
-| `learnings.md` | `$JARFIS_ORG_DIR/learnings.md` | **Per-Org** — Agent Hints + Workflow Patterns |
+| `project-rule.md` | `./.jarfis/project-rule.md` | **Per-project** — Coding rules/conventions for BE, FE, DevOps, QA, TL agents |
+| `learnings.md` | `$JARFIS_ORG_DIR/learnings.md` | **Per-Org** — Agent Hints + Workflow Patterns (sys-upgrade를 통해서만 사후 적용, 런타임 로딩 안 함) |
 | `project-context.md` | `./.jarfis/project-context.md` | **Per-project** — Knowledge specific to this codebase |
 
 ---
 
-## Phase 0: Pre-flight (Load Learning Files)
+## Phase 0: Pre-flight
 
 ### Goal
-Load learnings accumulated from previous workflows and project context to improve agent quality.
+Resolve file paths and generate wiki cache for downstream Phase use.
 
 ### Execution Order
 
@@ -167,7 +171,7 @@ Load learnings accumulated from previous workflows and project context to improv
      - Glob scan all `.md` files in `$MEETING_PATH`
      - Collect remaining files excluding the 4 known files above and hidden files (starting with `.`)
      - Concatenate each file into `$MEETING_EXTRA` with a `## [filename]` header
-     - **Cap**: If total additional files exceed 200 lines, truncate and show `(... truncated — original: $MEETING_PATH/{filename})`
+     - **Cap**: Per-file cap of 100 lines + total cap of 200 lines. Truncate and show `(... truncated — original: $MEETING_PATH/{filename})`
      - If no additional files, `$MEETING_EXTRA` = empty string
 
    - If "No meeting" is selected: `source_meeting` = `null`, all `$MEETING_*` variables = empty string
@@ -230,12 +234,13 @@ Load learnings accumulated from previous workflows and project context to improv
    > Prompt: Execute the "4-Step Full Loading" procedure from `prompts/wiki-loading.md`.
    - INDEX.md → 4 _index.md files → read up to 5 related files
    - Save loaded wiki content as `$WIKI_CONTEXT`
+   - Save the loaded wiki content to `$DOCS_DIR/.wiki-cache.md` for downstream Phase use
 
    **2-3. Cascading Specificity Rule Injection**
    - When Org is registered, inject the following rule into all agent prompts:
    > Information priority: $DOCS_DIR > project/.jarfis > wiki/ > INDEX.md
    > Topics covered by this task: $DOCS_DIR takes precedence. Topics not covered: wiki is authoritative.
-3. Load project profiles: `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4–5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
+3. Record project profile paths only (lazy loading — do NOT read content here): `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` → `$BE_PROFILE_PATH`, `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` → `$FE_PROFILE_PATH`. Content is read at agent spawn time.
 
 **Injection Rules (Lazy Loading):**
 
@@ -734,13 +739,17 @@ Accumulate learnings from this workflow into the **global learnings file** and *
 
 Read retrospective.md and distribute to the following two files:
 
+> **Writing scope rule**: learnings.md에는 워크플로우/프로세스 학습만 기록. 프로젝트 학습은 project-context.md에 직접 기록.
+
 **1. Global Learnings — `$JARFIS_ORG_DIR/learnings.md`**
 > Template: Read `templates/learnings.md` and use as the artifact format.
+> **Scope**: Workflow/process learnings ONLY (e.g., agent improvements, step optimizations, tool usage patterns). Do NOT record project-specific knowledge here.
 
 Management rules: Append to existing file (update if duplicate), remove outdated entries, record dates
 
 **2. Project Context — `./.jarfis/project-context.md`**
 > Template: Read `templates/project-context.md` and use as the artifact format.
+> **Scope**: Project-specific learnings (e.g., codebase patterns, architecture decisions, team conventions). Record [project]-tagged items from retrospective.md directly here.
 
 Management rules: Update existing file (add new information, refresh outdated information)
 

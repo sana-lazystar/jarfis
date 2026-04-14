@@ -6,6 +6,8 @@
 
 **Step 2-(-1): TA/QA Wiki Reference** (Only when Org is registered)
 
+> **Context injection**: Specific wiki sub-files ONLY. No project-rule, no project-context, no project-profile, no wiki-cache.
+
 TA (technical-architect):
 ```
 Wiki Reference Guidelines:
@@ -30,6 +32,9 @@ Establish a test strategy that maintains consistency with existing test standard
 ---
 
 **Step 2-0: Impact Analysis** (technical-architect)
+
+> **Context injection for TA**: project-context + project-profile + .wiki-cache.md + prd.md. No project-rule.
+
 ```
 Task prompt:
 "Read $DOCS_DIR/prd.md and analyze the scope of impact on the existing codebase.
@@ -83,6 +88,11 @@ Write ADRs for at minimum: technology stack selection, data model structure, and
 Save the results to $DOCS_DIR/architecture.md."
 ```
 
+**Step 2-1.5: API Specification** (technical-architect + tech-lead sequential)
+
+> **Context injection for TA (API Spec)**: project-context + project-profile + .wiki-cache.md + architecture.md. No project-rule.
+> **Context injection for TL (API Review)**: **project-rule** + project-profile + .wiki-cache.md + api-spec.md + architecture.md. No project-context.
+
 Architect (technical-architect):
 ```
 Task prompt:
@@ -115,6 +125,9 @@ If corrections are needed, apply them directly to $DOCS_DIR/api-spec.md."
 ```
 
 **Step 2-2: Task Decomposition** (tech-lead)
+
+> **Context injection for TL**: **project-rule** + project-context + project-profile + .wiki-cache.md + architecture.md + api-spec.md + prd.md.
+
 ```
 Task prompt:
 "Read $DOCS_DIR/prd.md, architecture.md, impact-analysis.md, test-strategy.md, api-spec.md (if exists) and decompose the tasks.
@@ -139,6 +152,7 @@ Save the results to $DOCS_DIR/tasks.md."
 
 **Step 2-3: Test Strategy** (senior-qa-engineer)
 
+> **Context injection for QA**: **project-rule** + project-profile + .wiki-cache.md + prd.md + architecture.md + tasks.md. No project-context.
 > **Reminder**: All output in $LOCALE language.
 
 ```

@@ -5,6 +5,9 @@
 > **Locale**: Present ALL user-facing output in $LOCALE language. Internal reasoning: English.
 
 **Step 6-1: Retrospective** (tech-lead)
+
+> **Context injection for TL (6-1)**: All $DOCS_DIR artifacts + .jarfis-state.json. NO project-rule (intentional exception — retrospective is process analysis, not code production). No project-context, no project-profile, no wiki-cache.
+
 ```
 Task prompt:
 "Conduct a retrospective of the entire JARFIS workflow.

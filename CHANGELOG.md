@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.7.0] - 2026-04-14
+
+- implement: Phase 3 — context injection matrix, lazy loading, scope guard, handoff/agent-status injection
+
 ## [3.6.1] - 2026-04-14
 
 - implement: Phase 2 — remove $LEARNINGS runtime loading from all prompts
