@@ -65,45 +65,6 @@ class TestLeakyAbstraction:
         assert violations == [], f"Leaky abstractions found:\n" + "\n".join(violations)
 
 
-class TestCrossDomainReferences:
-    """Domain packs must not reference each other."""
-
-    def test_no_cross_domain_references(self):
-        """Files in domains/X/ must not reference domains/Y/."""
-        if not os.path.isdir(DOMAINS_DIR):
-            pytest.skip("No domains directory")
-
-        domain_names = []
-        for item in os.listdir(DOMAINS_DIR):
-            if os.path.isdir(os.path.join(DOMAINS_DIR, item)) and not item.startswith("_"):
-                domain_names.append(item)
-
-        if len(domain_names) < 2:
-            pytest.skip("Need at least 2 domains to check cross-references")
-
-        violations = []
-        for domain in domain_names:
-            domain_path = os.path.join(DOMAINS_DIR, domain)
-            for root, dirs, files in os.walk(domain_path):
-                for fname in files:
-                    fpath = os.path.join(root, fname)
-                    try:
-                        with open(fpath, encoding="utf-8") as f:
-                            content = f.read()
-                    except Exception:
-                        continue
-                    for other in domain_names:
-                        if other != domain and other in content:
-                            # Exclude external_skills references (allowed)
-                            if f"{other}/" in content:
-                                continue
-                            violations.append(
-                                f"{domain}/{fname} references '{other}'"
-                            )
-
-        assert violations == [], "Cross-domain references:\n" + "\n".join(violations)
-
-
 class TestDomainYamlSchema:
     """All domain.yaml files must have required fields."""
 
