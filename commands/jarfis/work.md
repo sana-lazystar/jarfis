@@ -212,10 +212,10 @@ Load learnings accumulated from previous workflows and project context to improv
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight --check-meetings
    ```
-   Check `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki`, `warnings` from JSON output:
-   - `has_learnings`=true → load `$LEARNINGS` from `learnings_path`
-   - `has_context`=true → load `$PROJECT_CONTEXT` from `context_path`
-   - `has_profile`=true → load profile from `profile_path`
+   Check `has_rule`, `has_context`, `has_profile`, `org_root`, `has_wiki`, `warnings` from JSON output:
+   - `has_rule`=true → record `rule_path` for lazy loading (do NOT read content here)
+   - `has_context`=true → record `context_path` for lazy loading (do NOT read content here)
+   - `has_profile`=true → record `profile_path` for lazy loading (do NOT read content here)
    - `org_root` non-null → set `$ORG_ROOT` variable. Confirm Org name via `org_name`. If `org_auto_registered`=true, output "Org '{org_name}' auto-registered"
    - If `warnings` array is not empty, display warnings to user
    - Substitute empty string for missing files
@@ -237,14 +237,26 @@ Load learnings accumulated from previous workflows and project context to improv
    > Topics covered by this task: $DOCS_DIR takes precedence. Topics not covered: wiki is authoritative.
 3. Load project profiles: `$BACKEND_PROJECT_DIR/.jarfis/project-profile.md` + `$FRONTEND_PROJECT_DIR/.jarfis/project-profile.md` (Phase 4–5) → `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE`
 
-**Injection Rules:**
-- Phase 1 (PO, Architect): `$LEARNINGS` Workflow Patterns + full `$PROJECT_CONTEXT` + `$WIKI_CONTEXT` (when Org is registered)
-- Phase 2 (Architect — Impact Analysis, design): `$BE_PROJECT_PROFILE` + `$FE_PROJECT_PROFILE` (if they exist) + `$WIKI_CONTEXT` (when Org is registered)
-- Phase 4 (BE/FE/DevOps): When `$DOMAIN` is set, `domain compose` synthesizes Skills+Rules for injection. When not set, use `$LEARNINGS` Agent Hints for the relevant role + full `$PROJECT_CONTEXT` + **the relevant role's `$PROJECT_PROFILE`**
-- Phase 5 (Tech Lead/QA/Security): `$LEARNINGS` Agent Hints for the relevant role
-- **Cascading Specificity**: When Org is registered, inject priority rules into all Phases
+**Injection Rules (Lazy Loading):**
 
-Substitute empty string if learning/profile files don't exist.
+All context files are read at agent spawn time, NOT pre-loaded in Phase 0.
+
+**Orchestrator injection order** (domain/non-domain 공통):
+1. `project-rule.md` — if role is in {BE, FE, DevOps, QA, TL} only
+2. Persona — from `domain compose` or hardcoded persona file
+3. Skills — from `domain compose` (null if no domain)
+4. `project-context.md` — per-agent matrix (see brainstorm-audit.md B-revised)
+5. `project-profile.md` — per-agent matrix
+6. Phase artifacts — agent reads via tool calls, paths in prompt
+7. Scope guard — Phase 4 Step 4-1 only, BE/FE/DevOps only
+8. Phase 2 handoff — Phase 4 only (from state `phases.2.handoff`)
+9. Phase 4 agent status — Phase 5 only (from state `phase4_agents`)
+
+**Priority**: project-rule(1) > project-context(2) > project-profile(3) > wiki(4)
+**$LOCALE**: Injected into ALL agent prompts as cross-cutting directive.
+**Cascading Specificity**: When Org is registered, inject priority rules into all Phases.
+
+Substitute empty string if files don't exist.
 
 ---
 

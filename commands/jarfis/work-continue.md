@@ -65,7 +65,7 @@ If `$WORKFLOW_PATH` is not provided (automatic discovery — using jarfis_cli.py
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
-   From the JSON output, use `has_learnings`, `has_context`, `has_profile`, `org_root`, `has_wiki` to load each file. Same injection rules as work.md Phase 0: `$LEARNINGS`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (empty string if not available)
+   From the JSON output, use `has_rule`, `has_context`, `has_profile`, `org_root`, `has_wiki` to load each file. Same injection rules as work.md Phase 0: `$PROJECT_RULE`, `$PROJECT_CONTEXT`, `$BE_PROJECT_PROFILE`, `$FE_PROJECT_PROFILE` (empty string if not available)
 
    **0-0.5. Wiki Loading** (when Org is registered — `org_root` non-null + `has_wiki`=true):
    > See prompt: `prompts/wiki-loading.md`
@@ -210,7 +210,7 @@ Run agents (model: **sonnet** — implementation role):
   - `$DOCS_DIR/prd.md` — Original PRD
   - `$DOCS_DIR/architecture.md` — Architecture
   - `$DOCS_DIR/tasks.md` — Tasks (focus on Follow-up Fix section)
-  - `$LEARNINGS` — Agent Hints for the relevant role
+  - `$PROJECT_RULE` — Project rules (for BE/FE/DevOps/QA/TL roles only)
   - `$PROJECT_CONTEXT` — Project context
   - `$BE_PROJECT_PROFILE` / `$FE_PROJECT_PROFILE` — Project profile for the relevant role (if available)
 

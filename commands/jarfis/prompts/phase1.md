@@ -97,8 +97,6 @@ Feature: $ARGUMENTS
 User answers: [counter-question answers]
 Working Backwards: Refer to $DOCS_DIR/press-release.md
 
-$LEARNINGS (Workflow Patterns section)
-
 [Add when referencing a meeting — omit this block if $MEETING_REF is empty]
 Meeting decisions: $MEETING_DECISIONS
 Meeting technical research: $MEETING_RESEARCH

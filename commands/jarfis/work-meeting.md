@@ -68,9 +68,9 @@ engaging in free-form discussion with the user to explore and refine ideas.
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py preflight
    ```
-   Check `has_profile`, `has_learnings`, `has_context`, `org_root`, `has_wiki` from the JSON output:
+   Check `has_profile`, `has_rule`, `has_context`, `org_root`, `has_wiki` from the JSON output:
    - `has_profile`=true → load `$PROJECT_PROFILE` from `profile_path`
-   - `has_learnings`=true → load `$LEARNINGS` from `learnings_path`
+   - `has_rule`=true → load `$PROJECT_RULE` from `rule_path`
    - `has_context`=true → load `$PROJECT_CONTEXT` from `context_path`
    - The meeting can proceed even if none of these files exist (empty string on load failure)
    - Display items from the `warnings` array as informational messages (they do not block the meeting)

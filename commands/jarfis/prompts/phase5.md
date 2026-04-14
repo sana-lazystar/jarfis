@@ -65,8 +65,6 @@ Reference Documents:
 - $DOCS_DIR/api-contract-check.md (if present — prioritize checking mismatches)
 - $DOCS_DIR/deployment-plan.md (review appropriateness of deployment strategy)
 
-$LEARNINGS (Tech Lead section)
-
 Review Criteria:
 - Code quality and readability
 - Adherence to architecture design ($DOCS_DIR/architecture.md)
@@ -91,8 +89,6 @@ Reference Documents:
 - PRD: $DOCS_DIR/prd.md
 - UX Design: $DOCS_DIR/design/ (HTML mockups, only if present)
 - Test Strategy: $DOCS_DIR/test-strategy.md (verify against this strategy)
-
-$LEARNINGS (QA Engineer section)
 
 ─── TDD-Enabled Review Streamlining (phases.4.tdd_enabled === true) ───
 Tests written by QA in Phase 4-0.5 are already in a passing state.

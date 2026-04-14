@@ -116,8 +116,6 @@ References:
 - $DOCS_DIR/tasks.md — 'Target Files' for each task (basis for import path configuration)
 - $BE_PROJECT_PROFILE / $FE_PROJECT_PROFILE — Test framework, directory structure, conventions
 
-$LEARNINGS (QA Engineer section)
-
 Test Writing Rules:
 1. Since no implementation exists yet, all tests are expected to FAIL or produce import errors (RED state).
    - However, the test files themselves must be free of syntax errors.
@@ -152,7 +150,6 @@ Task prompt:
 
 References: tasks.md (tasks), api-spec.md (API Contract, if present), architecture.md (data models/patterns)
 
-$LEARNINGS (Backend Engineer section)
 $PROJECT_CONTEXT
 $BE_PROJECT_PROFILE
 
@@ -214,7 +211,6 @@ Common rules:
 - <!-- COMMON: {name} --> comments: use existing shared components from the project
 ───────────────────────────────
 
-$LEARNINGS (Frontend Engineer section)
 $PROJECT_CONTEXT
 $FE_PROJECT_PROFILE
 

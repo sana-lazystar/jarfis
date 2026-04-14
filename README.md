@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.6.0] - 2026-04-14
+## [3.6.1] - 2026-04-14
 
-- implement: Phase 1 migration — compose() persona+skills only, preflight has_rule, project-rule.md creation
+- implement: Phase 2 — remove $LEARNINGS runtime loading from all prompts
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

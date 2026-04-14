@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.6.1] - 2026-04-14
+
+- implement: Phase 2 — remove $LEARNINGS runtime loading from all prompts
+
 ## [3.6.0] - 2026-04-14
 
 - implement: Phase 1 migration — compose() persona+skills only, preflight has_rule, project-rule.md creation
