@@ -52,7 +52,14 @@ Save results to $DOCS_DIR/api-contract-check.md.
 Clearly flag any mismatches."
 ```
 
-**Step 5-1: Parallel Review** (3-4 agents run simultaneously)
+**Step 5-1: Parallel Review** (3-4 agents run simultaneously — each as SEPARATE agent, DO NOT combine)
+
+> **🔒 Agent Execution Recording**: After each review agent completes, the orchestrator MUST record completion:
+> ```bash
+> jarfis_cli.py state set-nested "$STATE_FILE" "phase5_agents.<role>" '"completed"'
+> ```
+> Roles to record: `tech_lead`, `qa`, `security`, `ux_designer` (when applicable).
+> Gate 3 gate-check validates these records. Missing records → Gate 3 FAIL.
 
 > **Context injection for TL (5-1)**: **project-rule** + project-profile + code + tasks.md + architecture.md + api-contract-check.md + deployment-plan.md + Phase 4 agent status.
 > **Context injection for QA (5-1)**: **project-rule** + project-profile + code + prd.md + test-strategy.md + design/ (cond) + Phase 4 agent status.

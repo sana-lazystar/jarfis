@@ -866,6 +866,27 @@ Use **`$DOCS_DIR/.jarfis-state.json`** as the single source of truth (SSOT) for 
 3. **Always use AskUserQuestion** to get an explicit user selection (do not auto-proceed with text output alone).
 4. "Revision" → re-run the relevant Phase agent. "Approve" → auto-proceed to next Phase. "Abort" → terminate immediately.
 
+### Anti-Optimization Rules (Mandatory)
+
+The orchestrator MUST NOT make "efficiency" judgments that reduce, combine, or skip workflow steps. These rules exist because the orchestrator has a demonstrated pattern of cutting corners under the guise of optimization.
+
+1. **Do NOT combine agents that the workflow defines as separate.** If Phase 5 specifies TL, QA, Security, UX Designer as separate agents, spawn 4 separate agents. Never combine them into 1 "combined review" agent.
+2. **Do NOT skip steps because you judge them "not essential right now."** Every Step listed in a Phase must be executed unless the Skip Rules explicitly allow skipping.
+3. **Do NOT defer steps to "after the Gate."** If a Step is defined before a Gate, it must complete before the Gate is presented. gate-check enforces file existence, but the orchestrator must not rationalize deferral.
+4. **Do NOT write agent prompts that prioritize some requirements over others.** If an agent must both "fix review issues" and "apply design," give equal weight and detail to both. An unbalanced prompt causes the agent to ignore the less-detailed requirement.
+5. **Record every agent spawn in `.jarfis-state.json`.** Use `phase{N}_agents` to track which agents were actually executed. gate-check validates these records at the next Gate.
+
+### Phase 5 Agent Execution Recording
+
+When executing Phase 5 Step 5-1, record each review agent's completion:
+```bash
+jarfis_cli.py state set-nested "$STATE_FILE" "phase5_agents.tech_lead" '"completed"'
+jarfis_cli.py state set-nested "$STATE_FILE" "phase5_agents.qa" '"completed"'
+jarfis_cli.py state set-nested "$STATE_FILE" "phase5_agents.security" '"completed"'
+jarfis_cli.py state set-nested "$STATE_FILE" "phase5_agents.ux_designer" '"completed"'  # Only when required_roles.ux_designer == true
+```
+Gate 3 gate-check validates that all required agents were executed.
+
 ### SuperClaude Integration
 When needed: `/sc:brainstorm` (Phase 1), `/sc:design` (Phase 2), `/sc:implement` (Phase 4), `/sc:analyze`/`/sc:test` (Phase 5)
 

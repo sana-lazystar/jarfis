@@ -466,7 +466,8 @@ class TestGate3:
         s["phases"]["4"] = {"status": "completed"}
         s["phases"]["4.5"] = {"status": "completed"}
         s["phases"]["5"] = {"status": "in_progress"}
-        s["required_roles"] = {"devops": False}
+        s["required_roles"] = {"devops": False, "frontend": True, "ux_designer": False}
+        s["phase5_agents"] = {"tech_lead": "completed", "qa": "completed", "security": "completed"}
         return s
 
     def test_pass_all_required(self, tmp_path):
@@ -623,6 +624,64 @@ class TestGate3:
         results = _gate3_checks(state, docs)
         r = _find(results, "phases.5.status")
         assert r is not None and r.status == CheckResult.PASS
+
+    def test_phase5_agents_all_present_pass(self, tmp_path):
+        """All required phase5 agents recorded -> PASS."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        results = _gate3_checks(state, docs)
+        for role in ["tech_lead", "qa", "security"]:
+            r = _find(results, f"phase5_agents.{role}")
+            assert r is not None and r.status == CheckResult.PASS, f"{role} should PASS"
+
+    def test_phase5_agents_missing_tl_fail(self, tmp_path):
+        """tech_lead not recorded -> FAIL."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        del state["phase5_agents"]["tech_lead"]
+        results = _gate3_checks(state, docs)
+        r = _find(results, "phase5_agents.tech_lead")
+        assert r is not None and r.status == CheckResult.FAIL
+
+    def test_phase5_agents_ux_required_but_missing_fail(self, tmp_path):
+        """UX designer required + FE needed but not recorded -> FAIL."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        state["required_roles"]["ux_designer"] = True
+        state["required_roles"]["frontend"] = True
+        # phase5_agents has tl/qa/security but NOT ux_designer
+        results = _gate3_checks(state, docs)
+        r = _find(results, "phase5_agents.ux_designer")
+        assert r is not None and r.status == CheckResult.FAIL
+
+    def test_phase5_agents_ux_not_required_skip(self, tmp_path):
+        """UX designer not required -> no ux_designer check at all."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        state["required_roles"]["ux_designer"] = False
+        results = _gate3_checks(state, docs)
+        r = _find(results, "phase5_agents.ux_designer")
+        assert r is None  # Not even checked
+
+    def test_phase5_agents_ux_required_and_present_pass(self, tmp_path):
+        """UX designer required + recorded -> PASS."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        state["required_roles"]["ux_designer"] = True
+        state["required_roles"]["frontend"] = True
+        state["phase5_agents"]["ux_designer"] = "completed"
+        results = _gate3_checks(state, docs)
+        r = _find(results, "phase5_agents.ux_designer")
+        assert r is not None and r.status == CheckResult.PASS
+
+    def test_phase5_agents_empty_all_fail(self, tmp_path):
+        """No phase5_agents at all -> all 3 required agents FAIL."""
+        docs = _make_docs(tmp_path, files=["review.md", "deployment-plan.md"])
+        state = self._full_state(tmp_path, docs)
+        state["phase5_agents"] = {}
+        results = _gate3_checks(state, docs)
+        fails = [r for r in results if "phase5_agents" in r.label and r.status == CheckResult.FAIL]
+        assert len(fails) == 3  # tl, qa, security
 
 
 # ---------------------------------------------------------------------------
@@ -878,7 +937,8 @@ class TestCmdGateCheck:
                 "4.5": {"status": "completed"},
                 "5": {"status": "in_progress"},
             },
-            "required_roles": {"devops": False},
+            "required_roles": {"devops": False, "frontend": True, "ux_designer": False},
+            "phase5_agents": {"tech_lead": "completed", "qa": "completed", "security": "completed"},
         }
         sf = self._make_state_file(tmp_path, state)
         cmd_gate_check([sf, "3"])

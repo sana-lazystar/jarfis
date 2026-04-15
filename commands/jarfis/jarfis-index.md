@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-15 | Version: 3.10.0
+> Do not edit manually. Last updated: 2026-04-15 | Version: 3.10.1
 
 ## File Structure
 ```
@@ -11,7 +11,7 @@
     ├── jarfis-index.md            # This file — JARFIS system overview
     ├── sys-implement.md               # JARFIS self-modification command + Dialectic Review ratchet convergence (analyze→verify→history→improve loop) + Python TDD rules (292 lines)
     ├── work-meeting.md                 # Planning kickoff meeting + wiki loading + --prev-meeting previous meeting reference (PO/TL discussion, 230 lines)
-    ├── work.md                    # Core: workflow orchestration (~874 lines, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain branching, v3.6: Lazy Loading + context injection matrix)
+    ├── work.md                    # Core: workflow orchestration (~890 lines, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain branching, v3.6: Lazy Loading + context injection matrix, v3.10.1: Anti-Optimization Rules + Phase 5 agent recording)
     ├── project-init.md            # Project profile creation (162 lines)
     ├── project-update.md          # Incremental profile update — commit hash-based change detection (160 lines)
     ├── sys-upgrade.md                 # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection (296 lines)
@@ -152,7 +152,7 @@
   - `gate_check.py` — Gate prerequisite validation module (Gate 1/2/3 산출물 + 조건부 파일 + 상태 검증, 860 lines) [NEW]
   - `level_check.py` — AI-native maturity auto-collection module (filesystem survey + jsonl session parsing, orchestration detection)
   - `wiki_search.py` — General-purpose semantic search module (sentence-transformers bge-m3, wiki/meetings/works indexing+search+unified search + memory guard + CPU forced + MPS memory deduction, 771 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (369 tests)
+- `~/.claude/scripts/tests/` — pytest test directory (375 tests)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_utils.py` — utils.py interface tests
   - `test_state.py` — state.py CRUD + validate tests

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.10.1] - 2026-04-15
+
+- implement: anti-optimization rules + phase5_agents gate-check enforcement
+
 ## [3.10.0] - 2026-04-15
 
 - implement: add gate-check/phase-check programmatic prerequisite validation

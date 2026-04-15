@@ -223,6 +223,20 @@ Common rules:
 - Do not copy-paste HTML/CSS directly — implement using the project's tech stack (Vue, React, SCSS, etc.)
 - Responsive: if the HTML mockup is responsive, apply the same breakpoints
 - <!-- COMMON: {name} --> comments: use existing shared components from the project
+
+─── Design Application Verification Checklist (MANDATORY) ───
+Before reporting task completion, verify ALL of the following:
+□ Every Vue component has a <style> block (scoped or module)
+□ Layout matches HTML mockup: flex direction, gap, padding, margins
+□ Colors use token-map.json variables where mapped, raw hex for unmapped
+□ Typography matches: font-family, font-size, font-weight, line-height
+□ Status badges/pills have correct background + text colors
+□ Filter buttons show active/inactive states with correct styling
+□ Empty states, loading states, error states all have appropriate styling
+□ If any checkbox is NOT met, fix it before committing.
+This checklist has EQUAL priority with functional implementation.
+Do NOT commit code that works functionally but lacks styling.
+──────────────────────────────────────────
 ───────────────────────────────
 
 $PROJECT_CONTEXT

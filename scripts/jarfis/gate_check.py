@@ -571,6 +571,34 @@ def _gate3_checks(state, docs_dir):
             CheckResult("phases.5.status", CheckResult.FAIL, f"status={p5_status}")
         )
 
+    # -- Phase 5 agent execution records --
+    # Validate that all required review agents were actually spawned
+    phase5_agents = state.get("phase5_agents", {})
+    required_review_agents = ["tech_lead", "qa", "security"]
+    ux_needed = _get_nested(state, "required_roles.ux_designer", False)
+    fe_needed = _get_nested(state, "required_roles.frontend", False)
+    if ux_needed and fe_needed:
+        required_review_agents.append("ux_designer")
+
+    for agent_role in required_review_agents:
+        agent_status = phase5_agents.get(agent_role)
+        if agent_status == "completed":
+            results.append(
+                CheckResult(
+                    f"phase5_agents.{agent_role}",
+                    CheckResult.PASS,
+                    f"status={agent_status}",
+                )
+            )
+        else:
+            results.append(
+                CheckResult(
+                    f"phase5_agents.{agent_role} missing",
+                    CheckResult.FAIL,
+                    f"required review agent not executed (status={agent_status})",
+                )
+            )
+
     # -- infra-runbook.md (conditional: when DevOps executes) --
     devops_needed = _get_nested(state, "required_roles.devops", False)
     devops_agent_status = _get_nested(state, "phase4_agents.devops")
