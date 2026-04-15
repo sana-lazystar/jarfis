@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [3.10.0] - 2026-04-15
+
+- implement: add gate-check/phase-check programmatic prerequisite validation
+
 ## [3.9.0] - 2026-04-14
 
 - implement: rename .jarfis/ to .jarfis-project/ and .jarfis-org/

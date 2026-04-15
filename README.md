@@ -474,9 +474,9 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.9.0] - 2026-04-14
+## [3.10.0] - 2026-04-15
 
-- implement: rename .jarfis/ to .jarfis-project/ and .jarfis-org/
+- implement: add gate-check/phase-check programmatic prerequisite validation
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-14 | Version: 3.9.0
+> Do not edit manually. Last updated: 2026-04-15 | Version: 3.10.0
 
 ## File Structure
 ```
@@ -133,6 +133,8 @@
   - `jarfis_cli.py meetings` — Output recent N meetings as JSON (used in work.md Phase 0 meeting selection)
   - `jarfis_cli.py preflight` — Pre-validation + project-rule check + Org auto-registration + project table auto-addition (returns has_rule/rule_path instead of has_learnings/learnings_path)
   - `jarfis_cli.py state` — .jarfis-state.json CRUD (init/read/write/set/set-nested/validate/list-workflows, used by work/continue)
+  - `jarfis_cli.py state gate-check` — Gate 전 필수 산출물 프로그래밍 검증 (exit 0=PASS, 1=FAIL. work.md Gate Point Rules에서 필수 실행) [NEW]
+  - `jarfis_cli.py state phase-check` — Phase 시작 전 전제조건 검증 (Gate 승인 + 이전 Phase 완료 확인) [NEW]
   - `jarfis_cli.py detect` — Framework/language auto-detection (file pattern-based JSON output, used by project-init/work)
   - `jarfis_cli.py quality-gate` — Per-file lint/type-check execution (used by PostToolUse hook)
   - `jarfis_cli.py validate` — Workflow state + artifact + Git validation (manual tool, A-3)
@@ -147,9 +149,10 @@
   - `domain.py` — Domain Pack management module (list/detect/agents/compose/validate/scaffold/install, v3.0 new) [NEW]
   - `audit.py` — Audit log module (append-only JSONL, v3.0 new) [NEW]
   - `trace.py` — Performance tracing module (per-agent token/duration, v3.0 new) [NEW]
+  - `gate_check.py` — Gate prerequisite validation module (Gate 1/2/3 산출물 + 조건부 파일 + 상태 검증, 860 lines) [NEW]
   - `level_check.py` — AI-native maturity auto-collection module (filesystem survey + jsonl session parsing, orchestration detection)
   - `wiki_search.py` — General-purpose semantic search module (sentence-transformers bge-m3, wiki/meetings/works indexing+search+unified search + memory guard + CPU forced + MPS memory deduction, 771 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (260 tests)
+- `~/.claude/scripts/tests/` — pytest test directory (369 tests)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_utils.py` — utils.py interface tests
   - `test_state.py` — state.py CRUD + validate tests
@@ -223,7 +226,8 @@
 - `work-meeting.md` M-3 -> auto-calls `jarfis_cli.py search index meetings` (best-effort)
 - `phase6.md` -> auto-calls `jarfis_cli.py search index wiki` + `search index works` (best-effort)
 - `org-init.md` -> displays `/jarfis:search-setup` -> `/jarfis:search-index` guide on completion
-- `tests/` -> referenced in sys-implement.md Step 2 Python TDD rules (148 tests, covering all Python modules). Run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`
+- `gate_check.py` -> referenced by work.md Gate Point Rules (mandatory `gate-check` before any Gate presentation). Also provides `phase-check` for Phase start validation.
+- `tests/` -> referenced in sys-implement.md Step 2 Python TDD rules (369 tests, covering all Python modules). Run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`
 
 ## Git Auto-Commit Feature
 - Phase 4 (Implementation): BE/FE/DevOps agents auto-commit on each task completion

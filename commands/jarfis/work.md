@@ -856,9 +856,15 @@ Use **`$DOCS_DIR/.jarfis-state.json`** as the single source of truth (SSOT) for 
 4. On file conflicts: the agent writing later preserves existing content and **appends** its own section.
 
 ### Gate Point Rules
-1. At gates, **summarize artifact contents and present to the user**.
-2. **Always use AskUserQuestion** to get an explicit user selection (do not auto-proceed with text output alone).
-3. "Revision" → re-run the relevant Phase agent. "Approve" → auto-proceed to next Phase. "Abort" → terminate immediately.
+1. **Before presenting any Gate**, run the programmatic prerequisite check:
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py state gate-check "$DOCS_DIR/.jarfis-state.json" <gate_number>
+   ```
+   - If result is **FAIL** (exit code 1): **Do NOT present the Gate.** Display the missing items to the user and continue the current Phase to produce the missing artifacts.
+   - If result is **PASS** (exit code 0): Proceed to step 2.
+2. At gates, **summarize artifact contents and present to the user**.
+3. **Always use AskUserQuestion** to get an explicit user selection (do not auto-proceed with text output alone).
+4. "Revision" → re-run the relevant Phase agent. "Approve" → auto-proceed to next Phase. "Abort" → terminate immediately.
 
 ### SuperClaude Integration
 When needed: `/sc:brainstorm` (Phase 1), `/sc:design` (Phase 2), `/sc:implement` (Phase 4), `/sc:analyze`/`/sc:test` (Phase 5)

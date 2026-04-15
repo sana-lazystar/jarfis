@@ -5,7 +5,7 @@ Usage:
     jarfis_cli.py <command> [args...]
 
 Commands:
-    state         State CRUD (.jarfis-state.json)
+    state         State CRUD (.jarfis-state.json) + gate-check/phase-check
     detect        Project framework/language detection
     measure       Prompt file token measurement
     preflight     Pre-flight validation
