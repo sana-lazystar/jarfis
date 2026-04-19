@@ -41,7 +41,9 @@ WORKING_DIR=$(echo "$COMPOSE" | jq -r .working_dir)
 Before injecting the task prompt, jarfis-foreman must precompute these values from `$STATE_FILE` and substitute them in the prompt:
 
 - `<has_backend>` = "true" if any `state.workspace.scope[].type == "backend"`, else "false"
+- `<has_frontend>` = "true" if any `state.workspace.scope[].type == "frontend"`, else "false"
 - `<api_mode_swagger>` = "true" if `state.api.mode == "swagger"`, else "false"
+- `<api_spec_required>` = `state.api_spec_required` if set, else "true" when `has_backend && has_frontend`, else "false" (v4.0.2 OBS-1: align with verify.py Gate 2 fallback)
 - `<design_mode>` = `state.design.mode` (string or "null")
 - `<responsive>` = `state.responsive` (string)
 - `<scope_json>` = compact JSON of `state.workspace.scope[]` (array of `{name, type, path, framework}`)
@@ -57,7 +59,9 @@ Files to read first:
 
 Workspace context (from state):
 - has_backend: <has_backend>
+- has_frontend: <has_frontend>
 - api_mode_swagger: <api_mode_swagger>
+- api_spec_required: <api_spec_required>
 - design_mode: <design_mode>
 - responsive: <responsive>
 - scope: <scope_json>
@@ -84,8 +88,12 @@ Produce the following artifacts under $DOCS_DIR/planning/:
        - Impact: {resulting changes or constraints}
 
 2. $DOCS_DIR/planning/api-spec.md — CONDITIONAL
-   Generate ONLY when has_backend == "true" OR api_mode_swagger == "true".
+   Generate ONLY when api_spec_required == "true" OR api_mode_swagger == "true".
    Otherwise SKIP this file entirely.
+   Note (v4.0.2 OBS-1): api_spec_required follows verify.py Gate 2 fallback rule —
+   true when `state.api_spec_required` is set explicitly OR (has_backend && has_frontend).
+   BE-only workflows without a frontend consumer skip this artifact unless
+   `state.api_spec_required=true` is set in Phase 1a.
 
    When generated, per endpoint include:
    - ## {METHOD} {path}         (e.g., ## POST /api/v1/boards)
