@@ -8,8 +8,6 @@ Subcommands:
     init <state_file> <project_name> <work_name> <docs_dir>
     validate <state_file>
     list-workflows <org_dir> [--completed-only]
-    gate-check <state_file> <gate_number>
-    phase-check <state_file> <phase_number>
 """
 
 import json
@@ -338,6 +336,6 @@ def main(args):
     }
 
     if action not in commands:
-        json_error(f"Unknown action: {action}. Use read|write|set|set-nested|init|validate|list-workflows|gate-check|phase-check.")
+        json_error(f"Unknown action: {action}. Use read|write|set|set-nested|init|validate|list-workflows.")
 
     commands[action](rest)

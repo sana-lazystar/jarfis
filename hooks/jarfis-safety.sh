@@ -61,8 +61,23 @@ fi
 
 # Block: direct commit to main/master
 if echo "$CMD" | grep -qE 'git\s+commit\b' && ! echo "$CMD" | grep -qE 'git\s+commit.*--amend'; then
-  # Check current branch
-  CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+  # Resolve the repo the commit will run in.
+  # Priority: `git -C <path> commit` > leading `cd <path> &&` > current cwd.
+  TARGET_DIR=""
+  if [[ "$CMD" =~ git[[:space:]]+-C[[:space:]]+([^[:space:]]+) ]]; then
+    TARGET_DIR="${BASH_REMATCH[1]}"
+  elif [[ "$CMD" =~ ^[[:space:]]*cd[[:space:]]+([^[:space:]\;\&]+) ]]; then
+    TARGET_DIR="${BASH_REMATCH[1]}"
+  fi
+
+  if [[ -n "$TARGET_DIR" ]]; then
+    # Expand ~ manually (shell not expanding in hook context)
+    TARGET_DIR="${TARGET_DIR/#\~/$HOME}"
+    CURRENT_BRANCH=$(git -C "$TARGET_DIR" branch --show-current 2>/dev/null || echo "")
+  else
+    CURRENT_BRANCH=$(git branch --show-current 2>/dev/null || echo "")
+  fi
+
   if [[ "$CURRENT_BRANCH" == "main" || "$CURRENT_BRANCH" == "master" ]]; then
     echo "JARFIS Safety: Direct commit to $CURRENT_BRANCH is blocked. Create a feature branch first." >&2
     exit 2
