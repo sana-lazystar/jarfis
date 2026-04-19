@@ -3,6 +3,7 @@
 Usage:
     jarfis sync [repo_path]           Full sync + README update
     jarfis sync --readme-only [repo]  README update only
+    jarfis sync --version-check [repo] Drift check only (exit 1 on drift)
 """
 
 import os
@@ -12,6 +13,47 @@ import subprocess
 import sys
 
 from .utils import get_claude_dir, get_source_path
+
+
+def _read_version_from(path):
+    """Extract version string from VERSION, .jarfis-version, or __init__.py."""
+    if not os.path.isfile(path):
+        return None
+    try:
+        content = open(path).read()
+    except OSError:
+        return None
+    if path.endswith("__init__.py"):
+        m = re.search(r'__version__\s*=\s*"([^"]+)"', content)
+        return m.group(1) if m else None
+    s = content.strip()
+    return s or None
+
+
+def check_version_drift(repo_path, claude_dir):
+    """Return (versions_dict, drift_bool).
+
+    Inspects 4 sources:
+      - {claude_dir}/.jarfis-version
+      - {claude_dir}/scripts/jarfis/__init__.py
+      - {repo_path}/VERSION
+      - {repo_path}/scripts/jarfis/__init__.py
+
+    drift=True when ≥2 distinct non-null values are present.
+    """
+    sources = [
+        ("claude/.jarfis-version", os.path.join(claude_dir, ".jarfis-version")),
+        ("claude/scripts/jarfis/__init__.py", os.path.join(claude_dir, "scripts", "jarfis", "__init__.py")),
+        ("repo/VERSION", os.path.join(repo_path, "VERSION")),
+        ("repo/scripts/jarfis/__init__.py", os.path.join(repo_path, "scripts", "jarfis", "__init__.py")),
+    ]
+    versions = {}
+    for label, path in sources:
+        v = _read_version_from(path)
+        if v is not None:
+            versions[label] = v
+    distinct = {v for v in versions.values()}
+    return versions, len(distinct) > 1
 
 
 def _diff_files(src, dst):
@@ -247,18 +289,31 @@ def update_readme(repo_path):
 
 def main(args):
     readme_only = "--readme-only" in args
-    remaining = [a for a in args if a != "--readme-only"]
+    version_check_only = "--version-check" in args
+    remaining = [a for a in args if a not in ("--readme-only", "--version-check")]
     repo_path = remaining[0] if remaining else get_source_path()
 
     if not os.path.isdir(repo_path):
         print(f"ERROR: repo not found at {repo_path}", file=sys.stderr)
         sys.exit(1)
 
+    claude_dir = get_claude_dir()
+
+    # Version drift pre-check (informational; sync may resolve __init__.py drift)
+    pre_versions, pre_drift = check_version_drift(repo_path, claude_dir)
+    if pre_drift:
+        print("⚠️  Version drift detected (pre-sync):", file=sys.stderr)
+        for label, v in pre_versions.items():
+            print(f"    {label}: {v}", file=sys.stderr)
+
+    if version_check_only:
+        # Exit 1 if drift present, 0 otherwise. For CI / pre-commit use.
+        sys.exit(1 if pre_drift else 0)
+
     if readme_only:
         update_readme(repo_path)
         return
 
-    claude_dir = get_claude_dir()
     synced, changes = sync_files(repo_path, claude_dir)
 
     # README update
@@ -270,3 +325,12 @@ def main(args):
             print(c)
     else:
         print(f"✅ Repo sync: already up-to-date (no changes)")
+
+    # Post-sync drift check — after sync, only VERSION vs .jarfis-version drift remains possible
+    # (sync copies __init__.py so both __init__.py values match). Warn if mismatch persists.
+    post_versions, post_drift = check_version_drift(repo_path, claude_dir)
+    if post_drift:
+        print("⚠️  Version drift persists after sync — manual fix required:", file=sys.stderr)
+        for label, v in post_versions.items():
+            print(f"    {label}: {v}", file=sys.stderr)
+        print("    Run: jarfis version patch \"fix drift\" (or align manually).", file=sys.stderr)
