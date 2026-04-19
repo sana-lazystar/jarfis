@@ -175,6 +175,30 @@ class TestParseJsonValue:
     def test_null(self):
         assert parse_json_value("null") is None
 
+    def test_parses_empty_array(self):
+        assert parse_json_value("[]") == []
+
+    def test_parses_populated_array(self):
+        assert parse_json_value('[{"title":"A","url":"u"}]') == [{"title": "A", "url": "u"}]
+
+    def test_over_quoted_empty_array(self):
+        # v4.0.2 OBS-2: shell over-quoting passes '"[]"' where json.loads returns "[]" string.
+        # Expect re-parse into an empty list.
+        assert parse_json_value('"[]"') == []
+
+    def test_over_quoted_object(self):
+        assert parse_json_value('"{\\"k\\": 1}"') == {"k": 1}
+
+    def test_non_json_string_unchanged(self):
+        # Plain string starting with bracket char but not valid JSON stays a string.
+        assert parse_json_value("[not json") == "[not json"
+
+    def test_non_str_pass_through(self):
+        # Defensive: non-str inputs returned as-is (prevents double-encoding downstream).
+        assert parse_json_value(123) == 123
+        assert parse_json_value(None) is None
+        assert parse_json_value([1, 2]) == [1, 2]
+
 
 class TestReadFileStripped:
     def test_reads_and_strips(self, tmp_path):
