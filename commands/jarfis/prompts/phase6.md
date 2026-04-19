@@ -197,6 +197,10 @@ While performing Track A, COUNT your changes per owner bucket and include them a
 the end of $DOCS_DIR/retrospective.md in the format below. This is the ONLY place
 the count appears — jarfis-foreman does NOT re-read wiki to recount.
 
+**Important**: If you SKIPPED Task B because org_root is empty, do NOT append the
+`## Wiki Update Summary` section at all. jarfis-foreman's Step 6 fill-in is also
+skipped in that case, so any placeholders you leave would remain unsubstituted.
+
 ## Wiki Update Summary
 Track A (Text):
   - PO/: +{new} new, {updated} updated
@@ -232,7 +236,7 @@ Append one TSV row to `$ORG_ROOT/workflow-metrics.tsv`. Create the header if the
 Header (literal — keep columns in this exact order):
 
 ```
-workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning_candidates_count	skipped_phases	follow_up_mode	follow_up_iteration
+workflow_id	project	started_at	completed_at	review_iterations	learning_candidates_count	skipped_phases	follow_up_mode	follow_up_iteration
 ```
 
 Field mapping (`$STATE_FILE` → column):
@@ -243,7 +247,6 @@ Field mapping (`$STATE_FILE` → column):
 | project                     | `state.workspace.scope[0].name` (or "")                           |
 | started_at                  | `state.started_at`                                                |
 | completed_at                | current ISO8601 timestamp                                         |
-| prd_score                   | `state.phases.1b.ratchet.prd_score` (or "")                       |
 | review_iterations           | `state.phases.5.meta.review_rounds` (or "0")                      |
 | learning_candidates_count   | length of `state.learning_candidates` (or "0")                    |
 | skipped_phases              | comma-joined phase_ids with `state.phases.*.status == "skipped"` |

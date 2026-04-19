@@ -42,9 +42,9 @@ class TestCheckArtifacts:
             json.dump(data, f)
 
         errors, warnings = _check_artifacts(state_file)
-        # Should warn about missing press-release.md and prd.md
+        # Should warn about missing discovery/working-backwards.md and discovery/prd.md
         assert len(warnings) >= 2
-        assert any("press-release.md" in w for w in warnings)
+        assert any("working-backwards.md" in w for w in warnings)
         assert any("prd.md" in w for w in warnings)
 
     def test_no_warn_when_artifacts_exist(self, state_file):
@@ -55,9 +55,11 @@ class TestCheckArtifacts:
         with open(state_file, "w") as f:
             json.dump(data, f)
 
-        # Create expected artifacts
+        # Create expected artifacts (paths may include subdirectories, e.g. discovery/)
         for artifact in PHASE_ARTIFACTS["1"]:
-            with open(os.path.join(docs_dir, artifact), "w") as f:
+            full = os.path.join(docs_dir, artifact)
+            os.makedirs(os.path.dirname(full), exist_ok=True)
+            with open(full, "w") as f:
                 f.write(f"# {artifact}")
 
         errors, warnings = _check_artifacts(state_file)

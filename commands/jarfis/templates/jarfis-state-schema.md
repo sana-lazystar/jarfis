@@ -32,14 +32,7 @@ Full structure example of the workflow state file:
     "0": { "status": "completed" },
     "1": {
       "status": "completed",
-      "gate": "approved",
-      "ratchet": {
-        "prd_score": 9,
-        "items": {"ambiguity": 2, "kpi": 2, "perf_budget": 1, "roles_rationale": 2, "scope_boundary": 2},
-        "passed_items": ["ambiguity", "kpi", "roles_rationale", "scope_boundary"],
-        "attempts": 1,
-        "history": [{"score": 9, "passed": ["ambiguity", "kpi", "roles_rationale", "scope_boundary"], "action": "accept"}]
-      }
+      "gate": "approved"
     },
     "2": {
       "status": "completed",
@@ -137,14 +130,6 @@ Full structure example of the workflow state file:
 
 ## Field Descriptions
 
-### phases.1.ratchet
-Ratchet state for Phase 1 PRD Completeness Check. Based on the AutoResearch ratchet pattern.
-- `prd_score`: Current total score (0-10)
-- `items`: Score per each of the 5 criteria (0-2). Keys: `ambiguity`, `kpi`, `perf_budget`, `roles_rationale`, `scope_boundary`
-- `passed_items`: Array of criteria names currently passing (score of 2). Used for ratchet validation: if a previously passing criterion changes to fail, it is a ratchet violation
-- `attempts`: Number of PO rewrite attempts (max 2)
-- `history`: Scoring history. `score`: total score at that point, `passed`: passing criteria, `action`: `accept` (score maintained/improved) or `ratchet_violation` (pass-to-fail detected)
-
 ### phases.4.tdd_enabled
 Whether Step 4-0.5 TDD test-first writing is enabled. When `true`, it means QA (Opus) has pre-written test code based on test-strategy.md. Used as a lightweight hint during Phase 5 QA review.
 
@@ -195,7 +180,7 @@ Design rationale: AutoResearch results.tsv pattern — quantitative learning loo
 
 TSV header (tab-separated):
 ```
-workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning_candidates_count	skipped_phases	follow_up_mode	follow_up_iteration
+workflow_id	project	started_at	completed_at	review_iterations	learning_candidates_count	skipped_phases	follow_up_mode	follow_up_iteration
 ```
 
 | Column | Type | Description | Extraction Path |
@@ -204,7 +189,6 @@ workflow_id	project	started_at	completed_at	prd_score	review_iterations	learning
 | project | string | Project name | `project_name` |
 | started_at | ISO8601 | Start time | `started_at` |
 | completed_at | ISO8601 | Completion time | Current time at recording |
-| prd_score | int(0-10) | PRD Completeness score | `phases.1.ratchet.prd_score` (empty if absent) |
 | review_iterations | int | Number of Phase 5 re-reviews | Extracted from phases.5 info |
 | learning_candidates_count | int | Number of learning candidates | Length of `learning_candidates` array |
 | skipped_phases | string | Skipped Phase numbers (comma-separated) | Phases with status="skipped" |

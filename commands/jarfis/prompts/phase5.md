@@ -562,6 +562,8 @@ Role: {frontend-developer | backend-developer}
 Project directory: scope[$i].path
 
 Inputs to read (in order of authority):
+- scope[$i].path/CLAUDE.md                    (HIGHEST AUTHORITY — project-level rules; MUST Read first if present. Claude Code's auto-load does NOT cover scope[$i].path when your spawn working_dir is docsDir, so invoke Read explicitly at task start. Echo any verification marker string present.)
+- scope[$i].path/.jarfis-project/project-profile.md  (project conventions — Read if present)
 - $DOCS_DIR/review/diagnosis.md       (PRIMARY — your assigned directives ONLY)
 - $DOCS_DIR/planning/architecture.md  (verify original design intent)
 - $DOCS_DIR/planning/tasks.md         (verify original task requirements)

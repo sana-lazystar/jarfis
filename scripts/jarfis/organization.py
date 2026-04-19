@@ -4,6 +4,7 @@ Subcommands:
     init <org_root> [--confirm]   Initialize Organization (scan + optional file creation)
     scan <org_root>               Re-scan for new projects
     info <org_root>               Output Org info as JSON
+    detect <project_path>         Walk ancestors; return {registered, name, root} for enclosing Org (null if none)
 """
 
 import json
@@ -463,9 +464,50 @@ def cmd_info(args):
     })
 
 
+def _read_org_name(profile_path, fallback):
+    try:
+        with open(profile_path, encoding="utf-8") as f:
+            for line in f:
+                stripped = line.strip()
+                if stripped.startswith("name:"):
+                    return stripped.split(":", 1)[1].strip().strip("\"'")
+                if stripped.startswith("# "):
+                    return stripped[2:].strip()
+    except OSError:
+        pass
+    return fallback
+
+
+def cmd_detect(args):
+    """Walk ancestor directories from <project_path>; return enclosing Org or null.
+
+    Exit 0 always. The orchestrator interprets `registered=false` as `state.org = null`.
+    """
+    project_path = args[0] if args else ""
+    if not project_path:
+        json_error("detect requires <project_path>")
+
+    p = os.path.abspath(project_path)
+    if not os.path.exists(p):
+        json_error(f"project_path does not exist: {p}")
+
+    while True:
+        marker = os.path.join(p, ".jarfis-org", "org-profile.md")
+        if os.path.isfile(marker):
+            name = _read_org_name(marker, fallback=os.path.basename(p))
+            json_output({"registered": True, "name": name, "root": p})
+            return
+        parent = os.path.dirname(p)
+        if parent == p:
+            break
+        p = parent
+
+    json_output({"registered": False, "name": None, "root": None})
+
+
 def main(args):
     if not args:
-        json_error("Usage: jarfis org <init|scan|info> <org_root> [options]")
+        json_error("Usage: jarfis org <init|scan|info|detect> <path> [options]")
 
     action = args[0]
     rest = args[1:]
@@ -474,9 +516,10 @@ def main(args):
         "init": cmd_init,
         "scan": cmd_scan,
         "info": cmd_info,
+        "detect": cmd_detect,
     }
 
     if action not in commands:
-        json_error(f"Unknown action: {action}. Use init|scan|info.")
+        json_error(f"Unknown action: {action}. Use init|scan|info|detect.")
 
     commands[action](rest)

@@ -108,31 +108,11 @@ def _gate1_checks(state, docs_dir):
     results = []
 
     # -- Required files --
-    for f in ("press-release.md", "prd.md"):
+    for f in ("discovery/working-backwards.md", "discovery/prd.md"):
         if _check_file(docs_dir, f):
             results.append(CheckResult(f"{f} exists", CheckResult.PASS))
         else:
             results.append(CheckResult(f"{f} missing", CheckResult.FAIL))
-
-    # -- Ratchet state --
-    ratchet = _get_nested(state, "phases.1.ratchet")
-    if ratchet and "prd_score" in ratchet:
-        score = ratchet["prd_score"]
-        results.append(
-            CheckResult(
-                "phases.1.ratchet.prd_score exists",
-                CheckResult.PASS,
-                f"score={score}",
-            )
-        )
-    else:
-        results.append(
-            CheckResult(
-                "phases.1.ratchet.prd_score missing",
-                CheckResult.FAIL,
-                "PRD Completeness Check (Step 1-2.5) not executed",
-            )
-        )
 
     # -- Phase status --
     p1_status = _get_nested(state, "phases.1.status", "pending")
@@ -175,12 +155,11 @@ def _gate2_checks(state, docs_dir):
     """Prerequisites for Gate 2 (end of Phase 2 Architecture + Phase 3 UX)."""
     results = []
 
-    # -- Always-required Phase 2 artifacts --
+    # -- Always-required Phase 2 artifacts (produced under planning/ by phase2.md) --
     always_required = [
-        "impact-analysis.md",
-        "architecture.md",
-        "tasks.md",
-        "test-strategy.md",
+        "planning/architecture.md",
+        "planning/tasks.md",
+        "planning/test-strategy.md",
     ]
     for f in always_required:
         if _check_file(docs_dir, f):
@@ -195,10 +174,10 @@ def _gate2_checks(state, docs_dir):
         fe = _get_nested(state, "required_roles.frontend", False)
         api_spec_required = bool(be and fe)
     if api_spec_required:
-        if _check_file(docs_dir, "api-spec.md"):
+        if _check_file(docs_dir, "planning/api-spec.md"):
             results.append(
                 CheckResult(
-                    "api-spec.md exists",
+                    "planning/api-spec.md exists",
                     CheckResult.PASS,
                     "api_spec_required=true",
                 )
@@ -206,7 +185,7 @@ def _gate2_checks(state, docs_dir):
         else:
             results.append(
                 CheckResult(
-                    "api-spec.md missing",
+                    "planning/api-spec.md missing",
                     CheckResult.FAIL,
                     "api_spec_required=true",
                 )
@@ -214,19 +193,19 @@ def _gate2_checks(state, docs_dir):
     else:
         results.append(
             CheckResult(
-                "api-spec.md",
+                "planning/api-spec.md",
                 CheckResult.SKIP,
                 "api_spec_required=false",
             )
         )
 
-    # -- Conditional: ux-direction.md --
+    # -- Conditional: ux-direction.md (produced under discovery/ by phase1b.md) --
     ux_needed = _get_nested(state, "required_roles.ux_designer", False)
     if ux_needed:
-        if _check_file(docs_dir, "ux-direction.md"):
+        if _check_file(docs_dir, "discovery/ux-direction.md"):
             results.append(
                 CheckResult(
-                    "ux-direction.md exists",
+                    "discovery/ux-direction.md exists",
                     CheckResult.PASS,
                     "required_roles.ux_designer=true",
                 )
@@ -234,7 +213,7 @@ def _gate2_checks(state, docs_dir):
         else:
             results.append(
                 CheckResult(
-                    "ux-direction.md missing",
+                    "discovery/ux-direction.md missing",
                     CheckResult.FAIL,
                     "required_roles.ux_designer=true",
                 )
@@ -242,7 +221,7 @@ def _gate2_checks(state, docs_dir):
     else:
         results.append(
             CheckResult(
-                "ux-direction.md",
+                "discovery/ux-direction.md",
                 CheckResult.SKIP,
                 "required_roles.ux_designer=false",
             )
@@ -723,8 +702,8 @@ def _phase_check(state, docs_dir, phase_number):
                 )
             )
 
-        # Required Phase 2 artifacts
-        for f in ("impact-analysis.md", "architecture.md", "tasks.md", "test-strategy.md"):
+        # Required Phase 2 artifacts (produced under planning/ by phase2.md)
+        for f in ("planning/architecture.md", "planning/tasks.md", "planning/test-strategy.md"):
             if _check_file(docs_dir, f):
                 results.append(CheckResult(f"{f} exists", CheckResult.PASS))
             else:
@@ -1135,11 +1114,14 @@ def _phase_6_verify(state, docs_dir):
 
 
 PHASE_VERIFIERS = {
+    "1": _phase_1b_verify,
+    "1a": _phase_1b_verify,
     "1b": _phase_1b_verify,
     "2": _phase_2_verify,
     "3": _phase_3_verify,
     "4": _phase_4_verify,
     "4-5": _phase_4_5_verify,
+    "4.5": _phase_4_5_verify,
     "5": _phase_5_verify,
     "6": _phase_6_verify,
 }

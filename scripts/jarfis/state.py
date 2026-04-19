@@ -13,6 +13,7 @@ Subcommands:
 import json
 import os
 import sys
+import uuid
 from datetime import datetime, timezone
 
 from .utils import get_all_workspaces, json_error, json_output, parse_json_value
@@ -57,9 +58,9 @@ def cmd_read(args):
         if isinstance(val, dict) and k in val:
             val = val[k]
         else:
-            print(json.dumps(None))
+            print(json.dumps(None, ensure_ascii=False))
             return
-    print(json.dumps(val))
+    print(json.dumps(val, ensure_ascii=False))
 
 
 def cmd_write(args):
@@ -138,7 +139,15 @@ def cmd_init(args):
     os.makedirs(os.path.dirname(state_file), exist_ok=True)
 
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    session_key = "jf-" + uuid.uuid4().hex[:8]
+
+    # State emits both v3 flat keys (for legacy consumers / work-legacy.md) and
+    # the v4 nested shape required by /jarfis:work + verify.py::cmd_phase_verify
+    # (which reads state.work.docsDir). Defect #5 of M8 E2E: without the v4
+    # nested block, the orchestrator cannot advance past Phase 0 without the
+    # main session manually injecting work/sessionKey/locale/org/design/api.
     state = {
+        # v3 flat (legacy compat — consumers: work-legacy.md, list-workflows)
         "project_name": project_name,
         "work_name": work_name,
         "work_input": "",
@@ -168,10 +177,32 @@ def cmd_init(args):
             "phase": 0,
             "summary": "Initialized",
         },
+        # v4 nested (consumers: /jarfis:work, verify.py, compose, phase prompts)
+        "sessionKey": session_key,
+        "locale": None,
+        "org": None,
+        "domain": None,
+        "design": {"mode": None, "figmaPages": []},
+        "responsive": None,
+        "api": {"mode": None},
+        "devops": False,
+        "po_extras": [],
+        "work": {
+            "name": work_name,
+            "input": "",
+            "docsDir": docs_dir,
+            "startedAt": now,
+            "meetings": [],
+        },
     }
     with open(state_file, "w") as f:
         json.dump(state, f, ensure_ascii=False, indent=2)
-    json_output({"success": True, "path": state_file, "work_name": work_name})
+    json_output({
+        "success": True,
+        "path": state_file,
+        "work_name": work_name,
+        "sessionKey": session_key,
+    })
 
 
 def cmd_list_workflows(args):

@@ -520,7 +520,9 @@ class TestPatternDetect:
 # ===========================================================================
 class TestDispatch:
     def test_phase_verifiers_keys(self):
-        assert set(PHASE_VERIFIERS) == {"1b", "2", "3", "4", "4-5", "5", "6"}
+        # "1" / "1a" / "1b" all alias Phase 1b (Defect #2 fix — work.md uses int phase ids).
+        # "4.5" / "4-5" both map to Phase 4.5 (A.3 canonical: hyphen; tolerate dot).
+        assert set(PHASE_VERIFIERS) == {"1", "1a", "1b", "2", "3", "4", "4-5", "4.5", "5", "6"}
 
     def test_unknown_phase_id(self, tmp_path, capsys):
         state_file = tmp_path / "s.json"
