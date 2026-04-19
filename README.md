@@ -474,37 +474,29 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [4.0.1] - 2026-04-19
+## [4.0.2] - 2026-04-20
 
-M8 E2E 검증 과정에서 발견된 hotfix (Round 1/2/3). v4.0.0 Critical 블로커 제거 + state 스키마 v4 완전 반영.
+Minor hotfix batch. 6 items (SPEC-2, OBS-3, OBS-1, OBS-4, OBS-2, SPEC-1) surfaced during M8 E2E but outside v4.0.1 inline hotfix scope. No breaking changes; all backward-compatible.
 
-### Fixed
-- **Round 1 — Gate 1 경로/ratchet 정합** (Attempt 1, Gate 1 FAIL):
-  - `verify.py::_gate1_checks` 파일 경로 → `discovery/working-backwards.md`, `discovery/prd.md`
-  - `phases.1.ratchet.prd_score` 프로덕서 부재 → PRD ratchet 블록 전면 제거 (`verify.py`, `jarfis-state-schema.md`, `phase6.md workflow-metrics.tsv`, `jarfis-index.md`, `test_gate_check.py`)
-  - `phase1b.md` PO 섹션 "Workspace" → "Scope" + no-numeric-prefix 규칙 명시
-- **Round 2 — Gate 2 경로 + state v4 dual-emit** (Attempt 2, Gate 2 FAIL):
-  - `verify.py::_gate2_checks` always_required → `planning/architecture.md`, `planning/tasks.md`, `planning/test-strategy.md`. `impact-analysis.md` 제거. `ux-direction` → `discovery/`
-  - `verify.py::_phase_check` Phase 4 진입 체크 경로 정합
-  - `validate.py::PHASE_ARTIFACTS` 경로 갱신
-  - `verify.py::PHASE_VERIFIERS` `"1"`, `"1a"`, `"4.5"` alias 추가
-  - `organization.py::cmd_detect(<project_path>)` 구현 (ancestors scan → `.jarfis-org/org-profile.md` marker)
-  - `state.py::cmd_read` `ensure_ascii=False` (한글 unicode-escape 방지)
-  - `state.py::cmd_init` v4 nested dual-emit: `sessionKey`, `locale`, `org`, `domain`, `design`, `responsive`, `api`, `devops`, `po_extras`, `work={name,input,docsDir,startedAt,meetings}`
-- **Round 3 — M11-2 scope CLAUDE.md 자동 로드** (Attempt 3, 구조적 FAIL):
-  - `phase4.md` Sub-agent common rules: `scope[$i].path/CLAUDE.md` (HIGHEST AUTHORITY) + project-profile.md 명시적 Read + marker echo 지시 주입
-  - `phase5.md` Fix agent (review round cycle): 동일 지시 추가
-  - 근본 원인: Claude Code Task 도구 schema에 `working_dir` 파라미터 부재 → sub-agent가 부모 cwd 상속. docsDir ≠ scope 구조에서 scope CLAUDE.md 자동 로드 불가. prompt-inject 방식으로 우회.
+### Added
+- **SPEC-2** `sync.py` version drift detection. New `check_version_drift()` compares 4 sources (~/.claude/.jarfis-version, ~/.claude/scripts/jarfis/__init__.py, repo/VERSION, repo/scripts/jarfis/__init__.py). `jarfis sync` now prints pre-sync/post-sync drift warnings; new `jarfis sync --version-check` flag exits 1 on drift (CI-friendly). +11 tests in test_sync.py.
+- **OBS-2** `utils.parse_json_value` over-quoting resilience. When shell preserves outer quotes (`'"[]"'`), the function now re-parses the intermediate string and returns the intended list/dict. Non-string inputs pass through unchanged. +7 tests in test_utils.py.
 
 ### Changed
-- VERSION 4.0.0 → 4.0.1
-- `scripts/jarfis/__init__.py` 버전 drift 수정 (M7 version bump 누락분) → 4.0.1
+- **OBS-3** `agent-composition.yaml::security-engineer` scope promoted `per-project` → `work-wide`; context `base: project` → `all-projects`. Matches phase4.md Step 1 "1 spawn" intent. Multi-scope workflows now get a single security pre-review with concatenated project-profile context (verified with 2-project fixture).
+- **OBS-1** `phase2.md` api-spec.md generation condition aligned with `verify.py::_gate2_checks` fallback. New precompute fields `<has_frontend>`, `<api_spec_required>`. BE-only workflows without a frontend consumer no longer emit api-spec.md.
+- **OBS-4** `state.tddEnabled` canonicalized to top-level. `jarfis-state-schema.md` example moved `tdd_enabled: false` from `phases.4` to top-level `tddEnabled: false`. Nested `phases.4.tdd_enabled` marked deprecated. `phase4.md` precompute comment reinforces no fallback to the nested location.
+- **SPEC-1** `system-spec.md §5.4, §13.1` M11-1/M11-2 rewritten as "prompt-inject" approach (superseding the original "auto-load" assumption invalidated in M8). Added phase-by-phase audit table identifying where scope CLAUDE.md injection is required (Phase 4/5 ✅) vs. optional for future consideration (Phase 2/3 → v4.1 observation). Doc-only change in migration workspace; no jarfis repo commit.
+
+### Infrastructure
+- `sync.py` sync scope extended for `commands/jarfis/**` from `.md` only to `.md + .yaml + .yml`. `agent-composition.yaml` and `domains/*.yaml` now sync correctly; closes a path-level gap SPEC-2 drift detection cannot cover.
+- VERSION 4.0.1 → 4.0.2; __init__.py aligned (no drift warning on fresh checkout).
 
 ### Tests
-- `pytest scripts/tests/` → 410 passed (+3 pre-existing test_meetings.py failures unrelated to v4.0.1 scope — tracked in v4.1 backlog)
+- `pytest scripts/tests/ --ignore=tests/test_meetings.py` → **425 passed** (was 419). 3 pre-existing test_meetings.py failures unchanged (tracked in v4.1 backlog).
 
 ### Migration
-- v4.0.0 → v4.0.1: `/jarfis:work` 신규 세션부터 hotfix 자동 적용. 이미 진행 중인 v4.0.0 워크플로는 영향 없음 (state 스키마 backward-compatible).
+- v4.0.1 → v4.0.2: `/jarfis:work` next session picks up automatically. Existing in-flight workflows unaffected (schema/prompt changes are forward-compatible).
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
