@@ -130,72 +130,46 @@ class TestToKebab:
 # ---------------------------------------------------------------------------
 
 class TestGate1:
-    def _state(self, tmp_path, docs_dir, p1_status="completed", prd_score=85):
+    GATE1_FILES = ["discovery/working-backwards.md", "discovery/prd.md"]
+
+    def _state(self, tmp_path, docs_dir, p1_status="completed"):
         s = _base_state(tmp_path, docs_dir)
         s["phases"]["1"] = {"status": p1_status}
-        if prd_score is not None:
-            s["phases"]["1"]["ratchet"] = {"prd_score": prd_score}
         return s
 
     def test_pass_all_conditions(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
+        docs = _make_docs(tmp_path, files=self.GATE1_FILES)
         state = self._state(tmp_path, docs)
         results = _gate1_checks(state, docs)
         assert all(r.status in (CheckResult.PASS, CheckResult.SKIP) for r in results)
 
-    def test_fail_press_release_missing(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["prd.md"])  # no press-release.md
+    def test_fail_working_backwards_missing(self, tmp_path):
+        docs = _make_docs(tmp_path, files=["discovery/prd.md"])
         state = self._state(tmp_path, docs)
         results = _gate1_checks(state, docs)
-        r = _find(results, "press-release.md")
+        r = _find(results, "discovery/working-backwards.md")
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_fail_prd_missing(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md"])  # no prd.md
+        docs = _make_docs(tmp_path, files=["discovery/working-backwards.md"])
         state = self._state(tmp_path, docs)
         results = _gate1_checks(state, docs)
-        r = _find(results, "prd.md")
-        assert r is not None and r.status == CheckResult.FAIL
-
-    def test_fail_ratchet_score_missing(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
-        state = self._state(tmp_path, docs, prd_score=None)
-        # Remove ratchet entirely
-        state["phases"]["1"] = {"status": "completed"}
-        results = _gate1_checks(state, docs)
-        r = _find(results, "prd_score")
-        assert r is not None and r.status == CheckResult.FAIL
-
-    def test_fail_ratchet_key_absent(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
-        state = self._state(tmp_path, docs, prd_score=None)
-        # phases.1.ratchet exists but has no prd_score key
-        state["phases"]["1"]["ratchet"] = {"other_key": 10}
-        results = _gate1_checks(state, docs)
-        r = _find(results, "prd_score")
+        r = _find(results, "discovery/prd.md")
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_phase1_pending_is_fail(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
+        docs = _make_docs(tmp_path, files=self.GATE1_FILES)
         state = self._state(tmp_path, docs, p1_status="pending")
         results = _gate1_checks(state, docs)
         r = _find(results, "phases.1.status")
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_phase1_in_progress_is_pass(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
+        docs = _make_docs(tmp_path, files=self.GATE1_FILES)
         state = self._state(tmp_path, docs, p1_status="in_progress")
         results = _gate1_checks(state, docs)
         r = _find(results, "phases.1.status")
         assert r is not None and r.status == CheckResult.PASS
-
-    def test_score_is_reported_in_detail(self, tmp_path):
-        docs = _make_docs(tmp_path, files=["press-release.md", "prd.md"])
-        state = self._state(tmp_path, docs, prd_score=92)
-        results = _gate1_checks(state, docs)
-        r = _find(results, "prd_score")
-        assert r is not None and r.status == CheckResult.PASS
-        assert "92" in r.detail
 
 
 # ---------------------------------------------------------------------------
@@ -203,11 +177,11 @@ class TestGate1:
 # ---------------------------------------------------------------------------
 
 GATE2_ALWAYS_REQUIRED = [
-    "impact-analysis.md",
-    "architecture.md",
-    "tasks.md",
-    "test-strategy.md",
+    "planning/architecture.md",
+    "planning/tasks.md",
+    "planning/test-strategy.md",
 ]
+GATE2_API_SPEC = "planning/api-spec.md"
 
 
 class TestGate2AlwaysRequired:
@@ -229,19 +203,19 @@ class TestGate2AlwaysRequired:
             assert r is not None and r.status == CheckResult.PASS, f"{fname} should PASS"
 
     def test_fail_when_architecture_missing(self, tmp_path):
-        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "architecture.md"]
+        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "planning/architecture.md"]
         docs = _make_docs(tmp_path, files=files)
         state = self._full_state(tmp_path, docs)
         results = _gate2_checks(state, docs)
-        r = _find(results, "architecture.md")
+        r = _find(results, "planning/architecture.md")
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_fail_when_tasks_missing(self, tmp_path):
-        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "tasks.md"]
+        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "planning/tasks.md"]
         docs = _make_docs(tmp_path, files=files)
         state = self._full_state(tmp_path, docs)
         results = _gate2_checks(state, docs)
-        r = _find(results, "tasks.md")
+        r = _find(results, "planning/tasks.md")
         assert r is not None and r.status == CheckResult.FAIL
 
 
@@ -267,17 +241,17 @@ class TestGate2ApiSpec:
 
     def test_fail_when_api_spec_required_true_and_file_missing(self, tmp_path):
         docs = _make_docs(tmp_path, files=GATE2_ALWAYS_REQUIRED)
-        # no api-spec.md created
+        # no planning/api-spec.md created
         state = self._state(tmp_path, docs, api_spec_required=True)
         results = _gate2_checks(state, docs)
-        r = _find(results, "api-spec.md")
+        r = _find(results, GATE2_API_SPEC)
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_pass_when_api_spec_required_true_and_file_present(self, tmp_path):
-        docs = _make_docs(tmp_path, files=GATE2_ALWAYS_REQUIRED + ["api-spec.md"])
+        docs = _make_docs(tmp_path, files=GATE2_ALWAYS_REQUIRED + [GATE2_API_SPEC])
         state = self._state(tmp_path, docs, api_spec_required=True)
         results = _gate2_checks(state, docs)
-        r = _find(results, "api-spec.md")
+        r = _find(results, GATE2_API_SPEC)
         assert r is not None and r.status == CheckResult.PASS
 
     def test_fallback_derive_from_roles_both_true(self, tmp_path):
@@ -290,7 +264,7 @@ class TestGate2ApiSpec:
         s["required_roles"] = {"backend": True, "frontend": True, "ux_designer": False}
         # Do NOT set api_spec_required key
         results = _gate2_checks(s, docs)
-        r = _find(results, "api-spec.md")
+        r = _find(results, GATE2_API_SPEC)
         # File missing -> should FAIL (derived as required)
         assert r is not None and r.status == CheckResult.FAIL
 
@@ -302,7 +276,7 @@ class TestGate2ApiSpec:
         s["phases"]["3"] = {"status": "skipped"}
         s["required_roles"] = {"backend": False, "frontend": True, "ux_designer": False}
         results = _gate2_checks(s, docs)
-        r = _find(results, "api-spec.md")
+        r = _find(results, GATE2_API_SPEC)
         assert r is not None and r.status == CheckResult.SKIP
 
     def test_fallback_derive_from_roles_neither(self, tmp_path):
@@ -313,7 +287,7 @@ class TestGate2ApiSpec:
         s["phases"]["3"] = {"status": "skipped"}
         s["required_roles"] = {"backend": False, "frontend": False, "ux_designer": False}
         results = _gate2_checks(s, docs)
-        r = _find(results, "api-spec.md")
+        r = _find(results, GATE2_API_SPEC)
         assert r is not None and r.status == CheckResult.SKIP
 
 
@@ -375,7 +349,7 @@ class TestGate2DesignFiles:
         docs = _make_docs(
             tmp_path,
             files=GATE2_ALWAYS_REQUIRED + [
-                "ux-direction.md",
+                "discovery/ux-direction.md",
                 "design/benefits-signup/reference.png",
                 "design/benefits-signup/index.html",
                 "design/_index.html",
@@ -410,7 +384,7 @@ class TestGate2DesignFiles:
         assert "skipped" in r.detail.lower()
 
     def test_ux_direction_required_when_ux_designer(self, tmp_path):
-        """ux_designer=True -> ux-direction.md should be required."""
+        """ux_designer=True -> discovery/ux-direction.md should be required."""
         docs = _make_docs(tmp_path, files=GATE2_ALWAYS_REQUIRED)
         s = _base_state(tmp_path, docs)
         s["phases"]["2"] = {"status": "completed"}
@@ -418,12 +392,12 @@ class TestGate2DesignFiles:
         s["required_roles"] = {"frontend": False, "ux_designer": True}
         s["api_spec_required"] = False
         results = _gate2_checks(s, docs)
-        r = _find(results, "ux-direction.md")
+        r = _find(results, "discovery/ux-direction.md")
         # File not created -> should FAIL
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_ux_direction_skipped_when_no_ux_designer(self, tmp_path):
-        """ux_designer=False -> ux-direction.md SKIP."""
+        """ux_designer=False -> discovery/ux-direction.md SKIP."""
         docs = _make_docs(tmp_path, files=GATE2_ALWAYS_REQUIRED)
         s = _base_state(tmp_path, docs)
         s["phases"]["2"] = {"status": "completed"}
@@ -431,7 +405,7 @@ class TestGate2DesignFiles:
         s["required_roles"] = {"frontend": False, "ux_designer": False}
         s["api_spec_required"] = False
         results = _gate2_checks(s, docs)
-        r = _find(results, "ux-direction.md")
+        r = _find(results, "discovery/ux-direction.md")
         assert r is not None and r.status == CheckResult.SKIP
 
 
@@ -783,13 +757,13 @@ class TestPhaseCheck4:
         assert r is not None and r.status == CheckResult.FAIL
 
     def test_fail_when_phase2_artifact_missing(self, tmp_path):
-        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "architecture.md"]
+        files = [f for f in GATE2_ALWAYS_REQUIRED if f != "planning/architecture.md"]
         docs = _make_docs(tmp_path, files=files)
         s = _base_state(tmp_path, docs)
         s["gate_results"] = {"gate2": {"decision": "approved"}}
         s["phases"]["2"] = {"status": "completed"}
         results = _phase_check(s, docs, 4)
-        r = _find(results, "architecture.md")
+        r = _find(results, "planning/architecture.md")
         assert r is not None and r.status == CheckResult.FAIL
 
 
@@ -865,11 +839,12 @@ class TestCmdGateCheck:
     def test_gate1_pass(self, tmp_path, capsys):
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
-        (docs_dir / "press-release.md").write_text("")
-        (docs_dir / "prd.md").write_text("")
+        (docs_dir / "discovery").mkdir()
+        (docs_dir / "discovery" / "working-backwards.md").write_text("")
+        (docs_dir / "discovery" / "prd.md").write_text("")
         state = {
             "docs_dir": str(docs_dir),
-            "phases": {"1": {"status": "completed", "ratchet": {"prd_score": 80}}},
+            "phases": {"1": {"status": "completed"}},
         }
         sf = self._make_state_file(tmp_path, state)
         # Should not raise SystemExit
@@ -913,7 +888,9 @@ class TestCmdGateCheck:
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir()
         for f in GATE2_ALWAYS_REQUIRED:
-            (docs_dir / f).write_text("")
+            fp = docs_dir / f
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_text("")
         state = {
             "docs_dir": str(docs_dir),
             "phases": {
@@ -986,7 +963,9 @@ class TestCmdPhaseCheck:
         docs_dir = tmp_path / "docs"
         docs_dir.mkdir(exist_ok=True)
         for f in GATE2_ALWAYS_REQUIRED:
-            (docs_dir / f).write_text("")
+            fp = docs_dir / f
+            fp.parent.mkdir(parents=True, exist_ok=True)
+            fp.write_text("")
         state = {
             "docs_dir": str(docs_dir),
             "phases": {"2": {"status": "completed"}},

@@ -7,6 +7,38 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] - 2026-04-19
+
+M8 E2E 검증 과정에서 발견된 hotfix (Round 1/2/3). v4.0.0 Critical 블로커 제거 + state 스키마 v4 완전 반영.
+
+### Fixed
+- **Round 1 — Gate 1 경로/ratchet 정합** (Attempt 1, Gate 1 FAIL):
+  - `verify.py::_gate1_checks` 파일 경로 → `discovery/working-backwards.md`, `discovery/prd.md`
+  - `phases.1.ratchet.prd_score` 프로덕서 부재 → PRD ratchet 블록 전면 제거 (`verify.py`, `jarfis-state-schema.md`, `phase6.md workflow-metrics.tsv`, `jarfis-index.md`, `test_gate_check.py`)
+  - `phase1b.md` PO 섹션 "Workspace" → "Scope" + no-numeric-prefix 규칙 명시
+- **Round 2 — Gate 2 경로 + state v4 dual-emit** (Attempt 2, Gate 2 FAIL):
+  - `verify.py::_gate2_checks` always_required → `planning/architecture.md`, `planning/tasks.md`, `planning/test-strategy.md`. `impact-analysis.md` 제거. `ux-direction` → `discovery/`
+  - `verify.py::_phase_check` Phase 4 진입 체크 경로 정합
+  - `validate.py::PHASE_ARTIFACTS` 경로 갱신
+  - `verify.py::PHASE_VERIFIERS` `"1"`, `"1a"`, `"4.5"` alias 추가
+  - `organization.py::cmd_detect(<project_path>)` 구현 (ancestors scan → `.jarfis-org/org-profile.md` marker)
+  - `state.py::cmd_read` `ensure_ascii=False` (한글 unicode-escape 방지)
+  - `state.py::cmd_init` v4 nested dual-emit: `sessionKey`, `locale`, `org`, `domain`, `design`, `responsive`, `api`, `devops`, `po_extras`, `work={name,input,docsDir,startedAt,meetings}`
+- **Round 3 — M11-2 scope CLAUDE.md 자동 로드** (Attempt 3, 구조적 FAIL):
+  - `phase4.md` Sub-agent common rules: `scope[$i].path/CLAUDE.md` (HIGHEST AUTHORITY) + project-profile.md 명시적 Read + marker echo 지시 주입
+  - `phase5.md` Fix agent (review round cycle): 동일 지시 추가
+  - 근본 원인: Claude Code Task 도구 schema에 `working_dir` 파라미터 부재 → sub-agent가 부모 cwd 상속. docsDir ≠ scope 구조에서 scope CLAUDE.md 자동 로드 불가. prompt-inject 방식으로 우회.
+
+### Changed
+- VERSION 4.0.0 → 4.0.1
+- `scripts/jarfis/__init__.py` 버전 drift 수정 (M7 version bump 누락분) → 4.0.1
+
+### Tests
+- `pytest scripts/tests/` → 410 passed (+3 pre-existing test_meetings.py failures unrelated to v4.0.1 scope — tracked in v4.1 backlog)
+
+### Migration
+- v4.0.0 → v4.0.1: `/jarfis:work` 신규 세션부터 hotfix 자동 적용. 이미 진행 중인 v4.0.0 워크플로는 영향 없음 (state 스키마 backward-compatible).
+
 ## [4.0.0] - 2026-04-19
 
 JARFIS v4: tmux orchestration + Python verification.

@@ -88,8 +88,11 @@ Produce the following artifacts:
    - Timeline
    - Risks / Dependencies
    - Required Roles (BE/FE/UX/DevOps ✅/⬜ table + rationale each)
-   - Workspace (reflect state.workspace verbatim — do NOT re-judge)
+   - Scope (reflect state.workspace.scope verbatim — do NOT re-judge)
    - Performance Budget (metric + target value + measurement method table)
+   Heading rule (phase-verify strict): use the section titles above VERBATIM.
+   DO NOT prepend numeric prefixes (bad: `## 1. Overview`, `## 3. Functional Requirements`).
+   Use `## Overview`, `## Functional Requirements`, `## Success Metrics`, `## Scope`, `## Required Roles` exactly.
    Meeting incorporation:
    - Pre-fold meeting decisions (confirmed/tentative/unresolved) into the relevant sections
      per the policy above.

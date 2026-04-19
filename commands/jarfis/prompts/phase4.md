@@ -161,11 +161,15 @@ Your role is {frontend-developer | backend-developer | devops-engineer}.
 Project directory: scope[$i].path (this is your working directory)
 
 Inputs to read (in order of authority):
+- scope[$i].path/CLAUDE.md                    (HIGHEST AUTHORITY — project-level rules; MUST Read first if present. Claude Code's auto-load runs against your spawn working_dir which is docsDir, not scope[$i].path, so you MUST invoke the Read tool explicitly on scope[$i].path/CLAUDE.md at task start.)
+- scope[$i].path/.jarfis-project/project-profile.md  (project conventions — Read if present)
 - $DOCS_DIR/planning/tasks.md                 (PRIMARY — your assigned tasks)
 - $DOCS_DIR/planning/architecture.md          (data models, API patterns, ADRs)
 - $DOCS_DIR/planning/api-spec.md              (if present — API contract)
 - $DOCS_DIR/planning/security-guidelines.md   (Phase 4 Step 2 output)
 - $DOCS_DIR/discovery/prd.md                  (REFERENCE ONLY — do NOT plan from here)
+
+If scope[$i].path/CLAUDE.md contains a verification marker string (e.g. "M11-..."), echo that marker verbatim in your final report so the orchestrator can confirm you loaded the file.
 
 Work rules:
 - Work ONLY on tasks in tasks.md whose role prefix matches your role (FE/BE/DevOps)

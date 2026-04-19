@@ -19,10 +19,11 @@ from .state import cmd_validate as state_validate
 from .utils import find_org_root, get_all_workspaces, get_org_dir, json_output
 
 
-# Artifacts expected after each phase
+# Artifacts expected after each phase (paths relative to docsDir).
+# Phase 1 (1b) outputs go under discovery/; Phase 2 outputs under planning/.
 PHASE_ARTIFACTS = {
-    "1": ["press-release.md", "prd.md"],
-    "2": ["impact-analysis.md", "architecture.md", "tasks.md", "test-strategy.md"],
+    "1": ["discovery/working-backwards.md", "discovery/prd.md"],
+    "2": ["planning/architecture.md", "planning/tasks.md", "planning/test-strategy.md"],
     "4": [],  # code changes, not artifact files
     "4.5": ["deployment-plan.md"],
     "5": ["review.md"],
