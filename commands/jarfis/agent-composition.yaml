@@ -1,0 +1,143 @@
+# ~/.claude/commands/jarfis/agent-composition.yaml
+#
+# 에이전트별 조합 규칙. jarfis-foreman이 CLI 도우미(jarfis_cli.py compose)를 통해 참조.
+# 상세: system-spec.md §5
+#
+# 경로 base 종류:
+#   project       — scope[scope-index].path 기준 (per-project 에이전트 담당 프로젝트)
+#   all-projects  — 모든 scope[].path iterate (work-wide 에이전트 전용)
+#   docs          — state.work.docsDir 기준
+#   org           — state.org.root 기준 (org=null이면 skip)
+#   org_wiki      — state.org.root/.jarfis-org/wiki/ 기준 (org=null이면 skip)
+#
+# agent scope:
+#   per-project   — scope[i]마다 1번씩 spawn. base: project 사용 가능
+#   work-wide     — 작업 전체로 1번 spawn. base: all-projects 사용 가능
+#
+# context 항목 필드:
+#   base:      [필수] project | all-projects | docs | org | org_wiki
+#   path:      [필수] base로부터의 상대 경로
+#   sections:  [선택] Markdown "## 헤딩" 리스트 (50줄 초과 파일 권장)
+#   optional:  [선택, 기본 false] 파일 미존재 시 skip 허용
+#   importance: [선택, 기본 recommended] required | recommended | optional
+#               required = 누락 시 메인 Claude가 사용자에게 경고
+#               recommended = meta 기록 (silent)
+#               optional = meta 생략 (debug 레벨만)
+#
+# Persona: ~/.claude/agents/jarfis/personas/{persona}.md (stem 그대로, 'senior-' 없음)
+# model:   [선택] sonnet | opus | haiku — persona 기본값 override
+# skills_from_domain: boolean — domain.yaml의 skills 로드 여부 (4단계 fallback chain의 step 4)
+# working_dir: 자동 결정 (per-project → scope[i].path / work-wide → docsDir)
+
+agents:
+  product-owner:
+    persona: product-owner
+    scope: work-wide
+    skills_from_domain: false
+    context:
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  technical-architect:
+    persona: technical-architect
+    scope: work-wide
+    skills_from_domain: false
+    context:
+      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: false, importance: required}
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  tech-lead-reviewer:                # Phase 5 코드 리뷰
+    persona: tech-lead
+    scope: per-project
+    skills_from_domain: true
+    context:
+      - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Architecture, Coding Conventions, Notes & Caveats], optional: false, importance: required}
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  tech-lead-strategist:              # Phase 6 회고
+    persona: tech-lead
+    scope: work-wide
+    skills_from_domain: true
+    context:
+      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Architecture, Notes & Caveats], optional: false, importance: required}
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  qa-engineer:
+    persona: qa-engineer
+    scope: per-project
+    skills_from_domain: true
+    context:
+      - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Coding Conventions, Scripts & Commands], optional: false, importance: required}
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  security-engineer:
+    persona: security-engineer
+    scope: per-project
+    skills_from_domain: true
+    context:
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: false, importance: required}   # AI review (M4 Step 4.2): 프로젝트별 인증/권한 구조 파악 — OWASP 검토 지점 최적화
+      - {base: docs, path: .wiki-cache.md, sections: [Security], optional: true, importance: recommended}
+
+  ux-designer:
+    persona: ux-designer
+    scope: work-wide
+    skills_from_domain: false
+    context:
+      - {base: org_wiki, path: DESIGN/, optional: true, importance: required}    # design 작업의 핵심 reference (org=null이면 skip, importance:required이므로 메인이 경고)
+
+  devops-engineer:                   # Phase 4 + 4.5 모두
+    persona: devops-engineer
+    model: opus                      # M4: AWS 리서치 등 무거운 추론
+    scope: work-wide
+    skills_from_domain: true
+    context:
+      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture, Config Summary, Scripts & Commands], optional: false, importance: required}
+      - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+
+  frontend-developer:
+    persona: frontend-developer
+    scope: per-project
+    skills_from_domain: true
+    context:
+      - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
+      - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands], optional: false, importance: required}
+
+  backend-developer:
+    persona: backend-developer
+    scope: per-project
+    skills_from_domain: true
+    context:
+      - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
+      - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands], optional: false, importance: required}
+
+# ────────────────────────────────────────────────────────────────
+# Framework → Skill 자동 매핑 (옵션 1, system-spec §5.5 4단계 fallback chain의 step 3)
+#
+# 사용 시점: project-profile.md의 ## Active Skills, ## Tech Stack 섹션도 없을 때
+# scope[].framework 값을 키로 매칭하여 추가 skill 자동 로드
+# domain.yaml roles[].skills (step 4 fallback)는 framework 무관이라 부정확할 수 있음
+# ────────────────────────────────────────────────────────────────
+
+extra_skills_by_framework:
+  # Frontend frameworks
+  vue: [vue]
+  react: [react, browser]
+  nextjs: [react, browser]           # nextjs는 react 기반
+  svelte: [browser]                  # svelte 전용 skill 없으므로 browser만
+
+  # Backend frameworks
+  express: [express, nodejs]
+  nestjs: [express, nodejs]
+  fastify: [nodejs]
+  serverless: [aws-lambda, nodejs]   # Serverless Framework
+
+  # Languages (framework 없을 때 fallback)
+  typescript: [biome-lint]
+  javascript: [biome-lint]
+  rust: [rust]
+
+  # Desktop
+  tauri: [tauri-backend, tauri-webview, rust]

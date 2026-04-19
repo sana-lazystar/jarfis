@@ -81,6 +81,14 @@ Analyze the following items:
 - Key settings from ESLint, Prettier, TypeScript, build tools, etc.
 - Do not copy entire config files; summarize only the important options
 
+**1-6. Active Skills Recommendation (optional)**
+- Based on the detect result (framework/languages) and Tech Stack, suggest skills from `~/.claude/commands/jarfis/skills/`:
+  - e.g., `framework=serverless`, `dependencies={dynamodb, jsonwebtoken}` → recommend: `aws-lambda`, `dynamodb`, `cognito`, `nodejs`
+  - e.g., `framework=express`, `dependencies={redis, pg}` → recommend: `express`, `nodejs`, `redis`, `postgres`
+- Use `AskUserQuestion` with `multiSelect: true` to confirm the recommended skills.
+- Write only the user-selected skills under the `## Active Skills` section of `project-profile.md`.
+- If the user selects "skip", omit the `## Active Skills` section entirely (the 4-stage fallback chain in `agent-composition.yaml::extra_skills_by_framework` handles the rest automatically).
+
 > **basic depth ends here → proceed to Step 4**
 
 ### Step 2: Medium Analysis (runs at medium and deep)

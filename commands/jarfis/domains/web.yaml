@@ -1,5 +1,5 @@
-# JARFIS Web Domain Pack — v2.5 동작 100% 재현
-# schema_version 2 준수
+# JARFIS Web Domain Pack — 100% reproduction of v2.5 behavior
+# Compliant with schema_version 2
 
 schema_version: 2
 min_core_version: "3.0.0"

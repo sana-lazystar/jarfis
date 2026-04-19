@@ -1,0 +1,214 @@
+"""
+JARFIS v4 — tmux Claude 실행 유틸리티
+
+tmux에서 Claude를 격리 실행하고 완료를 감지한다. JARFIS 로직은 모른다.
+
+사용법:
+  python tmux_claude.py \
+    --name jf-a1b2c3d4-phase3 \
+    --prompt /path/to/prompt.md \
+    --result /path/to/phase-results/phase3/attempt1.json \
+    --workspace /path/to/docsDir \
+    [--mcp-config /path/to/.mcp.json] \
+    [--timeout 3600]
+
+exit 0: result.json에 status=completed
+exit 1: error, 타임아웃, 크래시 (stderr에 내용)
+"""
+
+import subprocess
+import time
+import os
+import sys
+import json
+import argparse
+import atexit
+
+POLL_INTERVAL = 3                       # 초
+DEFAULT_TIMEOUT = 3600                  # 1시간 (안전장치)
+TMUX_SIZE = (200, 50)
+
+AGENT_NAME = "jarfis-foreman"
+
+
+def create_session(name: str, workspace: str, mcp_config: str | None = None) -> None:
+    """tmux 세션 생성. `-c workspace`로 working directory 지정.
+    새 세션 내에서 바로 Claude 실행 (경쟁 조건 회피)."""
+    cmd = [
+        "tmux", "new-session", "-d",
+        "-s", name,
+        "-x", str(TMUX_SIZE[0]),
+        "-y", str(TMUX_SIZE[1]),
+        "-c", workspace,
+        "--",
+        "claude",
+        "--agent", AGENT_NAME,
+        "--dangerously-skip-permissions",
+    ]
+    if mcp_config:
+        cmd.extend(["--mcp-config", mcp_config])
+    subprocess.run(cmd, check=True)
+
+
+def wait_for_ready(name: str, max_wait: int = 30) -> bool:
+    """Claude Code가 입력 대기 상태가 될 때까지 대기.
+
+    M1 Part 4 fix:
+      1) ">" 단순 일치는 tmux 초기 출력에 너무 빠르게 매치되어 실패 — 대신
+         Claude Code TUI 전체가 그려진 후에만 나타나는 `"bypass permissions"`
+         마커를 요구.
+      2) 새 워크스페이스 진입 시 `"Do you trust this folder?"` 다이얼로그가 뜸.
+         `--dangerously-skip-permissions`도 이 dialog는 bypass 안 함.
+         감지되면 Enter(첫 옵션=trust) 전송하여 통과.
+      3) 준비 완료 후 2초 안정화 대기.
+    """
+    trust_accepted = False
+    for _ in range(max_wait * 2):  # 0.5초 간격
+        output = capture_pane(name, lines=30)
+
+        # (2) 워크스페이스 신뢰 다이얼로그 처리 (최초 1회)
+        if not trust_accepted and "trust this folder" in output.lower():
+            subprocess.run(["tmux", "send-keys", "-t", name, "Enter"])
+            trust_accepted = True
+            time.sleep(1)
+            continue
+
+        # (1) 진짜 ready 마커
+        if "bypass permissions" in output and "❯" in output:
+            time.sleep(2)  # (3) TUI 렌더링 안정화
+            return True
+        time.sleep(0.5)
+    return False
+
+
+def send_prompt(name: str, prompt_path: str) -> None:
+    """프롬프트 파일 경로를 Claude에게 전달."""
+    instruction = f"Read and execute the instructions in {prompt_path}"
+    subprocess.run(["tmux", "send-keys", "-t", name, "-l", instruction])
+    subprocess.run(["tmux", "send-keys", "-t", name, "Enter"])
+
+
+def read_result(path: str) -> dict | None:
+    """result JSON 읽기."""
+    try:
+        with open(path) as f:
+            return json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        return None
+
+
+def write_result(path: str, status: str, reason: str = "", detail: str = "") -> None:
+    """result JSON 쓰기 (tmux_claude.py 폴백 전용)."""
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(
+            {"status": status, "reason": reason, "reasonDetail": detail},
+            f, indent=2, ensure_ascii=False
+        )
+
+
+def poll(name: str, result_path: str, timeout: int) -> dict:
+    """result JSON이 생성될 때까지 폴링. 크래시/타임아웃 시 폴백 작성."""
+    start = time.time()
+    while time.time() - start < timeout:
+        result = read_result(result_path)
+        if result:
+            return result
+        if not session_alive(name):
+            # 크래시 — pane 캡처 후 폴백 작성
+            output = capture_pane(name) if session_alive(name) else ""
+            write_result(result_path, "error", "크래시: 세션 비정상 종료", output)
+            return read_result(result_path)
+        time.sleep(POLL_INTERVAL)
+
+    # 타임아웃
+    output = capture_pane(name) if session_alive(name) else ""
+    write_result(result_path, "error", f"타임아웃: {timeout}초 초과", output)
+    return read_result(result_path)
+
+
+def session_alive(name: str) -> bool:
+    """tmux 세션 존재 확인."""
+    result = subprocess.run(
+        ["tmux", "has-session", "-t", name],
+        capture_output=True
+    )
+    return result.returncode == 0
+
+
+def capture_pane(name: str, lines: int = 100) -> str:
+    """tmux pane 내용 캡처."""
+    result = subprocess.run(
+        ["tmux", "capture-pane", "-t", name, "-p", "-J", "-S", f"-{lines}"],
+        capture_output=True, text=True
+    )
+    return result.stdout
+
+
+def kill_session(name: str) -> None:
+    """tmux 세션 종료."""
+    subprocess.run(["tmux", "kill-session", "-t", name], capture_output=True)
+
+
+def kill_existing_session(name: str) -> None:
+    """동일 이름 세션이 있으면 kill (재실행 시 이전 인스턴스 정리).
+
+    주의: prefix 기반 대량 kill 안 함. Phase 2+3 병렬 실행 안전성 보장.
+    좀비 세션 청소는 별도 책임 (/jarfis:sys-health 또는 메인 재개 시).
+    """
+    if session_alive(name):
+        kill_session(name)
+
+
+def main():
+    p = argparse.ArgumentParser(description="JARFIS v4 Phase Runner")
+    p.add_argument("--name", required=True, help="tmux 세션 이름 (예: jf-a1b2c3d4-phase3)")
+    p.add_argument("--prompt", required=True, help="프롬프트 파일 경로")
+    p.add_argument("--result", required=True,
+                   help="결과 JSON 경로 (예: phase-results/phase3/attempt1.json)")
+    p.add_argument("--workspace", required=True, help="작업 디렉토리 (일반적으로 docsDir)")
+    p.add_argument("--mcp-config", default=None, help="MCP 설정 파일 (선택, 글로벌 미상속 시)")
+    p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
+                   help="안전장치 타임아웃 (기본 1시간)")
+    args = p.parse_args()
+
+    # 비정상 종료 시 세션 자동 정리
+    atexit.register(lambda: kill_session(args.name))
+
+    # 1. 동일 이름 세션 정리 (재실행/크래시 복구)
+    kill_existing_session(args.name)
+
+    # 2. 같은 attempt 재호출 시 partial 결과 정리
+    if os.path.exists(args.result):
+        os.remove(args.result)
+
+    # 3. 세션 생성
+    create_session(args.name, args.workspace, args.mcp_config)
+
+    # 4. Claude 준비 대기
+    if not wait_for_ready(args.name):
+        kill_session(args.name)
+        write_result(args.result, "error", "Claude 시작 실패", "")
+        print("Claude failed to start", file=sys.stderr)
+        sys.exit(1)
+
+    # 5. 프롬프트 전송
+    send_prompt(args.name, args.prompt)
+
+    # 6. 결과 대기
+    result = poll(args.name, args.result, args.timeout)
+    kill_session(args.name)
+
+    # 7. 결과 반환
+    if result["status"] == "completed":
+        print(f"PHASE_COMPLETED: {args.name}")
+        sys.exit(0)
+    else:
+        print(result["reason"], file=sys.stderr)
+        if result.get("reasonDetail"):
+            print(f"\n{result['reasonDetail']}", file=sys.stderr)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    main()

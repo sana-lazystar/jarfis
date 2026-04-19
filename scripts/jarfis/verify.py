@@ -1,20 +1,31 @@
-"""JARFIS Gate Check -- Programmatic prerequisite validation for Gate 1/2/3.
+"""JARFIS Verify -- Programmatic verification entry point (v4).
 
-Blocks gate presentation if required artifacts or state conditions are not met.
-This is a SAFETY mechanism to prevent the LLM orchestrator from skipping steps.
+Unified verify module combining Gate/Phase pre-checks with v4 phase-verify
+and pattern-detect. Former name: gate_check.py (renamed at M1).
 
-Subcommands (via state.py routing):
-    gate-check <state_file> <gate_number>
-    phase-check <state_file> <phase_number>
+Subcommands:
+    gate-check     <state_file> <gate_number>     -- Gate 1/2/3 prerequisite check
+    phase-check    <state_file> <phase_number>    -- Phase-start prerequisite check
+    phase-verify   <state_file> <phase_id>        -- Per-phase output verification
+    pattern-detect <review_md_path>               -- Review pattern detection
+
+Routing:
+    * v4: `jarfis_cli.py {gate-check|phase-check|phase-verify|pattern-detect}`
+    * v3 alias (M7까지 유지): `jarfis_cli.py state {gate-check|phase-check}`
 
 Exit code 0 = PASS, 1 = FAIL.
+
+Phase-별 체크리스트 명세: implement-plan.md §A.7.
 """
 
+import datetime
 import json
 import os
 import re
 import sys
+from pathlib import Path
 
+from . import verify_helpers as _h
 from .utils import json_error, json_output
 
 
@@ -890,3 +901,449 @@ def _print_results(title, results):
 
     if failed > 0:
         sys.exit(1)
+
+
+# ---------------------------------------------------------------------------
+# v4 phase-verify — Phase별 기계적 출력 검증 (M3)
+#
+# Contract: (state, docs_dir) -> list[str]  (빈 리스트 = PASS, 각 엔트리 = FAIL 사유 한글)
+# 체크리스트 완전 명세: implement-plan.md §A.7.
+# ---------------------------------------------------------------------------
+def _parse_tasks_md_ids(tasks_md_path):
+    """tasks.md 에서 `- [ ] {task_id}` 패턴의 task id 목록 추출."""
+    p = Path(tasks_md_path)
+    if not p.is_file():
+        return []
+    try:
+        text = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return []
+    pattern = re.compile(r"^\s*-\s*\[[ xX]\]\s*([A-Za-z0-9._-]+)\b", re.MULTILINE)
+    return [m.group(1) for m in pattern.finditer(text)]
+
+
+def _phase_1b_verify(state, docs_dir):
+    """Phase 1b: discovery/ 산출물 3종 + prd 섹션 4개 + ux-direction ID kebab-case."""
+    missing = []
+    discovery = Path(docs_dir) / "discovery"
+
+    prd_path = discovery / "prd.md"
+    if not _h.check_file_exists(prd_path):
+        missing.append("discovery/prd.md 누락")
+    else:
+        for section in ("Required Roles", "Functional Requirements", "Success Metrics", "Scope"):
+            if not _h.check_section_exists(prd_path, section):
+                missing.append(f"discovery/prd.md '## {section}' 섹션 누락")
+
+    if not _h.check_file_exists(discovery / "working-backwards.md"):
+        missing.append("discovery/working-backwards.md 누락")
+
+    if _h.design_required(state):
+        ux_path = discovery / "ux-direction.md"
+        mode = (state.get("design") or {}).get("mode")
+        if not _h.check_file_exists(ux_path):
+            missing.append(f"discovery/ux-direction.md 누락 (design.mode={mode})")
+        else:
+            valid, invalid_ids = _h.check_kebab_case_ids(ux_path)
+            if not valid:
+                missing.append(
+                    f"ux-direction.md ID kebab-case 위반: {', '.join(invalid_ids)}"
+                )
+
+    return missing
+
+
+_TYPE_TITLE = {"frontend": "Frontend", "backend": "Backend", "devops": "DevOps"}
+
+
+def _phase_2_verify(state, docs_dir):
+    """Phase 2: planning/ 산출물 3종 + scope×type 섹션 + 조건부 api-spec.md."""
+    missing = []
+    planning = Path(docs_dir) / "planning"
+
+    if not _h.check_file_exists(planning / "architecture.md"):
+        missing.append("planning/architecture.md 누락")
+    if not _h.check_file_exists(planning / "test-strategy.md"):
+        missing.append("planning/test-strategy.md 누락")
+
+    tasks_md = planning / "tasks.md"
+    if not _h.check_file_exists(tasks_md):
+        missing.append("planning/tasks.md 누락")
+    else:
+        for p in (state.get("workspace") or {}).get("scope", []):
+            title = _TYPE_TITLE.get(p.get("type"), p.get("type", "?").capitalize())
+            section = f"{title} Tasks — {p.get('name','?')}"
+            if not _h.check_section_exists(tasks_md, section):
+                missing.append(f"planning/tasks.md '## {section}' 섹션 누락")
+
+    if _h.api_spec_required(state) and not _h.check_file_exists(planning / "api-spec.md"):
+        reason = "backend scope" if _h.has_backend(state) else "api.mode=swagger"
+        missing.append(f"planning/api-spec.md 누락 ({reason})")
+
+    return missing
+
+
+def _phase_3_verify(state, docs_dir):
+    """Phase 3: design/ 디렉토리 + id별 index.html/reference.png + responsive 변종 + token-map.json."""
+    missing = []
+    design_dir = Path(docs_dir) / "design"
+
+    if not design_dir.is_dir():
+        missing.append("design/ 디렉토리 누락")
+        return missing
+
+    ids = _h.ux_direction_ids(Path(docs_dir) / "discovery" / "ux-direction.md")
+    level = _h.responsive_level(state)
+    need_mobile = level in ("pc-mobile", "pc-mobile-tablet")
+    need_tablet = level == "pc-mobile-tablet"
+
+    for uid in ids:
+        page_dir = design_dir / uid
+        index_html = page_dir / "index.html"
+        if not _h.check_file_nonempty(index_html):
+            missing.append(f"design/{uid}/index.html 누락 또는 빈 파일")
+        if not _h.check_file_exists(page_dir / "reference.png"):
+            missing.append(f"design/{uid}/reference.png 누락")
+        if need_mobile and not _h.check_file_exists(page_dir / "reference-mobile.png"):
+            missing.append(f"design/{uid}/reference-mobile.png 누락 (responsive={level})")
+        if need_tablet and not _h.check_file_exists(page_dir / "reference-tablet.png"):
+            missing.append(f"design/{uid}/reference-tablet.png 누락 (responsive={level})")
+
+    if not _h.check_file_exists(design_dir / "token-map.json"):
+        missing.append("design/token-map.json 누락")
+
+    return missing
+
+
+def _phase_4_verify(state, docs_dir):
+    """Phase 4: task별 commit 매칭 + scope별 코드 변경 + devops/CSS var 조건부."""
+    missing = []
+    planning = Path(docs_dir) / "planning"
+    tasks_md = planning / "tasks.md"
+    token_map = Path(docs_dir) / "design" / "token-map.json"
+
+    task_ids = _parse_tasks_md_ids(tasks_md) if tasks_md.is_file() else []
+    scopes = (state.get("workspace") or {}).get("scope", [])
+
+    for p in scopes:
+        repo = p.get("path")
+        base = p.get("baseCommit")
+        name = p.get("name", "?")
+        if not repo or not base:
+            missing.append(f"scope {name}: path/baseCommit 누락 (state 손상)")
+            continue
+
+        # (a) task commit 매칭
+        for tid in task_ids:
+            if not _h.check_git_commit_for_task(repo, base, tid):
+                missing.append(f"Phase 4 commit 누락: task {tid} (scope {name})")
+
+        # (b) scope type별 코드 변경
+        if not _h.check_code_changes(repo, base):
+            missing.append(f"{p.get('type','?').upper()} 코드 변경 없음: scope {name} (baseCommit..HEAD)")
+
+    if _h.has_devops(state):
+        devops_globs = [
+            "**/Dockerfile*", "**/docker-compose*.y*ml",
+            "**/.github/workflows/*.y*ml", "**/terraform/**", "**/helm/**",
+            "**/k8s/**", "**/kubernetes/**",
+        ]
+        any_change = any(
+            _h.check_code_changes(p.get("path",""), p.get("baseCommit",""), devops_globs)
+            for p in scopes if p.get("path") and p.get("baseCommit")
+        )
+        if not any_change:
+            missing.append("DevOps 파일 변경 없음 (devops=true인데 infra 파일 diff 0)")
+
+    if token_map.is_file() and _h.has_frontend(state):
+        for p in scopes:
+            if p.get("type") != "frontend":
+                continue
+            if not p.get("path") or not p.get("baseCommit"):
+                continue
+            if not _h.check_css_var_usage(p["path"], p["baseCommit"]):
+                missing.append(
+                    f"FE scope {p.get('name','?')}에서 CSS var(-- 사용 없음 (token-map.json 존재)"
+                )
+
+    return missing
+
+
+def _phase_4_5_verify(state, docs_dir):
+    """Phase 4.5: deployment-plan.md + devops=true 시 Rollback 섹션."""
+    missing = []
+    plan = Path(docs_dir) / "ops" / "deployment-plan.md"
+    if not _h.check_file_exists(plan):
+        missing.append("ops/deployment-plan.md 누락")
+        return missing
+    if _h.has_devops(state) and not _h.check_section_exists(plan, "Rollback"):
+        missing.append("ops/deployment-plan.md '## Rollback' 섹션 누락 (devops=true)")
+    return missing
+
+
+def _phase_5_verify(state, docs_dir):
+    """Phase 5: review.md + 프로젝트×역할 소섹션 + UX/api-contract 조건부."""
+    missing = []
+    review_md = Path(docs_dir) / "review" / "review.md"
+    if not _h.check_file_exists(review_md):
+        missing.append("review/review.md 누락")
+        return missing
+
+    for p in (state.get("workspace") or {}).get("scope", []):
+        name = p.get("name", "?")
+        if not _h.check_section_exists(review_md, name, level=3):
+            missing.append(f"review/review.md '### {name}' 섹션 누락")
+            continue
+        for role in ("Tech Lead", "QA", "Security"):
+            if not _h.check_section_exists(review_md, role, level=4):
+                missing.append(f"review/review.md '{name}' 내 '#### {role}' 소섹션 누락")
+
+    if _h.design_required(state) and not _h.check_section_exists(review_md, "UX Design Review"):
+        missing.append("review/review.md '## UX Design Review' 섹션 누락")
+
+    if _h.check_file_exists(Path(docs_dir) / "planning" / "api-spec.md"):
+        if not _h.check_file_exists(Path(docs_dir) / "review" / "api-contract-check.md"):
+            missing.append("review/api-contract-check.md 누락 (api-spec.md 존재)")
+
+    return missing
+
+
+def _phase_6_verify(state, docs_dir):
+    """Phase 6: retrospective.md + org 등록 시 wiki/INDEX.md 갱신 commit."""
+    missing = []
+    retro = Path(docs_dir) / "retrospective.md"
+    if not _h.check_file_exists(retro):
+        missing.append("retrospective.md 누락")
+
+    if _h.org_registered(state):
+        org = state["org"]
+        org_root = org.get("root")
+        org_name = org.get("name", "?")
+        if not org_root:
+            missing.append(f"wiki 변경 commit 없음 (org={org_name}, org.root 누락)")
+            return missing
+
+        wiki_dir = "./.jarfis-org/wiki"
+        changed = _h.git_changed_files(org_root, "HEAD~1", "HEAD")
+        if not any(f.startswith(".jarfis-org/wiki/") for f in changed):
+            missing.append(f"wiki 변경 commit 없음 (org={org_name}, 예상 경로 {org_root}/.jarfis-org/wiki)")
+        else:
+            if not any(f.startswith(".jarfis-org/wiki/") and f.endswith("INDEX.md") for f in changed):
+                missing.append(f"wiki/INDEX.md 갱신 commit 없음 (org={org_name})")
+
+    return missing
+
+
+PHASE_VERIFIERS = {
+    "1b": _phase_1b_verify,
+    "2": _phase_2_verify,
+    "3": _phase_3_verify,
+    "4": _phase_4_verify,
+    "4-5": _phase_4_5_verify,
+    "5": _phase_5_verify,
+    "6": _phase_6_verify,
+}
+
+
+def cmd_phase_verify(args):
+    """Dispatch Phase N verifier. Returns JSON {verdict, missing[], checkedAt, phaseId}."""
+    if len(args) < 2:
+        json_error("Usage: jarfis phase-verify <state_file> <phase_id>")
+
+    state_file, phase_id = args[0], args[1]
+
+    if phase_id not in PHASE_VERIFIERS:
+        valid = ", ".join(PHASE_VERIFIERS.keys())
+        json_error(f"Unknown phase_id: {phase_id}. Valid: {valid}")
+
+    if not os.path.isfile(state_file):
+        json_error(f"state file not found: {state_file}")
+
+    try:
+        with open(state_file, encoding="utf-8") as f:
+            state = json.load(f)
+    except (OSError, json.JSONDecodeError) as e:
+        json_error(f"failed to read state: {e}")
+
+    docs_dir = (state.get("work") or {}).get("docsDir")
+    if not docs_dir:
+        json_error("state.work.docsDir 누락")
+
+    missing = PHASE_VERIFIERS[phase_id](state, docs_dir)
+
+    result = {
+        "verdict": "PASS" if not missing else "FAIL",
+        "missing": missing,
+        "checkedAt": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "phaseId": phase_id,
+    }
+    print(json.dumps(result, ensure_ascii=False))
+    sys.exit(0 if not missing else 1)
+
+
+# ---------------------------------------------------------------------------
+# v4 pattern-detect — review round 패턴 감지 (M3)
+#
+# 3개 패턴: stagnation / regression / oscillation. 항상 exit 0 (정보 제공).
+# ---------------------------------------------------------------------------
+_ROUND_HEADING_RE = re.compile(r"^\s*##\s+Round\s+(\d+)\s*$", re.IGNORECASE | re.MULTILINE)
+_REVISION_LINE_RE = re.compile(r"\[REVISION\]\s*(.+?)\s*$", re.MULTILINE)
+
+
+def _normalize_issue(text):
+    """앞뒤 공백 제거 + 리스트 마커/REVISION 태그 제거 + 양끝 영숫자 외 trim."""
+    s = text.strip()
+    s = re.sub(r"^[-*+]\s+", "", s)
+    s = re.sub(r"^\[REVISION\]\s*", "", s, flags=re.IGNORECASE)
+    s = s.strip()
+    return s
+
+
+def _parse_review_md(md_path):
+    """Return {round_number: [normalized_issue, ...]}."""
+    p = Path(md_path)
+    if not p.is_file():
+        return {}
+    try:
+        text = p.read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return {}
+
+    headings = list(_ROUND_HEADING_RE.finditer(text))
+    if not headings:
+        return {}
+
+    rounds = {}
+    for i, m in enumerate(headings):
+        round_no = int(m.group(1))
+        start = m.end()
+        end = headings[i + 1].start() if i + 1 < len(headings) else len(text)
+        body = text[start:end]
+        issues = []
+        for line in body.splitlines():
+            if "[REVISION]" not in line.upper():
+                continue
+            normalized = _normalize_issue(line)
+            if normalized:
+                issues.append(normalized)
+        rounds[round_no] = issues
+    return rounds
+
+
+def _detect_stagnation(rounds):
+    """같은 issue가 연속 2+ Round에 존재."""
+    if len(rounds) < 2:
+        return None
+    ordered = sorted(rounds.keys())
+    for i in range(len(ordered) - 1):
+        a, b = ordered[i], ordered[i + 1]
+        if b != a + 1:
+            continue
+        common = set(rounds[a]) & set(rounds[b])
+        if common:
+            issue = sorted(common)[0]
+            run = [a, b]
+            j = i + 2
+            while j < len(ordered) and ordered[j] == ordered[j - 1] + 1 and issue in rounds[ordered[j]]:
+                run.append(ordered[j])
+                j += 1
+            return {"issue": issue, "rounds": run}
+    return None
+
+
+def _detect_regression(rounds):
+    """Round N issue 중 Round N-1 없었던 항목 (N>=2)."""
+    ordered = sorted(rounds.keys())
+    for idx, n in enumerate(ordered):
+        if idx == 0:
+            continue
+        prev = ordered[idx - 1]
+        if n != prev + 1:
+            continue
+        new_issues = sorted(set(rounds[n]) - set(rounds[prev]))
+        if new_issues:
+            return {"issue": new_issues[0], "rounds": [n]}
+    return None
+
+
+def _detect_oscillation(rounds):
+    """Round N issue 집합 == Round N-2 집합 (N>=3, 비어있지 않을 때)."""
+    ordered = sorted(rounds.keys())
+    for idx, n in enumerate(ordered):
+        if idx < 2:
+            continue
+        n2 = ordered[idx - 2]
+        if n - n2 != 2:
+            continue
+        set_n = set(rounds[n])
+        set_n2 = set(rounds[n2])
+        if set_n and set_n == set_n2:
+            return {"rounds": [n, n2]}
+    return None
+
+
+def cmd_pattern_detect(args):
+    """Detect review-round patterns. Always exits 0 (informational)."""
+    if len(args) < 1:
+        json_error("Usage: jarfis pattern-detect <review_md_path>")
+
+    review_path = args[0]
+
+    if not os.path.isfile(review_path):
+        json_error(f"review.md not found: {review_path}")
+
+    rounds = _parse_review_md(review_path)
+    stagnation = _detect_stagnation(rounds)
+    regression = _detect_regression(rounds)
+    oscillation = _detect_oscillation(rounds)
+
+    patterns = []
+    if stagnation:
+        patterns.append("stagnation")
+    if regression:
+        patterns.append("regression")
+    if oscillation:
+        patterns.append("oscillation")
+
+    result = {
+        "patterns": patterns,
+        "details": {
+            "stagnation": stagnation,
+            "regression": regression,
+            "oscillation": oscillation,
+        },
+        "reviewPath": review_path,
+    }
+    print(json.dumps(result, ensure_ascii=False))
+    sys.exit(0)
+
+
+# ---------------------------------------------------------------------------
+# Module-level dispatch entry point (used by jarfis_cli.py routing)
+# ---------------------------------------------------------------------------
+def main(args):
+    """Dispatch entry for jarfis_cli.py top-level subcommands.
+
+    jarfis_cli.py prepends the subcommand to args (e.g. ["gate-check", ...]),
+    so args[0] is the subcommand name and args[1:] are its positional args.
+    """
+    if not args:
+        json_error("Usage: jarfis <gate-check|phase-check|phase-verify|pattern-detect> <args...>")
+
+    sub = args[0]
+    rest = args[1:]
+
+    dispatch = {
+        "gate-check": cmd_gate_check,
+        "phase-check": cmd_phase_check,
+        "phase-verify": cmd_phase_verify,
+        "pattern-detect": cmd_pattern_detect,
+    }
+
+    if sub not in dispatch:
+        json_error(
+            f"Unknown verify subcommand: {sub}. "
+            "Use gate-check|phase-check|phase-verify|pattern-detect."
+        )
+
+    dispatch[sub](rest)
