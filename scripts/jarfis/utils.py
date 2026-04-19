@@ -117,11 +117,27 @@ def json_error(msg, **extra):
 
 
 def parse_json_value(value_str):
-    """Try to parse a string as JSON (number, bool, object), fallback to string."""
+    """Try to parse a string as JSON (number, bool, object, array), fallback to string.
+
+    v4.0.2 OBS-2: Handle shell-quoting edge cases. When a value arrives as an
+    over-quoted JSON literal (e.g. `'"[]"'`), ``json.loads`` returns the inner
+    string ``"[]"`` instead of an empty list. If the parsed result is still a
+    string that looks JSON-shaped (starts with ``[`` or ``{``), retry once with
+    the intermediate value. This makes ``state set-nested k '[]'`` behave the
+    same whether the shell preserves the outer quotes or not.
+    """
+    if not isinstance(value_str, str):
+        return value_str
     try:
-        return json.loads(value_str)
+        result = json.loads(value_str)
     except (json.JSONDecodeError, ValueError):
         return value_str
+    if isinstance(result, str) and result and result[0] in "[{":
+        try:
+            return json.loads(result)
+        except (json.JSONDecodeError, ValueError):
+            return result
+    return result
 
 
 def read_file_stripped(path):

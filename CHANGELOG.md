@@ -7,6 +7,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.2] - 2026-04-20
+
+Minor hotfix batch. 6 items (SPEC-2, OBS-3, OBS-1, OBS-4, OBS-2, SPEC-1) surfaced during M8 E2E but outside v4.0.1 inline hotfix scope. No breaking changes; all backward-compatible.
+
+### Added
+- **SPEC-2** `sync.py` version drift detection. New `check_version_drift()` compares 4 sources (~/.claude/.jarfis-version, ~/.claude/scripts/jarfis/__init__.py, repo/VERSION, repo/scripts/jarfis/__init__.py). `jarfis sync` now prints pre-sync/post-sync drift warnings; new `jarfis sync --version-check` flag exits 1 on drift (CI-friendly). +11 tests in test_sync.py.
+- **OBS-2** `utils.parse_json_value` over-quoting resilience. When shell preserves outer quotes (`'"[]"'`), the function now re-parses the intermediate string and returns the intended list/dict. Non-string inputs pass through unchanged. +7 tests in test_utils.py.
+
+### Changed
+- **OBS-3** `agent-composition.yaml::security-engineer` scope promoted `per-project` → `work-wide`; context `base: project` → `all-projects`. Matches phase4.md Step 1 "1 spawn" intent. Multi-scope workflows now get a single security pre-review with concatenated project-profile context (verified with 2-project fixture).
+- **OBS-1** `phase2.md` api-spec.md generation condition aligned with `verify.py::_gate2_checks` fallback. New precompute fields `<has_frontend>`, `<api_spec_required>`. BE-only workflows without a frontend consumer no longer emit api-spec.md.
+- **OBS-4** `state.tddEnabled` canonicalized to top-level. `jarfis-state-schema.md` example moved `tdd_enabled: false` from `phases.4` to top-level `tddEnabled: false`. Nested `phases.4.tdd_enabled` marked deprecated. `phase4.md` precompute comment reinforces no fallback to the nested location.
+- **SPEC-1** `system-spec.md §5.4, §13.1` M11-1/M11-2 rewritten as "prompt-inject" approach (superseding the original "auto-load" assumption invalidated in M8). Added phase-by-phase audit table identifying where scope CLAUDE.md injection is required (Phase 4/5 ✅) vs. optional for future consideration (Phase 2/3 → v4.1 observation). Doc-only change in migration workspace; no jarfis repo commit.
+
+### Infrastructure
+- `sync.py` sync scope extended for `commands/jarfis/**` from `.md` only to `.md + .yaml + .yml`. `agent-composition.yaml` and `domains/*.yaml` now sync correctly; closes a path-level gap SPEC-2 drift detection cannot cover.
+- VERSION 4.0.1 → 4.0.2; __init__.py aligned (no drift warning on fresh checkout).
+
+### Tests
+- `pytest scripts/tests/ --ignore=tests/test_meetings.py` → **425 passed** (was 419). 3 pre-existing test_meetings.py failures unchanged (tracked in v4.1 backlog).
+
+### Migration
+- v4.0.1 → v4.0.2: `/jarfis:work` next session picks up automatically. Existing in-flight workflows unaffected (schema/prompt changes are forward-compatible).
+
 ## [4.0.1] - 2026-04-19
 
 M8 E2E 검증 과정에서 발견된 hotfix (Round 1/2/3). v4.0.0 Critical 블로커 제거 + state 스키마 v4 완전 반영.

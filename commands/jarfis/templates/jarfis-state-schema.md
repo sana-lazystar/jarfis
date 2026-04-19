@@ -59,7 +59,6 @@ Full structure example of the workflow state file:
     },
     "4": {
       "status": "in_progress",
-      "tdd_enabled": false,
       "ratchet": {
         "phase4_tests": {
           "baseline_pass_rate": 0.95,
@@ -87,6 +86,7 @@ Full structure example of the workflow state file:
     "devops": true
   },
   "api_spec_required": false,
+  "tddEnabled": false,
   "phase2_agents": {
     "impact_analysis": "completed",
     "architect": "completed",
@@ -130,11 +130,13 @@ Full structure example of the workflow state file:
 
 ## Field Descriptions
 
-### phases.4.tdd_enabled
-Whether Step 4-0.5 TDD test-first writing is enabled. When `true`, it means QA (Opus) has pre-written test code based on test-strategy.md. Used as a lightweight hint during Phase 5 QA review.
+### tddEnabled
+**Location: top-level (`state.tddEnabled`)** — v4.0.2 OBS-4 canonicalized here. The v4 runtime (`prompts/phase4.md`, `prompts/phase5.md`, `work.md`) reads and writes this flag at the top level; nested `phases.4.tdd_enabled` is deprecated. The main session sets it after phase4.md sub-agent reports `meta.tddEnabled` in phase-results.
+
+Whether Step 4-0.5 TDD test-first writing is enabled. When `true`, QA (Opus) has pre-written test code based on test-strategy.md. Used as a lightweight hint during Phase 5 QA review and as the gating flag for `phases.4.ratchet`.
 
 ### phases.4.ratchet.phase4_tests
-Phase 4 TDD code quality ratchet state. Only created when `tdd_enabled: true`. Based on the AutoResearch ratchet pattern.
+Phase 4 TDD code quality ratchet state. Only created when `state.tddEnabled: true`. Based on the AutoResearch ratchet pattern.
 - `baseline_pass_rate`: Best test pass rate achieved so far (0.0-1.0). Initially set after Step 4-0.5 completion
 - `test_command`: Project's test execution command (extracted from project-profile scripts)
 - `task_index`: Number of tasks that have passed the ratchet so far

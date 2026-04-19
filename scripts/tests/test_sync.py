@@ -4,7 +4,13 @@ import os
 
 import pytest
 
-from jarfis.sync import _diff_files, _replace_section, sync_files
+from jarfis.sync import (
+    _diff_files,
+    _read_version_from,
+    _replace_section,
+    check_version_drift,
+    sync_files,
+)
 
 
 class TestDiffFiles:
@@ -144,3 +150,89 @@ class TestSyncFiles:
         synced, changes = sync_files(repo, claude)
         repo_conftest = os.path.join(repo, "scripts", "tests", "conftest.py")
         assert os.path.isfile(repo_conftest)
+
+
+class TestReadVersionFrom:
+    def test_version_plain_file(self, tmp_path):
+        p = tmp_path / "VERSION"
+        p.write_text("4.0.1\n")
+        assert _read_version_from(str(p)) == "4.0.1"
+
+    def test_jarfis_version_plain(self, tmp_path):
+        p = tmp_path / ".jarfis-version"
+        p.write_text("4.0.2\n")
+        assert _read_version_from(str(p)) == "4.0.2"
+
+    def test_init_py_extraction(self, tmp_path):
+        p = tmp_path / "__init__.py"
+        p.write_text('"""Doc."""\n\n__version__ = "4.0.3"\n')
+        assert _read_version_from(str(p)) == "4.0.3"
+
+    def test_init_py_no_version_attr(self, tmp_path):
+        p = tmp_path / "__init__.py"
+        p.write_text("# empty\n")
+        assert _read_version_from(str(p)) is None
+
+    def test_missing_file(self, tmp_path):
+        assert _read_version_from(str(tmp_path / "nonexistent")) is None
+
+    def test_empty_version_file(self, tmp_path):
+        p = tmp_path / "VERSION"
+        p.write_text("")
+        assert _read_version_from(str(p)) is None
+
+
+class TestCheckVersionDrift:
+    def test_all_aligned_no_drift(self, jarfis_env):
+        # jarfis_env default: all four set to 2.2.2
+        versions, drift = check_version_drift(
+            jarfis_env["repo_dir"], jarfis_env["claude_dir"]
+        )
+        # jarfis_env sets claude/.jarfis-version + claude __init__ + repo/VERSION to 2.2.2
+        # repo __init__ not created by fixture, so 3 values expected
+        assert drift is False
+        assert set(versions.values()) == {"2.2.2"}
+
+    def test_drift_between_sources(self, jarfis_env):
+        # Introduce drift: repo VERSION at 2.2.3 while others stay at 2.2.2
+        repo = jarfis_env["repo_dir"]
+        version_file = os.path.join(repo, "VERSION")
+        with open(version_file, "w") as f:
+            f.write("2.2.3\n")
+
+        versions, drift = check_version_drift(repo, jarfis_env["claude_dir"])
+        assert drift is True
+        assert "2.2.2" in versions.values()
+        assert "2.2.3" in versions.values()
+
+    def test_drift_init_py_vs_version_file(self, jarfis_env):
+        # Simulate M7-style drift: __init__.py stale while VERSION/.jarfis-version moved ahead
+        claude = jarfis_env["claude_dir"]
+        init_path = os.path.join(claude, "scripts", "jarfis", "__init__.py")
+        with open(init_path, "w") as f:
+            f.write('__version__ = "1.0.0"\n')
+
+        versions, drift = check_version_drift(jarfis_env["repo_dir"], claude)
+        assert drift is True
+        assert versions["claude/scripts/jarfis/__init__.py"] == "1.0.0"
+
+    def test_missing_sources_ignored(self, tmp_path):
+        # Empty repo + claude dirs. All sources missing → no drift, empty dict.
+        (tmp_path / "repo").mkdir()
+        (tmp_path / "claude").mkdir()
+        versions, drift = check_version_drift(
+            str(tmp_path / "repo"), str(tmp_path / "claude")
+        )
+        assert drift is False
+        assert versions == {}
+
+    def test_single_source_no_drift(self, tmp_path):
+        # Only one source present → never drift.
+        claude = tmp_path / "claude"
+        repo = tmp_path / "repo"
+        claude.mkdir()
+        repo.mkdir()
+        (claude / ".jarfis-version").write_text("4.0.1\n")
+        versions, drift = check_version_drift(str(repo), str(claude))
+        assert drift is False
+        assert versions == {"claude/.jarfis-version": "4.0.1"}

@@ -14,11 +14,11 @@
 - `$HAS_API_SPEC` = "true" if `$DOCS_DIR/planning/api-spec.md` exists, else "false" (`test -f`)
 - `$DESIGN_MODE` = `state.design.mode`
 - `$RESPONSIVE` = `state.responsive`
-- `$TDD_ENABLED` = `state.tddEnabled` (decided by the main session before launching this phase — see "TDD decision precondition" below)
+- `$TDD_ENABLED` = `state.tddEnabled` (top-level; v4.0.2 OBS-4 canonicalized — **never read from `state.phases.4.tdd_enabled`, that nested path is deprecated**)
 
 ### TDD decision precondition (upstream of this prompt)
 
-`state.tddEnabled` is resolved by the **main session** before it launches this tmux phase. The main session evaluates (via its own shell / a helper CLI) whether test-strategy.md has ≥ 3 P0 scenarios AND each scope has a unit-test framework, and writes the result to `state.tddEnabled`. jarfis-foreman only reads that flag — it does NOT re-evaluate.
+`state.tddEnabled` is resolved by the **main session** before it launches this tmux phase. The main session evaluates (via its own shell / a helper CLI) whether test-strategy.md has ≥ 3 P0 scenarios AND each scope has a unit-test framework, and writes the result to `state.tddEnabled` (top-level). jarfis-foreman only reads that flag — it does NOT re-evaluate and does NOT fall back to the deprecated nested `phases.4.tdd_enabled` location.
 
 If `state.tddEnabled` is missing (e.g., the upstream decision step was skipped), treat `$TDD_ENABLED` as `false` and record `meta.tddEnabledFallback: "state_missing"` in phase-results so the main session can surface a warning.
 
