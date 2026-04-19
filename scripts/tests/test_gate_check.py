@@ -1,11 +1,14 @@
-"""Tests for jarfis.gate_check — prerequisite validation for Gate 1/2/3."""
+"""Tests for jarfis.verify — prerequisite validation for Gate 1/2/3.
+
+Module renamed from jarfis.gate_check at M1 (imports updated accordingly).
+"""
 
 import json
 import os
 
 import pytest
 
-from jarfis.gate_check import (
+from jarfis.verify import (
     CheckResult,
     _gate1_checks,
     _gate2_checks,

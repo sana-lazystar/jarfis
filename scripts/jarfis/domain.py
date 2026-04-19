@@ -46,7 +46,15 @@ def _get_domains_dir():
 def _resolve_skill_path(domain_name, skill_name, domains_dir=None):
     """Resolve a skill file path with security validation.
 
-    W1-11: Validates against path traversal.
+    Lookup order (v4 flat-first, M2 옵션 E):
+        1. ~/.claude/commands/jarfis/skills/{skill_name}.md  (flat — v4 preferred)
+        2. {domains_dir}/{domain_name}/skills/{skill_name}.md (domain — v3 fallback)
+
+    If the flat file exists, its path is returned directly (flat wins).
+    Otherwise the domain-scoped path is returned even if the file is absent
+    so the caller's existing FileNotFoundError / open() path stays unchanged.
+
+    W1-11: Validates against path traversal on BOTH roots.
     S4/S5: Validates name patterns.
 
     Returns:
@@ -54,7 +62,7 @@ def _resolve_skill_path(domain_name, skill_name, domains_dir=None):
 
     Raises:
         ValueError: If domain or skill name is invalid.
-        SecurityError: If resolved path is outside domains directory.
+                    If resolved path escapes its root directory.
     """
     if domains_dir is None:
         domains_dir = _get_domains_dir()
@@ -64,12 +72,26 @@ def _resolve_skill_path(domain_name, skill_name, domains_dir=None):
     if not SKILL_NAME_RE.match(skill_name):
         raise ValueError(f"Invalid skill name: {skill_name}")
 
+    # (1) flat lookup — sibling of domains_dir
+    flat_root = os.path.join(os.path.dirname(domains_dir), "skills")
+    if os.path.isdir(flat_root):
+        flat_base = os.path.realpath(flat_root)
+        flat_resolved = os.path.realpath(
+            os.path.join(flat_root, f"{skill_name}.md")
+        )
+        if not (flat_resolved == flat_base
+                or flat_resolved.startswith(flat_base + os.sep)):
+            raise ValueError(f"Path traversal detected (flat): {skill_name}")
+        if os.path.isfile(flat_resolved):
+            return flat_resolved
+
+    # (2) v3 fallback — domain-scoped
     base = os.path.realpath(domains_dir)
     resolved = os.path.realpath(
         os.path.join(domains_dir, domain_name, SKILLS_DIR_NAME, f"{skill_name}.md")
     )
 
-    if not resolved.startswith(base):
+    if not (resolved == base or resolved.startswith(base + os.sep)):
         raise ValueError(f"Path traversal detected: {skill_name}")
 
     return resolved
@@ -287,60 +309,65 @@ def agents(domain_name, phase, domains_dir=None):
     return roles
 
 
-def compose(domain_name, role_name, task,
-            domains_dir=None):
-    """Compose Persona + Skills into an agent prompt.
+# Fallback persona mapping: role_name → known agent_type (module-level so
+# v4 callers can introspect without invoking compose()).
+_FALLBACK_PERSONAS = {
+    "backend_engineer": "backend-developer",
+    "frontend_engineer": "frontend-developer",
+    "devops_engineer": "devops-engineer",
+    "rust_engineer": "backend-developer",
+    "webview_engineer": "frontend-developer",
+    "security_engineer": "security-engineer",
+    "qa_engineer": "qa-engineer",
+}
 
-    Project-level files (rule, context, profile) are injected by the
-    orchestrator separately, not by compose().
 
-    F1/F2: Graceful degradation on errors.
-    R4: Token budget enforcement with first-skill guarantee (W1-1).
-    W1-2: CJK-aware token estimation.
-    W1-3/S1: Null/missing/string skills handling.
+def load_skills_for_role(domain_name, role_name, domains_dir=None,
+                         max_skill_tokens=None):
+    """Load skills for a domain role with token budget applied.
+
+    Extracted from compose() so v4 jarfis_cli.py compose can reuse the exact
+    same loading/budget logic (옵션 D, system-spec §5.5). compose() now
+    delegates to this function — behavior is identical for existing callers.
+
+    R4 / W1-1: Token budget enforcement with first-skill guarantee.
+    W1-2: CJK-aware token estimation (via estimate_tokens).
+    W1-3 / S1: Null / missing / string skills handling.
+
+    Args:
+        domain_name: Domain identifier (e.g., "web", "desktop").
+        role_name: Role name within the domain (e.g., "frontend_engineer").
+        domains_dir: Override domains directory (for tests).
+        max_skill_tokens: Budget override; falls back to domain.yaml
+            `max_skill_tokens` (default 2500) when None.
 
     Returns:
-        Dict with agent_type, prompt_content, token_count,
-        loaded_skills, truncated_skills, fallback.
+        (loaded_skills, truncated_skills, skills_text)
+        - loaded_skills: list[str] of skill identifiers loaded
+        - truncated_skills: list[dict{name, reason}] of skills omitted
+        - skills_text: concatenated markdown body (no `## Active Skills`
+          heading). Caller wraps or embeds.
+
+    Raises:
+        FileNotFoundError, yaml.YAMLError, KeyError, ValueError:
+            propagated from domain config load / role lookup. Callers that
+            want graceful fallback (like compose()) should catch these.
     """
-    # Fallback persona mapping: role_name → known agent_type
-    _FALLBACK_PERSONAS = {
-        "backend_engineer": "backend-developer",
-        "frontend_engineer": "frontend-developer",
-        "devops_engineer": "devops-engineer",
-        "rust_engineer": "backend-developer",
-        "webview_engineer": "frontend-developer",
-        "security_engineer": "security-engineer",
-        "qa_engineer": "qa-engineer",
-    }
+    config = _load_domain_yaml(domain_name, domains_dir)
+    role = _find_role(config, role_name)
 
-    try:
-        config = _load_domain_yaml(domain_name, domains_dir)
-        role = _find_role(config, role_name)
-    except (FileNotFoundError, yaml.YAMLError, KeyError, ValueError) as e:
-        # Fallback: persona-only execution
-        error_msg = f"{type(e).__name__}: domain config load failed"
-        fallback_type = _FALLBACK_PERSONAS.get(
-            role_name, role_name.replace("_", "-")
-        )
-        return {
-            "agent_type": fallback_type,
-            "prompt_content": f"## Task\n{task}",
-            "token_count": estimate_tokens(task),
-            "loaded_skills": [],
-            "truncated_skills": [],
-            "fallback": True,
-            "error": error_msg,
-        }
+    token_budget = (
+        max_skill_tokens
+        if max_skill_tokens is not None
+        else config.get("max_skill_tokens", 2500)
+    )
 
-    # 1. Skills loading with token budget
     skills_content = ""
     loaded_skills = []
     truncated_skills = []
-    token_budget = config.get("max_skill_tokens", 2500)
     token_used = 0
 
-    # W1-3/S1: Null/missing/string handling
+    # W1-3 / S1: Null / missing / string handling
     skill_list = role.get("skills", []) or []
     if isinstance(skill_list, str):
         skill_list = [skill_list]
@@ -349,7 +376,6 @@ def compose(domain_name, role_name, task,
         try:
             skill_path = _resolve_skill_path(domain_name, skill_name, domains_dir)
 
-            # Check file size (DoS prevention)
             if os.path.isfile(skill_path):
                 size = os.path.getsize(skill_path)
                 if size > MAX_SKILL_FILE_SIZE:
@@ -361,7 +387,7 @@ def compose(domain_name, role_name, task,
 
             with open(skill_path, encoding="utf-8") as f:
                 skill_text = f.read()
-        except (FileNotFoundError, ValueError) as e:
+        except (FileNotFoundError, ValueError):
             truncated_skills.append({
                 "name": skill_name,
                 "reason": "file_not_found",
@@ -371,9 +397,9 @@ def compose(domain_name, role_name, task,
         skill_tokens = estimate_tokens(skill_text)
 
         if token_used + skill_tokens > token_budget:
-            # W1-1: First skill is ALWAYS loaded (minimum 1 skill guarantee)
+            # W1-1: First skill always loads (minimum 1 skill guarantee)
             if i == 0 and not loaded_skills:
-                pass  # Load first skill even if over budget
+                pass
             else:
                 truncated_skills.append({
                     "name": skill_name,
@@ -385,7 +411,7 @@ def compose(domain_name, role_name, task,
         loaded_skills.append(skill_name)
         token_used += skill_tokens
 
-    # 2. External skills (optional, same budget)
+    # External skills (optional, same budget)
     for ext_skill in (role.get("external_skills") or []):
         try:
             parts = ext_skill.split("/")
@@ -413,7 +439,47 @@ def compose(domain_name, role_name, task,
                 "reason": "external_not_found",
             })
 
-    # 3. Compose prompt (persona + skills only)
+    return loaded_skills, truncated_skills, skills_content
+
+
+def compose(domain_name, role_name, task,
+            domains_dir=None):
+    """Compose Persona + Skills into an agent prompt.
+
+    Project-level files (rule, context, profile) are injected by the
+    orchestrator separately, not by compose().
+
+    F1/F2: Graceful degradation on errors.
+    Skill loading delegates to `load_skills_for_role` (옵션 D) — behavior
+    identical to pre-extraction releases.
+
+    Returns:
+        Dict with agent_type, prompt_content, token_count,
+        loaded_skills, truncated_skills, fallback.
+    """
+    try:
+        loaded_skills, truncated_skills, skills_content = load_skills_for_role(
+            domain_name, role_name, domains_dir
+        )
+        # Persona lookup uses domain.yaml role config, so run role discovery
+        # separately to avoid fragile re-parsing.
+        config = _load_domain_yaml(domain_name, domains_dir)
+        role = _find_role(config, role_name)
+    except (FileNotFoundError, yaml.YAMLError, KeyError, ValueError) as e:
+        error_msg = f"{type(e).__name__}: domain config load failed"
+        fallback_type = _FALLBACK_PERSONAS.get(
+            role_name, role_name.replace("_", "-")
+        )
+        return {
+            "agent_type": fallback_type,
+            "prompt_content": f"## Task\n{task}",
+            "token_count": estimate_tokens(task),
+            "loaded_skills": [],
+            "truncated_skills": [],
+            "fallback": True,
+            "error": error_msg,
+        }
+
     sections = []
     if skills_content.strip():
         sections.append(f"## Active Skills\n{skills_content}")

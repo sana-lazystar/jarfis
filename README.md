@@ -474,9 +474,27 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [3.10.1] - 2026-04-15
+## [4.0.0] - 2026-04-19
 
-- implement: anti-optimization rules + phase5_agents gate-check enforcement
+JARFIS v4: tmux orchestration + Python verification.
+
+### Changed
+- **Phase execution**: each phase (1b/2/3/4/4.5/5/6) now runs inside a dedicated tmux session; main session only does T/0/1a and the three Gates. `work.md` shrinks from 902 to ~200 lines.
+- **Executor agent**: `jarfis-white` → `jarfis-foreman` (tmux-scoped orchestrator: compose invocation + sub-agent spawn + artifact merge). `jarfis-black` removed.
+- **Verification**: new `verify.py` replaces the `jarfis-black` LLM gate. Exposes `gate-check`, `phase-check`, `phase-verify`, `pattern-detect` as top-level `jarfis_cli.py` subcommands. Deterministic Python checks, JSON output, machine-verifiable.
+- **Agent composition**: new `agent-composition.yaml` + `jarfis_cli.py compose` CLI. Persona + domain skills + context[] (base/path/sections/importance) assembled deterministically instead of inferred by an LLM.
+- **State schema**: redesigned around `scope[] + org{} + locale + baseCommit` (implement-plan A.1). Per-project agents get `working_dir = scope[i].path`; work-wide agents stay at `docsDir`. Main session is the only writer.
+- **Skills**: flattened to `commands/jarfis/skills/` (10 existing + 6 new — aws-lambda, dynamodb, redis, postgres, s3, cognito). Domain yaml references skills by name only; empty `domains/{web,desktop}/skills/` dirs removed.
+- **Global locale**: `~/.claude/.jarfis-locale` persists user locale across sessions (M12).
+
+### Removed
+- `jarfis-black.md` (LLM verifier) — replaced by `verify.py`.
+- v3 `work.md` archived at `work-legacy.md`.
+- `state gate-check` / `state phase-check` routing aliases in `state.py` (top-level subcommands only).
+
+### Migration
+- v3 `.jarfis-state.json` is **not compatible** with v4. In-flight v3 workflows should be finished under v3 (`/jarfis:work-legacy`) or re-started under v4.
+- v4 entry point is `/jarfis:work`; legacy v3 remains available as `/jarfis:work-legacy` for the coexistence window.
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

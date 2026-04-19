@@ -5,19 +5,24 @@ Usage:
     jarfis_cli.py <command> [args...]
 
 Commands:
-    state         State CRUD (.jarfis-state.json) + gate-check/phase-check
-    detect        Project framework/language detection
-    measure       Prompt file token measurement
-    preflight     Pre-flight validation
-    meetings      Recent meetings list
-    version       Version bump
-    sync          Repo sync + README update
-    quality-gate  Run lint/typecheck on edited file
-    validate      Workflow state + artifact validation
-    org           Organization management (init/scan/info)
-    wiki          Wiki semantic search (index/search/status) [deprecated → use search]
-    search        Semantic search (all/meetings/works/wiki)
-    domain        Domain pack management (list/detect/agents/compose/validate/scaffold/install)
+    state            State CRUD (.jarfis-state.json)
+    gate-check       Gate 1/2/3 prerequisite validation (v4 top-level)
+    phase-check      Phase-start prerequisite validation (v4 top-level)
+    phase-verify     Per-phase output verification (v4)
+    pattern-detect   Review round pattern detection (v4)
+    detect           Project framework/language detection
+    measure          Prompt file token measurement
+    preflight        Pre-flight validation
+    meetings         Recent meetings list
+    version          Version bump
+    sync             Repo sync + README update
+    quality-gate     Run lint/typecheck on edited file
+    validate         Workflow state + artifact validation
+    org              Organization management (init/scan/info)
+    wiki             Wiki ops (index/search/status/rebuild-index) — rebuild-index is M6 (auto INDEX.md regen)
+    search           Semantic search (all/meetings/works/wiki)
+    domain           Domain pack management (list/detect/agents/compose/validate/scaffold/install)
+    compose          Compose agent invocation (persona + skills + context) [v4 — M2]
 """
 
 import os
@@ -83,6 +88,10 @@ def main():
 
     commands = {
         "state": "jarfis.state",
+        "gate-check": "jarfis.verify",
+        "phase-check": "jarfis.verify",
+        "phase-verify": "jarfis.verify",
+        "pattern-detect": "jarfis.verify",
         "detect": "jarfis.detect",
         "measure": "jarfis.measure",
         "preflight": "jarfis.preflight",
@@ -95,6 +104,7 @@ def main():
         "wiki": "jarfis.wiki_search",
         "search": "jarfis.wiki_search",
         "domain": "jarfis.domain",
+        "compose": "jarfis.compose.__main__",
     }
 
     if command not in commands:
@@ -110,6 +120,9 @@ def main():
 
     if command == "search":
         module.search_main(args)
+    elif command in ("gate-check", "phase-check", "phase-verify", "pattern-detect"):
+        # verify.main expects the subcommand name as args[0]
+        module.main([command] + args)
     else:
         module.main(args)
 

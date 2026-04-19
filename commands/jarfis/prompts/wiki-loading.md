@@ -6,8 +6,10 @@
 
 ## Prerequisites
 
-- `preflight` JSON's `org_root` is non-null
-- `{org_root}/.jarfis-org/wiki/INDEX.md` exists
+- `state.org != null` (i.e., `state.org.root` is set — M10 decision)
+- `{state.org.root}/.jarfis-org/wiki/INDEX.md` exists
+
+> In scripts below, `{org_root}` refers to `state.org.root`.
 
 ## 2-Step Lightweight Loading (for Fix mode)
 

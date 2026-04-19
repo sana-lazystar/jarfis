@@ -3,9 +3,10 @@
 Supports wiki, meetings, and works directories with independent indices.
 
 Legacy subcommands (via jarfis_cli.py wiki):
-    index <org_root>                       Build wiki index
-    search <org_root> <query> [--top-k N]  Search wiki
-    status <org_root>                      Wiki index status
+    index <org_root>                        Build wiki index
+    search <org_root> <query> [--top-k N]   Search wiki
+    status <org_root>                       Wiki index status
+    rebuild-index <org_root>                Regenerate INDEX.md from section _index.md files (M6)
 
 New subcommands (via jarfis_cli.py search):
     search {all|meetings|works|wiki} <query> [--top-k N] [--pretty]
@@ -698,6 +699,176 @@ def search_main(args):
         cmd_search_single(dirs[scope], query, top_k, scope, pretty)
 
 
+# --- INDEX.md rebuild (M6) ---
+
+SECTIONS = ("PO", "DESIGN", "TA", "QA")
+
+
+def _parse_section_index(section_index_path):
+    """Parse the 4-column markdown table in a section _index.md.
+
+    Expected format (per templates/wiki-section-index.md):
+        | File | Summary | Projects | Updated |
+        |------|---------|----------|---------|
+        | file.md | summary | [proj] | 2026-04-19 |
+
+    Returns list of dicts: [{"file", "summary", "projects", "updated"}, ...]
+    Skips placeholder rows where the file cell is empty or "(none)".
+    """
+    if not os.path.isfile(section_index_path):
+        return []
+    try:
+        with open(section_index_path, "r", encoding="utf-8") as f:
+            content = f.read()
+    except (OSError, UnicodeDecodeError):
+        return []
+
+    entries = []
+    header_seen = False
+    for line in content.splitlines():
+        line = line.rstrip()
+        if not line.startswith("|"):
+            if header_seen:
+                # Table ended; no more rows
+                break
+            continue
+        # Separator row
+        if re.match(r"^\|[\s\-:|]+\|[\s\-:|]*$", line):
+            header_seen = True
+            continue
+        # First pipe-line = header
+        if not header_seen:
+            continue
+        # Data row
+        parts = [c.strip() for c in line.strip("|").split("|")]
+        if len(parts) < 4:
+            continue
+        file_cell = parts[0]
+        # Skip placeholder
+        if file_cell.lower() in ("(none)", "", "-"):
+            continue
+        entries.append(
+            {
+                "file": file_cell,
+                "summary": parts[1],
+                "projects": parts[2],
+                "updated": parts[3],
+            }
+        )
+    return entries
+
+
+def _render_index_md(sections_entries, preserved_design_marker=None):
+    """Render INDEX.md content from parsed section entries.
+
+    preserved_design_marker: if the existing INDEX.md had a DESIGN_LAST_UPDATED marker line,
+    we preserve it to avoid breaking Track B's sed-based update target.
+    """
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    counts = {s: len(sections_entries.get(s, [])) for s in SECTIONS}
+    total = sum(counts.values())
+
+    lines = []
+    lines.append("# Wiki Index")
+    lines.append("")
+    lines.append("## Quick Reference")
+    lines.append(
+        f"- Total files: {total} (PO: {counts['PO']}, DESIGN: {counts['DESIGN']}, "
+        f"TA: {counts['TA']}, QA: {counts['QA']})"
+    )
+    lines.append(f"- Last updated: {now} (auto-rebuilt by `jarfis_cli.py wiki rebuild-index`)")
+    lines.append("")
+    lines.append("## Usage Guide")
+    lines.append(
+        "- Information priority: $DOCS_DIR > project/.jarfis-project/ > "
+        ".jarfis-org/wiki/ > INDEX.md"
+    )
+    lines.append(
+        "- Topics covered by current task: $DOCS_DIR takes priority. "
+        "Topics not covered: wiki remains valid."
+    )
+    lines.append("")
+    lines.append("## Directory Map")
+    lines.append("")
+
+    for section in SECTIONS:
+        entries = sections_entries.get(section, [])
+        lines.append(f"### {section}/ ({len(entries)} files)")
+        if not entries:
+            lines.append("Key: (none)")
+        else:
+            # Key = up to 3 most recently updated file names (sorted by `updated` desc)
+            sorted_entries = sorted(
+                entries, key=lambda e: e.get("updated", ""), reverse=True
+            )
+            key_files = [e["file"] for e in sorted_entries[:3]]
+            lines.append(f"Key: {', '.join(key_files)}")
+        lines.append(f"Details: {section}/_index.md")
+        lines.append("")
+
+    # Preserve DESIGN_LAST_UPDATED marker line (used by Track B sed update)
+    if preserved_design_marker:
+        lines.append(preserved_design_marker)
+    else:
+        lines.append("<!-- DESIGN_LAST_UPDATED --> (not yet synced)")
+    lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n"
+
+
+def _extract_design_marker(index_path):
+    """Extract the existing DESIGN_LAST_UPDATED marker line, if any."""
+    if not os.path.isfile(index_path):
+        return None
+    try:
+        with open(index_path, "r", encoding="utf-8") as f:
+            for line in f:
+                line = line.rstrip()
+                if line.startswith("<!-- DESIGN_LAST_UPDATED -->"):
+                    return line
+    except (OSError, UnicodeDecodeError):
+        pass
+    return None
+
+
+def cmd_rebuild_index(org_root_str):
+    """Regenerate $ORG_ROOT/.jarfis-org/wiki/INDEX.md from section _index.md files."""
+    org_root = os.path.abspath(org_root_str)
+    wiki_dir = os.path.join(org_root, WIKI_REL)
+    if not os.path.isdir(wiki_dir):
+        json_error(
+            f"Wiki directory not found: {wiki_dir}",
+            hint="Run /jarfis:org-init first",
+        )
+
+    sections_entries = {}
+    for section in SECTIONS:
+        section_index = os.path.join(wiki_dir, section, "_index.md")
+        sections_entries[section] = _parse_section_index(section_index)
+
+    index_path = os.path.join(wiki_dir, "INDEX.md")
+    preserved = _extract_design_marker(index_path)
+    rendered = _render_index_md(sections_entries, preserved_design_marker=preserved)
+
+    try:
+        with open(index_path, "w", encoding="utf-8") as f:
+            f.write(rendered)
+    except OSError as e:
+        json_error(f"Failed to write INDEX.md: {e}")
+
+    json_output(
+        {
+            "status": "ok",
+            "sections": {s: len(sections_entries[s]) for s in SECTIONS},
+            "total_entries": sum(len(e) for e in sections_entries.values()),
+            "index_path": index_path,
+            "design_marker_preserved": preserved is not None,
+        }
+    )
+
+
 # --- Legacy Entry Point (jarfis_cli.py wiki) ---
 
 
@@ -767,5 +938,13 @@ def main(args):
         status.pop("directory", None)
         json_output(status)
 
+    elif subcmd == "rebuild-index":
+        if len(args) < 2:
+            json_error("Usage: jarfis_cli.py wiki rebuild-index <org_root>")
+        cmd_rebuild_index(args[1])
+
     else:
-        json_error(f"Unknown wiki subcommand: {subcmd}. Available: index, search, status")
+        json_error(
+            f"Unknown wiki subcommand: {subcmd}. "
+            "Available: index, search, status, rebuild-index"
+        )

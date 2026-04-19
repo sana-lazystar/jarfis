@@ -132,6 +132,11 @@ Update the existing `./.jarfis-project/project-profile.md`:
 - Token efficiency is the top priority: no code copying, describe structure and patterns
 - All file paths should be relative to the project root
 
+**Active Skills refresh rule (when `## Active Skills` section is present):**
+- If dependencies / Tech Stack changed in a way that invalidates a listed skill (e.g., framework migrated Express→Fastify), **propose additions/removals** via AskUserQuestion, do not overwrite silently.
+- User-curated entries take precedence: never delete a skill the user explicitly added, only suggest removal.
+- If the section is absent and the updated Tech Stack now matches a framework with mapped extras (`agent-composition.yaml::extra_skills_by_framework`), the 4-stage fallback chain handles it — do not auto-create the section.
+
 ### Step 4.5: Ensure project-rule.md Exists
 
 Check if `./.jarfis-project/project-rule.md` exists. If not, create an empty file:

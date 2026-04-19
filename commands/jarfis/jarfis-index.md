@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-15 | Version: 3.10.1
+> Do not edit manually. Last updated: 2026-04-19 | Version: 4.0.0
 
 ## File Structure
 ```
@@ -149,7 +149,7 @@
   - `domain.py` — Domain Pack management module (list/detect/agents/compose/validate/scaffold/install, v3.0 new) [NEW]
   - `audit.py` — Audit log module (append-only JSONL, v3.0 new) [NEW]
   - `trace.py` — Performance tracing module (per-agent token/duration, v3.0 new) [NEW]
-  - `gate_check.py` — Gate prerequisite validation module (Gate 1/2/3 산출물 + 조건부 파일 + 상태 검증, 860 lines) [NEW]
+  - `verify.py` — Gate/phase/pattern verification module (gate-check + phase-check + phase-verify + pattern-detect, v4; renamed + extended from gate_check.py at M1)
   - `level_check.py` — AI-native maturity auto-collection module (filesystem survey + jsonl session parsing, orchestration detection)
   - `wiki_search.py` — General-purpose semantic search module (sentence-transformers bge-m3, wiki/meetings/works indexing+search+unified search + memory guard + CPU forced + MPS memory deduction, 771 lines)
 - `~/.claude/scripts/tests/` — pytest test directory (375 tests)
@@ -226,7 +226,7 @@
 - `work-meeting.md` M-3 -> auto-calls `jarfis_cli.py search index meetings` (best-effort)
 - `phase6.md` -> auto-calls `jarfis_cli.py search index wiki` + `search index works` (best-effort)
 - `org-init.md` -> displays `/jarfis:search-setup` -> `/jarfis:search-index` guide on completion
-- `gate_check.py` -> referenced by work.md Gate Point Rules (mandatory `gate-check` before any Gate presentation). Also provides `phase-check` for Phase start validation.
+- `verify.py` -> referenced by work.md Gate Point Rules (mandatory `gate-check` before any Gate presentation). Also provides `phase-check` (Phase start) and `phase-verify` / `pattern-detect` (tmux foreman).
 - `tests/` -> referenced in sys-implement.md Step 2 Python TDD rules (369 tests, covering all Python modules). Run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`
 
 ## Git Auto-Commit Feature

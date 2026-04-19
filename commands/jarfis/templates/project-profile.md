@@ -21,6 +21,15 @@ Do not include sections that were not analyzed at the given depth (no empty sect
 - **Package Manager**: (e.g., pnpm 9)
 - **Key Dependencies**: (list of core libraries)
 
+## Active Skills (optional)
+> Sub-agent에 자동 주입할 skill 이름 명시. `~/.claude/commands/jarfis/skills/`의 파일 이름 참조.
+> 비워두면 Tech Stack 섹션 자동 매칭 또는 framework 매핑(`agent-composition.yaml::extra_skills_by_framework`)으로 자동 결정.
+
+- (e.g., aws-lambda)
+- (e.g., dynamodb)
+- (e.g., nodejs)
+- (e.g., express)
+
 ## Directory Structure
 (Condensed tree — major directories only, with role annotations)
 

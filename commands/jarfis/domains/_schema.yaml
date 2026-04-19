@@ -1,9 +1,9 @@
 # JARFIS Domain Pack Schema v2
-# Published Language — 모든 도메인 팩은 이 형식을 따라야 합니다.
+# Published Language — All domain packs must follow this format.
 #
-# EP1-EP7: 7개 Extension Point
-# Hooks: Phase별 Before/After 삽입점
-# Fallback: 에이전트 실패 시 동작 (v3.0: 기본값만)
+# EP1-EP7: 7 Extension Points
+# Hooks: Before/After insertion points per Phase
+# Fallback: Behavior on agent failure (v3.0: defaults only)
 
 schema_version: 2
 supported_schema_versions: [2]
@@ -11,45 +11,45 @@ min_core_version: "3.0.0"
 
 # ── Domain Identity ──
 # domain:
-#   name: string          # 고유 식별자 (^[a-z][a-z0-9-]{0,30}$)
-#   display_name: string  # 표시 이름
+#   name: string          # Unique identifier (^[a-z][a-z0-9-]{0,30}$)
+#   display_name: string  # Display name
 
 # ── EP1: Agent Composition ──
 # roles:
 #   plan:
-#     - persona: string       # core/personas/ 참조
-#       skills: [string]      # domains/{name}/skills/ 참조
+#     - persona: string       # Refers to core/personas/
+#       skills: [string]      # Refers to domains/{name}/skills/
 #       model: string         # opus | sonnet | haiku
 #   design:
 #     - persona: string
 #       skills: [string]
 #       model: string
 #   implement:
-#     - name: string          # 역할 식별자
+#     - name: string          # Role identifier
 #       persona: string
 #       skills: [string]
-#       external_skills: [string]?  # 타 도메인 스킬 참조 ("web/react")
+#       external_skills: [string]?  # Cross-domain skill reference ("web/react")
 #       model: string
-#       commit_prefix: string       # "FE", "BE", "RS" 등
-#       required: boolean           # true면 누락 시 워크플로우 중단
+#       commit_prefix: string       # "FE", "BE", "RS", etc.
+#       required: boolean           # If true, workflow aborts when missing
 #   review:
 #     - persona: string
 #       skills: [string]
 #       model: string
 #
-# max_skill_tokens: 2500    # 스킬 토큰 예산 (초과 시 우선순위순 절삭)
+# max_skill_tokens: 2500    # Skill token budget (exceeding triggers priority-based truncation)
 #
 # rules:
-#   filter_by_tags: true     # Rule 주입 시 프레임워크 태그 매칭
-#   always_include_untagged: true  # 태그 없는 Rule은 항상 주입
+#   filter_by_tags: true     # Match framework tags when injecting rules
+#   always_include_untagged: true  # Untagged rules are always injected
 
 # ── EP2: Framework Detection ──
 # detect:
 #   indicators:
-#     - file: string?         # 파일 존재 확인
-#       manifest: string?     # 매니페스트 파일 경로
-#       key: string?          # 매니페스트 내 키 (substring match)
-#       framework: string     # 감지된 프레임워크 이름
+#     - file: string?         # Check file existence
+#       manifest: string?     # Manifest file path
+#       key: string?          # Key within manifest (substring match)
+#       framework: string     # Detected framework name
 #       confidence: number    # 0.0-1.0
 
 # ── EP3: Quality Gates ──
@@ -87,14 +87,14 @@ min_core_version: "3.0.0"
 #   init: string?
 #   upgrade: string?
 
-# ── Before/After Hooks (래칫 R1) ──
+# ── Before/After Hooks (Ratchet R1) ──
 # hooks:
 #   phase2: { before: string?, after: string? }
 #   phase3: { before: string?, after: string? }
 #   phase4: { before: string?, after: string? }
 #   phase5: { before: string?, after: string? }
 
-# ── Fallback (래칫 R5) ──
+# ── Fallback (Ratchet R5) ──
 # fallback:
-#   on_compose_error: "persona-only"  # 스킬 로드 실패 시
-#   on_skip: "ask-user"               # skip 시 AskUserQuestion 필수
+#   on_compose_error: "persona-only"  # When skill loading fails
+#   on_skip: "ask-user"               # AskUserQuestion required on skip

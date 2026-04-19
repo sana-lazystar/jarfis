@@ -322,19 +322,10 @@ def cmd_validate(args):
 
 def main(args):
     if not args:
-        json_error("Usage: jarfis state <read|write|set|set-nested|init|validate|list-workflows|gate-check|phase-check> <state_file> [args...]")
+        json_error("Usage: jarfis state <read|write|set|set-nested|init|validate|list-workflows> <state_file> [args...]")
 
     action = args[0]
     rest = args[1:]
-
-    # Gate-check and phase-check are routed to the gate_check module
-    if action in ("gate-check", "phase-check"):
-        from .gate_check import cmd_gate_check, cmd_phase_check
-        if action == "gate-check":
-            cmd_gate_check(rest)
-        else:
-            cmd_phase_check(rest)
-        return
 
     commands = {
         "read": cmd_read,
