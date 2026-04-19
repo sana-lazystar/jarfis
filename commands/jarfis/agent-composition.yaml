@@ -59,7 +59,9 @@ agents:
     scope: work-wide
     skills_from_domain: true
     context:
-      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Architecture, Notes & Caveats], optional: false, importance: required}
+      # M8 Step 8.2 finding: retrospective는 주로 docsDir 산출물 기반.
+      # project-profile.md는 bonus context. 없어도 회고 가능.
+      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Architecture, Notes & Caveats], optional: true, importance: recommended}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
 
   qa-engineer:
@@ -73,10 +75,10 @@ agents:
 
   security-engineer:
     persona: security-engineer
-    scope: per-project
+    scope: work-wide                                         # v4.0.2 OBS-3: phase4.md Step 1 "1 spawn" 의도와 정합 (multi-scope에서도 단일 spawn)
     skills_from_domain: true
     context:
-      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: false, importance: required}   # AI review (M4 Step 4.2): 프로젝트별 인증/권한 구조 파악 — OWASP 검토 지점 최적화
+      - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: true, importance: recommended}   # AI review (M4 Step 4.2): 모든 프로젝트 인증/권한 구조 통합 파악. optional (미등록 프로젝트 허용)
       - {base: docs, path: .wiki-cache.md, sections: [Security], optional: true, importance: recommended}
 
   ux-designer:

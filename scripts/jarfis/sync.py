@@ -108,9 +108,11 @@ def sync_files(repo_path, claude_dir):
     )
 
     # 2. commands/jarfis/* (recursive, excluding .distill-backup)
-    for f in _find_files(os.path.join(claude_dir, "commands", "jarfis"), ".md"):
-        rel = f[len(os.path.join(claude_dir, "commands", "jarfis")) + 1:]
-        synced += _sync_file(f, os.path.join(repo_path, "commands", "jarfis", rel), claude_dir, changes)
+    # Include .md (prompts/templates/skills) + .yaml/.yml (agent-composition, domain configs)
+    for ext in (".md", ".yaml", ".yml"):
+        for f in _find_files(os.path.join(claude_dir, "commands", "jarfis"), ext):
+            rel = f[len(os.path.join(claude_dir, "commands", "jarfis")) + 1:]
+            synced += _sync_file(f, os.path.join(repo_path, "commands", "jarfis", rel), claude_dir, changes)
 
     # 3. agents/jarfis/*
     for f in _find_files(os.path.join(claude_dir, "agents", "jarfis"), ".md"):
