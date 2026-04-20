@@ -11,12 +11,6 @@ from jarfis.version import main
 
 class TestVersionBump:
     def _setup_version_env(self, jarfis_env):
-        """Ensure all version-related files exist."""
-        repo = jarfis_env["repo_dir"]
-        claude = jarfis_env["claude_dir"]
-        # __init__.py in the scripts/jarfis/ of the ACTUAL module location
-        # version.py reads __init__.py relative to its own __file__
-        # So we need to set up the real init file
         return jarfis_env
 
     def test_patch_bump(self, jarfis_env, capsys):
@@ -34,6 +28,35 @@ class TestVersionBump:
         # Verify .jarfis-version
         with open(os.path.join(jarfis_env["claude_dir"], ".jarfis-version")) as f:
             assert f.read().strip() == "2.2.3"
+
+        # Verify claude_dir/scripts/jarfis/__init__.py bumped
+        init_path = os.path.join(
+            jarfis_env["claude_dir"], "scripts", "jarfis", "__init__.py"
+        )
+        with open(init_path) as f:
+            assert '__version__ = "2.2.3"' in f.read()
+
+    def test_patch_bump_does_not_mutate_installed_init(self, jarfis_env):
+        """Regression: version.main must never touch the real installed __init__.py.
+
+        Historical bug (pre-v4.0.6): init_file was resolved via __file__, so
+        running the test suite silently rewrote the installed __init__.py to
+        the test fixture's bumped version (e.g. 4.0.5 → 2.2.3).
+        """
+        import jarfis.version as _v
+        installed_init = os.path.join(
+            os.path.dirname(_v.__file__), "__init__.py"
+        )
+        if not os.path.isfile(installed_init):
+            pytest.skip("no installed __init__.py to guard")
+        with open(installed_init) as f:
+            before = f.read()
+        main(["patch", "regression guard"])
+        with open(installed_init) as f:
+            after = f.read()
+        assert before == after, (
+            f"version bump mutated installed __init__.py at {installed_init}"
+        )
 
     def test_minor_bump(self, jarfis_env, capsys):
         self._setup_version_env(jarfis_env)

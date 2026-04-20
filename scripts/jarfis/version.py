@@ -71,7 +71,9 @@ def main(args):
         f.write(new_version + "\n")
 
     # Update __init__.py version
-    init_file = os.path.join(os.path.dirname(__file__), "__init__.py")
+    # Resolve via claude_dir (sync source) so tests with monkeypatched HOME
+    # stay isolated and never mutate the real installed package.
+    init_file = os.path.join(claude_dir, "scripts", "jarfis", "__init__.py")
     if os.path.isfile(init_file):
         with open(init_file) as f:
             init_content = f.read()
