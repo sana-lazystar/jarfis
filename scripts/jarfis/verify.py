@@ -23,9 +23,10 @@ import json
 import os
 import re
 import sys
+import time
 from pathlib import Path
 
-from . import verify_helpers as _h
+from . import trace, verify_helpers as _h
 from .utils import json_error, json_output
 
 
@@ -1134,6 +1135,13 @@ def cmd_phase_verify(args):
 
     state_file, phase_id = args[0], args[1]
 
+    start = time.monotonic()
+    try:
+        if trace.is_enabled():
+            trace.log_event("phase_verify_start", {"phase_id": phase_id})
+    except Exception:
+        pass
+
     if phase_id not in PHASE_VERIFIERS:
         valid = ", ".join(PHASE_VERIFIERS.keys())
         json_error(f"Unknown phase_id: {phase_id}. Valid: {valid}")
@@ -1159,6 +1167,16 @@ def cmd_phase_verify(args):
         "checkedAt": datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ"),
         "phaseId": phase_id,
     }
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "phase_verify_end",
+                {"phase_id": phase_id, "verdict": result["verdict"],
+                 "missing_count": len(missing),
+                 "duration_ms": int((time.monotonic() - start) * 1000)},
+            )
+    except Exception:
+        pass
     print(json.dumps(result, ensure_ascii=False))
     sys.exit(0 if not missing else 1)
 

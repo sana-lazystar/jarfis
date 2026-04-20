@@ -196,6 +196,40 @@ Skip rules:
 
 Rationale: M8 Attempt 3 observed the main session collapsing TODOs into 3 coarse buckets ("Phase 0 / 1a / 1b~6"), which hid Phase-4 progress while tmux was running for 15+ minutes. Per-Phase + per-Gate tasks restore the granularity users expect.
 
+## Troubleshooting (trace subsystem — v4.0.5)
+
+The `trace` subsystem (`~/.claude/scripts/jarfis/trace.py`) is **opt-in**. It stays off by default and has no runtime cost when inactive. Turn it on when you need post-mortem data beyond the pane scrollback.
+
+**Activate**:
+```bash
+export JARFIS_TRACE=1
+# Optional: route events to a specific path (default: /tmp/jarfis-trace.jsonl)
+export JARFIS_TRACE_PATH=~/work-debug/trace.jsonl
+```
+
+**Events emitted** (JSONL, one line per event, each line: `{ts, event, attrs}`):
+
+| Event                 | Source                      | Attributes                                                         |
+|-----------------------|-----------------------------|--------------------------------------------------------------------|
+| `tmux_session_start`  | `tmux_claude.py`            | `session, workspace, mcp_config (bool)`                            |
+| `tmux_session_ready`  | `tmux_claude.py`            | `session`                                                          |
+| `tmux_prompt_sent`    | `tmux_claude.py`            | `session, prompt_path`                                             |
+| `tmux_session_end`    | `tmux_claude.py`            | `session, status, reason, duration_ms`                             |
+| `phase_verify_start`  | `verify.cmd_phase_verify`   | `phase_id`                                                         |
+| `phase_verify_end`    | `verify.cmd_phase_verify`   | `phase_id, verdict, missing_count, duration_ms`                    |
+| `compose_start`       | `compose/__main__::_compose`| `agent, scope_index`                                               |
+| `compose_end`         | `compose/__main__::_compose`| `agent, context_files, injected_files, skills_count, prompt_chars, duration_ms` |
+
+**Deactivate**:
+```bash
+export JARFIS_TRACE=0   # or: unset JARFIS_TRACE
+```
+No code change or redeploy needed.
+
+**Safety**: every instrumentation site is wrapped in `try/except` so a trace-side failure never flips a Phase outcome. The instrumentation cost is paid only when `JARFIS_TRACE` is non-"0". Enabling it during actual workflows is expected to add <20% wall time (measured against the v4.0.5 preflight Phase 6 baseline — see `v4.0.5-backlog.md` release criteria).
+
+**Trace file growth**: files are append-only JSONL. Rotate / prune manually — automatic cleanup is a follow-up (v4.0.6+).
+
 ## Anti-Optimization (mini)
 
 - **Do NOT merge Phases** into one tmux session. Parallel Phase 2 + Phase 3 is allowed only as two distinct sessions with different `sessionKey-phase{N}` names.
