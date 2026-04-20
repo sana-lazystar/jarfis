@@ -155,6 +155,15 @@ def kill_existing_session(name: str) -> None:
 
     주의: prefix 기반 대량 kill 안 함. Phase 2+3 병렬 실행 안전성 보장.
     좀비 세션 청소는 별도 책임 (/jarfis:sys-health 또는 메인 재개 시).
+
+    Prefix-match 관련 참고 (I-M8-P4-2):
+        tmux의 has-session / kill-session은 `-t` 인자에 대해 접두사 매칭을
+        허용한다 (예: `-t jf-abc`가 `jf-abc-phase4`와 매치 가능).
+        단 JARFIS 세션 명명 규칙은 `jf-{shortId}-phase{N}` 고정이고
+        shortId는 nanoid/uuid 기반이라 서로 prefix 관계가 될 수 없다.
+        따라서 본 함수가 정확 이름 매칭만 수행해도 실질적 위험은 0이다.
+        (shortId 생성 로직을 짧은 순차 ID 등으로 바꾸면 이 가정이 깨지므로
+        변경 시 해당 시점에 본 함수도 함께 재검토할 것.)
     """
     if session_alive(name):
         kill_session(name)

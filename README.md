@@ -474,29 +474,21 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [4.0.2] - 2026-04-20
+## [4.0.3] - 2026-04-20
 
-Minor hotfix batch. 6 items (SPEC-2, OBS-3, OBS-1, OBS-4, OBS-2, SPEC-1) surfaced during M8 E2E but outside v4.0.1 inline hotfix scope. No breaking changes; all backward-compatible.
+Fast-track polish batch. 4 prompt / docstring-level items deferred from v4.0.2. All changes are text-only (no behavior change); fully revertable via `git revert`.
 
 ### Added
-- **SPEC-2** `sync.py` version drift detection. New `check_version_drift()` compares 4 sources (~/.claude/.jarfis-version, ~/.claude/scripts/jarfis/__init__.py, repo/VERSION, repo/scripts/jarfis/__init__.py). `jarfis sync` now prints pre-sync/post-sync drift warnings; new `jarfis sync --version-check` flag exits 1 on drift (CI-friendly). +11 tests in test_sync.py.
-- **OBS-2** `utils.parse_json_value` over-quoting resilience. When shell preserves outer quotes (`'"[]"'`), the function now re-parses the intermediate string and returns the intended list/dict. Non-string inputs pass through unchanged. +7 tests in test_utils.py.
+- **UX-1** `work.md` Progress Tracking section. Main session now creates one TaskCreate entry per Phase (0 / 1a / 1b / 2 / 3 / 4 / 4.5 / 5 / 6) and per Gate (1 / 2 / 3), with explicit state-transition rules (enter → `in_progress`, verify PASS / Gate Approve → `completed`, retry updates `activeForm` without creating a new task). Addresses M8 Attempt 3 observation of TODO compression hiding Phase-4 progress.
+- **N-5** `prompts/phase3.md` "On-brand extension scope" section + PO review rubric. Codifies which UX-added elements beyond prd.md / ux-direction.md are allowed vs. forbidden (Voice/Tone preserved + reinforces existing story + self-contained vs. new flow / primary-journey change / missing-API dependency). Grey-zone items marked `<!-- [EXT_QUERY] -->` for explicit PO decision. Makes M8 Step 8.3 I-M8-P3-1 tacit rule explicit.
 
 ### Changed
-- **OBS-3** `agent-composition.yaml::security-engineer` scope promoted `per-project` → `work-wide`; context `base: project` → `all-projects`. Matches phase4.md Step 1 "1 spawn" intent. Multi-scope workflows now get a single security pre-review with concatenated project-profile context (verified with 2-project fixture).
-- **OBS-1** `phase2.md` api-spec.md generation condition aligned with `verify.py::_gate2_checks` fallback. New precompute fields `<has_frontend>`, `<api_spec_required>`. BE-only workflows without a frontend consumer no longer emit api-spec.md.
-- **OBS-4** `state.tddEnabled` canonicalized to top-level. `jarfis-state-schema.md` example moved `tdd_enabled: false` from `phases.4` to top-level `tddEnabled: false`. Nested `phases.4.tdd_enabled` marked deprecated. `phase4.md` precompute comment reinforces no fallback to the nested location.
-- **SPEC-1** `system-spec.md §5.4, §13.1` M11-1/M11-2 rewritten as "prompt-inject" approach (superseding the original "auto-load" assumption invalidated in M8). Added phase-by-phase audit table identifying where scope CLAUDE.md injection is required (Phase 4/5 ✅) vs. optional for future consideration (Phase 2/3 → v4.1 observation). Doc-only change in migration workspace; no jarfis repo commit.
-
-### Infrastructure
-- `sync.py` sync scope extended for `commands/jarfis/**` from `.md` only to `.md + .yaml + .yml`. `agent-composition.yaml` and `domains/*.yaml` now sync correctly; closes a path-level gap SPEC-2 drift detection cannot cover.
-- VERSION 4.0.1 → 4.0.2; __init__.py aligned (no drift warning on fresh checkout).
+- **UX-2** `work.md` tmux phase execution block documents the Bash-tool `description` convention: `"JARFIS Phase {phase_id} execution"` (first attempt) / `"JARFIS Phase {phase_id} retry attempt {K}"` (retry). Keeps background-completion notifications legible across multi-work sessions. Harness-fixed `Background command` wrapper is called out as not customizable.
+- **N-6** `tmux_claude.py::kill_existing_session` docstring now notes tmux's prefix-match semantics on `-t` and confirms JARFIS's `jf-{shortId}-phase{N}` scheme with nanoid/uuid-based shortIds makes prefix collisions impossible. Includes a forward-looking reminder to re-audit if shortId generation changes to a sequential scheme.
 
 ### Tests
-- `pytest scripts/tests/ --ignore=tests/test_meetings.py` → **425 passed** (was 419). 3 pre-existing test_meetings.py failures unchanged (tracked in v4.1 backlog).
-
-### Migration
-- v4.0.1 → v4.0.2: `/jarfis:work` next session picks up automatically. Existing in-flight workflows unaffected (schema/prompt changes are forward-compatible).
+- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **425 passed** (v4.0.2 baseline unchanged). 3 pre-existing test_meetings.py failures unchanged.
+- All 4 items are documentation / prompt-level; no Python logic touched.
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---
