@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.3] - 2026-04-20
+
+Fast-track polish batch. 4 prompt / docstring-level items deferred from v4.0.2. All changes are text-only (no behavior change); fully revertable via `git revert`.
+
+### Added
+- **UX-1** `work.md` Progress Tracking section. Main session now creates one TaskCreate entry per Phase (0 / 1a / 1b / 2 / 3 / 4 / 4.5 / 5 / 6) and per Gate (1 / 2 / 3), with explicit state-transition rules (enter → `in_progress`, verify PASS / Gate Approve → `completed`, retry updates `activeForm` without creating a new task). Addresses M8 Attempt 3 observation of TODO compression hiding Phase-4 progress.
+- **N-5** `prompts/phase3.md` "On-brand extension scope" section + PO review rubric. Codifies which UX-added elements beyond prd.md / ux-direction.md are allowed vs. forbidden (Voice/Tone preserved + reinforces existing story + self-contained vs. new flow / primary-journey change / missing-API dependency). Grey-zone items marked `<!-- [EXT_QUERY] -->` for explicit PO decision. Makes M8 Step 8.3 I-M8-P3-1 tacit rule explicit.
+
+### Changed
+- **UX-2** `work.md` tmux phase execution block documents the Bash-tool `description` convention: `"JARFIS Phase {phase_id} execution"` (first attempt) / `"JARFIS Phase {phase_id} retry attempt {K}"` (retry). Keeps background-completion notifications legible across multi-work sessions. Harness-fixed `Background command` wrapper is called out as not customizable.
+- **N-6** `tmux_claude.py::kill_existing_session` docstring now notes tmux's prefix-match semantics on `-t` and confirms JARFIS's `jf-{shortId}-phase{N}` scheme with nanoid/uuid-based shortIds makes prefix collisions impossible. Includes a forward-looking reminder to re-audit if shortId generation changes to a sequential scheme.
+
+### Tests
+- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **425 passed** (v4.0.2 baseline unchanged). 3 pre-existing test_meetings.py failures unchanged.
+- All 4 items are documentation / prompt-level; no Python logic touched.
+
 ## [4.0.2] - 2026-04-20
 
 Minor hotfix batch. 6 items (SPEC-2, OBS-3, OBS-1, OBS-4, OBS-2, SPEC-1) surfaced during M8 E2E but outside v4.0.1 inline hotfix scope. No breaking changes; all backward-compatible.
