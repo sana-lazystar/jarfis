@@ -4,14 +4,42 @@ Primary data source for Monitor App. Separated concerns from audit.jsonl:
 - audit.jsonl = workflow events (Phase transitions, gate results)
 - traces.jsonl = performance metrics (token counts, elapsed time, per-agent details)
 
-Note (P9): traces.jsonl is not a recovery source. Missing/corrupt files have no functional impact.
+v4.0.5 N-2: controlled by the `JARFIS_TRACE` environment variable.
+  JARFIS_TRACE unset OR "0"  → every entry point is a no-op.
+  JARFIS_TRACE non-"0"        → spans are written to the caller-supplied path.
+
+All I/O and serialization paths are wrapped in try/except so a trace failure
+never flips a Phase outcome. See adr/v4.0.5-trace-design.md.
+
+Note (P9): traces.jsonl is not a recovery source. Missing/corrupt files have
+no functional impact.
 """
 
 import json
+import os
 import time
 import uuid
 from contextlib import contextmanager
 from datetime import datetime, timezone
+
+
+def is_enabled() -> bool:
+    """Return True when JARFIS_TRACE is set to anything other than "0"."""
+    return os.getenv("JARFIS_TRACE", "0") != "0"
+
+
+def _safe_append(trace_path, payload):
+    """Append one JSON line to `trace_path`. Any failure is swallowed silently.
+
+    Kept private so instrumentation sites don't each re-implement the shield.
+    Callers that want to know about failures should check `is_enabled()` and
+    do their own I/O; this helper's contract is "best effort, never raises".
+    """
+    try:
+        with open(trace_path, "a", encoding="utf-8") as f:
+            f.write(json.dumps(payload, ensure_ascii=False) + "\n")
+    except Exception:
+        pass
 
 
 @contextmanager
@@ -23,6 +51,9 @@ def trace_agent(trace_path, trace_id, phase, persona, skills):
             # agent execution happens here
             pass
 
+    When JARFIS_TRACE is off, yields an identifiable no-op span_id and skips
+    the write entirely (no file created).
+
     Args:
         trace_path: Path to traces.jsonl file.
         trace_id: Unique workflow trace ID.
@@ -31,32 +62,45 @@ def trace_agent(trace_path, trace_id, phase, persona, skills):
         skills: List of skill names loaded.
 
     Yields:
-        span_id: Unique span identifier for this agent invocation.
+        span_id: Unique span identifier for this agent invocation, or a
+        deterministic "<persona>-disabled" sentinel when tracing is off.
     """
-    span_id = f"agent-{persona}-{uuid.uuid4().hex[:8]}"
-    start = time.monotonic()
-    start_ts = datetime.now(timezone.utc).isoformat()
+    if not is_enabled():
+        yield f"agent-{persona}-disabled"
+        return
+
+    try:
+        span_id = f"agent-{persona}-{uuid.uuid4().hex[:8]}"
+        start = time.monotonic()
+        start_ts = datetime.now(timezone.utc).isoformat()
+    except Exception:
+        # setup itself failed — yield a sentinel and skip recording
+        yield f"agent-{persona}-disabled"
+        return
 
     yield span_id
 
-    duration_ms = int((time.monotonic() - start) * 1000)
-    span = {
-        "traceId": trace_id,
-        "spanId": span_id,
-        "parentSpanId": f"phase-{phase}",
-        "type": "agent",
-        "persona": persona,
-        "skills": skills,
-        "startTime": start_ts,
-        "duration_ms": duration_ms,
-    }
-
-    with open(trace_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(span, ensure_ascii=False) + "\n")
+    try:
+        duration_ms = int((time.monotonic() - start) * 1000)
+        span = {
+            "traceId": trace_id,
+            "spanId": span_id,
+            "parentSpanId": f"phase-{phase}",
+            "type": "agent",
+            "persona": persona,
+            "skills": skills,
+            "startTime": start_ts,
+            "duration_ms": duration_ms,
+        }
+    except Exception:
+        return
+    _safe_append(trace_path, span)
 
 
 def trace_phase(trace_path, trace_id, phase, duration_ms):
     """Record a phase completion trace.
+
+    No-op when JARFIS_TRACE is off.
 
     Args:
         trace_path: Path to traces.jsonl file.
@@ -64,6 +108,9 @@ def trace_phase(trace_path, trace_id, phase, duration_ms):
         phase: Phase number that completed.
         duration_ms: Duration of the phase in milliseconds.
     """
+    if not is_enabled():
+        return
+
     span = {
         "traceId": trace_id,
         "spanId": f"phase-{phase}",
@@ -71,6 +118,4 @@ def trace_phase(trace_path, trace_id, phase, duration_ms):
         "phase": phase,
         "duration_ms": duration_ms,
     }
-
-    with open(trace_path, "a", encoding="utf-8") as f:
-        f.write(json.dumps(span, ensure_ascii=False) + "\n")
+    _safe_append(trace_path, span)
