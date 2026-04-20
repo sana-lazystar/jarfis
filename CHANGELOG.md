@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.6] - 2026-04-20
+
+Docs refresh + polish release. Root documentation (PHILOSOPHY, DESIGN, WORKFLOW, AGENTS, INFRASTRUCTURE, README, WIKI_SEARCH) realigned to v4 reality; MIGRATION.md created as v3→v4 transition guide with §Principle Changes as footnote landing target. Two v4.0.6-pre polish items bundled. No v4 code or prompt changes — documentation-only refresh.
+
+Original v4.0.6 plan (`jarfis audit` subcommand) deferred to v4.0.8 due to its data gate (`org_wiki_usage_count >= 3`) not yet met. v4.0.7 (Operational Threshold Tuning, EVAL-1/2/3) retains its original scope.
+
+### Changed
+- **Root docs v4 refresh** — identified by three-round external review (ChatGPT + Claude, 2026-04-19) as v4's largest remaining gap ("system advanced to v4 but philosophy/design docs stayed on v3"). This batch closes the self-explanation drift.
+  - `PHILOSOPHY.md` — 57 → 335 lines. 7 principles (P0 Function over Form + #1~#6). v3 P1 (Orchestration for All) deleted — no decision-driving evidence across 46 days. v3 P2+P5+P6 merged into #5 Context as Investment (economics + artifact format + composition aspects). v3 P4 renamed #2 Dialectic for Self-Modification with sys-* scope explicit. ROI framing + aspiration + falsifiable clause on P0.
+  - `DESIGN.md` — 585 → 1,359 lines. Append + revise + supersede. 14 existing ADRs preserved as history with status banners + v4 Update sections. ADR-4 superseded by ADR-21; ADR-6 superseded by ADR-19. New ADR-15 verify.py, ADR-16 tmux-per-phase, ADR-17 agent-composition.yaml, ADR-18 single-writer state, ADR-19 Phase 4.5, ADR-20 JARFIS_TRACE opt-in, ADR-21 Ratchet reality (honesty clause). Appendix B maps v3 P{N} → v4 #{N}; Appendix C links distributed ADRs (e.g., `adr/v4.0.5-trace-design.md`).
+  - `WORKFLOW.md` — full rewrite (678 lines). 13-step narrative (T/0/1a/1b/G1/2∥3/G2/4/4.5/5/G3/6). Main vs tmux-foreman boundary. Triage A/C/Resume (Type B removed M7). v3 state silent migration ban (findings F-08). Phase 5 review_round loop + pattern-detect.
+  - `AGENTS.md` — full rewrite (486 lines). 4 top-level agents (foreman/engineer/advocate/critic). 9 personas with verified model tags (6 opus judgment / 3 sonnet execution). 10 composition roles including tech-lead split (reviewer/strategist, M4). 16 skills + 4-stage fallback chain. Dialectic scope sys-* only (findings F-14); level-check excluded with rationale.
+  - `INFRASTRUCTURE.md` — full rewrite (627 lines). Directory trees (install/work/org/project levels). 4 hooks with actual sizes + kill switches. tmux B1 isolation, `--save-pane` (v4.0.4), `JARFIS_TRACE` (v4.0.5). Single-writer state rule (ADR-18, source: work.md:22). Explicit Trade-offs section (findings F-10): zombie sessions, debug cost, tmux dependency, init overhead, solo dogfooding pool.
+  - `README.md` — full rewrite (521 lines). Depth-first positioning (14-axis rubric internal benchmark: 82.5/100 unweighted, 85.5 depth-first weighted). Bridge sentence (FE 6yr systems thinking ↔ AI orchestration). 13-step mermaid flow. 5 core concepts. Limitations honesty section.
+  - `WIKI_SEARCH.md` — fact-check + partial rewrite (260 lines). Actual `wiki_search.py` implementation reflected: BAAI/bge-m3, 4GB memory guard, MPS GPU deduction (Apple Silicon), LLM fallback path.
+
+### Added
+- **MIGRATION.md** (new, 501 lines). v3→v4 transition guide + `§Principle Changes` section (landing target for PHILOSOPHY v2 footnotes). Breaking changes across 8 areas (state schema, agents, verification, ratchet, triage, phase structure, skills, misc). Transition paths for in-flight v3 workflows. work-legacy.md handling (F-02: banner + 2026-05-03 expiry). Troubleshooting 8 common v3→v4 confusions. CHANGELOG cross-reference.
+- **N-4-pre** `version.py` `__init__.py` path isolation. `version.py::init_file` now resolved against `claude_dir` so `pytest scripts/tests/test_version.py` no longer mutates real-install `scripts/jarfis/__init__.py` with fixture values. Production path behavior unchanged. +1 regression test `test_patch_bump_does_not_mutate_installed_init`. Fixes pytest-triggered preflight "uncommitted changes" FAIL observed after v4.0.5 merge.
+- **N-4-legacy-banner** `work-legacy.md` deprecation banner. `/jarfis:work-legacy` slash command remains operational for emergency v3 rollback, but title now flags `(LEGACY v3)` and body banner documents the 2026-05-03 removal window and dependency on `state.py` v3 flat-key dual-emit. `state.py` dual-shape compat preserved until banner expiry. Removal target: v4.0.7+ cleanup item (now v4.0.9+ since v4.0.8 is audit CLI batch).
+
+### Migration
+- v4.0.5 → v4.0.6 is backward-compatible for existing callers. No schema / prompt / CLI change. Documentation-only update + 2 pre-items that do not alter runtime behavior.
+- **Audit CLI deferred to v4.0.8**: `v4.0.6-backlog.md` renamed to `v4.0.8-backlog.md` (was originally scoped for v4.0.6 N-4 but data-gated on `org_wiki_usage_count >= 3` which has not yet accumulated). `v4.0.7` retains its existing Operational Threshold Tuning scope.
+- **External-facing docs change**: anyone linking to the old README / PHILOSOPHY sections may see section IDs shift. DESIGN ADRs preserve their `<a id="adr-N">` anchors across the rewrite — ADR-1 through ADR-14 still resolve.
+
+### Tests
+- No new tests in this batch (docs-only). `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **448 passed** (unchanged from v4.0.5 baseline). 3 pre-existing `test_meetings.py` failures unchanged.
+
 ## [4.0.5] - 2026-04-20
 
 HIGH-risk batch: `trace.py` subsystem activation. 1 logical item (N-2) executed across 3 sub-batches (5a skeleton → 5b instrumentation → 5c documentation). Gated by `JARFIS_TRACE` environment variable — defaults remain unchanged, zero cost when off.
