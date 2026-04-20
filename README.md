@@ -4,13 +4,11 @@
 </p>
 
 <p align="center">
-  완벽한 시스템은 아닙니다.<br>
-  더 나은 시스템이 되는 방향을 지향합니다.<br>
-  명령어 한번에 IT 팀을 움직일 수 있는, 누구나를 위한 IT 팀 오케스트레이션
+  <strong>Depth-first AI workflow orchestration — deterministic gate · tmux-per-phase · design traceability</strong>
 </p>
 
 <p align="center">
-  <sub>직접 써보면서 만들었고, 지금도 사용하면서 개선중입니다<br />by sanhalee</sub>
+  <sub><em>Last aligned: v4.0.5 · 2026-04-20 · by sanhalee</em></sub>
 </p>
 
 <p align="center">
@@ -19,8 +17,18 @@
   <a href="#core-concepts">Core Concepts</a> •
   <a href="#workflow">Workflow</a> •
   <a href="#commands">Commands</a> •
+  <a href="#depth-first-positioning">Depth-first</a> •
+  <a href="#limitations">Limitations</a> •
   <a href="./PHILOSOPHY.md">Philosophy</a>
 </p>
+
+---
+
+> **"JARFIS v4는 기능적으로 v3보다 분명히 전진했고, 특히 deterministic verification 전환이 크다. 지금의 가장 큰 약점은 시스템 자체보다, 그 전진을 철학·설계 문서가 아직 제대로 선언하지 못하고 있다는 점이다."**
+>
+> <sub>— 외부 평가 3라운드 공통 결론 (ChatGPT + Claude, 2026-04-19)</sub>
+
+JARFIS는 *'AI를 도구로 쓰는 법'* 이 아니라 *'**AI 주변에 신뢰 가능한 실행 모델을 설계하는 일**'* 이다. 프론트엔드 엔지니어링 6년에서 가져온 시스템 사고 — 흐름을 명확히 모델링하고, 상태 전이를 다루고, 모호함을 줄이고, 복잡한 상호작용을 일관된 제품 동작으로 수렴시키는 작업 — 을 **개발 워크플로우 자체에 적용한 결과** 다.
 
 ---
 
@@ -38,29 +46,42 @@ Claude Code를 열고:
 /jarfis:work 게시판 CRUD + 댓글 기능 구현
 ```
 
-JARFIS가 기획부터 구현, 리뷰까지 전체 워크플로우를 오케스트레이션하고, 더 나은 오케스트레이션을 위해 기록합니다.
+JARFIS가 13단계 워크플로우(Triage → Pre-flight → Discovery → Architecture ∥ Design → Implementation → Ops Readiness → Review → Retrospective) 를 순회하며 코드 · PRD · 아키텍처 문서 · 리뷰 리포트를 만들어낸다. 중간에 3개 Gate에서 사용자 승인을 받는다.
 
 ---
 
 ## What JARFIS Does
 
-Claude Code에 슬래시 명령어 하나를 치면, 진짜 IT 팀이 일하는 것과 같은 일이 벌어집니다.
-
-PO가 "이거 정말 필요한 거 맞아?" 하고 역질문을 쏟아내고, Architect가 "기존 시스템에 이렇게 얹으면 됩니다" 하고 설계를 그리고, Tech Lead가 태스크를 쪼개서 나누면, BE/FE/DevOps 엔지니어가 각자 구현에 들어갑니다. 다 끝나면 QA와 Security가 엄격한 리뷰를 해서 탄탄하게 만들고, 마지막으로 회고에서 "다음엔 이렇게 하자"를 기록합니다.
-
-이게 전부 **하나의 명령어 안에서** 일어납니다.
+Claude Code에 슬래시 명령어 하나로 **deterministic workflow engine** 이 기동된다.
 
 ```mermaid
 flowchart TD
-    A["/jarfis:work 결제 모듈 리팩토링"] --> B["기획 → 설계 → 구현 → 리뷰 → 회고"]
-    B --> C["코드 + PRD + 아키텍처 문서 + 리뷰 리포트"]
+    A["/jarfis:work 결제 모듈 리팩토링"] --> B["13 steps: T → 0 → 1a → 1b → Gate1 → 2 ∥ 3 → Gate2 → 4 → 4.5 → 5 → Gate3 → 6"]
+    B --> C["코드 + PRD + 아키텍처 + 리뷰 + 회고"]
 
     style A fill:#1a1a2e,color:#e0e0e0,stroke:#4a4a6a
     style B fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
     style C fill:#533483,color:#e0e0e0,stroke:#4a4a6a
 ```
 
-대부분의 Claude Code 확장 도구는 개별 명령어 모음이나 에이전트 컬렉션입니다. JARFIS는 그것들을 **하나의 파이프라인으로 엮어서**, 기획 요청이 들어오면 완성된 코드와 문서가 나오게 만드는 시스템입니다.
+**구체적으로 무엇이 일어나는가**:
+
+1. **Phase T (Triage)** — 요청을 분류. "단순 질문" 이면 바로 답변하고 종료 (over-engineering 방지)
+2. **Phase 0 (Pre-flight)** — 워크스페이스 scope, Git branch cut, 도메인 자동 감지, Wiki 로드
+3. **Phase 1a (PO Dialogue, main)** — PO 페르소나가 역질문. 사용자가 직접 답변
+4. **Phase 1b (Discovery Processing, tmux)** — PO/TA 합동 PRD 작성
+5. **Gate 1** — 사용자 승인
+6. **Phase 2 ∥ 3 (Architecture ∥ Design, two tmux sessions)** — 아키텍처 + UX 병렬 설계
+7. **Gate 2** — 사용자 승인
+8. **Phase 4 (Implementation, tmux)** — BE/FE/DevOps 에이전트가 각 scope 구현
+9. **Phase 4.5 (Operational Readiness, tmux)** — DevOps가 배포 runbook + 롤백 계획
+10. **Phase 5 (Review & QA, tmux)** — TL/QA/Security 리뷰 (최대 3 round 내부 pattern-detect)
+11. **Gate 3** — 사용자 승인 (병적 패턴 감지 시 Phase 2 복귀 옵션 제시)
+12. **Phase 6 (Retrospective + Wiki Sync, tmux)** — 회고 + learnings 축적
+
+각 Phase 사이는 **deterministic gate** (Python, ~10ms) 가 산출물을 검증한다. LLM 판정이 아니라 파일 존재 / 스키마 / 필수 필드 검사. [DESIGN.md ADR-15](./DESIGN.md#adr-15) 참조.
+
+대부분의 AI workflow 도구는 개별 명령어 모음이나 agent collection이다. JARFIS는 그것들을 **하나의 state machine으로 엮어서** 기획 요청이 들어오면 완성된 코드 + 문서가 나오는 **depth-first orchestration** 이다.
 
 ---
 
@@ -68,51 +89,88 @@ flowchart TD
 
 ### Agent = Persona + Skills + Rules
 
-JARFIS v3.0의 에이전트는 세 요소로 동적 합성됩니다:
+에이전트는 **결정적 합성** (LLM inference 없음, YAML 선언) 으로 조립된다 (DESIGN [ADR-1](./DESIGN.md#adr-1), [ADR-17](./DESIGN.md#adr-17)).
 
 | 요소 | 역할 | 예시 |
 |------|------|------|
-| **Persona** | 역할별 인지 프레임워크 (~1500 토큰) | `product-owner` — 비즈니스 가치, JTBD, 스코프 판단 |
-| **Skills** | 기술 전문성 (가변, 예산 2500 토큰) | `react`, `nodejs`, `tauri-backend` |
-| **Rules** | 학습 + 프로젝트 맥락 | `jarfis-learnings.md`, `project-context.md` |
+| **Persona** | 역할별 인지 프레임 | `product-owner`, `technical-architect`, `backend-developer` (9개 총) |
+| **Skills** | 기술 전문성 (300 토큰/개, 합산 2500 예산) | `react`, `nodejs`, `rust`, `aws-lambda` (16개 총) |
+| **Rules** | 프로젝트별 학습 + 전역 learnings | `.jarfis-project/project-*.md`, `~/.claude/learnings.md` |
 
-Persona는 **어떤 관점으로 사고하는가**를, Skills는 **어떤 기술을 아는가**를, Rules는 **이 프로젝트에서 무엇을 기억하는가**를 결정합니다. 이 세 요소가 Phase마다 조합되어 에이전트가 만들어집니다.
+- **Persona** = 어떤 관점으로 사고하는가
+- **Skills** = 어떤 기술을 아는가
+- **Rules** = 이 프로젝트에서 무엇을 기억하는가
 
-### Domain Pack
+자세한 체계: [AGENTS.md](./AGENTS.md).
 
-프로젝트의 기술 스택에 따라 에이전트에게 다른 Skills가 부여됩니다:
+### tmux-per-phase Orchestration (v4 신규)
 
-| Domain | Skills | 자동 감지 |
-|--------|--------|-----------|
-| **Web** | react, vue, browser, nodejs, express, biome-lint | `package.json`, `tsconfig.json` |
-| **Desktop (Tauri)** | rust, tauri-backend, tauri-webview, cargo-clippy | `tauri.conf.json`, `Cargo.toml` |
+Phase 1b ~ 6 각각이 **독립 tmux 세션**에서 실행된다 (DESIGN [ADR-16](./DESIGN.md#adr-16)):
 
-Domain은 프로젝트 루트의 파일(`package.json`, `tauri.conf.json` 등)을 기반으로 자동 감지됩니다. 각 Domain Pack은 `_schema.yaml` 규격을 따르며, Skills 디렉토리에 기술별 전문 프롬프트가 분리되어 있습니다.
+- 세션명: `{sessionKey}-phase{N}` (예: `jf-a1b2c3d4-phase3`)
+- 메인 세션은 T/0/1a + 3개 Gate만 담당
+- Phase 2 ∥ 3 은 두 tmux 세션으로 **절대 병렬 실행** (B1 isolation: exact-name match only)
+
+**정량 효과**: 메인 세션 컨텍스트가 v3 ~100,000 tokens → v4 ~11,000 tokens (~89% 감소).
+
+### Deterministic Gate — `verify.py` (v4 신규)
+
+v3에서 Phase 검증은 `jarfis-black` LLM sub-agent였다 (~1,400 tokens, non-deterministic). v4에서는 `verify.py` (Python, 1,349 lines):
+
+- 실행 시간: ~10ms (vs LLM ~2-5초, 300x)
+- 토큰 비용: 0 (vs ~1,400)
+- 출력: JSON machine-verifiable (vs LLM prose)
+- 4개 엔트리: `gate-check` · `phase-check` · `phase-verify` · `pattern-detect`
+
+[DESIGN ADR-15](./DESIGN.md#adr-15).
+
+### Single-writer State (v4 신규)
+
+동시성 경합을 **파일 경로 단위로 원천 차단** (DESIGN [ADR-18](./DESIGN.md#adr-18)):
+
+- `.jarfis-state.json` — Main session 전용 쓰기
+- `phase-results/phase{N}/attempt{K}.json` — tmux sub-agent 전용 쓰기
+- Lock 없이 안전성 보장
+
+### JARFIS_TRACE — Opt-in Observability (v4.0.5)
+
+구조화 span 데이터를 opt-in으로 수집 (DESIGN [ADR-20](./DESIGN.md#adr-20)):
+
+```bash
+export JARFIS_TRACE=1   # 활성
+export JARFIS_TRACE=0   # 비활성 (기본)
+```
+
+- default off 시 overhead ~0.008% (사실상 측정 불가)
+- on 시 overhead < 20% (postflight enforce)
+- 3개 hot path 계측: `tmux_claude.py` · `verify.cmd_phase_verify` · `compose/__main__`
 
 ---
 
 ## Workflow
 
-### The Full Pipeline
+### 13-step Pipeline
 
 ```mermaid
 flowchart TD
-    T["Phase T: Triage\n요청 분류"] --> P0["Phase 0: Pre-flight\nGit 동기화 + 학습 로드"]
-    P0 --> P1["Phase 1: Discovery\nPO 역질문 → PRD"]
-    P1 --> G1{{"🔒 Gate 1\nPRD 승인"}}
-    G1 --> P2["Phase 2: Architecture\n설계 + ADR + 태스크 분해"]
-    G1 --> P3["Phase 3: UX Design\n(UI 필요 시만)"]
-    P2 --> G2{{"🔒 Gate 2\n설계 승인"}}
+    T["Phase T: Triage\nType A/C/Resume"] --> P0["Phase 0: Pre-flight\nscope + org + branch cut + wiki"]
+    P0 --> P1a["Phase 1a: PO Dialogue\n(main, AskUserQuestion loop)"]
+    P1a --> P1b["Phase 1b: Discovery Processing\n(tmux, PO + TA → PRD)"]
+    P1b --> G1{{"🔒 Gate 1\nDiscovery 승인"}}
+    G1 --> P2["Phase 2: Architecture\n(tmux, planning/)"]
+    G1 --> P3["Phase 3: Design\n(tmux, 병렬, design.mode != null)"]
+    P2 --> G2{{"🔒 Gate 2\nPlanning + Design 승인"}}
     P3 --> G2
-    G2 --> P4["Phase 4: Implementation\nBE/FE/DevOps 병렬 구현\n+ TDD Ratchet"]
-    P4 --> P45["Phase 4.5: Ops Readiness\n배포 전략 + 롤백"]
-    P45 --> P5["Phase 5: Review & QA\nTL/QA/Security 병렬 리뷰"]
-    P5 --> G3{{"🔒 Gate 3\n리뷰 승인"}}
-    G3 --> P6["Phase 6: Retrospective\n학습 축적 → 다음 반영"]
+    G2 --> P4["Phase 4: Implementation\n(tmux, BE/FE/DevOps + TDD 조건부)"]
+    P4 --> P45["Phase 4.5: Ops Readiness\n(tmux, DevOps first-class)"]
+    P45 --> P5["Phase 5: Review & QA\n(tmux, max 3 review rounds + pattern-detect)"]
+    P5 --> G3{{"🔒 Gate 3\nReview 승인\n(pattern 감지 시 Phase 2 재진입 옵션)"}}
+    G3 --> P6["Phase 6: Retrospective + Wiki Sync\n(tmux, learnings 축적)"]
 
     style T fill:#1a1a2e,color:#e0e0e0,stroke:#4a4a6a
     style P0 fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
-    style P1 fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
+    style P1a fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
+    style P1b fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
     style P2 fill:#0f3460,color:#e0e0e0,stroke:#4a4a6a
     style P3 fill:#0f3460,color:#e0e0e0,stroke:#4a4a6a
     style P4 fill:#533483,color:#e0e0e0,stroke:#4a4a6a
@@ -124,68 +182,66 @@ flowchart TD
     style G3 fill:#e94560,color:#e0e0e0,stroke:#4a4a6a
 ```
 
-각 Phase에서 9개의 전문 에이전트가 자기 역할에 맞게 투입됩니다:
+**실행 경계**: Direct (main) = T, 0, 1a, Gate 1/2/3 · tmux (foreman) = 1b, 2, 3, 4, 4.5, 5, 6
 
-| Agent | Role |
-|-------|------|
-| Product Owner | 역질문으로 요구사항 정제, Working Backwards PRD |
-| Technical Architect | 실현가능성 검증, 시스템 설계, ADR |
-| Tech Lead | 태스크 분해, 코드 리뷰 |
-| Backend Engineer | 서버 구현 |
-| Frontend Engineer | 클라이언트 구현 |
-| DevOps/SRE Engineer | 인프라, CI/CD, 배포 |
-| QA Engineer | 테스트 전략, 품질 검증 |
-| Security Engineer | 보안 리뷰 |
-| UX Designer | 화면 설계 |
+자세한 내용: [WORKFLOW.md](./WORKFLOW.md).
 
-### 3가지 모드
+### 두 실행 모드
 
 | 모드 | 명령어 | 용도 |
 |------|--------|------|
-| **Full Workflow** | `/jarfis:work` | 기획부터 회고까지 전체 파이프라인 |
+| **Full Workflow** | `/jarfis:work` | 13단계 전체 파이프라인 |
 | **Meeting** | `/jarfis:work-meeting` | 코딩 전 기획 토론 (PO/TL 자유 토론 → 산출물) |
-| **Continue** | `/jarfis:work-continue` | 완료된 워크플로우 후속 작업 (Fix/Extend) |
 
-Meeting 모드에서 PO와 Tech Lead가 자유 토론을 벌이고, 필요하면 전문가(Security, DevOps 등)를 소환합니다. 토론 결과는 회의록 + 의사결정표 + 기술 조사 보고서로 정리되며, 나중에 `/jarfis:work`를 실행하면 이 미팅 결과를 자동으로 감지하여 활용합니다.
+Meeting 모드는 PO와 Tech Lead가 자유 토론하며 필요 시 전문가(Security, DevOps 등)를 소환한다. 결과(회의록 + 의사결정표 + 기술 조사) 는 다음 `/jarfis:work` 실행 시 Phase 0에서 자동 감지되어 활용된다.
 
 ---
 
 ## Artifacts
 
-하나의 워크플로우가 만들어내는 산출물:
+한 번의 워크플로우가 만들어내는 산출물:
 
 ```
-.personal/orgs/{org}/works/20260311-feat-결제-리팩토링/
-├── .jarfis-state.json       # 워크플로우 상태 (중단 시 재개용)
-├── press-release.md          # Working Backwards 프레스 릴리스
-├── prd.md                    # 요구사항 정의서
-├── impact-analysis.md        # 기존 코드 영향 분석
-├── architecture.md           # 아키텍처 설계 + ADR
-├── api-spec.md               # API 명세 (BE-FE 계약)
-├── tasks.md                  # 태스크 분해표
-├── test-strategy.md          # 테스트 전략
-├── ux-spec.md                # UX 설계 (UI 있는 경우)
-├── deployment-plan.md        # 배포 전략 + 롤백
-├── review.md                 # TL/QA/Security 리뷰
-└── retrospective.md          # 회고 + 학습
+{docsDir}/
+├── .jarfis-state.json           # state (main 전용 쓰기)
+├── .wiki-cache.md               # Phase 0 wiki 로드 결과
+│
+├── discovery/                   # Phase 1b
+│   ├── prd.md · working-backwards.md · ux-direction.md · po-qa.json
+│
+├── planning/                    # Phase 2
+│   ├── architecture.md · tasks.md · test-strategy.md · api-spec.md
+│
+├── design/                      # Phase 3
+│   ├── token-map.json · {page}/index.html · reference*.png
+│
+├── ops/                         # Phase 4 + Phase 4.5
+│   ├── infra-runbook.md · deployment-plan.md
+│
+├── review/                      # Phase 5
+│   ├── review.md · api-contract-check.md · diagnosis-*.md
+│
+├── retrospective.md             # Phase 6
+│
+└── phase-results/phase{N}/attempt{K}.json   # tmux sub-agent 결과 (sub 전용 쓰기)
 ```
 
-모든 산출물이 날짜 + 작업명으로 정리되어, 프로젝트의 의사결정 기록이 자연스럽게 쌓입니다.
+모든 산출물이 `{docsDir}` 하위에 정리되어, **워크플로우 단위로 의사결정 기록이 자연 축적**된다.
 
 ---
 
 ## Key Features
 
-### Learning System
+### Learning System (#3 Dogfooding Evolution)
 
-JARFIS는 **매 워크플로우에서 학습하고, 다음 워크플로우에 적용**합니다.
+매 워크플로우가 학습 데이터가 된다 (PHILOSOPHY [#3](./PHILOSOPHY.md#3-dogfooding-evolution)).
 
 ```mermaid
 flowchart LR
-    A["Phase 6 회고\n학습 발견"] --> B["learnings.md\n기록"]
-    B --> C["다음 /jarfis:work\nPhase 0에서 로드"]
+    A["Phase 6 회고"] --> B["learnings.md\n기록"]
+    B --> C["다음 /jarfis:work\nPhase 0 로드"]
     C --> D["에이전트 활용"]
-    D --> E["/jarfis:sys-upgrade\n영구 적용"]
+    D --> E["/jarfis:sys-upgrade\n영구 반영"]
 
     style A fill:#1a1a2e,color:#e0e0e0,stroke:#4a4a6a
     style B fill:#16213e,color:#e0e0e0,stroke:#4a4a6a
@@ -194,94 +250,195 @@ flowchart LR
     style E fill:#e94560,color:#e0e0e0,stroke:#4a4a6a
 ```
 
-**두 가지 레벨의 학습**:
+- **전역 학습**: `~/.claude/learnings.md` — 모든 프로젝트에 적용
+- **프로젝트 학습**: `.jarfis-project/project-context.md` — 특정 코드베이스 맥락
 
-- **전역 학습** (`$JARFIS_ORG_DIR/learnings.md`): 모든 프로젝트에 적용되는 에이전트 힌트 + 워크플로우 패턴
-- **프로젝트 학습** (`project-context.md`): 특정 코드베이스에 대한 맥락 (컨벤션, 기술 스택, 히스토리)
+### Context Resilience (#4 Resilient Continuity)
 
-### Context Resilience
+Claude Code의 auto-compact · 크래시 · 수동 종료에도 워크플로우가 이어진다 ([PHILOSOPHY #4](./PHILOSOPHY.md#4-resilient-continuity)).
 
-Claude Code의 auto-compact로 컨텍스트가 압축되어도 워크플로우가 끊기지 않습니다.
+- **`.jarfis-state.json`**: 현재 Phase, 완료된 태스크, 체크포인트 실시간 기록
+- **4개 Hook**:
+  - **PreCompact**: auto-compact 직전 state 백업 (최근 10개 rotation)
+  - **Safety (PreToolUse)**: 위험한 Bash 명령 차단 (`git push --force`, `--no-verify`, main 직접 commit)
+  - **Quality Gate (PostToolUse)**: Edit/Write 후 lint/typecheck 경고 (차단 안 함)
+  - **Session Start**: 세션 시작 시 미완료 워크플로우 컨텍스트 자동 주입
+- **`--save-pane`** (v4.0.4): tmux 세션 종료 직전 scrollback 캡처 (post-mortem)
+- **Phase 4 자동 커밋**: `jarfis(BE-1):`, `jarfis(FE-2):` 형식으로 태스크별 커밋
 
-- **`.jarfis-state.json`**: 현재 Phase, 완료된 태스크, 체크포인트를 실시간 기록
-- **4개 Hook 인프라**:
-  - **PreCompact**: auto-compact 직전에 워크플로우 상태를 자동 백업
-  - **Safety (PreToolUse)**: 위험한 Bash 명령어 사전 차단
-  - **Quality Gate (PostToolUse)**: Edit/Write 후 코드 품질 자동 검증
-  - **Session Start**: 세션 시작 시 이전 컨텍스트 자동 복원
-- **Phase 4 자동 커밋**: 구현 중 태스크 완료 시마다 `jarfis(BE-1):`, `jarfis(FE-2):` 형식으로 커밋
-- **Resume**: 컨텍스트 유실 시 상태 파일에서 복원하여 중단 지점부터 재개
+자세한 내용: [INFRASTRUCTURE.md](./INFRASTRUCTURE.md).
 
-### Self-Evolution
+### Self-Evolution (#2 Dialectic for Self-Modification)
 
-JARFIS는 자기 자신을 개선하는 도구를 내장하고 있습니다.
+JARFIS는 자기 자신을 개선하는 도구를 내장한다 ([PHILOSOPHY #2](./PHILOSOPHY.md#2-dialectic-for-self-modification)).
 
 | Command | What it does |
 |---------|-------------|
-| `/jarfis:sys-upgrade` | 축적된 학습을 에이전트 프롬프트에 영구 반영 |
-| `/jarfis:sys-distill` | 프롬프트 토큰 효율을 측정하고 최적화 (중복 제거, 템플릿 외부화) |
-| `/jarfis:sys-implement` | JARFIS 자체의 명령어/구조를 수정 |
+| `/jarfis:sys-upgrade` | 축적된 learnings를 에이전트 프롬프트에 영구 반영 |
+| `/jarfis:sys-distill` | 프롬프트 토큰 효율 측정 + 최적화 (중복 제거, 템플릿 외부화) |
+| `/jarfis:sys-implement` | JARFIS 자체의 명령어/구조 수정 |
 
-프롬프트를 사용할수록 학습이 쌓이고, 학습이 프롬프트에 반영되고, 프롬프트가 다시 최적화됩니다.
+**Dialectic Review**: `sys-*` 3종은 Advocate(green) + Critic(red) 2인 토론(라운드당 300단어, 최대 2라운드)으로 맹점 검출. 일반 `/jarfis:work` 에는 적용되지 않음 (범위 명시, [DESIGN ADR-13](./DESIGN.md#adr-13)).
 
 ### Wiki Semantic Search
 
-Organization 레벨의 Wiki가 커질수록, "어떤 파일이 지금 기획과 관련 있는가?"를 정확하게 찾는 것이 중요해집니다.
+Organization 레벨 wiki가 커지면 *"어떤 파일이 지금 기획과 관련 있는가?"* 가 중요해진다.
 
-JARFIS는 [sentence-transformers](https://sbert.net/)의 **BAAI/bge-m3** 모델을 사용하여 Wiki 문서를 임베딩하고, 코사인 유사도(score >= 0.5) 기반 시맨틱 검색을 제공합니다. 한국어와 영어가 혼용된 마크다운 문서에서도 의미 기반으로 관련 문서를 찾아냅니다.
+JARFIS는 [sentence-transformers](https://sbert.net/) 의 **BAAI/bge-m3** 모델로 wiki 문서를 임베딩하고, cosine 유사도 (score ≥ 0.5) 기반 시맨틱 검색을 제공한다. 한/영 혼용 마크다운에서 의미 기반 검색 가능.
 
 ```
 /jarfis:work 결제 환불 정책 변경
   → Phase 0: Wiki 시맨틱 검색 → "refund", "payment cancellation" 관련 ADR 3건 자동 로드
-  → Phase 1: PO가 기존 환불 정책 ADR을 참조하여 역질문
+  → Phase 1a: PO가 기존 ADR 참조하여 역질문
 ```
 
-자세한 내용: **[WIKI_SEARCH.md](./WIKI_SEARCH.md)**
+자세한 내용: [WIKI_SEARCH.md](./WIKI_SEARCH.md).
 
 ### Project Awareness
-
-JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 
 ```
 /jarfis:project-init
 ```
 
-프로젝트의 기술 스택, 디렉토리 구조, 코딩 컨벤션, 배포 환경을 분석하여 프로필을 생성합니다. 이후 워크플로우에서 에이전트들이 이 프로필을 참조하여 프로젝트에 맞는 결정을 내립니다.
+프로젝트의 기술 스택 / 디렉토리 구조 / 코딩 컨벤션 / 배포 환경 분석 → `.jarfis-project/project-profile.md` 생성. 이후 모든 워크플로우에서 에이전트가 이 프로필을 참조한다.
 
 ```
 /jarfis:project-update
 ```
 
-`git diff` 기반으로 변경된 부분만 증분 갱신합니다.
+`git diff` 기반 증분 갱신.
 
 ---
 
-<!-- JARFIS-COMMANDS-START -->
+<a id="depth-first-positioning"></a>
+## Depth-first Positioning
+
+JARFIS와 다른 AI workflow 도구들의 설계 차이를 정량으로 비교 (internal benchmark 기준, 14축 rubric v2):
+
+| 시나리오 | JARFIS | 비교 대상 (범용 플랫폼) | 해석 |
+|---------|:------:|:---------------------:|------|
+| Unweighted baseline (14축 동일 가중치) | **82.5** | 82.1 | 사실상 동점 |
+| Depth-first weighting (workflow/determinism/traceability 가중) | **85.5** | 80.7 | JARFIS 우세 |
+| Breadth-first weighting (ecosystem/interop 가중) | 79.8 | **83.3** | 비교 대상 우세 |
+
+<sub>Internal benchmark — 공개 표준 아님. rubric 출처 / 재현 방법은 내부 문서. 점수는 2026-04-19 기준 3라운드 외부 평가 (ChatGPT + Claude) 로 보정됨.</sub>
+
+### JARFIS의 유일한 clear lead
+
+14축 중 JARFIS가 비교 대상을 명확히 앞선 축은 **단 하나**:
+
+**축 12 — Design Traceability (JARFIS 8.5 vs 비교 대상 7.0)**
+
+철학 → ADR → 구현 → 테스트로 이어지는 추적 가능성. 구체적으로:
+- PHILOSOPHY `#1` → DESIGN [ADR-15 verify.py](./DESIGN.md#adr-15) → `scripts/jarfis/verify.py:789-1285` → `tests/test_verify.py`
+- phase prompts에 `#{N}` 참조 명시 → 철학이 실행 경로에 살아있다는 증거
+
+**이 축이 문서 refresh (PHILOSOPHY v2 + DESIGN v2 + MIGRATION) 의 보호 대상**.
+
+### 정체성 선언
+
+> **"JARFIS는 범용 플랫폼이 아니다. 서로 다른 축에서 최적화된 AI-Native 설계의 두 경로 중 depth-first 쪽이다."**
+
+**Depth-first** = deterministic gate · workflow state machine · design traceability · phase orchestration
+**Breadth-first** = ecosystem · plugin marketplace · multi-provider interop
+
+JARFIS는 한 사람이 "workflow를 완전히 이해하고 통제"하는 도구를 지향. 범용 플랫폼으로 진화할 계획 없음.
+
+---
+
+<a id="limitations"></a>
+## Limitations (정직 섹션)
+
+v4는 아키텍처 성숙도가 상승했고, **운영 안정성은 정착 중**이다. (ChatGPT 3라운드 정제 표현)
+
+### 1. UX 러닝커브
+
+- Gate 3개 + Phase T AskUserQuestion + 20+ 슬래시 명령어 → 비전문가 entry barrier 존재
+- 외부 평가 축 4 (Human Gate Balance) 7.5/10
+- **완화 방안** (v4.1 후보): Autopilot 모드 — learnings 기반 default 자동 채택
+
+### 2. tmux 운영 비용 (findings F-10)
+
+- 워크플로우 비정상 종료 시 좀비 tmux 세션 발생 가능 → `/jarfis:sys-health` 로 수동 진단
+- 디버깅이 main + 여러 tmux에 분산 → `--save-pane` (v4.0.4) + `JARFIS_TRACE` (v4.0.5) 로 완화 중
+- tmux 의존 — Windows native 미지원 (WSL 권장)
+
+자세한 내용: [INFRASTRUCTURE.md §9 Trade-offs](./INFRASTRUCTURE.md#tradeoffs).
+
+### 3. 1인 dogfooding pool
+
+- 단일 사용자 실행 패턴만으로 운영 안정성 검증 중
+- 다양한 환경/사용 패턴에서의 회귀를 조기 포착 어려움
+- **상태**: "아키텍처 성숙도 상승, 운영 안정성 정착 중"
+
+### 4. workflow-metrics 대시보드 미완
+
+- `workflow-metrics.tsv` 기록은 됨 (v2.5.5부터)
+- 대시보드 / 자동 A/B 반영 루프 **없음** — 사람이 수동으로 tsv 분석
+- **v4.1 후보** — PHILOSOPHY [#3 Aspiration path](./PHILOSOPHY.md#3-dogfooding-evolution)
+
+### 5. Ratchet 실상
+
+- "3종 Ratchet" 은 v3 표현. v4에서는 **TDD Ratchet (조건부 활성)** 만 살아있음. PRD 제거 (v4.0.1), Fix legacy. ([DESIGN ADR-21](./DESIGN.md#adr-21))
+
+### 이원화 프레임
+
+> **"설계는 진전, 운영은 정착 중."**
+
+이 프레임을 문서 / 이력서 / 블로그 전반에 유지. over-claim 방지.
+
+---
+
 ## Commands
 
-| Command                     | Description                                                                                 |
-| --------------------------- | ------------------------------------------------------------------------------------------- |
-| `/jarfis`                   | Display command list                                                                        |
-| `/jarfis:work-meeting`      | Planning kickoff meeting (PO/TL open discussion -> artifact generation)                     |
-| `/jarfis:work`              | Full workflow: planning -> design -> implementation -> review                               |
-| `/jarfis:project-init`      | Project analysis -> generate `./.jarfis-project/project-profile.md`                         |
-| `/jarfis:project-update`    | Incremental profile update (commit hash-based, date fallback)                               |
-| `/jarfis:sys-upgrade`       | Learning item CRUD + apply to agent/workflow prompts                                        |
-| `/jarfis:sys-health`        | Zombie Claude process diagnosis/cleanup                                                     |
-| `/jarfis:sys-distill`       | Prompt distillation — token efficiency analysis/optimization                                |
-| ~~`/jarfis:work-continue`~~ | Use `/jarfis:work` instead                                                                  |
-| `/jarfis:org`               | Full registered Org list (orgs.json based, CWD highlight)                                   |
-| `/jarfis:org-init`          | Organization initialization (scan + wiki creation)                                          |
-| `/jarfis:wiki-storyboard`   | Design catalog browsing (wiki/DESIGN -> browser)                                            |
-| `/jarfis:search-setup`      | Semantic search installation (venv + sentence-transformers one-step)                        |
-| `/jarfis:search`            | Semantic unified search (meetings+works+wiki, filterable)                                   |
-| `/jarfis:search-index`      | Full Org semantic index batch creation/refresh (wiki+meetings+works)                        |
-| `/jarfis:level-check`       | AI-native developer maturity assessment (auto-collection + interview, 7-dimension 10-point) |
-| `/jarfis:locale`            | View current locale setting                                                                 |
-| `/jarfis:locale-set`        | Change locale setting (ko/en/ja)                                                            |
-| `/jarfis:sys-implement`     | JARFIS system self-modification/feature addition + version bump                             |
-| `/jarfis:sys-version`       | Version check/update/install specific version                                               |
-<!-- JARFIS-COMMANDS-END -->
+실행 가능한 슬래시 명령어 (v4.0.5 기준).
+
+### Workflow 핵심
+| Command | Description |
+|---------|-------------|
+| `/jarfis:work` | 전체 워크플로우 (13 steps) — 기획부터 회고까지 |
+| `/jarfis:work-meeting` | 코딩 전 기획 미팅 (PO/TL 자유 토론) |
+
+### Self-modification (Dialectic Review 적용)
+| Command | Description |
+|---------|-------------|
+| `/jarfis:sys-implement` | JARFIS 자체 구조 변경 |
+| `/jarfis:sys-upgrade` | learnings 영구 반영 |
+| `/jarfis:sys-distill` | 프롬프트 증류 (토큰 최적화) |
+
+### Operational
+| Command | Description |
+|---------|-------------|
+| `/jarfis:sys-health` | 좀비 Claude 프로세스 진단 |
+| `/jarfis:sys-version` | 버전 확인 / 업데이트 / 특정 버전 설치 |
+
+### Project / Organization
+| Command | Description |
+|---------|-------------|
+| `/jarfis:project-init` | project-profile.md 생성 |
+| `/jarfis:project-update` | 증분 프로필 갱신 (git diff 기반) |
+| `/jarfis:org` | 등록된 Organization 목록 |
+| `/jarfis:org-init` | Organization 초기화 (wiki 생성) |
+
+### Search / Discovery
+| Command | Description |
+|---------|-------------|
+| `/jarfis:search` | 시맨틱 통합 검색 (meetings + works + wiki) |
+| `/jarfis:search-setup` | semantic search 설치 (venv + sentence-transformers) |
+| `/jarfis:search-index` | 전체 Org 시맨틱 인덱스 생성/갱신 |
+| `/jarfis:wiki-storyboard` | Design 카탈로그 브라우징 |
+
+### Assessment / Locale
+| Command | Description |
+|---------|-------------|
+| `/jarfis:level-check` | AI-Native Developer 성숙도 평가 (7차원 10점) |
+| `/jarfis:locale` | 현재 locale 확인 |
+| `/jarfis:locale-set` | locale 변경 (ko/en/ja) |
+
+### Legacy (2026-05-03 만료)
+| Command | Description |
+|---------|-------------|
+| `/jarfis:work-legacy` | v3 오케스트레이터 (긴급 rollback 전용, 2026-05-03 만료) — [MIGRATION §4](./MIGRATION.md#4-work-legacymd-처리-f-02) 참조 |
 
 ---
 
@@ -293,13 +450,10 @@ JARFIS는 프로젝트의 컨텍스트를 이해하고 활용합니다.
 |------------|---------|---------|----------|
 | [Claude Code](https://claude.ai/code) | Latest | CLI 런타임 | **필수** |
 | Git | 2.x+ | 브랜치 관리, 자동 커밋 | **필수** |
-| Python | 3.9+ | 상태 관리, CLI, Hook 인프라 | **필수** |
+| Python | 3.9+ | 상태 관리, verify.py, CLI, Hook 인프라 | **필수** |
+| tmux | 2.x+ | Phase별 격리 실행 (macOS/Linux 기본) | **필수** |
 | jq | Any | Hook 등록 자동화 | 선택 |
 | [sentence-transformers](https://sbert.net/) | Any | Wiki Semantic Search (bge-m3) | 선택 |
-
-> **sentence-transformers**는 [Wiki Semantic Search](./WIKI_SEARCH.md) 기능을 위한 선택적 의존성입니다.
-> 미설치 시에도 JARFIS는 정상 작동하며, Wiki 로딩 시 기존 LLM 판단 방식으로 폴백합니다.
-> 설치: `pip3 install sentence-transformers`
 
 ### Install
 
@@ -309,33 +463,14 @@ cd ~/repos/jarfis
 bash install.sh
 ```
 
-`install.sh`는 다음을 수행합니다:
-
+`install.sh`가 수행:
 1. 기존 설치 백업
 2. 에이전트의 Learned Rules 추출 (학습 보존)
-3. `commands/`, `agents/`, `hooks/`, `scripts/` → `~/.claude/`로 파일 설치
+3. `commands/` · `agents/` · `hooks/` · `scripts/` → `~/.claude/` 파일 설치
 4. `.personal/` 개인 설정 적용
 5. 추출한 Learned Rules 재적용
-6. 4개 Hook 등록 (settings.json): PreCompact, PreToolUse(Safety), PostToolUse(Quality Gate), SessionStart
+6. 4개 Hook 등록 (settings.json)
 7. 버전 스탬프 기록
-
-### Data Directory
-
-런타임 데이터는 repo 내 `.personal/` 디렉토리에 저장됩니다 (`.gitignore`에 의해 추적 제외):
-
-```
-~/repos/jarfis/.personal/
-├── orgs/
-│   ├── {org-name}/
-│   │   ├── works/        # 워크플로우 산출물
-│   │   ├── meetings/     # 미팅 산출물
-│   │   └── learnings.md  # 학습 항목
-│   └── _standalone/      # Org 미등록 시 기본
-│       ├── works/
-│       ├── meetings/
-│       └── learnings.md
-└── orgs.json              # Org 레지스트리
-```
 
 ### Update
 
@@ -343,121 +478,29 @@ bash install.sh
 cd ~/repos/jarfis && git pull && bash install.sh
 ```
 
-또는 Claude Code 안에서:
-
-```
-/jarfis:sys-version
-```
-
-### Install Specific Version
-
-```bash
-bash install.sh --version 1.0.0
-```
+또는 Claude Code 안에서 `/jarfis:sys-version`.
 
 ---
 
-<!-- JARFIS-ARCHITECTURE-START -->
-## Architecture
+## Documentation
 
-```
-~/.claude/commands/
-├── jarfis.md                      # Main helper — command list + examples A/B
-└── jarfis/
-    ├── jarfis-index.md            # This file — JARFIS system overview
-    ├── sys-implement.md               # JARFIS self-modification command + Dialectic Review ratchet convergence (analyze→verify→history→improve loop) + Python TDD rules
-    ├── work-meeting.md                 # Planning kickoff meeting + wiki loading + --prev-meeting previous meeting reference (PO/TL discussion, 230 lines)
-    ├── work.md                    # Core: workflow orchestration (~890 lines, v2.5.4: PRD Ratchet, v2.5.5: Workflow Metrics, v2.5.6: TDD Code Ratchet, v3.0: Domain branching, v3.6: Lazy Loading + context injection matrix, v3.10.1: Anti-Optimization Rules + Phase 5 agent recording)
-    ├── project-init.md            # Project profile creation
-    ├── project-update.md          # Incremental profile update — commit hash-based change detection
-    ├── sys-upgrade.md                 # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection
-    ├── sys-distill.md                 # Prompt distillation + agent whitelist protection + command analysis only + Dialectic Review
-    ├── sys-version.md                 # Version management/updates
-    # work-continue.md — REMOVED in v3.7.1 (use /jarfis:work instead)
-    ├── org.md                     # Full organization list — orgs.json based + unregistered Org auto-discovery + CWD highlight
-    ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide
-    ├── wiki-storyboard.md              # Design catalog browsing command
-    ├── search.md                 # Semantic unified search — meetings/works/wiki filtering + low-memory LLM fallback
-    ├── search-setup.md     # Semantic search installation — venv + sentence-transformers one-step
-    ├── search-index.md    # Full Org semantic index batch creation/refresh — wiki+meetings+works + --current + memory guard
-    ├── level-check.md                 # AI-native developer maturity assessment — level_check.py auto-collection + interview, 7-dimension 10-point
-    ├── sys-health.md                  # Zombie process diagnosis
-    ├── locale.md                      # Locale query — display current workflow language setting
-    ├── locale-set.md                  # Locale setting — change language to ko/en/ja
-    ├── prompts/                   # Externalized agent prompts (generated by distill)
-    │   ├── phase1.md              # Phase 1 Discovery prompt + PO wiki reference + additional tasks + $MEETING_EXTRA injection + PRD Ratchet rules + context injection notes
-    │   ├── phase2.md              # Phase 2&3 Architecture/UX prompt + wiki reference + HTML mockup + context injection notes
-    │   ├── phase3-figma.md       # Phase 3 Figma-Driven Design Path prompt (parallel multi-Figma page processing, per-section v5 generation, Step 3-F0~3-F4)
-    │   ├── phase4.md              # Phase 4 Implementation prompt + TDD Step 4-0.5 + Ratchet + scope guard + handoff injection + context injection notes
-    │   ├── phase4-5.md            # Phase 4.5 Operational Readiness + TL context injection
-    │   ├── phase5.md              # Phase 5 Review & QA + Phase 4 Agent Status injection + context injection notes + 5-0/5-2/5-3 separation
-    │   ├── phase6.md              # Phase 6 Retrospective + Workflow Metrics + wiki 2-track update + semantic index refresh
-    │   ├── wiki-loading.md        # Wiki loading shared module — 2-Step/4-Step + semantic search
-    │   # continue-extend.md — REMOVED in v3.7.1
-    ├── domains/                   # v3.0 Domain Pack infrastructure
-    │   ├── _schema.yaml           # Domain Pack specification (Published Language, EP1-7)
-    │   ├── web.yaml               # Web Development domain pack
-    │   ├── web/skills/            # Web domain Skills
-    │   │   ├── react.md           # React patterns + state management + Next.js
-    │   │   ├── vue.md             # Vue 3 Composition API + Pinia + Nuxt
-    │   │   ├── browser.md         # Cross-browser + performance + mobile
-    │   │   ├── nodejs.md          # Node.js runtime + TypeScript + DB
-    │   │   ├── express.md         # Express/NestJS + API design
-    │   │   └── biome-lint.md      # Biome linting/formatting patterns
-    │   ├── desktop.yaml           # Desktop Development (Tauri) domain pack
-    │   └── desktop/skills/        # Desktop domain Skills
-    │       ├── rust.md            # Ownership/borrowing, error handling, async
-    │       ├── tauri-backend.md   # #[tauri::command], IPC, serde, plugins
-    │       ├── tauri-webview.md   # @tauri-apps/api, invoke(), events, WebView constraints
-    │       └── cargo-clippy.md    # Clippy rules, deny configuration
-    └── templates/                 # Externalized artifact templates (generated by distill)
-        ├── jarfis-state-schema.md # .jarfis-state.json structure schema + Phase 4 TDD ratchet + Fix ratchet + workflow-metrics.tsv
-        ├── learnings.md           # jarfis-learnings.md template — Universal/Project-Specific structure
-        ├── project-context.md     # project-context.md template
-        ├── project-profile.md     # Project profile template + org back-reference
-        ├── meeting-artifacts.md   # Meeting artifact 4-type templates
-        ├── org-profile.md         # Organization profile template
-        ├── wiki-index.md          # Wiki INDEX.md initial template
-        ├── wiki-section-index.md  # Wiki section _index.md template
-        ├── ux-direction.md        # UX direction document template
-        └── design-html-meta.md    # HTML mockup meta comment template
-
-~/.claude/agents/jarfis/           # JARFIS agent prompts (referenced by work.md) — ALL ENGLISH + $LOCALE output
-├── personas/                      # v3.0 Persona — role-specific cognitive frameworks
-│   ├── product-owner.md           # PO perspective (business value, JTBD)
-│   ├── technical-architect.md     # Architect perspective (system design, trade-offs)
-│   ├── tech-lead.md               # TL perspective (code quality, technical judgment)
-│   ├── frontend-developer.md      # FE perspective (browser/UI, design fidelity)
-│   ├── backend-developer.md       # BE perspective (systems thinking, DB, API)
-│   ├── devops-engineer.md         # DevOps perspective (infra, reliability, cost)
-│   ├── ux-designer.md             # UX perspective (user empathy, visual hierarchy)
-│   ├── qa-engineer.md             # QA perspective (quality, risk, compatibility)
-│   └── security-engineer.md       # Security perspective (threat modeling, defensive coding)
-├── jarfis-advocate.md             # Dialectic Review — change advocate agent
-├── jarfis-critic.md               # Dialectic Review — change critic agent
-├── senior-backend-engineer.md     # BE implementation agent
-├── senior-frontend-engineer.md    # FE implementation agent
-├── senior-devops-sre-engineer.md  # DevOps implementation agent
-├── senior-product-owner.md        # PO decision-making / PRD / UX direction agent
-├── tech-lead.md                   # TL codebase health + technical judgment agent
-├── technical-architect.md         # Architecture design + technical strategy agent
-├── senior-security-engineer.md    # Security review + defensive coding verification agent
-├── senior-qa-engineer.md          # QA review + risk assessment agent
-└── senior-ux-designer.md          # UX/brand design + SVG assets + quality gate + Figma rules agent
-```
-
-**Design Principles**:
-
-- **Workflow flow** in `work.md`, **agent prompts** in `prompts/`, **output templates** in `templates/` — separated
-- Agent role prompts (`agents/`) and workflow prompts (`prompts/`) are separate — roles are fixed, tasks vary per Phase
-- Learning data exists only locally (not included in Git repo)
-<!-- JARFIS-ARCHITECTURE-END -->
+| 문서 | 역할 |
+|------|------|
+| [PHILOSOPHY.md](./PHILOSOPHY.md) | 원칙 7개 (P0 + #1~#6) + 긴장 관계 + v3→v4 변경 이력 |
+| [DESIGN.md](./DESIGN.md) | ADR 21개 (기존 14 + 신규 7) + v2.5→v3→v4 전환 맵 |
+| [WORKFLOW.md](./WORKFLOW.md) | 13-step pipeline 상세 (work.md narrative view) |
+| [AGENTS.md](./AGENTS.md) | 4 top-level agents + 9 personas + 16 skills + composition 규칙 |
+| [INFRASTRUCTURE.md](./INFRASTRUCTURE.md) | 디렉토리 구조 + 4 hooks + tmux/trace/verify 실체 + Trade-offs |
+| [MIGRATION.md](./MIGRATION.md) | v3 → v4 전환 가이드 + **§Principle Changes** + Breaking changes + Troubleshooting |
+| [WIKI_SEARCH.md](./WIKI_SEARCH.md) | 시맨틱 검색 시스템 (bge-m3, 메모리 가드, LLM fallback) |
+| [CHANGELOG.md](./CHANGELOG.md) | 버전별 변경 이력 (ground truth) |
+| [jarfis-index.md](./commands/jarfis/jarfis-index.md) | 시스템 파일 인벤토리 (별도 세션 갱신 대상) |
 
 ---
 
 ## Versioning
 
-Semantic Versioning을 따릅니다.
+Semantic Versioning 준수.
 
 | Change | Bump |
 |--------|------|
@@ -465,47 +508,14 @@ Semantic Versioning을 따릅니다.
 | 새 명령어/에이전트 추가 | MINOR |
 | Phase 구조 변경 | MAJOR |
 
-`/jarfis:sys-implement`, `/jarfis:sys-upgrade`, `/jarfis:sys-distill` 실행 시 자동으로 버전이 범프되고 CHANGELOG에 기록됩니다.
-
----
-
-<!-- JARFIS-LATEST-CHANGES-START -->
-## Latest Changes
-
-> See [CHANGELOG.md](./CHANGELOG.md) for full change history.
-
-## [4.0.5] - 2026-04-20
-
-HIGH-risk batch: `trace.py` subsystem activation. 1 logical item (N-2) executed across 3 sub-batches (5a skeleton → 5b instrumentation → 5c documentation). Gated by `JARFIS_TRACE` environment variable — defaults remain unchanged, zero cost when off.
-
-### Added
-- **5a** `trace.is_enabled()` gate (`os.getenv("JARFIS_TRACE", "0") != "0"`) + `_safe_append` helper that swallows any write/serialization error. Both existing entry points (`trace_agent` context manager, `trace_phase`) now return early when disabled. Identifiable no-op span id (`agent-<persona>-disabled`) preserved so callers can log/assert the off path. +11 tests in `test_trace.py` (off path, env unset, write-failure shield, yield-after-failure).
-- **5b** `trace.log_event(event, attrs=None, path=None)` free-form event API for hot-path instrumentation. Resolution order for path: explicit arg → `$JARFIS_TRACE_PATH` → `/tmp/jarfis-trace.jsonl`. Output format: JSONL with `{ts, event, attrs}`. +6 tests covering env override precedence and failure shield.
-- **5b** Hot-path instrumentation, one commit per site:
-  - `tmux_claude.py` main loop emits `tmux_session_start` / `tmux_session_ready` / `tmux_prompt_sent` / `tmux_session_end` (with session name, workspace, status, duration_ms, reason).
-  - `verify.cmd_phase_verify` emits `phase_verify_start` / `phase_verify_end` (phase_id, verdict, missing_count, duration_ms).
-  - `compose/__main__::_compose` emits `compose_start` / `compose_end` (agent, scope_index, context_files, injected_files, skills_count, prompt_chars, duration_ms).
-- **5c** `work.md` new `## Troubleshooting` section: activation / deactivation commands, event schema table (8 events), safety notes, file-growth caveat.
-- ADR at `adr/v4.0.5-trace-design.md` documenting context, decision, alternatives (default-on rejected; out-of-process daemon rejected; new `start_span`/`log_event`/`flush` API reduced to just `log_event`), consequences, and rollback strategy per sub-batch.
-
-### Safety
-- Every instrumentation site is doubly guarded: outer `try / except Exception: pass` + inner `if trace.is_enabled():`. A trace-side failure cannot flip a Phase outcome.
-- Kill switch: `export JARFIS_TRACE=0` or `unset JARFIS_TRACE`. Takes effect at the next process boundary — no code revert required.
-- Default behaviour (unset env) is identical to v4.0.4. Opt-in is the only path to collect data.
-
-### Performance
-- `JARFIS_TRACE` unset / "0": zero additional I/O. Gate is a single `os.getenv` call.
-- `JARFIS_TRACE=1`: micro-benchmarked at ~25 μs/event (200 events × 30 repeats, median). Projected Phase 6 trace surface ~14 events → ~0.35 ms overhead vs. typical 60 s Phase 6 wall time → 0.008% (≪ ±20% tolerance). Real-env on-state measurement deferred to first production session; will be back-filled in v4.0.6+.
-
-### Tests
-- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **447 passed** (was 431; +16 from trace gated-path + log_event coverage). 3 pre-existing test_meetings.py failures unchanged.
-
-### Migration
-- v4.0.4 → v4.0.5 is a no-op for existing callers — `JARFIS_TRACE` defaults to off. Enable per-session only when observability is needed.
-<!-- JARFIS-LATEST-CHANGES-END -->
+`/jarfis:sys-implement`, `/jarfis:sys-upgrade`, `/jarfis:sys-distill` 실행 시 자동 버전 번프 + CHANGELOG 기록.
 
 ---
 
 ## License
 
 [AGPL-3.0](./LICENSE)
+
+---
+
+<sub>직접 써보면서 만들었고, 지금도 사용하면서 개선 중 — by sanhalee</sub>
