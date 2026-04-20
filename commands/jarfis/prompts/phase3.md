@@ -322,6 +322,26 @@ Final response summary line:
 
 # Branch B — text path (`$DESIGN_MODE == "text"`)
 
+## On-brand extension scope (shared by UX + PO sub-agents)
+
+> Background (M8 Step 8.3 I-M8-P3-1): ux-designer routinely adds content that is not literally spelled out in `ux-direction.md` / `prd.md` — e.g. secondary CTAs ("Talk to Sales"), inline code previews, alternate contact methods. PO historically evaluates these as "on-brand, not scope violation" but the criteria were implicit and varied by session. This section codifies the boundary so UX authors and PO reviewers apply the same rubric.
+
+**Allowed additions** (UX may add without flagging; PO should PASS):
+
+- Content preserves `ux-direction.md` Voice/Tone and visual system (tokens, component grammar).
+- Content reinforces an existing user story in `prd.md` without introducing a new flow (e.g. a secondary CTA that leads to the same primary conversion, a reassurance block restating an existing value prop).
+- Content resolves a self-contained UX gap on the same page (e.g. an empty-state illustration, a "learn more" affordance that expands in place).
+- All supporting assets stay inside `$DOCS_DIR/design/` — no external fetches, no third-party embeds, no dependencies outside the mockup.
+
+**Forbidden additions** (UX must NOT add; PO must `[REVISION]` if seen):
+
+- New features or flows not present in `prd.md` (e.g. new pricing tier, new signup method, new page-to-page navigation that the PRD did not describe).
+- Changes to the primary user journey (CTAs that redirect to a different destination, steps added/removed from a flow specified in `ux-direction.md`).
+- Removal or replacement of elements explicitly listed in `ux-direction.md` — even if the UX designer considers them redundant.
+- Anything requiring a backend/API contract that does not exist in `planning/api-spec.md` (if present) or is not implied by `prd.md`.
+
+**Grey zone → always flag**: if UX is unsure, include a `[EXT_QUERY]` marker in the page HTML comment and surface it in the round summary line (`pages_ext_queries=K`). PO then decides PASS/REVISION explicitly.
+
 ## Step 1 — Token baseline (orchestrator step — jarfis-foreman executes directly)
 
 Decide the source of the initial token map:
@@ -378,6 +398,11 @@ Procedure:
      - Standalone runnable (CDN only; no local deps).
      - Implement interaction patterns from ux-direction.md.
      - Use token-map.json variables wherever mapped.
+     - **On-brand extensions** (see phase3 "On-brand extension scope"):
+       If you add content beyond what is literally in prd.md / ux-direction.md,
+       apply the allowed/forbidden rubric before adding. For grey-zone items, wrap
+       the section with `<!-- [EXT_QUERY] <brief reason> -->` so PO evaluates
+       explicitly during the feedback loop.
 
 3. ToC:
    Write $DOCS_DIR/design/_index.html linking to every page.
@@ -418,20 +443,27 @@ Inputs to read:
 - $DOCS_DIR/discovery/ux-direction.md
 - $DOCS_DIR/design/{path}/index.html (every page)
 
-Verify per page:
+Verify per page (rubric):
 - All user stories from prd.md are reflected
 - Interaction patterns from ux-direction.md are implemented
 - UX is suitable for business goals
 - No missing screens or edge cases
+- **On-brand extension evaluation** (see phase3 "On-brand extension scope"):
+  - UX-added elements not literally in prd.md / ux-direction.md → apply allowed/forbidden rubric.
+  - Allowed (Voice/Tone preserved + reinforces existing story + self-contained + no external deps) → `[PASS]`.
+  - Forbidden (new flow / primary-journey change / removes spec'd element / requires missing API) → `[REVISION]` with the specific rule violated cited in the feedback.
+  - Grey zone marked `[EXT_QUERY]` by UX → decide `[PASS]` or `[REVISION]` explicitly; never leave silent.
+  - Pure fidelity gap (element from spec missing or broken) → `[REVISION]` as before (unchanged).
 
 Output file (OVERWRITE each round):
   $DOCS_DIR/design/tmp/round-{round}/po-feedback.md
   Format:
     ## {path}
     - [PASS] | [REVISION] specific feedback
+    - (extension-specific line where relevant) [EXT_PASS] | [EXT_REJECT: <rule>] — <detail>
 
 Final response summary:
-  [PO_FEEDBACK: round={round} pages_pass={M}/N]
+  [PO_FEEDBACK: round={round} pages_pass={M}/N ext_queries={K} ext_rejects={R}]
 ```
 
 ### Sub-agent task prompt — UX (jarfis-foreman injects round {round} AFTER reading PO feedback file)
