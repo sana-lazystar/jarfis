@@ -28,6 +28,9 @@ def is_enabled() -> bool:
     return os.getenv("JARFIS_TRACE", "0") != "0"
 
 
+_DEFAULT_TRACE_PATH = "/tmp/jarfis-trace.jsonl"
+
+
 def _safe_append(trace_path, payload):
     """Append one JSON line to `trace_path`. Any failure is swallowed silently.
 
@@ -40,6 +43,40 @@ def _safe_append(trace_path, payload):
             f.write(json.dumps(payload, ensure_ascii=False) + "\n")
     except Exception:
         pass
+
+
+def _resolve_trace_path(path):
+    """Path precedence: explicit arg → $JARFIS_TRACE_PATH → _DEFAULT_TRACE_PATH."""
+    if path:
+        return path
+    return os.getenv("JARFIS_TRACE_PATH") or _DEFAULT_TRACE_PATH
+
+
+def log_event(event, attrs=None, path=None):
+    """Append one JSONL event to the trace file.
+
+    No-op when `JARFIS_TRACE` is unset or "0". Intended for entry/exit
+    instrumentation on hot paths (5b) — keep attrs small (counts, ids,
+    durations) so the file stays readable by hand during post-mortem.
+
+    Args:
+        event: short snake_case event name (e.g. "compose_start").
+        attrs: optional dict of simple JSON-serializable attributes.
+        path:  optional override. If omitted, $JARFIS_TRACE_PATH is used,
+               else /tmp/jarfis-trace.jsonl.
+    """
+    if not is_enabled():
+        return
+
+    try:
+        payload = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "event": event,
+            "attrs": attrs or {},
+        }
+    except Exception:
+        return
+    _safe_append(_resolve_trace_path(path), payload)
 
 
 @contextmanager

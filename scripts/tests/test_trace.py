@@ -12,7 +12,7 @@ import time
 
 import pytest
 
-from jarfis.trace import is_enabled, trace_agent, trace_phase
+from jarfis.trace import is_enabled, log_event, trace_agent, trace_phase
 
 
 @pytest.fixture
@@ -150,3 +150,51 @@ class TestGatedBehaviour:
         with trace_agent(bogus, "run-001", 4, "fe", []):
             ran.append(True)
         assert ran == [True]
+
+
+class TestLogEvent:
+    """v4.0.5b: free-form event entry point for hot-path instrumentation."""
+
+    def test_writes_event_with_attrs(self, tmp_path, trace_on):
+        path = str(tmp_path / "trace.jsonl")
+        log_event("compose_start", {"agent": "backend-developer"}, path=path)
+        lines = open(path).readlines()
+        assert len(lines) == 1
+        rec = json.loads(lines[0])
+        assert rec["event"] == "compose_start"
+        assert rec["attrs"] == {"agent": "backend-developer"}
+        assert "ts" in rec
+
+    def test_attrs_optional(self, tmp_path, trace_on):
+        path = str(tmp_path / "trace.jsonl")
+        log_event("phase_verify_end", path=path)
+        rec = json.loads(open(path).readline())
+        assert rec["attrs"] == {}
+
+    def test_noop_when_disabled(self, tmp_path, trace_off):
+        path = str(tmp_path / "trace.jsonl")
+        log_event("compose_start", {"x": 1}, path=path)
+        assert not os.path.exists(path)
+
+    def test_env_path_override(self, tmp_path, trace_on, monkeypatch):
+        env_path = str(tmp_path / "from-env.jsonl")
+        monkeypatch.setenv("JARFIS_TRACE_PATH", env_path)
+        # no explicit path → should use env
+        log_event("session_start", {"name": "jf-xx"})
+        assert os.path.exists(env_path)
+        rec = json.loads(open(env_path).readline())
+        assert rec["event"] == "session_start"
+
+    def test_explicit_path_wins_over_env(self, tmp_path, trace_on, monkeypatch):
+        env_path = str(tmp_path / "from-env.jsonl")
+        explicit = str(tmp_path / "explicit.jsonl")
+        monkeypatch.setenv("JARFIS_TRACE_PATH", env_path)
+        log_event("e", path=explicit)
+        assert os.path.exists(explicit)
+        assert not os.path.exists(env_path)
+
+    def test_swallows_write_failure(self, tmp_path, trace_on):
+        bogus = str(tmp_path / "missing-dir" / "trace.jsonl")
+        # must not raise
+        log_event("compose_start", {"a": 1}, path=bogus)
+        assert not os.path.exists(bogus)

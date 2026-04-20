@@ -24,6 +24,8 @@ import json
 import argparse
 import atexit
 
+from jarfis import trace
+
 POLL_INTERVAL = 3                       # 초
 DEFAULT_TIMEOUT = 3600                  # 1시간 (안전장치)
 TMUX_SIZE = (200, 50)
@@ -220,6 +222,17 @@ def main():
     # 비정상 종료 시 세션 자동 정리
     atexit.register(lambda: kill_session(args.name))
 
+    run_start = time.monotonic()
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "tmux_session_start",
+                {"session": args.name, "workspace": args.workspace,
+                 "mcp_config": bool(args.mcp_config)},
+            )
+    except Exception:
+        pass
+
     # 1. 동일 이름 세션 정리 (재실행/크래시 복구)
     kill_existing_session(args.name)
 
@@ -236,17 +249,53 @@ def main():
             save_pane(args.name, args.save_pane)
         kill_session(args.name)
         write_result(args.result, "error", "Claude 시작 실패", "")
+        try:
+            if trace.is_enabled():
+                trace.log_event(
+                    "tmux_session_end",
+                    {"session": args.name, "status": "error",
+                     "reason": "ready_timeout",
+                     "duration_ms": int((time.monotonic() - run_start) * 1000)},
+                )
+        except Exception:
+            pass
         print("Claude failed to start", file=sys.stderr)
         sys.exit(1)
 
+    try:
+        if trace.is_enabled():
+            trace.log_event("tmux_session_ready", {"session": args.name})
+    except Exception:
+        pass
+
     # 5. 프롬프트 전송
     send_prompt(args.name, args.prompt)
+
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "tmux_prompt_sent",
+                {"session": args.name, "prompt_path": args.prompt},
+            )
+    except Exception:
+        pass
 
     # 6. 결과 대기
     result = poll(args.name, args.result, args.timeout)
     if args.save_pane:
         save_pane(args.name, args.save_pane)
     kill_session(args.name)
+
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "tmux_session_end",
+                {"session": args.name, "status": result.get("status"),
+                 "reason": result.get("reason", ""),
+                 "duration_ms": int((time.monotonic() - run_start) * 1000)},
+            )
+    except Exception:
+        pass
 
     # 7. 결과 반환
     if result["status"] == "completed":
