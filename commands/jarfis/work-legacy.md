@@ -1,4 +1,12 @@
-# JARFIS - IT Team Workflow Orchestration
+# JARFIS - IT Team Workflow Orchestration (LEGACY v3)
+
+> ⚠️ **DEPRECATED (v3 orchestrator) — DO NOT USE FOR NEW WORKFLOWS**
+>
+> - Archived at M7 swap (2026-04-19, JARFIS v4.0.0 release).
+> - Maintained until **2026-05-03** for v3 rollback safety (2-week insurance window).
+> - For new work: use `/jarfis:work` (v4).
+> - Removal target: v4.0.7+ release (post-expiry).
+> - `state.py` still emits v3 flat keys for this file's consumption — dual-shape compat until this file is removed.
 
 > **Locale**: All user-facing output (banners, messages, questions) must be presented in $LOCALE language.
 > Internal instructions and reasoning: English. If $LOCALE is not set, auto-detect from user input.
