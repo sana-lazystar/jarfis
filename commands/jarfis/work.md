@@ -159,6 +159,41 @@ Before presenting any Gate:
 - **All** user-facing decisions use AskUserQuestion — never free-text responses. Question text and all option labels in `$LOCALE`.
 - Option labels follow verb + noun pattern ("Approve and proceed", "Revise and re-run Phase 2", "Abort workflow").
 
+## Progress Tracking (TaskCreate per Phase — UX-1)
+
+The main session MUST create one TaskCreate entry per logical step so the user can see exactly where we are. Do NOT compress multiple Phases or Gates into a single task — attempted compression (e.g. "Phase 1b~6 tmux phase execution") destroys visibility while a 6-step workflow runs for 30+ minutes.
+
+Required task granularity (one task per row, in order):
+
+| # | Task subject (example)                        | Owner (trigger)                               |
+|---|-----------------------------------------------|-----------------------------------------------|
+| 1 | `Phase 0 — project profile`                   | main direct                                   |
+| 2 | `Phase 1a — PO + TA discovery (parallel)`     | main direct (Task tool, parallel sub-agents)  |
+| 3 | `Gate 1 — discovery confirmation`             | main direct (AskUserQuestion)                 |
+| 4 | `Phase 1b — discovery processing`             | tmux foreman                                  |
+| 5 | `Phase 2 — architecture & planning`           | tmux foreman                                  |
+| 6 | `Phase 3 — design` (omit if `design.mode == null`) | tmux foreman                             |
+| 7 | `Gate 2 — planning + design confirmation`     | main direct (AskUserQuestion)                 |
+| 8 | `Phase 4 — implementation`                    | tmux foreman                                  |
+| 9 | `Phase 4.5 — operational readiness`           | tmux foreman                                  |
+|10 | `Phase 5 — review & QA`                       | tmux foreman (internal review_round loop)     |
+|11 | `Gate 3 — review confirmation`                | main direct (AskUserQuestion)                 |
+|12 | `Phase 6 — retrospective + wiki sync`         | tmux foreman                                  |
+
+State transitions:
+
+- When **entering** a Phase or Gate step → `TaskUpdate(taskId, status="in_progress")`.
+- After `phase-verify PASS` (or Gate `Approve`) → `TaskUpdate(taskId, status="completed")`.
+- On retry (`attempt += 1`) keep the task `in_progress` and update `activeForm` to `"Phase {N} retry attempt {K}"` — do NOT create a new task per retry.
+- On `Abort` selection at any Gate → mark the current in_progress task `completed` (with subject suffix "(aborted)") and stop creating downstream tasks.
+
+Skip rules:
+
+- `state.design.mode == null` → omit task #6 entirely (do not create a completed "skipped" task — keeps the list focused on real work).
+- No backend scope / `api.mode == null` → task #5 subject stays the same; internal api-spec skip is handled by the phase prompt, not by task layout.
+
+Rationale: M8 Attempt 3 observed the main session collapsing TODOs into 3 coarse buckets ("Phase 0 / 1a / 1b~6"), which hid Phase-4 progress while tmux was running for 15+ minutes. Per-Phase + per-Gate tasks restore the granularity users expect.
+
 ## Anti-Optimization (mini)
 
 - **Do NOT merge Phases** into one tmux session. Parallel Phase 2 + Phase 3 is allowed only as two distinct sessions with different `sessionKey-phase{N}` names.
