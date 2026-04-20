@@ -9,8 +9,10 @@ import argparse
 import json
 import os
 import sys
+import time
 import traceback
 
+from .. import trace
 from .assembler import assemble_prompt
 from .config import load_composition, load_extra_skills_by_framework
 from .errors import (
@@ -87,6 +89,16 @@ def _parse_args(argv):
 
 
 def _compose(args):
+    start = time.monotonic()
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "compose_start",
+                {"agent": args.agent, "scope_index": args.scope_index},
+            )
+    except Exception:
+        pass
+
     state = _load_state(args.state)
 
     composition = load_composition(args.composition)
@@ -207,6 +219,22 @@ def _compose(args):
     }
     if agent.model is not None:
         payload["model"] = agent.model
+
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "compose_end",
+                {"agent": args.agent,
+                 "context_files": len(context_files_meta),
+                 "injected_files": sum(
+                     1 for b in context_files_meta if b.get("injected")
+                 ),
+                 "skills_count": len(meta.get("skills_loaded", [])),
+                 "prompt_chars": len(prompt),
+                 "duration_ms": int((time.monotonic() - start) * 1000)},
+            )
+    except Exception:
+        pass
 
     return payload
 
