@@ -7,6 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.5] - 2026-04-20
+
+HIGH-risk batch: `trace.py` subsystem activation. 1 logical item (N-2) executed across 3 sub-batches (5a skeleton → 5b instrumentation → 5c documentation). Gated by `JARFIS_TRACE` environment variable — defaults remain unchanged, zero cost when off.
+
+### Added
+- **5a** `trace.is_enabled()` gate (`os.getenv("JARFIS_TRACE", "0") != "0"`) + `_safe_append` helper that swallows any write/serialization error. Both existing entry points (`trace_agent` context manager, `trace_phase`) now return early when disabled. Identifiable no-op span id (`agent-<persona>-disabled`) preserved so callers can log/assert the off path. +11 tests in `test_trace.py` (off path, env unset, write-failure shield, yield-after-failure).
+- **5b** `trace.log_event(event, attrs=None, path=None)` free-form event API for hot-path instrumentation. Resolution order for path: explicit arg → `$JARFIS_TRACE_PATH` → `/tmp/jarfis-trace.jsonl`. Output format: JSONL with `{ts, event, attrs}`. +6 tests covering env override precedence and failure shield.
+- **5b** Hot-path instrumentation, one commit per site:
+  - `tmux_claude.py` main loop emits `tmux_session_start` / `tmux_session_ready` / `tmux_prompt_sent` / `tmux_session_end` (with session name, workspace, status, duration_ms, reason).
+  - `verify.cmd_phase_verify` emits `phase_verify_start` / `phase_verify_end` (phase_id, verdict, missing_count, duration_ms).
+  - `compose/__main__::_compose` emits `compose_start` / `compose_end` (agent, scope_index, context_files, injected_files, skills_count, prompt_chars, duration_ms).
+- **5c** `work.md` new `## Troubleshooting` section: activation / deactivation commands, event schema table (8 events), safety notes, file-growth caveat.
+- ADR at `adr/v4.0.5-trace-design.md` documenting context, decision, alternatives (default-on rejected; out-of-process daemon rejected; new `start_span`/`log_event`/`flush` API reduced to just `log_event`), consequences, and rollback strategy per sub-batch.
+
+### Safety
+- Every instrumentation site is doubly guarded: outer `try / except Exception: pass` + inner `if trace.is_enabled():`. A trace-side failure cannot flip a Phase outcome.
+- Kill switch: `export JARFIS_TRACE=0` or `unset JARFIS_TRACE`. Takes effect at the next process boundary — no code revert required.
+- Default behaviour (unset env) is identical to v4.0.4. Opt-in is the only path to collect data.
+
+### Performance
+- `JARFIS_TRACE` unset / "0": zero additional I/O. Gate is a single `os.getenv` call.
+- `JARFIS_TRACE=1`: micro-benchmarked at ~25 μs/event (200 events × 30 repeats, median). Projected Phase 6 trace surface ~14 events → ~0.35 ms overhead vs. typical 60 s Phase 6 wall time → 0.008% (≪ ±20% tolerance). Real-env on-state measurement deferred to first production session; will be back-filled in v4.0.6+.
+
+### Tests
+- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **447 passed** (was 431; +16 from trace gated-path + log_event coverage). 3 pre-existing test_meetings.py failures unchanged.
+
+### Migration
+- v4.0.4 → v4.0.5 is a no-op for existing callers — `JARFIS_TRACE` defaults to off. Enable per-session only when observability is needed.
+
 ## [4.0.4] - 2026-04-20
 
 Small independent infra sprints. 2 items touching context injection and tmux post-mortem debugging. Both changes are additive — existing call sites keep working unchanged.
