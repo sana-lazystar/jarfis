@@ -181,6 +181,8 @@ def _compose(args):
 
     meta["context_files"] = context_files_meta
 
+    _emit_missing_sections_warnings(args.agent, context_files_meta)
+
     # Persona
     persona_path = os.path.join(args.personas_dir, f"{agent.persona}.md")
     if not os.path.isfile(persona_path):
@@ -230,6 +232,24 @@ def _emit_error(exc, type_name):
         "error": str(exc),
         "type": type_name,
     }) + "\n")
+
+
+def _emit_missing_sections_warnings(agent_name, context_files_meta):
+    """Emit a stderr warning line per block whose requested sections were absent.
+
+    Non-fatal — keeps stdout JSON clean so jarfis-foreman's downstream parse is
+    unaffected. Intent: when a project-profile.md is renamed or a composition
+    entry references a stale section title, the human running compose sees
+    the mismatch immediately instead of it being silently dropped to meta only.
+    """
+    for block in context_files_meta:
+        missing = block.get("missing_sections")
+        if not missing:
+            continue
+        sys.stderr.write(
+            f"[compose warning] agent={agent_name} path={block.get('path')} "
+            f"missing_sections={list(missing)}\n"
+        )
 
 
 if __name__ == "__main__":

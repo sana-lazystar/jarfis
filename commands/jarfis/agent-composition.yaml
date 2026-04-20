@@ -28,6 +28,27 @@
 # model:   [선택] sonnet | opus | haiku — persona 기본값 override
 # skills_from_domain: boolean — domain.yaml의 skills 로드 여부 (4단계 fallback chain의 step 4)
 # working_dir: 자동 결정 (per-project → scope[i].path / work-wide → docsDir)
+#
+# ────────────────────────────────────────────────────────────────
+# sections 필터 매핑 가이드 (v4.0.4 N-3 audit — 2026-04-20)
+# ────────────────────────────────────────────────────────────────
+# project-profile.md 표준 섹션 (templates/project-profile.md 기준):
+#   Tech Stack / Active Skills / Directory Structure / Scripts & Commands /
+#   Config Summary / Coding Conventions / API Routes / Pages / Data Models /
+#   Module Map / Architecture / Business Logic Summary / Reusable Components /
+#   Notes & Caveats
+#
+# 매핑 원칙:
+#   - BE/FE developer: 실구현 context (Tech Stack + Coding Conventions +
+#     Reusable Components + Scripts & Commands + Notes & Caveats)
+#   - architect / reviewer: 구조 context (Architecture + Conventions + Caveats)
+#   - qa: 실행/컨벤션 (Conventions + Scripts)
+#   - security / devops: 스택/아키텍처 (Tech Stack + Architecture + Config)
+#   - PO / ux-designer: 기획/디자인 문서 사용, project-profile 미주입
+#
+# compose 동작: 섹션이 yaml에 명시되었으나 실제 파일에 없으면
+#   stderr 경고 + meta.context_files[].missing_sections 기록 (N-3).
+# ────────────────────────────────────────────────────────────────
 
 agents:
   product-owner:
@@ -104,7 +125,7 @@ agents:
     context:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
-      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands], optional: false, importance: required}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands, Notes & Caveats], optional: false, importance: required}
 
   backend-developer:
     persona: backend-developer
@@ -113,7 +134,7 @@ agents:
     context:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
-      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands], optional: false, importance: required}
+      - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands, Notes & Caveats], optional: false, importance: required}
 
 # ────────────────────────────────────────────────────────────────
 # Framework → Skill 자동 매핑 (옵션 1, system-spec §5.5 4단계 fallback chain의 step 3)
