@@ -474,21 +474,20 @@ Semantic Versioning을 따릅니다.
 
 > See [CHANGELOG.md](./CHANGELOG.md) for full change history.
 
-## [4.0.3] - 2026-04-20
+## [4.0.4] - 2026-04-20
 
-Fast-track polish batch. 4 prompt / docstring-level items deferred from v4.0.2. All changes are text-only (no behavior change); fully revertable via `git revert`.
+Small independent infra sprints. 2 items touching context injection and tmux post-mortem debugging. Both changes are additive — existing call sites keep working unchanged.
 
 ### Added
-- **UX-1** `work.md` Progress Tracking section. Main session now creates one TaskCreate entry per Phase (0 / 1a / 1b / 2 / 3 / 4 / 4.5 / 5 / 6) and per Gate (1 / 2 / 3), with explicit state-transition rules (enter → `in_progress`, verify PASS / Gate Approve → `completed`, retry updates `activeForm` without creating a new task). Addresses M8 Attempt 3 observation of TODO compression hiding Phase-4 progress.
-- **N-5** `prompts/phase3.md` "On-brand extension scope" section + PO review rubric. Codifies which UX-added elements beyond prd.md / ux-direction.md are allowed vs. forbidden (Voice/Tone preserved + reinforces existing story + self-contained vs. new flow / primary-journey change / missing-API dependency). Grey-zone items marked `<!-- [EXT_QUERY] -->` for explicit PO decision. Makes M8 Step 8.3 I-M8-P3-1 tacit rule explicit.
+- **N-1** `tmux_claude.py --save-pane <path>` option. Captures full tmux scrollback via `tmux capture-pane -S -` right before the session is killed, writing to the given path (standard recommendation: `{docsDir}/phase-results/phase{N}/attempt{K}.pane.log`). Best-effort — capture/write failures emit a stderr warning and do not flip the phase exit code. Addresses M8 Step 8.5 Attempts 1–3 where verify FAIL root cause was unrecoverable after the tmux session ended. +3 tests in `test_tmux_claude.py`.
+- **N-3** `compose/__main__.py` emits a `[compose warning]` stderr line per context block whose `sections:` filter references a heading absent from the target file. `meta.context_files[].missing_sections` record is unchanged; the stderr line just surfaces the same data to humans running compose interactively. +3 tests in `test_compose_warnings.py`.
 
 ### Changed
-- **UX-2** `work.md` tmux phase execution block documents the Bash-tool `description` convention: `"JARFIS Phase {phase_id} execution"` (first attempt) / `"JARFIS Phase {phase_id} retry attempt {K}"` (retry). Keeps background-completion notifications legible across multi-work sessions. Harness-fixed `Background command` wrapper is called out as not customizable.
-- **N-6** `tmux_claude.py::kill_existing_session` docstring now notes tmux's prefix-match semantics on `-t` and confirms JARFIS's `jf-{shortId}-phase{N}` scheme with nanoid/uuid-based shortIds makes prefix collisions impossible. Includes a forward-looking reminder to re-audit if shortId generation changes to a sequential scheme.
+- **N-3** `agent-composition.yaml` audit header documents the section-mapping rubric (BE/FE developer, architect/reviewer, qa, security/devops, PO/ux-designer). `backend-developer` and `frontend-developer` context filters extended with `Notes & Caveats` so project-specific gotchas reach implementers.
+- **N-1** `work.md` tmux execution block recommends `--save-pane {docsDir}/phase-results/phase{N}/attempt{K}.pane.log` and documents the best-effort semantics.
 
 ### Tests
-- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **425 passed** (v4.0.2 baseline unchanged). 3 pre-existing test_meetings.py failures unchanged.
-- All 4 items are documentation / prompt-level; no Python logic touched.
+- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **431 passed** (was 425; +6 from N-1/N-3). 3 pre-existing test_meetings.py failures unchanged.
 <!-- JARFIS-LATEST-CHANGES-END -->
 
 ---

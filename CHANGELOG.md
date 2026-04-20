@@ -7,6 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.4] - 2026-04-20
+
+Small independent infra sprints. 2 items touching context injection and tmux post-mortem debugging. Both changes are additive — existing call sites keep working unchanged.
+
+### Added
+- **N-1** `tmux_claude.py --save-pane <path>` option. Captures full tmux scrollback via `tmux capture-pane -S -` right before the session is killed, writing to the given path (standard recommendation: `{docsDir}/phase-results/phase{N}/attempt{K}.pane.log`). Best-effort — capture/write failures emit a stderr warning and do not flip the phase exit code. Addresses M8 Step 8.5 Attempts 1–3 where verify FAIL root cause was unrecoverable after the tmux session ended. +3 tests in `test_tmux_claude.py`.
+- **N-3** `compose/__main__.py` emits a `[compose warning]` stderr line per context block whose `sections:` filter references a heading absent from the target file. `meta.context_files[].missing_sections` record is unchanged; the stderr line just surfaces the same data to humans running compose interactively. +3 tests in `test_compose_warnings.py`.
+
+### Changed
+- **N-3** `agent-composition.yaml` audit header documents the section-mapping rubric (BE/FE developer, architect/reviewer, qa, security/devops, PO/ux-designer). `backend-developer` and `frontend-developer` context filters extended with `Notes & Caveats` so project-specific gotchas reach implementers.
+- **N-1** `work.md` tmux execution block recommends `--save-pane {docsDir}/phase-results/phase{N}/attempt{K}.pane.log` and documents the best-effort semantics.
+
+### Tests
+- `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` → **431 passed** (was 425; +6 from N-1/N-3). 3 pre-existing test_meetings.py failures unchanged.
+
 ## [4.0.3] - 2026-04-20
 
 Fast-track polish batch. 4 prompt / docstring-level items deferred from v4.0.2. All changes are text-only (no behavior change); fully revertable via `git revert`.
