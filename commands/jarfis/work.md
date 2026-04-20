@@ -96,9 +96,11 @@ For each tmux phase:
      --name {sessionKey}-phase{phase_id} \
      --prompt {prompt_path} \
      --result {result_path} \
-     --workspace {docsDir}
+     --workspace {docsDir} \
+     --save-pane {docsDir}/phase-results/phase{phase_id}/attempt{K}.pane.log
    ```
-   Append `--mcp-config ~/.claude/.mcp.json` only if the M6 MCP inheritance check falls back (M1 Step 1.4 Scenario 2 outcome).
+   - Append `--mcp-config ~/.claude/.mcp.json` only if the M6 MCP inheritance check falls back (M1 Step 1.4 Scenario 2 outcome).
+   - `--save-pane` (v4.0.4 N-1) captures the full tmux scrollback right before the session is killed. Use the standard `phase-results/phase{N}/attempt{K}.pane.log` path so every retry gets its own log. Capture is best-effort: a failure emits a warning but never flips the phase outcome.
 
    **Bash tool `description` convention (UX-2)**: when invoking this command via the harness Bash tool with `run_in_background: true`, set `description = "JARFIS Phase {phase_id} execution"` on the first attempt and `description = "JARFIS Phase {phase_id} retry attempt {K}"` on retries. Harness background-completion notifications are rendered as `Background command "{description}" completed`, so the `JARFIS` prefix keeps context legible across multi-work sessions. The `Background command` wrapper itself is fixed by the Claude Code harness and cannot be customized — only the quoted description is controllable.
 4. **Read the result file** when tmux exits. Branch on `status`:

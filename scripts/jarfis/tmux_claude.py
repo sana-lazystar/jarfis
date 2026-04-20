@@ -150,6 +150,38 @@ def kill_session(name: str) -> None:
     subprocess.run(["tmux", "kill-session", "-t", name], capture_output=True)
 
 
+def save_pane(name: str, path: str) -> bool:
+    """tmux pane 전체 스크롤백을 `path`에 저장 (post-mortem 디버깅용).
+
+    실패는 phase 결과를 뒤집지 않는다 — M8 Attempt 3 디버깅에서 pane이
+    세션 종료와 함께 소실되어 verify FAIL 원인 추적이 어려웠던 점(N-1) 대응.
+    호출 시점은 kill_session 직전이어야 한다 (세션 소멸 후 capture 불가).
+
+    Returns True on successful write, False on any failure (warning to stderr).
+    """
+    try:
+        dirname = os.path.dirname(path)
+        if dirname:
+            os.makedirs(dirname, exist_ok=True)
+        result = subprocess.run(
+            ["tmux", "capture-pane", "-t", name, "-p", "-J", "-S", "-"],
+            capture_output=True, text=True,
+        )
+        if result.returncode != 0:
+            print(
+                f"[tmux_claude] save-pane capture failed "
+                f"(rc={result.returncode}): {result.stderr.strip()}",
+                file=sys.stderr,
+            )
+            return False
+        with open(path, "w", encoding="utf-8") as f:
+            f.write(result.stdout)
+        return True
+    except OSError as e:
+        print(f"[tmux_claude] save-pane write failed: {e}", file=sys.stderr)
+        return False
+
+
 def kill_existing_session(name: str) -> None:
     """동일 이름 세션이 있으면 kill (재실행 시 이전 인스턴스 정리).
 
@@ -179,6 +211,10 @@ def main():
     p.add_argument("--mcp-config", default=None, help="MCP 설정 파일 (선택, 글로벌 미상속 시)")
     p.add_argument("--timeout", type=int, default=DEFAULT_TIMEOUT,
                    help="안전장치 타임아웃 (기본 1시간)")
+    p.add_argument("--save-pane", default=None,
+                   help="(선택) tmux 세션 종료 직전 pane 전체 스크롤백을 "
+                        "해당 경로에 저장. 캡처 실패해도 phase 결과엔 영향 없음. "
+                        "권장 경로: {docsDir}/phase-results/phase{N}/attempt{K}.pane.log")
     args = p.parse_args()
 
     # 비정상 종료 시 세션 자동 정리
@@ -196,6 +232,8 @@ def main():
 
     # 4. Claude 준비 대기
     if not wait_for_ready(args.name):
+        if args.save_pane:
+            save_pane(args.name, args.save_pane)
         kill_session(args.name)
         write_result(args.result, "error", "Claude 시작 실패", "")
         print("Claude failed to start", file=sys.stderr)
@@ -206,6 +244,8 @@ def main():
 
     # 6. 결과 대기
     result = poll(args.name, args.result, args.timeout)
+    if args.save_pane:
+        save_pane(args.name, args.save_pane)
     kill_session(args.name)
 
     # 7. 결과 반환
