@@ -99,6 +99,8 @@ For each tmux phase:
      --workspace {docsDir}
    ```
    Append `--mcp-config ~/.claude/.mcp.json` only if the M6 MCP inheritance check falls back (M1 Step 1.4 Scenario 2 outcome).
+
+   **Bash tool `description` convention (UX-2)**: when invoking this command via the harness Bash tool with `run_in_background: true`, set `description = "JARFIS Phase {phase_id} execution"` on the first attempt and `description = "JARFIS Phase {phase_id} retry attempt {K}"` on retries. Harness background-completion notifications are rendered as `Background command "{description}" completed`, so the `JARFIS` prefix keeps context legible across multi-work sessions. The `Background command` wrapper itself is fixed by the Claude Code harness and cannot be customized — only the quoted description is controllable.
 4. **Read the result file** when tmux exits. Branch on `status`:
    - `"error"`: report `reason` + `reasonDetail` verbatim (in `$LOCALE`); set `state.phases[phase_id].status = "failed"`. No retry — a Claude-level crash would reproduce the same error.
    - `"completed"`: continue to verify.
