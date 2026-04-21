@@ -494,7 +494,7 @@ cd ~/repos/jarfis && git pull && bash install.sh
 | [MIGRATION.md](./MIGRATION.md) | v3 → v4 전환 가이드 + **§Principle Changes** + Breaking changes + Troubleshooting |
 | [WIKI_SEARCH.md](./WIKI_SEARCH.md) | 시맨틱 검색 시스템 (bge-m3, 메모리 가드, LLM fallback) |
 | [CHANGELOG.md](./CHANGELOG.md) | 버전별 변경 이력 (ground truth) |
-| [jarfis-index.md](./commands/jarfis/jarfis-index.md) | 시스템 파일 인벤토리 (별도 세션 갱신 대상) |
+| [jarfis-index.md](./commands/jarfis/jarfis-index.md) | 시스템 파일 인벤토리 (v4.0.7 refreshed) |
 
 ---
 
