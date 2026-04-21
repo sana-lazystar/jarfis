@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.7] - 2026-04-21
+
+Docs-only PATCH. `jarfis-index.md` (system inventory) refresh — closes findings F-01 by aligning the index 1:1 with v4.0.6 reality. Also resolves a pre-existing `~/.claude/.jarfis-version` drift that the v4.0.6 release missed (`4.0.5` → `4.0.7`). Backlog files cascade-renamed (v4.0.7 → v4.0.8, v4.0.8 → v4.0.9) to free the v4.0.7 slot for this docs-only patch.
+
+No code / schema / CLI / prompt changes. Backward-compatible for all callers.
+
+### Changed
+- **`commands/jarfis/jarfis-index.md`** — 256 → 259 lines, realigned to v4 reality:
+  - `work.md` "~890 lines" → actual 255 lines (v4 rewrite); v3/v4 lineage notes corrected.
+  - `prompts/`: `phase1.md` → `phase1b.md` (Phase 1a runs in main inside work.md); `phase3-figma.md` merged into unified `phase3.md`; line counts for phase2/3/4/4-5/5/6 corrected.
+  - Agents: v3 senior-* engineers removed. Now 4 top-level agents (`jarfis-foreman`, `jarfis-engineer`, `jarfis-advocate`, `jarfis-critic`) + 9 personas under `personas/` composed via `agent-composition.yaml` (ADR-17).
+  - Skills: flat `commands/jarfis/skills/` catalog (16 skills, relocated from `domains/{web,desktop}/skills/`).
+  - Templates: `skill-template.md` added (v4 new, checkpoint style used by sys-distill for skill creation).
+  - Scripts: `verify.py` (ADR-15, 1,349 lines — replaces v3 `jarfis-black` LLM gate), `tmux_claude.py` (ADR-16), `trace.py` (ADR-20, v4.0.5 opt-in), `compose/` package (ADR-17) documented.
+  - `jarfis_cli.py`: v4 top-level verify commands documented (`gate-check` / `phase-check` / `phase-verify` / `pattern-detect` / `compose`).
+  - Single-writer state rule (ADR-18), Dialectic Review scope (sys-* only, ADR-13 + findings F-14), v3 state silent-migration ban (findings F-08) cross-referenced.
+  - Header: `Version: 4.0.6 → 4.0.7`, `Last updated: 2026-04-19 → 2026-04-21`.
+- **`README.md`** — L497 jarfis-index row note updated from `(별도 세션 갱신 대상)` to `(v4.0.7 refreshed)`.
+
+### Fixed
+- **`~/.claude/.jarfis-version`** — drift repaired: `4.0.5` → `4.0.7`. v4.0.6 release did not bump this local marker (pre-existing bug). Same bump applied to `~/.claude/scripts/jarfis/__init__.py` (also at `4.0.5`).
+- **findings F-01** (jarfis-index.md stale) — marked Resolved in `~/Upscales/jarfis-v4-docs/findings.md` with evidence trail.
+
+### Migration
+- **Backlog cascade rename** — to free the v4.0.7 slot for this docs-only patch:
+  - `v4.0.7-backlog.md` (Operational Threshold Tuning, EVAL-1/2/3) → `v4.0.8-backlog.md`
+  - `v4.0.8-backlog.md` (Audit CLI, N-4 data-gated, originally moved from v4.0.6 on 2026-04-20) → `v4.0.9-backlog.md`
+  - Internal self-refs, commit-message templates, preflight/postflight script names, hotfix branch names, and dependency references updated inside both renamed files. Dependency chain now explicit: `v4.0.6 → v4.0.7 → v4.0.8 → v4.0.9`.
+- **Cross-doc `v4.0.7+` cleanup refs** updated to `v4.0.9+` (work-legacy.md removal target, `state.py` v3 dual-shape cleanup) in: `DESIGN.md`, `MIGRATION.md`, `commands/jarfis/jarfis-index.md`, `commands/jarfis/work-legacy.md`. Removal window itself unchanged (post-2026-05-03).
+
+### Tests
+- No new tests (docs-only). `pytest scripts/tests/ --ignore=scripts/tests/test_meetings.py` expected unchanged from v4.0.6 baseline (**448 passed**).
+
 ## [4.0.6] - 2026-04-20
 
 Docs refresh + polish release. Root documentation (PHILOSOPHY, DESIGN, WORKFLOW, AGENTS, INFRASTRUCTURE, README, WIKI_SEARCH) realigned to v4 reality; MIGRATION.md created as v3→v4 transition guide with §Principle Changes as footnote landing target. Two v4.0.6-pre polish items bundled. No v4 code or prompt changes — documentation-only refresh.

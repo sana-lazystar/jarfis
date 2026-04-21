@@ -342,7 +342,7 @@ v3 orchestrator (`work.md` 902 lines) 를 `work-legacy.md` 로 archive한 상태
 > - Archived at M7 swap (2026-04-19, JARFIS v4.0.0 release).
 > - Maintained until **2026-05-03** for v3 rollback safety (2-week insurance window).
 > - For new work: use `/jarfis:work` (v4).
-> - Removal target: v4.0.7+ release (post-expiry).
+> - Removal target: v4.0.9+ release (post-expiry).
 > - `state.py` still emits v3 flat keys for this file's consumption — dual-shape compat until this file is removed.
 ```
 
@@ -354,7 +354,7 @@ v3 orchestrator (`work.md` 902 lines) 를 `work-legacy.md` 로 archive한 상태
 
 ### 4.4 만료 이후 계획
 
-**2026-05-03 이후 (v4.0.7+)**:
+**2026-05-03 이후 (v4.0.9+)**:
 1. `work-legacy.md` 파일 삭제
 2. `state.py` v3 dual-shape 제거 (cleanup item 단일 묶음)
 3. `/jarfis:work-legacy` 슬래시 커맨드 사용 불가
@@ -486,7 +486,7 @@ v4 주요 변경은 [CHANGELOG.md](./CHANGELOG.md) 에 기록. 본 문서와 CHA
 
 ### 7.2 v4.0.6+ (계획)
 
-- v4.0.7+ 에 `work-legacy.md` 삭제 + `state.py` v3 dual-shape 제거 (§4 참조)
+- v4.0.9+ 에 `work-legacy.md` 삭제 + `state.py` v3 dual-shape 제거 (§4 참조)
 - trace 파일 auto-cleanup 정책 (ADR-20 open question)
 - workflow-metrics.tsv 대시보드 (aspiration path)
 

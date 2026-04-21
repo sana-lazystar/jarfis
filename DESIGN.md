@@ -1227,7 +1227,7 @@ v4 철학은 P0 Function over Form("이름뿐인 허울은 해롭다")을 채택
 
 - Ratchet 계열 장치 추가 제안 시 **producer 명시** 필수 (누가 언제 채점하는가)
 - `sys-*` 주기 audit에서 active use 증거를 점검. 장기간 미사용 시 ADR-21 방식(honesty clause)으로 현 상태 선언 검토 — 자동 편입 규칙 강제는 없음, 판단은 사용자
-- `work-legacy.md` 2026-05-03 만료 시 PRD Ratchet reference 완전 정리 (v4.0.7+ cleanup item)
+- `work-legacy.md` 2026-05-03 만료 시 PRD Ratchet reference 완전 정리 (v4.0.9+ cleanup item)
 
 ### 관련 파일
 
