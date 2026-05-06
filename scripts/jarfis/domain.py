@@ -20,6 +20,7 @@ import sys
 
 import yaml
 
+from . import trace
 from .utils import get_claude_dir, json_output
 
 # ── Constants ──
@@ -124,6 +125,17 @@ def _load_domain_yaml(domain_name, domains_dir=None):
     if not data or not isinstance(data, dict):
         raise ValueError(f"Empty or invalid domain.yaml: {yaml_path}")
 
+    # M6.4 (T3): testbed breadcrumb so JARFIS_TRACE=1 sessions can
+    # confirm each domain pack is being consulted by the dispatcher.
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "domain_yaml_load",
+                {"domain": domain_name, "path": yaml_path},
+            )
+    except Exception:
+        pass
+
     return data
 
 
@@ -218,7 +230,9 @@ def detect(project_dir, domains_dir=None):
         domains_dir = _get_domains_dir()
 
     if not os.path.isdir(project_dir):
-        return {"matches": [], "tie": False}
+        result = {"matches": [], "tie": False}
+        _emit_detect_telemetry(project_dir, result)
+        return result
 
     # M4.7 — desktop weighting marker check (cheap, fixed-name lookups).
     desktop_boost = _has_desktop_tauri_marker(project_dir)
@@ -265,7 +279,74 @@ def detect(project_dir, domains_dir=None):
         and matches[0]["matched_indicators"] == matches[1]["matched_indicators"]
     )
 
-    return {"matches": matches, "tie": tie}
+    result = {"matches": matches, "tie": tie}
+    _emit_detect_telemetry(project_dir, result)
+    return result
+
+
+# ── M6.4 (T3): dispatch telemetry ──
+
+def _emit_detect_telemetry(project_dir, result):
+    """Emit ``domain_detect`` + ``dispatch_branch`` events.
+
+    Branches recorded:
+        * ``greenfield``  — no matches at all (caller must AskUserQuestion).
+        * ``tie``         — top-2 share confidence and matched_count.
+        * ``low-conf``    — top-1 confidence below 0.85 (forces AskUserQuestion).
+        * ``high-conf``   — top-1 confidence ≥ 0.85.
+
+    Multi-domain repos are dispatched per-scope, so multi-domain shows
+    up as multiple consecutive ``domain_detect`` calls (one per scope
+    dir) rather than a separate branch here. The override branch is
+    emitted by ``work_args.parse_work_args``.
+
+    No-op when ``JARFIS_TRACE`` is unset / ``0`` — both ``log_event``
+    and ``is_enabled`` are guarded so an instrumentation failure never
+    flips a dispatch outcome.
+    """
+    try:
+        if not trace.is_enabled():
+            return
+    except Exception:
+        return
+
+    matches = result.get("matches") or []
+    tie = bool(result.get("tie"))
+    greenfield = not matches
+
+    if greenfield:
+        top_domain, confidence, matched_count = None, 0.0, 0
+        branch = "greenfield"
+    else:
+        top = matches[0]
+        top_domain = top.get("domain")
+        confidence = float(top.get("confidence", 0.0))
+        matched_count = int(top.get("matched_indicators", 0))
+        if tie:
+            branch = "tie"
+        elif confidence >= 0.85:
+            branch = "high-conf"
+        else:
+            branch = "low-conf"
+
+    try:
+        trace.log_event(
+            "domain_detect",
+            {
+                "path": project_dir,
+                "domain": top_domain,
+                "confidence": confidence,
+                "matched_count": matched_count,
+                "tie": tie,
+                "greenfield": greenfield,
+            },
+        )
+        trace.log_event(
+            "dispatch_branch",
+            {"branch": branch, "domain": top_domain, "path": project_dir},
+        )
+    except Exception:
+        pass
 
 
 def _has_desktop_tauri_marker(project_dir):

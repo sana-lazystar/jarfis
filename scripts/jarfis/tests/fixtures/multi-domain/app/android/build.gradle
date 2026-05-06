@@ -1,0 +1,6 @@
+// Multi-domain monorepo fixture — RN android build.gradle (M6.1).
+buildscript {
+    ext {
+        buildToolsVersion = "34.0.0"
+    }
+}

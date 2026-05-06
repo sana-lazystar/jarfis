@@ -1,0 +1,15 @@
+{
+  "name": "multi-domain-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "shell",
+    "app",
+    "admin"
+  ],
+  "scripts": {
+    "tauri": "cd shell && npm run tauri",
+    "rn": "cd app && npm run start",
+    "admin": "cd admin && npm run dev"
+  }
+}

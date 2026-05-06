@@ -296,3 +296,170 @@ class TestDispatchCases:
         from jarfis.work_args import parse_work_args
         args = parse_work_args("--scope-domain shell=desktop")
         assert args["scope_domains"] == {"shell": "desktop"}
+
+
+# ── M6.1/M6.2 — multi-domain monorepo dispatch (ADR-0003 §2.2 case 5) ─
+
+
+class TestMultiDomainFixturePresent:
+    """The multi-domain fixture simulates a single repo with three
+    workspaces — Tauri shell (desktop), RN app (mobile), React admin
+    (web) — exercised via separate ``domain detect`` calls plus the
+    per-scope state seed integration test below.
+    """
+
+    def test_fixture_dir_exists(self):
+        assert os.path.isdir(_fixture("multi-domain")), (
+            "multi-domain fixture missing — see scripts/jarfis/tests/fixtures/"
+        )
+
+    def test_root_workspaces_manifest(self):
+        path = os.path.join(_fixture("multi-domain"), "package.json")
+        with open(path) as f:
+            data = json.load(f)
+        assert "workspaces" in data, (
+            "multi-domain root package.json must declare workspaces"
+        )
+        assert set(data["workspaces"]) == {"shell", "app", "admin"}
+
+    def test_shell_has_tauri_markers(self):
+        shell = os.path.join(_fixture("multi-domain"), "shell")
+        assert os.path.isfile(os.path.join(shell, "tauri.conf.json"))
+        assert os.path.isfile(os.path.join(shell, "Cargo.toml"))
+        assert os.path.isfile(os.path.join(shell, "src-tauri", "tauri.conf.json"))
+
+    def test_app_has_react_native_markers(self):
+        app = os.path.join(_fixture("multi-domain"), "app")
+        with open(os.path.join(app, "package.json")) as f:
+            data = json.load(f)
+        deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
+        assert "react-native" in deps
+        assert os.path.isfile(os.path.join(app, "metro.config.js"))
+        assert os.path.isfile(os.path.join(app, "ios", "Podfile"))
+        assert os.path.isfile(os.path.join(app, "android", "build.gradle"))
+
+    def test_admin_has_react_web_markers(self):
+        admin = os.path.join(_fixture("multi-domain"), "admin")
+        with open(os.path.join(admin, "package.json")) as f:
+            data = json.load(f)
+        deps = {**data.get("dependencies", {}), **data.get("devDependencies", {})}
+        assert "react" in deps
+        # admin must NOT contain RN or Tauri markers
+        assert "react-native" not in deps
+        assert not os.path.isfile(os.path.join(admin, "tauri.conf.json"))
+
+
+class TestMultiDomainPerScopeDispatch:
+    """ADR-0003 §2.2 case (5): each workspace inside a monorepo must
+    dispatch to its own domain when detected independently."""
+
+    def test_shell_detects_desktop(self):
+        from jarfis.domain import detect
+        result = detect(_fixture("multi-domain/shell"))
+        assert result["matches"], "shell should produce at least one match"
+        top = result["matches"][0]
+        assert top["domain"] == "desktop", (
+            f"shell expected desktop, got {[m['domain'] for m in result['matches']]}"
+        )
+        assert top["confidence"] >= 0.85
+        assert result["tie"] is False
+
+    def test_app_detects_mobile(self):
+        from jarfis.domain import detect
+        result = detect(_fixture("multi-domain/app"))
+        assert result["matches"], "app should produce at least one match"
+        top = result["matches"][0]
+        assert top["domain"] == "mobile", (
+            f"app expected mobile, got {[m['domain'] for m in result['matches']]}"
+        )
+        assert top["confidence"] >= 0.85
+        assert result["tie"] is False, (
+            "RN markers (4 indicators) must beat web (2 indicators) on "
+            "matched_count tiebreak"
+        )
+
+    def test_admin_detects_web(self):
+        from jarfis.domain import detect
+        result = detect(_fixture("multi-domain/admin"))
+        assert result["matches"], "admin should produce at least one match"
+        top = result["matches"][0]
+        assert top["domain"] == "web", (
+            f"admin expected web, got {[m['domain'] for m in result['matches']]}"
+        )
+        assert result["tie"] is False
+
+    def test_three_distinct_domains_across_workspaces(self):
+        """End-to-end: detection across all three workspaces yields
+        exactly three distinct domains (desktop, mobile, web)."""
+        from jarfis.domain import detect
+        domains = set()
+        for sub in ("shell", "app", "admin"):
+            r = detect(_fixture(f"multi-domain/{sub}"))
+            assert r["matches"]
+            domains.add(r["matches"][0]["domain"])
+        assert domains == {"desktop", "mobile", "web"}
+
+
+class TestMultiDomainScopeStateSeed:
+    """B1.1 + ADR-0003 §2.2 (5): when work.md Phase 0 builds
+    state.workspace.scope[] for a multi-domain repo, each scope[i]
+    must carry its own ``domain`` field. We verify two paths:
+
+    (a) ``--scope-domain`` overrides parsed off $ARGUMENTS so users can
+        force the layout without relying on detect.
+    (b) automatic per-scope detect — calling detect() per scope dir
+        produces the matching domain assignment used as the state seed.
+    """
+
+    def test_scope_domain_args_seed_multi_domain_state(self):
+        """Parsing ``--scope-domain shell=desktop --scope-domain app=mobile
+        --scope-domain admin=web`` yields the per-scope assignment that
+        work.md Phase 0 will write into state.workspace.scope[i].domain.
+        """
+        from jarfis.work_args import parse_work_args
+        args = parse_work_args(
+            "--scope-domain shell=desktop "
+            "--scope-domain app=mobile "
+            "--scope-domain admin=web"
+        )
+        assert args["scope_domains"] == {
+            "shell": "desktop",
+            "app": "mobile",
+            "admin": "web",
+        }
+
+    def test_per_scope_detection_yields_state_seed(self):
+        """Composing the state seed from per-scope detect() reproduces
+        the ``--scope-domain`` override above, demonstrating that the
+        fixture is a faithful end-to-end test for ADR-0003 §2.2 case 5.
+        """
+        from jarfis.domain import detect
+        seed = []
+        for name in ("shell", "app", "admin"):
+            r = detect(_fixture(f"multi-domain/{name}"))
+            seed.append({"name": name, "domain": r["matches"][0]["domain"]})
+        # Build a state-shaped scope[] and assert per-scope domain.
+        state = {"workspace": {"scope": seed}}
+        scopes = {s["name"]: s["domain"] for s in state["workspace"]["scope"]}
+        assert scopes == {
+            "shell": "desktop",
+            "app": "mobile",
+            "admin": "web",
+        }
+
+    def test_scope_domain_override_matches_auto_detection(self):
+        """Override should agree with auto-detection — guards against
+        future fixture or detector drift."""
+        from jarfis.domain import detect
+        from jarfis.work_args import parse_work_args
+        args = parse_work_args(
+            "--scope-domain shell=desktop "
+            "--scope-domain app=mobile "
+            "--scope-domain admin=web"
+        )
+        for name, expected in args["scope_domains"].items():
+            r = detect(_fixture(f"multi-domain/{name}"))
+            assert r["matches"][0]["domain"] == expected, (
+                f"scope-domain override `{name}={expected}` disagrees with "
+                f"auto-detect ({r['matches'][0]['domain']})"
+            )

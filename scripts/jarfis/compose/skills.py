@@ -21,6 +21,8 @@ import os
 
 import yaml
 
+from .. import trace
+
 # v4.1 (M2.12, ADR-0002): helpers consumed by the compose path live in
 # ``compose/skills_lib.py`` so ``domain.py`` can be sliced into
 # detect/list/scaffold/install without touching this module again.
@@ -467,8 +469,26 @@ def _load_skills_for_persona(domain, persona, max_skill_tokens=None):
                         f"Invalid external_skills format: {ext_skill}"
                     )
                 ext_domain, ext_skill_name = parts
+                ext_form = "slash-form"
             else:
                 ext_domain, ext_skill_name = domain, ext_skill
+                ext_form = "bare-name"
+
+            # M6.4 (T3): record the external_skills resolution decision so
+            # testbed runs can verify both forms exercise the lookup path.
+            try:
+                if trace.is_enabled():
+                    trace.log_event(
+                        "external_skills_resolution",
+                        {
+                            "skill": ext_skill,
+                            "form": ext_form,
+                            "domain": ext_domain,
+                            "resolved_name": ext_skill_name,
+                        },
+                    )
+            except Exception:
+                pass
 
             ext_path = _resolve_skill_path(ext_domain, ext_skill_name)
             if not os.path.isfile(ext_path):

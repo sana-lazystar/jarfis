@@ -29,6 +29,7 @@ import shlex
 import sys
 from typing import Optional
 
+from . import trace
 from .utils import json_error, json_output
 
 
@@ -116,6 +117,27 @@ def parse_work_args(arg_string: Optional[str]) -> dict:
 
     if leftover:
         result["input"] = " ".join(leftover)
+
+    # M6.4 (T3): testbed dispatch breadcrumbs.
+    # `--scope-domain` is a multi-domain monorepo signal (per ADR-0003
+    # §2.2 case 5); `--domain` alone is a single-scope override.
+    try:
+        if trace.is_enabled():
+            if scope_domains:
+                trace.log_event(
+                    "dispatch_branch",
+                    {
+                        "branch": "multi-domain",
+                        "scope_domains": dict(scope_domains),
+                    },
+                )
+            if "domain" in result:
+                trace.log_event(
+                    "dispatch_branch",
+                    {"branch": "override", "domain": result["domain"]},
+                )
+    except Exception:
+        pass
 
     return result
 
