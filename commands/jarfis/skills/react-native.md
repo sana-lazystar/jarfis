@@ -2,6 +2,11 @@
 
 > Cross-platform mobile (iOS/Android) with JS bridge — RN core, Hermes/Metro, navigation, native modules, performance.
 
+<!-- jarfis:context7
+library_id: /facebook/react-native-website
+query_topics: [navigation, native modules, gradle, hermes, metro]
+-->
+
 ## Core Patterns
 
 ### Runtime & Bundler

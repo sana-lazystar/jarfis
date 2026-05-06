@@ -2,6 +2,11 @@
 
 > Serverless 함수 — cold start, Lambda Web Adapter, timeout/memory, IAM
 
+<!-- jarfis:context7
+library_id: /websites/aws_amazon_lambda_dg
+query_topics: [handlers, layers, environment variables, triggers, IAM roles]
+-->
+
 ## Common Pitfalls
 - **Cold start 누적**: provisioned concurrency 없으면 VPC 연결 + 큰 node_modules → 1~3s 추가. 핵심 API는 prewarm 또는 Lambda SnapStart(Java/Python).
 - **Timeout vs API Gateway 29s 제한**: Lambda는 최대 900s여도 API Gateway 경로는 29s 하드캡. 장시간 작업은 Step Functions 또는 async invoke.

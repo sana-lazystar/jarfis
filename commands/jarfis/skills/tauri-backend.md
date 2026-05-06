@@ -1,5 +1,10 @@
 # Tauri Backend Expertise
 
+<!-- jarfis:context7
+library_id: /websites/rs_tauri_2_9_5
+query_topics: [commands, IPC, plugins, state management, capabilities]
+-->
+
 ## Core Patterns
 
 ### Command System

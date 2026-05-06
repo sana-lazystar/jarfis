@@ -1,5 +1,10 @@
 # Node.js / TypeScript Backend Expertise
 
+<!-- jarfis:context7
+library_id: /nodejs/node
+query_topics: [streams, fs, child_process, net, cluster, worker_threads]
+-->
+
 ## Runtime Understanding
 - **Event Loop**: Microtasks (Promise) -> Macrotasks (setTimeout) ordering
 - **V8 Optimization**: Hidden classes, inline caching — Maintain consistent object shapes

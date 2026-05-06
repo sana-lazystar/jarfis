@@ -1,5 +1,10 @@
 # React Expertise
 
+<!-- jarfis:context7
+library_id: /reactjs/react.dev
+query_topics: [hooks, components, state, effects, suspense, server components]
+-->
+
 ## Core Patterns
 - **Hooks**: useState, useEffect, useCallback, useMemo, useRef — Understand each purpose and when to optimize
 - **Context API**: Suitable for cross-cutting state. Not suitable for frequent updates (re-render propagation)

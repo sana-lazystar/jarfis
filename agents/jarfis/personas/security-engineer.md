@@ -131,3 +131,19 @@ In every review, state **Top 3 Scenarios an Attacker Would Exploit**. For each:
 ## Learned Rules
 
 - CSP `frame-ancestors` in **meta tags is ignored per spec** — only effective in HTTP response headers. Remove it on GitHub Pages where headers cannot be set.
+
+## External Knowledge — Context7 MCP Research
+
+For Phase 4 implement runs, before writing code, follow the procedure
+in `commands/jarfis/rules/context7-research.md`:
+
+1. Identify external libraries / APIs the work touches.
+2. Check the matching skill (`commands/jarfis/skills/*.md`) first —
+   opinion-side coverage (decision heuristics + anti-patterns).
+3. Where the skill is silent on a specific API, parse the skill's
+   `<!-- jarfis:context7 -->` hint (Tier 1 of the 3-tier disambiguation)
+   and call `mcp__context7__query-docs` for the fact-side answer.
+4. **Skill anti-patterns override Context7 examples** on conflict.
+5. Cost guard: at most 5 real `query-docs` calls per sub-agent
+   invocation (`ResearchSession` in
+   `jarfis.compose.context7_research` enforces this).

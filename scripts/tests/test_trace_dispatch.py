@@ -311,3 +311,99 @@ class TestDisabledNoopContract:
         from jarfis.work_args import parse_work_args
         parse_work_args("--domain desktop")
         assert not os.path.exists(trace_off)
+
+
+# ── context7_query_emitted (B15, v4.1.1) ────────────────────────────
+
+
+class TestContext7Telemetry:
+    """7th telemetry event — Context7 MCP query lifecycle (ADR-0005 §2.7).
+
+    The :class:`ResearchSession.emit` method routes through
+    :func:`jarfis.trace.log_event` when no explicit telemetry callable
+    is injected; this is the production path used by Phase 4 sub-agents.
+    Tests pin the on/off behavior end-to-end so the trace contract
+    matches the prior 6 events.
+    """
+
+    def test_emits_on_real_call(self, trace_on):
+        from jarfis.compose.context7_research import ResearchSession
+
+        s = ResearchSession()
+        s.emit(
+            library_id="/facebook/react-native-website",
+            query="navigation API",
+            source="hint",
+            tier_used=1,
+        )
+        events = _read_events(trace_on)
+        kinds = [e["event"] for e in events]
+        assert "context7_query_emitted" in kinds, (
+            f"context7_query_emitted not present, got: {kinds}"
+        )
+        ev = next(e for e in events if e["event"] == "context7_query_emitted")
+        attrs = ev["attrs"]
+        assert attrs["library_id"] == "/facebook/react-native-website"
+        assert attrs["query"] == "navigation API"
+        assert attrs["source"] == "hint"
+        assert attrs["tier_used"] == 1
+        assert attrs["cache_hit"] is False
+        assert attrs["skill_pre_check_blocked"] is False
+
+    def test_emits_with_cache_hit_flag(self, trace_on):
+        from jarfis.compose.context7_research import ResearchSession
+
+        s = ResearchSession()
+        s.emit(
+            library_id="/vercel/next.js",
+            query="middleware",
+            source="hint",
+            tier_used=1,
+            cache_hit=True,
+        )
+        events = _read_events(trace_on)
+        ev = next(e for e in events if e["event"] == "context7_query_emitted")
+        assert ev["attrs"]["cache_hit"] is True
+
+    def test_emits_with_skill_blocked_flag(self, trace_on):
+        from jarfis.compose.context7_research import ResearchSession
+
+        s = ResearchSession()
+        s.emit(
+            library_id="/facebook/react-native-website",
+            query="setState in onScroll",
+            source="hint",
+            tier_used=1,
+            skill_pre_check_blocked=True,
+        )
+        events = _read_events(trace_on)
+        ev = next(e for e in events if e["event"] == "context7_query_emitted")
+        assert ev["attrs"]["skill_pre_check_blocked"] is True
+
+    def test_emits_autonomous_source(self, trace_on):
+        from jarfis.compose.context7_research import ResearchSession
+
+        s = ResearchSession()
+        s.emit(
+            library_id="/some/community-lib",
+            query="basic usage",
+            source="autonomous",
+            tier_used=3,
+        )
+        events = _read_events(trace_on)
+        ev = next(e for e in events if e["event"] == "context7_query_emitted")
+        assert ev["attrs"]["source"] == "autonomous"
+        assert ev["attrs"]["tier_used"] == 3
+
+    def test_noop_when_trace_disabled(self, trace_off):
+        from jarfis.compose.context7_research import ResearchSession
+
+        s = ResearchSession()
+        s.emit(
+            library_id="/x/y",
+            query="q",
+            source="hint",
+            tier_used=1,
+        )
+        # JARFIS_TRACE=0 → no file written.
+        assert not os.path.exists(trace_off)

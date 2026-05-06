@@ -2,6 +2,11 @@
 
 > 사용자 인증 — User Pool vs Identity Pool, JWT 검증, MFA, custom attributes
 
+<!-- jarfis:context7
+library_id: /websites/aws_amazon_cognito
+query_topics: [user pools, identity pools, MFA, OAuth, token management]
+-->
+
 ## Common Pitfalls
 - **User Pool vs Identity Pool 혼동**: User Pool = 인증(sign-up/in), Identity Pool = AWS 리소스 접근용 IAM credentials. 둘 다 쓰면 User Pool 토큰 → Identity Pool 교환.
 - **JWT `alg: none` 또는 `HS256` 허용**: Cognito는 `RS256` 사용. 검증 라이브러리가 `algorithms: ['RS256']` 명시 안 하면 토큰 위조 가능.

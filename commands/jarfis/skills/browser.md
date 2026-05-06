@@ -1,5 +1,10 @@
 # Browser & Cross-Platform Expertise
 
+<!-- jarfis:context7
+library_id: /mdn/content
+query_topics: [Web APIs, fetch, IndexedDB, service workers, web components]
+-->
+
 ## Engine Differences
 - **Blink** (Chrome, Edge, Opera): Broadest API support
 - **Gecko** (Firefox): Some CSS implementation differences (flexbox gap, etc.)

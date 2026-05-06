@@ -1,5 +1,10 @@
 # Biome Linting & Formatting Expertise
 
+<!-- jarfis:context7
+library_id: /biomejs/biome
+query_topics: [configuration, rules, formatter options, ignore patterns]
+-->
+
 ## Overview
 Biome is a unified tool combining Prettier + ESLint. Written in Rust, making it extremely fast.
 

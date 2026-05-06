@@ -7,6 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.1] - 2026-05-06
+
+Patch release — v4.1.1 backlog items B1, B2, B15 (β cut). Tooling self-bootstrapping verified at release: B1 fix syncs fixtures cleanly, B2 fix updates `Last updated: ... (note) | Version: ...` index lines without manual intervention.
+
+### Added
+- **B15 — Context7 MCP integration (proactive research pattern)**: `rules/context7-research.md` defines 3-tier disambiguation (skill hint pin → Tech Stack versioned ID → autonomous decision tree), 5-call cost guard, skill-priority override on conflict, and `context7_query_emitted` telemetry (7th JARFIS_TRACE event). 17 skills carry curated `<!-- jarfis:context7 -->` hints (library_id + 5–7 query topics). 4 implement personas (BE/FE/DevOps/Security) reference the rule. `compose/context7_research.py` (`parse_skill_hint` / `select_library_id` / `ResearchSession`) is the pure-Python helper consumed by Phase 4 sub-agents. ADR-0005.
+
+### Fixed
+- **B1 — `sync.py` fixture sync gap**: walking `scripts/jarfis/` previously yielded only `.py` files, dropping non-Python fixtures (manifests, build configs, lockfiles, marker files) and forcing manual `cp -r` recovery during v4.1.0 milestones. Pattern-blind walk under `tests/fixtures/` plus an explicit `__pycache__` prune now syncs all 23 fixture files in one pass. Permanent regression gate: `test_sync_fixtures.py` (10 tests).
+- **B2 — `version` command regex narrowness**: the index-line update regex matched only the strict `Last updated: <date> | Version: <semver>` shape, silently skipping lines with milestone parentheticals (e.g. `Last updated: 2026-05-06 (M7 release) | Version: 4.0.7`). Regex now tolerates an optional parenthetical after the date and arbitrary whitespace around the pipe; replacement is canonical (annotations dropped on bump for idempotency). Permanent regression gate: `test_version_regex.py` (8 tests).
+
+### Tests
+- 676 PASSED (was 628 after M2; +48 from B15: 43 wrapper + 5 telemetry; +0 regressions across all v4.1.0 gates).
+
 ## [4.1.0] - 2026-05-06
 
 - implement: JARFIS v4.1 — senior-* consolidation + desktop reinforcement + mobile pack (RN)

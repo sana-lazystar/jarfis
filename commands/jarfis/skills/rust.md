@@ -1,5 +1,10 @@
 # Rust Expertise
 
+<!-- jarfis:context7
+library_id: /rust-lang/rust
+query_topics: [ownership, lifetimes, traits, async, error handling]
+-->
+
 ## Core Patterns
 
 ### Ownership & Borrowing
