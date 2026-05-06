@@ -1,5 +1,10 @@
 # Cargo Clippy Expertise
 
+<!-- jarfis:context7
+library_id: /rust-lang/rust-clippy
+query_topics: [lint groups, allow/warn/deny, custom configurations]
+-->
+
 ## Core Rules
 - `cargo clippy -- -D warnings`: Treat all warnings as errors (CI/pipeline default)
 - `#![deny(clippy::all)]`: Enforce clippy at the crate level

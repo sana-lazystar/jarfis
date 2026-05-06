@@ -2,6 +2,11 @@
 
 > In-memory key-value — TTL, eviction, pipeline, pub/sub, ElastiCache 운영
 
+<!-- jarfis:context7
+library_id: /websites/redis_io
+query_topics: [commands, pub/sub, streams, persistence, clustering]
+-->
+
 ## Common Pitfalls
 - **TTL 미설정 cache**: 메모리 누수. 모든 cache 키에 EXPIRE 또는 TTL 정책 필수.
 - **KEYS 명령 프로덕션 사용**: O(N) 블로킹. 대신 `SCAN` (cursor 기반 non-blocking).

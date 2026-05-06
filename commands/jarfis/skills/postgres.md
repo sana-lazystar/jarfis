@@ -2,6 +2,11 @@
 
 > 관계형 DB — connection pool, JSONB, MVCC, EXPLAIN, RDS Proxy
 
+<!-- jarfis:context7
+library_id: /websites/postgresql_16
+query_topics: [SQL syntax, JSONB, indexes, transactions, EXPLAIN]
+-->
+
 ## Common Pitfalls
 - **Connection 고갈**: Lambda × Postgres는 cold start마다 connection 생성 → `max_connections` 초과. **RDS Proxy** 또는 PgBouncer 필수.
 - **N+1 쿼리**: ORM lazy loading 남용. `EXPLAIN ANALYZE`로 loop 확인 → JOIN 또는 `IN (...)` 배치.

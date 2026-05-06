@@ -1,5 +1,10 @@
 # Express / NestJS Backend Framework Expertise
 
+<!-- jarfis:context7
+library_id: /expressjs/express
+query_topics: [routing, middleware, error handling, static files, sessions]
+-->
+
 ## Express Patterns
 - **Middleware Chain**: req -> middleware1 -> middleware2 -> route handler -> res
 - **Error Middleware**: 4-argument signature `(err, req, res, next)` — Must be registered last

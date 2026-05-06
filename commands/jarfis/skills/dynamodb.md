@@ -2,6 +2,11 @@
 
 > NoSQL key-value — partition key 설계, GSI, query vs scan, 1MB limit
 
+<!-- jarfis:context7
+library_id: /websites/aws_amazon_amazondynamodb_developerguide
+query_topics: [tables, queries, indexes, streams, transactions, conditions]
+-->
+
 ## Common Pitfalls
 - **Hot partition**: 동일 partition key에 집중 → 특정 파티션만 throttled. 접두 hash 또는 composite PK(예: `userId#YYYYMMDD`)로 분산.
 - **1MB query 응답 제한**: 페이지네이션(`LastEvaluatedKey`) 누락 시 결과 누락. 클라이언트는 반드시 루프.

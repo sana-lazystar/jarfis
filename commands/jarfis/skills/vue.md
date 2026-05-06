@@ -1,5 +1,10 @@
 # Vue Expertise
 
+<!-- jarfis:context7
+library_id: /llmstxt/vuejs_llms-full_txt
+query_topics: [composition API, reactivity, components, directives, teleport]
+-->
+
 ## Core Patterns
 - **Composition API**: setup(), ref/reactive, computed, watch/watchEffect
 - **Options API**: data, computed, methods, watch — Still used in legacy projects

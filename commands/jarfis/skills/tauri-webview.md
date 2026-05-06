@@ -1,5 +1,10 @@
 # Tauri WebView Expertise
 
+<!-- jarfis:context7
+library_id: /websites/v2_tauri_app
+query_topics: [webview API, custom protocols, window management, events]
+-->
+
 ## Core Patterns
 
 ### invoke() — Calling Rust Commands
