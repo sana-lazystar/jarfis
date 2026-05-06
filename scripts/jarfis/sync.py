@@ -81,12 +81,21 @@ def _sync_file(src, dst, claude_dir, changes):
 
 
 def _find_files(directory, pattern=None, name_filter=None):
-    """Walk directory and yield matching files."""
+    """Walk directory and yield matching files.
+
+    Always prunes ``__pycache__`` (compiled artifacts must never sync) and
+    skips paths containing ``.distill-backup``. ``pattern`` (extension
+    suffix) and ``name_filter`` (predicate on basename) are optional.
+    """
     if not os.path.isdir(directory):
         return
     for root, dirs, files in os.walk(directory):
         if ".distill-backup" in root:
             continue
+        # Prune __pycache__ in-place so os.walk doesn't descend into it.
+        # B1 (v4.1.1): the broader fixture sync below would otherwise leak
+        # compiled .pyc files into the repo.
+        dirs[:] = [d for d in dirs if d != "__pycache__"]
         for fn in sorted(files):
             if pattern and not fn.endswith(pattern):
                 continue
@@ -149,6 +158,19 @@ def sync_files(repo_path, claude_dir):
         for f in _find_files(src_tests, ".py"):
             rel = f[len(src_tests) + 1:]
             synced += _sync_file(f, os.path.join(dst_tests, rel), claude_dir, changes)
+
+    # 5d. scripts/jarfis/tests/fixtures/ — non-Python test fixtures (B1, v4.1.1).
+    # The 5b path syncs only .py files, so fixture artifacts of arbitrary
+    # extensions (manifests, build configs, lockfiles, marker files, ...) used
+    # by domain-detection and dispatch tests were silently dropped.
+    # Pattern-blind walk picks up every fixture file regardless of extension.
+    # __pycache__ is pruned by _find_files itself.
+    src_fixtures = os.path.join(claude_dir, "scripts", "jarfis", "tests", "fixtures")
+    dst_fixtures = os.path.join(repo_path, "scripts", "jarfis", "tests", "fixtures")
+    if os.path.isdir(src_fixtures):
+        for f in _find_files(src_fixtures):
+            rel = f[len(src_fixtures) + 1:]
+            synced += _sync_file(f, os.path.join(dst_fixtures, rel), claude_dir, changes)
 
     # 6. statusline-command.sh
     synced += _sync_file(
