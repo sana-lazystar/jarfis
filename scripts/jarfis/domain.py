@@ -20,6 +20,7 @@ import sys
 
 import yaml
 
+from . import trace
 from .utils import get_claude_dir, json_output
 
 # ── Constants ──
@@ -124,6 +125,17 @@ def _load_domain_yaml(domain_name, domains_dir=None):
     if not data or not isinstance(data, dict):
         raise ValueError(f"Empty or invalid domain.yaml: {yaml_path}")
 
+    # M6.4 (T3): testbed breadcrumb so JARFIS_TRACE=1 sessions can
+    # confirm each domain pack is being consulted by the dispatcher.
+    try:
+        if trace.is_enabled():
+            trace.log_event(
+                "domain_yaml_load",
+                {"domain": domain_name, "path": yaml_path},
+            )
+    except Exception:
+        pass
+
     return data
 
 
@@ -198,8 +210,18 @@ def detect(project_dir, domains_dir=None):
     Wraps existing detect.py for framework detection, then matches
     against domain pack indicators for domain classification.
 
-    W1-5: Results sorted by (-confidence, name) for deterministic output.
-    S2: Returns tie flag when top-2 confidences are equal.
+    W1-5: Results sorted by ``(-confidence, -matched_count, name)`` for
+    deterministic output with quantity tiebreaking.
+    S2: Returns ``tie`` flag when top-2 share BOTH confidence AND
+    matched_count (a true ambiguity that work.md must resolve via
+    AskUserQuestion).
+
+    M4.7 — ADR-0003 §2.6 scoring update:
+        * ``confidence = max(matched_indicators)`` (was: mean).
+        * ``matched_count`` becomes the secondary sort key.
+        * Tauri-as-desktop tiebreaker: when ``tauri.conf.json`` or
+          ``src-tauri/`` is present in ``project_dir``, every desktop
+          indicator score is multiplied by 1.5 before the max is taken.
 
     Returns:
         Dict with 'matches' (list) and 'tie' (bool).
@@ -208,7 +230,12 @@ def detect(project_dir, domains_dir=None):
         domains_dir = _get_domains_dir()
 
     if not os.path.isdir(project_dir):
-        return {"matches": [], "tie": False}
+        result = {"matches": [], "tie": False}
+        _emit_detect_telemetry(project_dir, result)
+        return result
+
+    # M4.7 — desktop weighting marker check (cheap, fixed-name lookups).
+    desktop_boost = _has_desktop_tauri_marker(project_dir)
 
     matches = []
 
@@ -220,31 +247,128 @@ def detect(project_dir, domains_dir=None):
             continue
 
         indicators = config.get("detect", {}).get("indicators", [])
-        total_score = 0.0
-        matched_count = 0
+        scores = []  # M4.7: collect raw scores for max-based aggregation.
 
         for indicator in indicators:
             score = _evaluate_indicator(indicator, project_dir)
             if score > 0:
-                total_score += score
-                matched_count += 1
+                # ADR-0003 §2.6 last paragraph: bump desktop scores when
+                # a Tauri marker is present so Tauri-as-web (react match
+                # on package.json) cannot outrank Tauri-as-desktop.
+                if desktop_boost and domain_name == "desktop":
+                    score = min(1.0, score * 1.5)
+                scores.append(score)
 
-        if matched_count > 0:
-            avg_confidence = total_score / matched_count
+        if scores:
+            confidence = max(scores)
             matches.append({
                 "domain": domain_name,
-                "confidence": round(avg_confidence, 3),
-                "matched_indicators": matched_count,
+                "confidence": round(confidence, 3),
+                "matched_indicators": len(scores),
             })
 
-    # W1-5: Deterministic sort — confidence desc, then name asc
-    matches.sort(key=lambda m: (-m["confidence"], m["domain"]))
+    # W1-5: Deterministic sort — confidence desc, matched_count desc, name asc.
+    matches.sort(
+        key=lambda m: (-m["confidence"], -m["matched_indicators"], m["domain"])
+    )
 
-    # S2: Detect tie between top-2
-    tie = (len(matches) >= 2
-           and matches[0]["confidence"] == matches[1]["confidence"])
+    # S2: True tie iff both confidence AND matched_count match between top-2.
+    tie = (
+        len(matches) >= 2
+        and matches[0]["confidence"] == matches[1]["confidence"]
+        and matches[0]["matched_indicators"] == matches[1]["matched_indicators"]
+    )
 
-    return {"matches": matches, "tie": tie}
+    result = {"matches": matches, "tie": tie}
+    _emit_detect_telemetry(project_dir, result)
+    return result
+
+
+# ── M6.4 (T3): dispatch telemetry ──
+
+def _emit_detect_telemetry(project_dir, result):
+    """Emit ``domain_detect`` + ``dispatch_branch`` events.
+
+    Branches recorded:
+        * ``greenfield``  — no matches at all (caller must AskUserQuestion).
+        * ``tie``         — top-2 share confidence and matched_count.
+        * ``low-conf``    — top-1 confidence below 0.85 (forces AskUserQuestion).
+        * ``high-conf``   — top-1 confidence ≥ 0.85.
+
+    Multi-domain repos are dispatched per-scope, so multi-domain shows
+    up as multiple consecutive ``domain_detect`` calls (one per scope
+    dir) rather than a separate branch here. The override branch is
+    emitted by ``work_args.parse_work_args``.
+
+    No-op when ``JARFIS_TRACE`` is unset / ``0`` — both ``log_event``
+    and ``is_enabled`` are guarded so an instrumentation failure never
+    flips a dispatch outcome.
+    """
+    try:
+        if not trace.is_enabled():
+            return
+    except Exception:
+        return
+
+    matches = result.get("matches") or []
+    tie = bool(result.get("tie"))
+    greenfield = not matches
+
+    if greenfield:
+        top_domain, confidence, matched_count = None, 0.0, 0
+        branch = "greenfield"
+    else:
+        top = matches[0]
+        top_domain = top.get("domain")
+        confidence = float(top.get("confidence", 0.0))
+        matched_count = int(top.get("matched_indicators", 0))
+        if tie:
+            branch = "tie"
+        elif confidence >= 0.85:
+            branch = "high-conf"
+        else:
+            branch = "low-conf"
+
+    try:
+        trace.log_event(
+            "domain_detect",
+            {
+                "path": project_dir,
+                "domain": top_domain,
+                "confidence": confidence,
+                "matched_count": matched_count,
+                "tie": tie,
+                "greenfield": greenfield,
+            },
+        )
+        trace.log_event(
+            "dispatch_branch",
+            {"branch": branch, "domain": top_domain, "path": project_dir},
+        )
+    except Exception:
+        pass
+
+
+def _has_desktop_tauri_marker(project_dir):
+    """Return True iff a recognizable Tauri-desktop marker exists under
+    ``project_dir``. Used by M4.7 to apply a 1.5x weight to desktop
+    indicator scores so Tauri-as-web (react in package.json) cannot
+    outrank Tauri-as-desktop on max-confidence ties.
+
+    Markers (any one suffices):
+        * ``<project>/tauri.conf.json``
+        * ``<project>/src-tauri/`` directory
+        * ``<project>/src-tauri/tauri.conf.json``
+    """
+    candidates = (
+        os.path.join(project_dir, "tauri.conf.json"),
+        os.path.join(project_dir, "src-tauri"),
+        os.path.join(project_dir, "src-tauri", "tauri.conf.json"),
+    )
+    for path in candidates:
+        if os.path.exists(path):
+            return True
+    return False
 
 
 def _evaluate_indicator(indicator, project_dir):
@@ -411,15 +535,40 @@ def load_skills_for_role(domain_name, role_name, domains_dir=None,
         loaded_skills.append(skill_name)
         token_used += skill_tokens
 
-    # External skills (optional, same budget)
+    # External skills (optional, same budget).
+    #
+    # Two accepted forms (M5.5, ADR-0004 §2.1):
+    #   * ``"domain/skill"`` — explicit domain (e.g. ``"web/react"``,
+    #     legacy desktop.yaml shape).
+    #   * ``"skill"``        — bare skill name; resolves through the
+    #     current ``domain_name`` via ``_resolve_skill_path`` (which is
+    #     flat-first, so ``mobile.yaml`` can list ``"browser"`` without
+    #     pinning it to any domain folder).
+    #
+    # Loaded entries are recorded under their original key ("browser" or
+    # "web/react") so meta consumers can distinguish them. Token budget
+    # rules mirror the primary skills loop above.
     for ext_skill in (role.get("external_skills") or []):
         try:
-            parts = ext_skill.split("/")
-            if len(parts) != 2:
-                raise ValueError(f"Invalid external_skills format: {ext_skill}")
-            ext_domain, ext_skill_name = parts
+            if "/" in ext_skill:
+                parts = ext_skill.split("/")
+                if len(parts) != 2 or not parts[0] or not parts[1]:
+                    raise ValueError(
+                        f"Invalid external_skills format: {ext_skill}"
+                    )
+                ext_domain, ext_skill_name = parts
+            else:
+                # Bare name — resolve in the current domain. Flat-first
+                # lookup means the skill file is shared with web/desktop.
+                ext_domain, ext_skill_name = domain_name, ext_skill
 
             ext_path = _resolve_skill_path(ext_domain, ext_skill_name, domains_dir)
+            if not os.path.isfile(ext_path):
+                truncated_skills.append({
+                    "name": ext_skill,
+                    "reason": "external_not_found",
+                })
+                continue
             with open(ext_path, encoding="utf-8") as f:
                 ext_text = f.read()
 
@@ -692,7 +841,7 @@ domain:
 
 roles:
   plan:
-    - persona: senior-product-owner
+    - persona: product-owner
       skills: []
       model: opus
   design:
@@ -701,7 +850,7 @@ roles:
       model: opus
   implement:
     - name: engineer
-      persona: senior-backend-engineer
+      persona: backend-developer
       skills: []
       model: sonnet
       commit_prefix: "ENG"

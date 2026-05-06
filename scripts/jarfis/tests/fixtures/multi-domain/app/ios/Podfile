@@ -1,0 +1,5 @@
+# Multi-domain monorepo fixture — RN ios Podfile (M6.1).
+platform :ios, '13.0'
+target 'app' do
+  use_react_native!
+end

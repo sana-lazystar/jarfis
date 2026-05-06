@@ -1,32 +1,72 @@
 # .jarfis-state.json Schema
 
-Full structure example of the workflow state file:
+> **v4.1 (M2.11, ADR-0002)**: ``cmd_init`` emits the v4 nested shape only.
+> v3 flat keys (``project_name`` / ``work_name`` / ``work_input`` /
+> ``docs_dir`` / ``branch`` / ``branches`` / ``source_meeting``) are no
+> longer written when a new state file is created. The legacy section at
+> the bottom of this document is retained for archival reference and for
+> validators that still accept pre-v4.1 state files as input.
+
+## v4 Nested Schema (current — emitted by ``cmd_init``)
+
+The v4 shape splits identity (``work``), orchestration flags
+(``sessionKey`` / ``locale`` / ``org`` / ``domain`` / ``design`` /
+``responsive`` / ``api`` / ``devops`` / ``po_extras``), and phase
+lifecycle (``status`` / ``current_phase`` / ``phases`` /
+``key_decisions`` / ``last_checkpoint``).
 
 ```json
 {
-  "project_name": "Summary of planning content",
-  "work_name": "20250101-feat-TICKET-123",
-  "work_input": "feat/TICKET-123",
-  "docs_dir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
-  "branch": "feat/TICKET-123",
-  "status": "in-progress",
+  "sessionKey": "jf-1a2b3c4d",
   "locale": "ko",
-  "key_decisions": ["REST over GraphQL — existing team experience", "PostgreSQL — leverage existing infrastructure"],
-  "branches": {
-    "backend": "feat/TICKET-123",
-    "frontend": "feat/TICKET-123"
+  "org": null,
+  "domain": "web",
+  "design": { "mode": null, "figmaPages": [] },
+  "responsive": null,
+  "api": { "mode": null },
+  "devops": false,
+  "po_extras": [],
+  "work": {
+    "name": "20250101-feat-TICKET-123",
+    "input": "feat/TICKET-123",
+    "docsDir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
+    "startedAt": "2025-01-01T00:00:00Z",
+    "meetings": [],
+    "projectName": "Summary of planning content"
   },
-  "source_meeting": "20250101-payment-system-renewal",
+  "status": "in-progress",
+  "key_decisions": ["REST over GraphQL — existing team experience", "PostgreSQL — leverage existing infrastructure"],
   "started_at": "2025-01-01T00:00:00Z",
   "current_phase": 1,
   "workspace": {
     // NOTE: This "workspace" represents the project structure (monorepo/multi-project),
     // and is separate from the v2 "Organization (Org)" concept. Org is managed via org-profile.md.
-    "type": "monorepo | multi-project",
-    "projects": {
-      "backend": { "path": ".", "framework": "next.js" },
-      "frontend": { "path": ".", "framework": "next.js" }
-    }
+    "structure": "monorepo | multi-project",
+    "scope": [
+      // v4.1 (M4.2, ADR-0003 §2.1): scope[] is the per-project array
+      // populated in Phase 0 step 5. Phase 0 step 7 fills `domain` per
+      // entry; downstream Phase 4 implement uses scope[i].domain to
+      // dispatch the correct role (rust_engineer / rn_engineer / ...).
+      {
+        "name": "tauri-shell",
+        "path": "/abs/path/to/shell",
+        "type": "frontend | backend | mobile | desktop",
+        "framework": "tauri | react | react-native | ...",
+        "languages": ["ts", "rust"],
+        "domain": "desktop",          // ← v4.1 per-scope domain (M4.2)
+        "branch": "20260101-feature",
+        "baseCommit": "abc123"
+      },
+      {
+        "name": "mobile-app",
+        "path": "/abs/path/to/app",
+        "type": "mobile",
+        "framework": "react-native",
+        "domain": "mobile",
+        "branch": "20260101-feature",
+        "baseCommit": "def456"
+      }
+    ]
   },
   "phases": {
     "0": { "status": "completed" },
@@ -143,6 +183,28 @@ Phase 4 TDD code quality ratchet state. Only created when `state.tddEnabled: tru
 - `test_modifications`: Array of records where the implementation agent modified test files. Each entry: `file` (path), `task` (task ID), `reason` (commit message). Subject to validation during Phase 5 QA
 - `history`: Per-task ratchet decision history. `task`: task ID, `pass_rate`: pass rate at decision time, `action`: `accept` (pass rate maintained/improved), `reject` (pass rate declined, retry required), `skipped_after_max_retries` (2 failures, proceed anyway), `attempt`: attempt number on retry
 
+### workspace.scope[i].domain (v4.1 — M4.2, ADR-0003)
+
+Per-scope domain assignment. Populated by Phase 0 step 7 of work.md
+(dispatch matrix — high-conf single / tie / low-conf / greenfield /
+multi-domain monorepo / user override). Allowed values: ``"web"``,
+``"desktop"``, ``"mobile"``. Multi-domain monorepos (Tauri shell +
+RN app, etc.) end up with different values per scope.
+
+**Forward compatibility**: v4.0.x state files used a single
+top-level ``state.domain`` for the whole workflow. v4.1 readers
+(``compose``, ``validate``, ``list-workflows``) automatically run
+``migrate_v40_to_v41(state)`` to backfill ``scope[i].domain`` from
+``state.domain`` when the per-scope field is absent. ``state.domain``
+itself is preserved untouched so legacy callers keep working.
+
+**Resolution order** in compose (``get_scope_domain(scope, state)``):
+
+1. ``scope[i].domain``    — v4.1 source of truth.
+2. ``state.domain``       — v4.0.x legacy single domain (fallback).
+3. ``None``               — caller (work.md Phase 0 step 7) MUST
+   trigger detect / AskUserQuestion before invoking compose.
+
 ### locale
 User language setting for the workflow. Auto-detected in Phase 0 or explicitly set via `/jarfis:locale`.
 - Default: `"ko"`
@@ -221,3 +283,29 @@ Compares pass rates before and after Fix implementation in projects with a test 
 | fix_baseline_pass_rate | float(0.0-1.0) | Test pass rate before Fix started |
 | fix_current_pass_rate | float(0.0-1.0) | Test pass rate after Fix completed |
 | action | string | `accept` (pass rate maintained/improved), `reject` (declined, retry), `user_override` (user forced proceed), `disabled` (no test runner available) |
+
+---
+
+## Legacy v3 Flat Keys (Removed in v4.1)
+
+> **참고용. v4.1 에서 ``cmd_init`` 은 더 이상 emit 하지 않음.**
+>
+> 아래 키들은 v3 ``work-legacy.md`` 가 사용하던 평탄 표현. ADR-0002 에 따라
+> ``work-legacy.md`` 가 v4.1 에서 제거되면서 dual-emit 의 근거가 사라졌다.
+> ``cmd_validate`` / ``cmd_list_workflows`` 는 backward-compat 차원에서
+> 기존 v3 state 파일 읽기는 계속 허용하지만, 신규 state 는 v4 nested
+> 셰이프만 작성된다.
+
+| v3 Flat Key | v4 Replacement | Notes |
+|-------------|---------------|-------|
+| ``project_name`` | ``work.projectName`` | Human-readable label |
+| ``work_name`` | ``work.name`` | Identifier (``YYYYMMDD-…``) |
+| ``work_input`` | ``work.input`` | Branch/topic input |
+| ``docs_dir`` | ``work.docsDir`` | Workspace dir |
+| ``branch`` | (n/a — derive from ``work.input``) | v3 single-branch field |
+| ``branches`` | (n/a — multi-project covered by ``workspace.projects``) | v3 per-role branch map |
+| ``source_meeting`` | (n/a) | v3 meeting hand-off field |
+
+> ``state.py:cmd_validate`` accepts state files lacking ``work.*`` if the
+> v3 flat keys are present (transition shim). Once all in-flight workflows
+> have rotated through v4.1+, the v3 fallback can be deleted.

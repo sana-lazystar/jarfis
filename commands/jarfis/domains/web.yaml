@@ -10,7 +10,7 @@ domain:
 
 roles:
   plan:
-    - persona: senior-product-owner
+    - persona: product-owner
       skills: []
       model: opus
     - persona: technical-architect
@@ -23,7 +23,7 @@ roles:
     - persona: tech-lead
       skills: []
       model: opus
-    - persona: senior-ux-designer
+    - persona: ux-designer
       skills: []
       model: opus
   implement:
@@ -49,10 +49,10 @@ roles:
     - persona: tech-lead
       skills: []
       model: opus
-    - persona: senior-qa-engineer
+    - persona: qa-engineer
       skills: []
       model: opus
-    - persona: senior-security-engineer
+    - persona: security-engineer
       skills: []
       model: opus
 

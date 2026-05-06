@@ -2,9 +2,15 @@
 
 > **Locale**: All user-facing output (banners, messages, AskUserQuestion labels) in `$LOCALE`. Internal reasoning English OK. If `$LOCALE` is unset, read `~/.claude/.jarfis-locale`; otherwise auto-detect from user input and persist it.
 > **Spec**: Detailed design in `~/Upscales/jarfis-v4-migration/system-spec.md` §9 (flow chart) + §9.2 (Phase × executor matrix). Required Inputs: §16. state schema: implement-plan.md A.1.
-> **Naming**: This file is the v4 orchestrator (`/jarfis:work`). v3 orchestrator is archived at `work-legacy.md` (M7 swap).
+> **Naming**: This file is the v4 orchestrator (`/jarfis:work`). The v3 orchestrator is no longer shipped — it was removed in v4.1 (ADR-0002). For emergency rollback, check out git tag `v4.0.7`.
 
 User input: `$ARGUMENTS`
+
+> **`/jarfis:work` argument flags (v4.1 — ADR-0003 §2.3)**: `$ARGUMENTS` may include override flags before the free-text work description. Parse them once at entry via `python3 ~/.claude/scripts/jarfis_cli.py work-args "$ARGUMENTS"` (returns JSON with optional keys `domain`, `scope_domains`, `input`). Honor them as follows:
+>   - `domain`: applied uniformly across every `state.workspace.scope[i].domain` — Phase 0 step 7 SKIPS `jarfis_cli.py domain detect`.
+>   - `scope_domains` (`{<scope-name>: <domain>}`): per-scope override. Phase 0 step 7 honors the entry for matching `scope[i].name`; non-matched scopes still run `domain detect`.
+>   - `input`: the leftover free-text — feeds Phase T classification + `state.work.input`.
+>   Invalid values cause `jarfis_cli.py work-args` to exit non-zero with `{"error": ...}` — surface the message verbatim and abort entry; do not fall back to detect.
 
 ---
 
@@ -21,7 +27,7 @@ Phase 3 runs only when `state.design.mode != null`. Phase 2 + Phase 3 run in par
 
 **State write rule (architecture §1 principle #6)**: Only the main session writes to `.jarfis-state.json`. tmux sub-agents write exclusively to `phase-results/phase{N}/attempt{K}.json` and Phase output directories (`discovery/`, `planning/`, `design/`, `review/`, `ops/`, etc.). The main session reads sub-agent meta and reflects selected fields into state.
 
-**v4 entry point**: `/jarfis:work` invokes this file. The v3 orchestrator is archived at `~/.claude/commands/jarfis/work-legacy.md` for reference only (M7 swap).
+**v4 entry point**: `/jarfis:work` invokes this file. The v3 orchestrator (`work-legacy.md`) was removed in v4.1 per ADR-0002; rollback to git tag `v4.0.7` if you need the v3 path.
 
 ---
 
@@ -57,9 +63,17 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 2. **Work identity**: AskUserQuestion (or derive from `$ARGUMENTS`) → `state.work = {name, input, docsDir (absolute), startedAt}`. Create `docsDir` if missing.
 3. **sessionKey**: `jf-` + uuid4 first 8 chars → `state.sessionKey`.
 4. **Org detect**: `python3 ~/.claude/scripts/jarfis_cli.py org detect <project_path>` → `state.org = {name, root}` or `null` (M10 — snapshot once, no re-detection later).
-5. **Workspace scope**: AskUserQuestion-driven loop (add project paths). For each path run `jarfis_cli.py detect <path>` to auto-fill `framework` + `languages`. User supplies `name` + `type` (frontend | backend). Result → `state.workspace.scope[]` + `state.workspace.structure` (monorepo | multi-project).
+5. **Workspace scope**: AskUserQuestion-driven loop (add project paths). For each path run `jarfis_cli.py detect <path>` to auto-fill `framework` + `languages`. User supplies `name` + `type` (`frontend` | `backend` | `mobile` | `desktop` | `library` | `cli` — M5.2 / ADR-0004 §2.1: `mobile`/`desktop` route to mobile.yaml/desktop.yaml; `library`/`cli` are meta-only and skip per-scope domain dispatch). Result → `state.workspace.scope[]` + `state.workspace.structure` (monorepo | multi-project). **Greenfield handling (ADR-0003 §2.4)**: after collecting each scope path, run `jarfis_cli.py preflight <path>`. If the response contains `"greenfield": true` AND no `--domain`/`--scope-domain` override applies for that scope, AskUserQuestion (`$LOCALE`): "Project profile not found at `<path>`. Proceed how?" — options: "Create profile (`/jarfis:project-init --depth medium`)" / "Skip for this run (continue with empty profile)" / "Abort". Honor the choice before continuing the scope loop.
 6. **Git branch cut**: for each `scope[i]` run `git -C {path} checkout -b {branch}` then `git -C {path} rev-parse HEAD` → `scope[i].baseCommit` (B2).
-7. **Domain detect**: `jarfis_cli.py domain detect` → `state.domain`. If tie, AskUserQuestion.
+7. **Domain detect** (ADR-0003 §2.2 — full 6-case dispatch matrix). The matrix is per-scope: every entry under `state.workspace.scope[]` runs through the cases below independently, so multi-domain monorepos (Tauri shell + RN app, etc.) naturally end up with different `scope[i].domain` values. The branches resolve in this priority order — first match wins:
+   - **(6) User override** — if entry-point `work-args` returned `domain` (uniform override): set `scope[i].domain = args.domain` for **every** scope and SKIP detect entirely. If `work-args` returned `scope_domains[scope[i].name]`: use that value for the matching scope only and continue detect for any non-matched scopes.
+   - **No override, run detect**: `jarfis_cli.py domain detect {scope[i].path}` → parse JSON `{matches[], tie}`. Branch:
+     - **(4) Greenfield** — `matches == []` (codebase has no recognizable indicators): AskUserQuestion (`$LOCALE`) "No domain detected for `<path>`. Pick one." — options `web` / `desktop` / `mobile`. Persist the choice to `scope[i].domain`.
+     - **(2) Tie** — `tie == true` (top-2 candidates share confidence): AskUserQuestion across the tied candidates (current v4.0 behavior preserved).
+     - **(1) High-confidence single** — `matches[0].confidence >= 0.85` AND no tie: auto-apply with a 1-turn confirmation ("Detected: `<domain>`. Continue?"). On confirm → persist; on reject → fall through to AskUserQuestion across all candidates.
+     - **(3) Low-confidence single** — `matches[0].confidence < 0.85`: AskUserQuestion forced across the candidate list (do NOT auto-apply, even when only one candidate exists — sub-0.85 is treated as ambiguous).
+   - **(5) Multi-domain monorepo** — emerges from the per-scope loop above whenever individual scopes resolve to different domains (e.g. `scope[0].domain="desktop"`, `scope[1].domain="mobile"`). No special branch is needed; downstream Phase 4 implement uses each scope's domain independently to dispatch the correct role (`rn_engineer` for mobile, `rust_engineer` for desktop, etc.). When `--scope-domain` overrides only some scopes, the remaining ones still run cases 1–4.
+   - **Persist**: `jarfis_cli.py state set-nested state.workspace.scope[i].domain <value>` (v4.1 schema). The legacy single `state.domain` is still readable for v4.0.x state migration (B1.4) but is no longer the source of truth for new workflows.
 8. **Meetings**: `jarfis_cli.py search meetings "<query>"` (fallback `jarfis_cli.py meetings 3`). User picks 0..N; record in state/discovery as needed.
 9. **Wiki loading** (only when `state.org != null`): follow the 4-step protocol in `~/.claude/commands/jarfis/prompts/wiki-loading.md` → write `{docsDir}/.wiki-cache.md`.
 10. **Preflight verify**: `jarfis_cli.py preflight` — exit 0 required before Phase 1a.
@@ -72,7 +86,7 @@ Multi-round AskUserQuestion (one decision per turn, all labels in `$LOCALE`). Wr
 
 - `design.mode`: figma | text | null (null skips Phase 3).
 - `design.figmaPages[]`: JSON array `[{title, url}]` (only when mode = figma).
-- `responsive`: pc-only | pc-mobile | pc-mobile-tablet (only when any `scope[].type == "frontend"`).
+- `responsive`: `pc-only` | `pc-mobile` | `pc-mobile-tablet` | `mobile-only` (M5.3 / ADR-0004 §2.1 — `mobile-only` is the natural choice for `scope[].type == "mobile"` workloads where desktop viewport is N/A; the three PC levels apply when any `scope[].type == "frontend"`).
 - `api.mode`: design | swagger | null (only when no backend scope AND at least one frontend scope; swagger → also ask `api.swaggerUrl`).
 - `devops`: boolean (DevOps agent needed).
 - PO extras (multi-select): `legal-review`, `ux-direction` (affects Phase 1b outputs).

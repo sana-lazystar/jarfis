@@ -21,7 +21,12 @@ import os
 
 import yaml
 
-from ..domain import (
+from .. import trace
+
+# v4.1 (M2.12, ADR-0002): helpers consumed by the compose path live in
+# ``compose/skills_lib.py`` so ``domain.py`` can be sliced into
+# detect/list/scaffold/install without touching this module again.
+from .skills_lib import (
     MAX_SKILL_FILE_SIZE,
     _resolve_skill_path,
     estimate_tokens,
@@ -29,12 +34,28 @@ from ..domain import (
 )
 
 
+# PERSONA_TO_ROLE — base persona stem (matches files under
+# `agents/jarfis/personas/`) → canonical role identifier used to look up
+# skills in `domain.yaml`. v4.1 (M2.6, ADR-0001) completes the table to
+# 9/9 so `skills_from_domain: true` never silently degrades with a
+# `no_role_mapping` meta entry. The right-hand side is matched against
+# `roles.{plan,design,implement,review}[].name` first, then falls back
+# to `roles.*[].persona` so plan/design/review entries that omit
+# `name:` (the common case in domain.yaml) still resolve.
 PERSONA_TO_ROLE = {
+    # Implementation roles — canonical names match domain.yaml `name:` keys.
     "backend-developer": "backend_engineer",
     "frontend-developer": "frontend_engineer",
     "devops-engineer": "devops_engineer",
     "security-engineer": "security_engineer",
     "qa-engineer": "qa_engineer",
+    # Plan / design / review roles — domain.yaml entries omit `name:`,
+    # so these stems are matched against `persona:` instead. The values
+    # double as semantic role hints surfaced via meta["role"].
+    "tech-lead": "reviewer",
+    "ux-designer": "designer",
+    "product-owner": "planner",
+    "technical-architect": "architect",
 }
 
 
@@ -63,8 +84,11 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
         state:      full jarfis-state.json dict. Only state["domain"] used.
         scope_entry: dict | None — scope[i]. `framework` key drives step 3,
                     `path` key drives step 1 project-profile lookup.
-        extra_skills_by_framework: dict[str, tuple[str, ...]] | None
-            — framework → skill name list. From agent-composition.yaml.
+        extra_skills_by_framework: dict | None
+            — keys may be either a plain framework string ``"react"``
+            (v4.0 behavior) OR a ``(framework, domain)`` 2-tuple ``("react-native", "mobile")``
+            (v4.1 — ADR-0003 §4). Tuple wins on collision. Values are
+            lists of flat skill names.
         max_skill_tokens: int | None — budget override (forwarded to
             domain.load_skills_for_role; steps 1/3 use remaining budget).
 
@@ -83,7 +107,17 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
 
     meta = {}
 
-    domain = state.get("domain") if isinstance(state, dict) else None
+    # M4.3 (ADR-0003 §2.1): scope[i].domain wins over the legacy
+    # state.domain. Falls through to None when neither is set; the
+    # caller (work.md Phase 0 step 7) is responsible for triggering
+    # detect / AskUserQuestion before compose runs.
+    domain = None
+    if isinstance(scope_entry, dict):
+        sd = scope_entry.get("domain")
+        if sd:
+            domain = sd
+    if not domain and isinstance(state, dict):
+        domain = state.get("domain")
     if not domain:
         meta["no_domain"] = True
         return [], [], "", meta
@@ -107,6 +141,27 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
         meta["domain"] = domain
         return loaded, truncated, skills_text, meta
 
+    # Step 2 (M2.5): project-profile `## Tech Stack` auto-match.
+    # Fires when step 1 is absent. Bullets are normalized and matched
+    # against the flat `skills/` directory; unmatched bullets are dropped.
+    tech_skills = _extract_tech_stack_skills(_resolve_profile_path(scope_entry))
+    if tech_skills:
+        budget = _resolve_token_budget(domain, max_skill_tokens)
+        loaded, truncated, skills_text = _load_skills_from_flat(
+            domain, tech_skills, budget
+        )
+        meta["tech_stack_match"] = {
+            "source": ".jarfis-project/project-profile.md#Tech Stack",
+            "candidates": tech_skills,
+            "loaded": loaded,
+            "truncated": truncated,
+        }
+        role_name = PERSONA_TO_ROLE.get(persona)
+        if role_name:
+            meta["role"] = role_name
+        meta["domain"] = domain
+        return loaded, truncated, skills_text, meta
+
     role_name = PERSONA_TO_ROLE.get(persona)
     if not role_name:
         meta["no_role_mapping"] = persona
@@ -117,22 +172,42 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
             domain, role_name, max_skill_tokens=max_skill_tokens
         )
     except (FileNotFoundError, yaml.YAMLError, KeyError, ValueError) as e:
+        # Fallback for plan/design/review personas (M2.6): domain.yaml
+        # entries in those phases omit `name:`, so `_find_role` raises
+        # KeyError. Try a phase-agnostic lookup keyed on `persona`.
+        try:
+            loaded, truncated, skills_text = _load_skills_for_persona(
+                domain, persona, max_skill_tokens=max_skill_tokens
+            )
+            meta["domain"] = domain
+            meta["role"] = role_name
+            meta["role_lookup"] = "persona-match"
+        except (FileNotFoundError, yaml.YAMLError, KeyError, ValueError) as e2:
+            meta["domain"] = domain
+            meta["role"] = role_name
+            meta["domain_fallback"] = True
+            meta["domain_fallback_reason"] = f"{type(e2).__name__}: {e2}"
+            return [], [], "", meta
+    else:
         meta["domain"] = domain
         meta["role"] = role_name
-        meta["domain_fallback"] = True
-        meta["domain_fallback_reason"] = f"{type(e).__name__}: {e}"
-        return [], [], "", meta
-
-    meta["domain"] = domain
-    meta["role"] = role_name
 
     loaded = list(loaded)
     truncated = list(truncated)
 
-    # Step 3: framework-based extras (system-spec §5.5)
+    # Step 3: framework-based extras (system-spec §5.5).
+    # M4.4 (ADR-0003 §4): keys may be either a plain framework string
+    # OR a (framework, domain) 2-tuple. Tuple form wins when both are
+    # configured for the same framework, so domain-specific extras
+    # (e.g. ``("react-native", "mobile") → ["react-native"]``) cannot
+    # leak into other domains.
     framework = (scope_entry or {}).get("framework") if isinstance(scope_entry, dict) else None
     extras_map = extra_skills_by_framework or {}
-    extras = extras_map.get(framework) if framework else None
+    extras = None
+    if framework:
+        extras = extras_map.get((framework, domain))
+        if extras is None:
+            extras = extras_map.get(framework)
     if extras:
         budget = _resolve_token_budget(domain, max_skill_tokens)
         token_used = estimate_tokens(skills_text)
@@ -180,11 +255,275 @@ def _resolve_token_budget(domain, max_skill_tokens):
     if max_skill_tokens is not None:
         return max_skill_tokens
     try:
-        from ..domain import _load_domain_yaml
+        from .skills_lib import _load_domain_yaml
         config = _load_domain_yaml(domain)
         return config.get("max_skill_tokens", 2500)
     except Exception:
         return 2500
+
+
+def _resolve_profile_path(scope_entry):
+    """Return absolute path to ``.jarfis-project/project-profile.md`` for
+    a per-project scope entry, or empty string when unavailable."""
+    if not isinstance(scope_entry, dict):
+        return ""
+    project_path = scope_entry.get("path")
+    if not project_path:
+        return ""
+    return os.path.join(project_path, ".jarfis-project", "project-profile.md")
+
+
+# ── M2.5: Tech Stack normalization (step 2 of the 4-stage chain) ───────
+
+# Maps free-form Tech Stack tokens (lowercased, hyphenated) to flat skill
+# stems under ~/.claude/commands/jarfis/skills/. Unlisted tokens are
+# dropped silently — the chain falls through to step 3/4.
+_TECH_STACK_ALIASES = {
+    "node": "nodejs",
+    "node.js": "nodejs",
+    "nodejs": "nodejs",
+    "node-js": "nodejs",
+    "react": "react",
+    "reactjs": "react",
+    "react.js": "react",
+    "react-native": "react",          # rough match; M5 will introduce dedicated skill
+    "vue": "vue",
+    "vuejs": "vue",
+    "vue.js": "vue",
+    "express": "express",
+    "expressjs": "express",
+    "nestjs": "express",
+    "nest.js": "express",
+    "postgres": "postgres",
+    "postgresql": "postgres",
+    "redis": "redis",
+    "rust": "rust",
+    "tauri": "tauri-backend",
+    "s3": "s3",
+    "aws-s3": "s3",
+    "dynamodb": "dynamodb",
+    "cognito": "cognito",
+    "aws-lambda": "aws-lambda",
+    "lambda": "aws-lambda",
+    "biome": "biome-lint",
+    "browser": "browser",
+    "chrome": "browser",
+}
+
+
+def _normalize_tech_token(raw):
+    """Lowercase + hyphenate a Tech Stack bullet, then map via aliases.
+
+    Returns the canonical flat-skill stem, or empty string if the token
+    has no known mapping.
+    """
+    if not raw:
+        return ""
+    # Strip markdown emphasis and trailing version qualifiers.
+    token = raw.strip().strip("*_`")
+    # If bullet has a "Label: Value" pattern, take the value side.
+    if ":" in token:
+        token = token.split(":", 1)[1].strip()
+    # Drop leading "**Label**" remnants and surrounding punctuation.
+    token = token.strip().strip("*").strip()
+    # First word only (e.g. "React 18" → "React"; "PostgreSQL 16" → "PostgreSQL").
+    first = token.split()[0] if token.split() else ""
+    if not first:
+        return ""
+    key = first.lower()
+    # Hyphenate dotted variants ("Node.js" → "node.js" stays; alias maps it).
+    if key in _TECH_STACK_ALIASES:
+        return _TECH_STACK_ALIASES[key]
+    # Hyphenate spaces (rare for first-word path, kept for safety).
+    key_h = key.replace(" ", "-")
+    return _TECH_STACK_ALIASES.get(key_h, "")
+
+
+def _extract_tech_stack_skills(profile_path):
+    """Parse ``## Tech Stack`` bullets from ``project-profile.md``.
+
+    Returns a list of canonical flat-skill stems (deduplicated, order
+    preserved). Empty list when the file is missing or the section has
+    no recognizable tokens. Step 2 of the 4-stage fallback chain.
+
+    Bullet syntax accepted:
+        - React 18
+        * PostgreSQL 16
+        - **Runtime**: Node.js 22
+    """
+    if not profile_path or not os.path.isfile(profile_path):
+        return []
+    try:
+        with open(profile_path, encoding="utf-8") as f:
+            text = f.read()
+    except OSError:
+        return []
+
+    lines = text.splitlines()
+    section_start = None
+    for i, line in enumerate(lines):
+        if line.strip().lower().startswith("## tech stack"):
+            section_start = i + 1
+            break
+    if section_start is None:
+        return []
+
+    skills = []
+    for line in lines[section_start:]:
+        stripped = line.strip()
+        if stripped.startswith("## "):
+            break
+        if not stripped:
+            continue
+        if not (stripped.startswith("- ") or stripped.startswith("* ")):
+            continue
+        body = stripped[2:].strip()
+        canonical = _normalize_tech_token(body)
+        if canonical and canonical not in skills:
+            skills.append(canonical)
+    return skills
+
+
+# ── M2.6: phase-agnostic skill loader for plan/design/review roles ─────
+
+
+def _load_skills_for_persona(domain, persona, max_skill_tokens=None):
+    """Locate a role by ``persona`` across all phases of ``domain.yaml``
+    and load its skills. Returns the same triple as
+    ``domain.load_skills_for_role`` so callers can swap helpers.
+
+    plan/design/review entries in domain.yaml typically omit ``name:``,
+    so the implement-only ``_find_role`` from ``domain.py`` cannot match
+    them. This helper iterates all phases and matches on ``persona`` —
+    the first hit wins (deterministic per yaml ordering).
+    """
+    from .skills_lib import (
+        _load_domain_yaml,
+        estimate_tokens,
+        _resolve_skill_path,
+        MAX_SKILL_FILE_SIZE,
+    )
+
+    config = _load_domain_yaml(domain)
+    matched_role = None
+    for phase in ("implement", "plan", "design", "review"):
+        for role in config.get("roles", {}).get(phase, []) or []:
+            if role.get("persona") == persona:
+                matched_role = role
+                break
+        if matched_role is not None:
+            break
+
+    if matched_role is None:
+        raise KeyError(f"No role with persona={persona} in domain {domain}")
+
+    token_budget = (
+        max_skill_tokens
+        if max_skill_tokens is not None
+        else config.get("max_skill_tokens", 2500)
+    )
+
+    skill_list = matched_role.get("skills", []) or []
+    if isinstance(skill_list, str):
+        skill_list = [skill_list]
+
+    loaded = []
+    truncated = []
+    skills_content = ""
+    token_used = 0
+
+    for i, skill_name in enumerate(skill_list):
+        try:
+            skill_path = _resolve_skill_path(domain, skill_name)
+            if not os.path.isfile(skill_path):
+                truncated.append({"name": skill_name, "reason": "file_not_found"})
+                continue
+            if os.path.getsize(skill_path) > MAX_SKILL_FILE_SIZE:
+                truncated.append({"name": skill_name, "reason": "file_too_large"})
+                continue
+            with open(skill_path, encoding="utf-8") as f:
+                skill_text = f.read()
+        except (FileNotFoundError, ValueError):
+            truncated.append({"name": skill_name, "reason": "file_not_found"})
+            continue
+
+        skill_tokens = estimate_tokens(skill_text)
+        if token_used + skill_tokens > token_budget and (i != 0 or loaded):
+            truncated.append({"name": skill_name, "reason": "token_budget_exceeded"})
+            continue
+        skills_content += f"\n{skill_text}\n"
+        loaded.append(skill_name)
+        token_used += skill_tokens
+
+    # M5.5 (ADR-0004 §2.1): external_skills for persona-matched roles.
+    # Mirrors the bare-name + ``domain/skill`` handling in
+    # ``domain.load_skills_for_role`` so the union of
+    # ``role.skills + role.external_skills`` lands in `loaded` regardless
+    # of which loader path resolved the role.
+    for ext_skill in (matched_role.get("external_skills") or []):
+        try:
+            if "/" in ext_skill:
+                parts = ext_skill.split("/")
+                if len(parts) != 2 or not parts[0] or not parts[1]:
+                    raise ValueError(
+                        f"Invalid external_skills format: {ext_skill}"
+                    )
+                ext_domain, ext_skill_name = parts
+                ext_form = "slash-form"
+            else:
+                ext_domain, ext_skill_name = domain, ext_skill
+                ext_form = "bare-name"
+
+            # M6.4 (T3): record the external_skills resolution decision so
+            # testbed runs can verify both forms exercise the lookup path.
+            try:
+                if trace.is_enabled():
+                    trace.log_event(
+                        "external_skills_resolution",
+                        {
+                            "skill": ext_skill,
+                            "form": ext_form,
+                            "domain": ext_domain,
+                            "resolved_name": ext_skill_name,
+                        },
+                    )
+            except Exception:
+                pass
+
+            ext_path = _resolve_skill_path(ext_domain, ext_skill_name)
+            if not os.path.isfile(ext_path):
+                truncated.append({
+                    "name": ext_skill,
+                    "reason": "external_not_found",
+                })
+                continue
+            if os.path.getsize(ext_path) > MAX_SKILL_FILE_SIZE:
+                truncated.append({
+                    "name": ext_skill,
+                    "reason": "file_too_large",
+                })
+                continue
+            with open(ext_path, encoding="utf-8") as f:
+                ext_text = f.read()
+        except (FileNotFoundError, ValueError):
+            truncated.append({
+                "name": ext_skill,
+                "reason": "external_not_found",
+            })
+            continue
+
+        ext_tokens = estimate_tokens(ext_text)
+        if token_used + ext_tokens > token_budget:
+            truncated.append({
+                "name": ext_skill,
+                "reason": "token_budget_exceeded",
+            })
+            continue
+        skills_content += f"\n{ext_text}\n"
+        loaded.append(ext_skill)
+        token_used += ext_tokens
+
+    return loaded, truncated, skills_content
 
 
 def _read_active_skills_section(scope_entry):

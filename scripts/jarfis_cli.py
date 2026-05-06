@@ -23,6 +23,7 @@ Commands:
     search           Semantic search (all/meetings/works/wiki)
     domain           Domain pack management (list/detect/agents/compose/validate/scaffold/install)
     compose          Compose agent invocation (persona + skills + context) [v4 — M2]
+    work-args        Parse /jarfis:work $ARGUMENTS for --domain / --scope-domain overrides [v4.1 — M3]
 """
 
 import os
@@ -105,6 +106,7 @@ def main():
         "search": "jarfis.wiki_search",
         "domain": "jarfis.domain",
         "compose": "jarfis.compose.__main__",
+        "work-args": "jarfis.work_args",
     }
 
     if command not in commands:

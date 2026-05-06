@@ -20,6 +20,9 @@ roles:
     - persona: tech-lead
       skills: []
       model: opus
+    - persona: ux-designer
+      skills: []
+      model: opus
   implement:
     - name: rust_engineer
       persona: backend-developer
@@ -36,6 +39,12 @@ roles:
       required: true
   review:
     - persona: tech-lead
+      skills: []
+      model: opus
+    - persona: qa-engineer
+      skills: []
+      model: opus
+    - persona: security-engineer
       skills: []
       model: opus
 

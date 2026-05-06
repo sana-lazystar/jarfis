@@ -1,0 +1,111 @@
+# JARFIS Mobile Domain Pack — α release scope (ADR-0004 §2.2)
+# v4.1.0 introduces React Native only. Flutter / native iOS / native
+# Android are reserved for v4.1.x patches (matching `roles.implement`
+# entries + skill files added together at that point).
+
+schema_version: 2
+min_core_version: "3.0.0"
+
+domain:
+  name: mobile
+  display_name: "Mobile Development (React Native)"
+
+roles:
+  plan:
+    - persona: product-owner
+      skills: []
+      model: opus
+    - persona: technical-architect
+      skills: []
+      model: opus
+  design:
+    - persona: technical-architect
+      skills: []
+      model: opus
+    - persona: tech-lead
+      skills: []
+      model: opus
+    - persona: ux-designer            # ADR-0004 §2.2: mobile UX is critical
+      skills: []
+      model: opus
+  implement:
+    - name: rn_engineer
+      persona: frontend-developer     # ADR-0001 base persona
+      skills: ["react-native"]        # M5 will create skill file
+      external_skills: ["browser"]    # JS/Hermes runtime shared with web
+      model: sonnet
+      commit_prefix: "RN"
+      required: true
+  review:
+    - persona: tech-lead
+      skills: []
+      model: opus
+    - persona: qa-engineer
+      skills: []
+      model: opus
+    - persona: security-engineer
+      skills: []
+      model: opus
+
+max_skill_tokens: 2500
+
+rules:
+  filter_by_tags: true
+  always_include_untagged: true
+
+detect:
+  indicators:
+    # Pure React Native projects (Hermes / Metro / iOS / Android markers)
+    - file: "package.json"
+      key: "react-native"
+      framework: "react-native"
+      confidence: 0.9
+    - file: "metro.config.js"
+      framework: "react-native"
+      confidence: 0.85
+    - file: "ios/Podfile"
+      framework: "react-native"
+      confidence: 0.7
+    - file: "android/build.gradle"
+      framework: "react-native"
+      confidence: 0.7
+    # Expo (RN superset) — slightly lower confidence so a plain RN
+    # project still wins on max-confidence + matched_count tiebreak.
+    - file: "app.json"
+      framework: "react-native-expo"
+      confidence: 0.6
+    # Future stacks (Flutter / Swift-iOS / Kotlin-Android) intentionally
+    # absent in α — see ADR-0004 §2.3. Add indicator + role + skill in
+    # one v4.1.x patch to preserve cohesion.
+
+quality:
+  linters:
+    - extensions: [".ts", ".tsx", ".js", ".jsx"]
+      tool: "biome"
+      args: "check"
+  type_checker:
+    config: "tsconfig.json"
+    tool: "tsc"
+    args: "--noEmit"
+
+commit:
+  implementation: "jarfis({ROLE}-{N}):"
+  fix: "jarfis(fix/{ROLE}):"
+
+pipeline:
+  test:
+    runner: "npm test"
+  build:
+    # iOS bundle as a smoke check — works without a connected device.
+    check: "npx react-native bundle --platform ios --entry-file index.js --bundle-output /tmp/check.bundle --dev false"
+
+lifecycle: {}
+
+hooks:
+  phase4:
+    before: null
+    after: null
+
+fallback:
+  on_compose_error: "persona-only"
+  on_skip: "ask-user"
