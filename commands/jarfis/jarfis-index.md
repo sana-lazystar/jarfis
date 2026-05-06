@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-04-21 | Version: 4.0.7
+> Do not edit manually. Last updated: 2026-05-04 | Version: 4.0.7 (M7 → 4.1.0)
 
 ## File Structure
 ```
@@ -65,16 +65,16 @@
 ├── jarfis-engineer.md             # v4 migration domain expert — loads v3→v4 decisions, safety principles, milestone-aware context (persona loaded by main Claude at session start)
 ├── jarfis-advocate.md             # Dialectic Review — change advocate (scope: sys-implement/sys-upgrade/sys-distill only, per ADR-13 + F-14)
 ├── jarfis-critic.md               # Dialectic Review — change critic (scope: sys-* only, per ADR-13 + F-14)
-└── personas/                      # v4 role-specific cognitive frameworks (composed dynamically via agent-composition.yaml)
-    ├── product-owner.md           # PO perspective (business value, JTBD, prioritization)
-    ├── technical-architect.md     # Architect perspective (system design, NFR quantification, ADR writing)
-    ├── tech-lead.md               # TL perspective (code review, refactoring, tech debt)
-    ├── frontend-developer.md      # FE perspective (browser/UI thinking, design fidelity, accessibility)
-    ├── backend-developer.md       # BE perspective (systems thinking, DB design, API design, concurrency)
-    ├── devops-engineer.md         # DevOps perspective (CI/CD, containers, IaC, reliability)
-    ├── qa-engineer.md             # QA perspective (test design, risk assessment, compatibility)
-    ├── security-engineer.md       # Security perspective (threat modeling, vulnerability assessment)
-    └── ux-designer.md             # UX perspective (user empathy, visual hierarchy, branding)
+└── personas/                      # v4 role-specific cognitive frameworks (composed dynamically via agent-composition.yaml). M1 (v4.1-m1) absorbed v3 senior-* domain knowledge per ADR-0001 — lines below reflect post-absorption state (1,055 lines total, 69.7% of v3 senior-* 1,512 lines).
+    ├── product-owner.md           # PO perspective (107 lines) — business value, JTBD, Working Backwards, Empathy Map, RICE/MoSCoW, Last Responsible Moment, escalation gates
+    ├── technical-architect.md     # Architect perspective (130 lines) — system design, NFR quantification, ADR writing, Pattern Selection, Data Architecture, Phase 1~4 process
+    ├── tech-lead.md               # TL perspective (114 lines) — code review, refactoring triggers, 5-stage tech debt, Feedback Ladder, "Good Enough" 5 questions, ADR
+    ├── frontend-developer.md      # FE perspective (109 lines) — Classic Web/Modern Frameworks/Cross-Browser/Performance Infra + Learned Rules (12~15 항목, 5 카테고리 균형)
+    ├── backend-developer.md       # BE perspective (92 lines) — Languages/Frameworks/Databases/Server Types/Troubleshooting + production-ready judgment
+    ├── devops-engineer.md         # DevOps perspective (73 lines) — CI/CD, containers, IaC, Reliability/Observability/FinOps, behavioral guidelines
+    ├── qa-engineer.md             # QA perspective (122 lines) — test design, risk assessment, compatibility, Quality Advocate mindset, escalation
+    ├── security-engineer.md       # Security perspective (133 lines) — threat modeling mindset, Detection Patterns, Quality Gate, escalation (도구별 STRIDE/SAST/DAST 는 별도 skill 후보)
+    └── ux-designer.md             # UX perspective (175 lines) — user empathy, Constraint-First, Nielsen Checkpoints, Trade-off Matrix, WCAG 2.2 AA, Critique Loop, Learned Rules (reference.png + Figma)
 ```
 
 ## Command Mapping
