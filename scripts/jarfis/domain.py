@@ -454,15 +454,40 @@ def load_skills_for_role(domain_name, role_name, domains_dir=None,
         loaded_skills.append(skill_name)
         token_used += skill_tokens
 
-    # External skills (optional, same budget)
+    # External skills (optional, same budget).
+    #
+    # Two accepted forms (M5.5, ADR-0004 §2.1):
+    #   * ``"domain/skill"`` — explicit domain (e.g. ``"web/react"``,
+    #     legacy desktop.yaml shape).
+    #   * ``"skill"``        — bare skill name; resolves through the
+    #     current ``domain_name`` via ``_resolve_skill_path`` (which is
+    #     flat-first, so ``mobile.yaml`` can list ``"browser"`` without
+    #     pinning it to any domain folder).
+    #
+    # Loaded entries are recorded under their original key ("browser" or
+    # "web/react") so meta consumers can distinguish them. Token budget
+    # rules mirror the primary skills loop above.
     for ext_skill in (role.get("external_skills") or []):
         try:
-            parts = ext_skill.split("/")
-            if len(parts) != 2:
-                raise ValueError(f"Invalid external_skills format: {ext_skill}")
-            ext_domain, ext_skill_name = parts
+            if "/" in ext_skill:
+                parts = ext_skill.split("/")
+                if len(parts) != 2 or not parts[0] or not parts[1]:
+                    raise ValueError(
+                        f"Invalid external_skills format: {ext_skill}"
+                    )
+                ext_domain, ext_skill_name = parts
+            else:
+                # Bare name — resolve in the current domain. Flat-first
+                # lookup means the skill file is shared with web/desktop.
+                ext_domain, ext_skill_name = domain_name, ext_skill
 
             ext_path = _resolve_skill_path(ext_domain, ext_skill_name, domains_dir)
+            if not os.path.isfile(ext_path):
+                truncated_skills.append({
+                    "name": ext_skill,
+                    "reason": "external_not_found",
+                })
+                continue
             with open(ext_path, encoding="utf-8") as f:
                 ext_text = f.read()
 

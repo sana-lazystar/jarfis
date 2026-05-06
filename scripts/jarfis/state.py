@@ -22,6 +22,29 @@ from .utils import get_all_workspaces, json_error, json_output, parse_json_value
 _audit_module = None
 
 
+# ── Taxonomy constants (M5.2 + M5.3 — ADR-0004 §2.1) ────────────────
+#
+# scope.type expansion: v4.0 only knew ``frontend|backend``; v4.1 widens
+# the set to cover the full delivery surface so dispatch can pick the
+# right domain pack:
+#   * ``frontend``  — v4.0 web UI
+#   * ``backend``   — v4.0 API/server
+#   * ``mobile``    — mobile app scope (consumes mobile.yaml)
+#   * ``desktop``   — desktop shell scope (consumes desktop.yaml)
+#   * ``library``   — shared package (no domain dispatch — meta-only)
+#   * ``cli``       — command-line tool (no domain dispatch — meta-only)
+VALID_SCOPE_TYPES = frozenset({
+    "frontend", "backend", "mobile", "desktop", "library", "cli",
+})
+
+# state.responsive levels (Phase 1a discovery). v4.0 had only the three
+# PC-anchored levels; v4.1 adds ``mobile-only`` for native/RN workloads
+# where desktop viewport is N/A.
+VALID_RESPONSIVE = frozenset({
+    "pc-only", "pc-mobile", "pc-mobile-tablet", "mobile-only",
+})
+
+
 def _try_audit(audit_path, event_type, **data):
     """Best-effort audit logging. Failures are silently ignored (P9)."""
     if not audit_path:
@@ -449,6 +472,42 @@ def cmd_validate(args):
             errors.append(f"last_checkpoint must be dict, got {type(lc).__name__}")
         elif "timestamp" not in lc:
             errors.append("last_checkpoint missing timestamp")
+
+    # M5.2 (ADR-0004 §2.1): scope[i].type taxonomy expansion. v4.0 only
+    # accepted ``frontend|backend``; v4.1 adds ``mobile|desktop|library|cli``
+    # so monorepos with mobile apps, desktop shells, shared libs, and
+    # command-line tools can describe themselves accurately. ``type``
+    # itself remains optional
+    # — Phase 0 step 5 fills it in via AskUserQuestion, but earlier reads
+    # (e.g. mid-loop) must still validate.
+    workspace = data.get("workspace")
+    if isinstance(workspace, dict):
+        scopes = workspace.get("scope")
+        if isinstance(scopes, list):
+            for i, entry in enumerate(scopes):
+                if not isinstance(entry, dict):
+                    continue
+                stype = entry.get("type")
+                if stype is None:
+                    continue
+                if stype not in VALID_SCOPE_TYPES:
+                    errors.append(
+                        f"workspace.scope[{i}].type invalid: {stype!r}. "
+                        f"Valid: {', '.join(sorted(VALID_SCOPE_TYPES))}"
+                    )
+
+    # M5.3 (ADR-0004 §2.1): responsive level taxonomy. v4.0 had three
+    # levels (pc-only / pc-mobile / pc-mobile-tablet); v4.1 adds
+    # ``mobile-only`` for mobile-app workloads where desktop viewport
+    # is N/A. ``None`` (pre-Phase 1a default seeded by cmd_init) is
+    # always allowed — only explicit non-empty strings are checked.
+    responsive = data.get("responsive")
+    if responsive is not None:
+        if not isinstance(responsive, str) or responsive not in VALID_RESPONSIVE:
+            errors.append(
+                f"responsive invalid: {responsive!r}. "
+                f"Valid: {', '.join(sorted(VALID_RESPONSIVE))}"
+            )
 
     if errors:
         json_output({"valid": False, "errors": errors, "error_count": len(errors)})

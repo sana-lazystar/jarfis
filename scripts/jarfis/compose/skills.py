@@ -453,6 +453,56 @@ def _load_skills_for_persona(domain, persona, max_skill_tokens=None):
         loaded.append(skill_name)
         token_used += skill_tokens
 
+    # M5.5 (ADR-0004 §2.1): external_skills for persona-matched roles.
+    # Mirrors the bare-name + ``domain/skill`` handling in
+    # ``domain.load_skills_for_role`` so the union of
+    # ``role.skills + role.external_skills`` lands in `loaded` regardless
+    # of which loader path resolved the role.
+    for ext_skill in (matched_role.get("external_skills") or []):
+        try:
+            if "/" in ext_skill:
+                parts = ext_skill.split("/")
+                if len(parts) != 2 or not parts[0] or not parts[1]:
+                    raise ValueError(
+                        f"Invalid external_skills format: {ext_skill}"
+                    )
+                ext_domain, ext_skill_name = parts
+            else:
+                ext_domain, ext_skill_name = domain, ext_skill
+
+            ext_path = _resolve_skill_path(ext_domain, ext_skill_name)
+            if not os.path.isfile(ext_path):
+                truncated.append({
+                    "name": ext_skill,
+                    "reason": "external_not_found",
+                })
+                continue
+            if os.path.getsize(ext_path) > MAX_SKILL_FILE_SIZE:
+                truncated.append({
+                    "name": ext_skill,
+                    "reason": "file_too_large",
+                })
+                continue
+            with open(ext_path, encoding="utf-8") as f:
+                ext_text = f.read()
+        except (FileNotFoundError, ValueError):
+            truncated.append({
+                "name": ext_skill,
+                "reason": "external_not_found",
+            })
+            continue
+
+        ext_tokens = estimate_tokens(ext_text)
+        if token_used + ext_tokens > token_budget:
+            truncated.append({
+                "name": ext_skill,
+                "reason": "token_budget_exceeded",
+            })
+            continue
+        skills_content += f"\n{ext_text}\n"
+        loaded.append(ext_skill)
+        token_used += ext_tokens
+
     return loaded, truncated, skills_content
 
 
