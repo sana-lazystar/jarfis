@@ -86,11 +86,20 @@ def main(args):
             f.write(init_content)
 
     # Update jarfis-index.md
+    # B2 (v4.1.1): regex tolerates optional parentheticals after the date
+    # (e.g. "Last updated: 2026-05-06 (M7 release) | Version: 4.0.7") and
+    # any trailing text after the semver. Whitespace around the pipe is
+    # forgiving. The replacement is canonical — annotations are dropped on
+    # bump, producing an idempotent line.
     if os.path.isfile(index_file):
         with open(index_file) as f:
             content = f.read()
         content = re.sub(
-            r"Last updated: \d{4}-\d{2}-\d{2} \| Version: \d+\.\d+\.\d+[^\n]*",
+            r"Last updated:\s*\d{4}-\d{2}-\d{2}"
+            r"(?:\s*\([^)]*\))?"
+            r"\s*\|\s*"
+            r"Version:\s*\d+\.\d+\.\d+"
+            r"[^\n]*",
             f"Last updated: {today} | Version: {new_version}",
             content,
         )
