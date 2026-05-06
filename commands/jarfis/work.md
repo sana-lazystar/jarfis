@@ -6,6 +6,12 @@
 
 User input: `$ARGUMENTS`
 
+> **`/jarfis:work` argument flags (v4.1 — ADR-0003 §2.3)**: `$ARGUMENTS` may include override flags before the free-text work description. Parse them once at entry via `python3 ~/.claude/scripts/jarfis_cli.py work-args "$ARGUMENTS"` (returns JSON with optional keys `domain`, `scope_domains`, `input`). Honor them as follows:
+>   - `domain`: applied uniformly across every `state.workspace.scope[i].domain` — Phase 0 step 7 SKIPS `jarfis_cli.py domain detect`.
+>   - `scope_domains` (`{<scope-name>: <domain>}`): per-scope override. Phase 0 step 7 honors the entry for matching `scope[i].name`; non-matched scopes still run `domain detect`.
+>   - `input`: the leftover free-text — feeds Phase T classification + `state.work.input`.
+>   Invalid values cause `jarfis_cli.py work-args` to exit non-zero with `{"error": ...}` — surface the message verbatim and abort entry; do not fall back to detect.
+
 ---
 
 ## Phase Router (flow chart, see system-spec §9.1 for full)
@@ -57,9 +63,16 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 2. **Work identity**: AskUserQuestion (or derive from `$ARGUMENTS`) → `state.work = {name, input, docsDir (absolute), startedAt}`. Create `docsDir` if missing.
 3. **sessionKey**: `jf-` + uuid4 first 8 chars → `state.sessionKey`.
 4. **Org detect**: `python3 ~/.claude/scripts/jarfis_cli.py org detect <project_path>` → `state.org = {name, root}` or `null` (M10 — snapshot once, no re-detection later).
-5. **Workspace scope**: AskUserQuestion-driven loop (add project paths). For each path run `jarfis_cli.py detect <path>` to auto-fill `framework` + `languages`. User supplies `name` + `type` (frontend | backend). Result → `state.workspace.scope[]` + `state.workspace.structure` (monorepo | multi-project).
+5. **Workspace scope**: AskUserQuestion-driven loop (add project paths). For each path run `jarfis_cli.py detect <path>` to auto-fill `framework` + `languages`. User supplies `name` + `type` (frontend | backend). Result → `state.workspace.scope[]` + `state.workspace.structure` (monorepo | multi-project). **Greenfield handling (ADR-0003 §2.4)**: after collecting each scope path, run `jarfis_cli.py preflight <path>`. If the response contains `"greenfield": true` AND no `--domain`/`--scope-domain` override applies for that scope, AskUserQuestion (`$LOCALE`): "Project profile not found at `<path>`. Proceed how?" — options: "Create profile (`/jarfis:project-init --depth medium`)" / "Skip for this run (continue with empty profile)" / "Abort". Honor the choice before continuing the scope loop.
 6. **Git branch cut**: for each `scope[i]` run `git -C {path} checkout -b {branch}` then `git -C {path} rev-parse HEAD` → `scope[i].baseCommit` (B2).
-7. **Domain detect**: `jarfis_cli.py domain detect` → `state.domain`. If tie, AskUserQuestion.
+7. **Domain detect** (ADR-0003 §2.2 dispatch matrix): for each scope:
+   - **User override path**: if entry-point `work-args` returned `domain` → `scope[i].domain = args.domain` for every scope (skip detect). If `scope_domains[scope[i].name]` exists → use it for that scope only.
+   - **Detect path** (no override): run `jarfis_cli.py domain detect {scope[i].path}` and parse the JSON `{matches[], tie}`.
+     - `matches == []` (greenfield) → AskUserQuestion (`$LOCALE`): "No domain detected for `<path>`. Pick one." — options `web` / `desktop` / `mobile`. Persist the choice to `scope[i].domain`.
+     - `tie == true` → AskUserQuestion across the tied candidates (current v4.0 behavior).
+     - `matches[0].confidence >= 0.85` (high-conf single) → auto-apply + 1-turn confirmation ("Detected: `<domain>`. Continue?").
+     - `matches[0].confidence < 0.85` (low-conf single) → AskUserQuestion forced (do NOT auto-apply).
+   - Persist via `jarfis_cli.py state set-nested state.workspace.scope[i].domain <value>` (v4.1 schema; v4.0 fallback `state.domain` still accepted by readers).
 8. **Meetings**: `jarfis_cli.py search meetings "<query>"` (fallback `jarfis_cli.py meetings 3`). User picks 0..N; record in state/discovery as needed.
 9. **Wiki loading** (only when `state.org != null`): follow the 4-step protocol in `~/.claude/commands/jarfis/prompts/wiki-loading.md` → write `{docsDir}/.wiki-cache.md`.
 10. **Preflight verify**: `jarfis_cli.py preflight` — exit 0 required before Phase 1a.

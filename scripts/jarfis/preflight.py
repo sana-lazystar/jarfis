@@ -59,6 +59,37 @@ def main(args):
         profile_path = None
         log("Profile not found")
 
+    # Greenfield detection (ADR-0003 §2.4) — directory has no project
+    # profile AND no recognizable manifest (package.json, Cargo.toml,
+    # pyproject.toml, etc.). Signals work.md Phase 0 to AskUserQuestion
+    # before invoking domain detect.
+    greenfield = False
+    if not has_profile:
+        manifest_candidates = (
+            "package.json",
+            "Cargo.toml",
+            "pyproject.toml",
+            "requirements.txt",
+            "go.mod",
+            "pom.xml",
+            "build.gradle",
+            "build.gradle.kts",
+            "Gemfile",
+            "pubspec.yaml",
+            "Pipfile",
+        )
+        has_any_manifest = any(
+            os.path.isfile(os.path.join(project_dir, name))
+            for name in manifest_candidates
+        )
+        if not has_any_manifest:
+            greenfield = True
+            warnings.append(
+                "Greenfield directory (no project profile, no codebase). "
+                "Phase 0 will ask which domain to scaffold."
+            )
+            log("Greenfield directory detected")
+
     # Project rule check (user-defined, highest priority)
     rule_path = os.path.join(project_dir, ".jarfis-project", "project-rule.md")
     has_rule = os.path.isfile(rule_path)
@@ -165,6 +196,7 @@ def main(args):
         "project_dir": project_dir,
         "profile_path": profile_path,
         "has_profile": has_profile,
+        "greenfield": greenfield,
         "has_rule": has_rule,
         "rule_path": rule_path,
         "has_context": has_context,
