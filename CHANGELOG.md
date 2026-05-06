@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2026-05-06
+
+- implement: JARFIS v4.1 — senior-* consolidation + desktop reinforcement + mobile pack (RN)
+
 ## [4.0.7] - 2026-04-21
 
 Docs-only PATCH. `jarfis-index.md` (system inventory) refresh — closes findings F-01 by aligning the index 1:1 with v4.0.6 reality. Also resolves a pre-existing `~/.claude/.jarfis-version` drift that the v4.0.6 release missed (`4.0.5` → `4.0.7`). Backlog files cascade-renamed (v4.0.7 → v4.0.8, v4.0.8 → v4.0.9) to free the v4.0.7 slot for this docs-only patch.

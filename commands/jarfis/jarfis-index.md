@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-06 (M6) | Version: 4.0.7 (M7 → 4.1.0)
+> Do not edit manually. Last updated: 2026-05-06 (M7 release) | Version: 4.1.0
 
 ## File Structure
 ```
