@@ -141,20 +141,37 @@ def cmd_init(args):
     now = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
     session_key = "jf-" + uuid.uuid4().hex[:8]
 
-    # State emits both v3 flat keys (for legacy consumers / work-legacy.md) and
-    # the v4 nested shape required by /jarfis:work + verify.py::cmd_phase_verify
-    # (which reads state.work.docsDir). Defect #5 of M8 E2E: without the v4
-    # nested block, the orchestrator cannot advance past Phase 0 without the
-    # main session manually injecting work/sessionKey/locale/org/design/api.
+    # v4.1 (M2.11, ADR-0002): emit v4 nested shape only.
+    # work-legacy.md is gone, so v3 flat keys (project_name / work_name /
+    # work_input / docs_dir / branch / branches / source_meeting) no
+    # longer have a consumer and are dropped. The remaining top-level
+    # keys (status / started_at / current_phase / phases /
+    # key_decisions / workspace / required_roles / gate_results /
+    # last_checkpoint) are part of the v4 schema and consumed by
+    # phase prompts + work.md.
     state = {
-        # v3 flat (legacy compat — consumers: work-legacy.md, list-workflows)
-        "project_name": project_name,
-        "work_name": work_name,
-        "work_input": "",
-        "docs_dir": docs_dir,
-        "branch": work_name,
-        "branches": {},
-        "source_meeting": None,
+        # v4 identity / orchestration block
+        "sessionKey": session_key,
+        "locale": None,
+        "org": None,
+        "domain": None,
+        "design": {"mode": None, "figmaPages": []},
+        "responsive": None,
+        "api": {"mode": None},
+        "devops": False,
+        "po_extras": [],
+        "work": {
+            "name": work_name,
+            "input": "",
+            "docsDir": docs_dir,
+            "startedAt": now,
+            "meetings": [],
+            # ``project_name`` migrates from a v3 top-level key to a
+            # nested label under ``work`` so ``cmd_list_workflows`` and
+            # the audit log keep human-readable context.
+            "projectName": project_name,
+        },
+        # v4 lifecycle keys (top-level — consumed by phase prompts)
         "started_at": now,
         "status": "in-progress",
         "key_decisions": [],
@@ -176,23 +193,6 @@ def cmd_init(args):
             "timestamp": now,
             "phase": 0,
             "summary": "Initialized",
-        },
-        # v4 nested (consumers: /jarfis:work, verify.py, compose, phase prompts)
-        "sessionKey": session_key,
-        "locale": None,
-        "org": None,
-        "domain": None,
-        "design": {"mode": None, "figmaPages": []},
-        "responsive": None,
-        "api": {"mode": None},
-        "devops": False,
-        "po_extras": [],
-        "work": {
-            "name": work_name,
-            "input": "",
-            "docsDir": docs_dir,
-            "startedAt": now,
-            "meetings": [],
         },
     }
     with open(state_file, "w") as f:
@@ -247,17 +247,32 @@ def cmd_list_workflows(args):
                     )
                     if completed_only and not is_done:
                         continue
+                    # v4 nested ``work`` block is preferred; v3 flat
+                    # keys remain accepted as fallback for older state files.
+                    work_block = data.get("work") or {}
                     results.append({
                         "path": os.path.dirname(sf),
                         "state_file": sf,
-                        "project_name": data.get("project_name", ""),
-                        "work_name": data.get("work_name", ""),
+                        "project_name": (
+                            work_block.get("projectName")
+                            or data.get("project_name", "")
+                        ),
+                        "work_name": (
+                            work_block.get("name")
+                            or data.get("work_name", "")
+                        ),
                         "current_phase": cp,
                         "status": status,
                         "key_decisions": key_decisions,
                         "is_completed": is_done,
-                        "started_at": data.get("started_at", ""),
-                        "docs_dir": data.get("docs_dir", ""),
+                        "started_at": (
+                            work_block.get("startedAt")
+                            or data.get("started_at", "")
+                        ),
+                        "docs_dir": (
+                            work_block.get("docsDir")
+                            or data.get("docs_dir", "")
+                        ),
                     })
                 except Exception:
                     pass
@@ -283,12 +298,38 @@ def cmd_validate(args):
 
     errors = []
 
-    # Required top-level string fields
-    for field in ("project_name", "work_name", "docs_dir", "started_at"):
-        if field not in data:
-            errors.append(f"Missing required field: {field}")
-        elif not isinstance(data[field], str):
-            errors.append(f"{field} must be string, got {type(data[field]).__name__}")
+    # v4 (post-M2.11) requires the nested ``work`` block with name/docsDir.
+    # Legacy v3 flat keys (project_name / work_name / docs_dir) are still
+    # accepted as a fallback so pre-existing state files continue to
+    # validate during the v4.0 → v4.1 transition.
+    work_block = data.get("work")
+    if isinstance(work_block, dict):
+        for nested_field, label in (
+            ("name", "work.name"),
+            ("docsDir", "work.docsDir"),
+        ):
+            if nested_field not in work_block:
+                errors.append(f"Missing required field: {label}")
+            elif not isinstance(work_block[nested_field], str):
+                errors.append(
+                    f"{label} must be string, got "
+                    f"{type(work_block[nested_field]).__name__}"
+                )
+    else:
+        # Backward compat: accept v3 flat keys when ``work`` block absent.
+        for field in ("project_name", "work_name", "docs_dir"):
+            if field not in data:
+                errors.append(f"Missing required field: work.{field.replace('_', 'D').replace('docsD', 'docsD')} or {field}")
+            elif not isinstance(data[field], str):
+                errors.append(f"{field} must be string, got {type(data[field]).__name__}")
+
+    # ``started_at`` remains a top-level v4 key (consumed by phase prompts).
+    if "started_at" not in data:
+        errors.append("Missing required field: started_at")
+    elif not isinstance(data["started_at"], str):
+        errors.append(
+            f"started_at must be string, got {type(data['started_at']).__name__}"
+        )
 
     # status: top-level workflow status
     status = data.get("status")

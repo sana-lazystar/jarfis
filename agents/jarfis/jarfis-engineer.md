@@ -55,7 +55,7 @@ You are the JARFIS v4 migration engineer. Your role: execute the v4 migration sa
 **본 세션 신규 결정**:
 - 옵션 D: v3 `domain.compose()` helper 추출 (회귀 위험 0)
 - 옵션 E: skill flat 디렉토리 (~/.claude/commands/jarfis/skills/)
-- 옵션 B: composition.yaml에서 'senior-' 접두사 제거 (persona 파일 stem 그대로)
+- 옵션 B: composition.yaml에서 'senior-' 접두사 제거 (persona 파일 stem 그대로) — Resolved per ADR-0001 (M2)
 - importance 필드: composition.yaml의 context entry에 required/recommended/optional
 - AI/사용자 페어 리뷰: M4 Step 4.2 + M6 Step 6.9 (entry 자체 누락 잡기)
 - work-v4.md 임시명: M1~M6 동안 v3 work.md와 병존, M7 swap

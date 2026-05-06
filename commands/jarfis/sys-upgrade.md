@@ -79,16 +79,18 @@ Map learning items to their target files:
 
 | learnings Section | Target File |
 |-------------------|-------------|
-| `Agent Hints > Frontend Engineer` | `~/.claude/agents/jarfis/senior-frontend-engineer.md` |
-| `Agent Hints > Backend Engineer` | `~/.claude/agents/jarfis/senior-backend-engineer.md` |
-| `Agent Hints > QA Engineer` | `~/.claude/agents/jarfis/senior-qa-engineer.md` |
-| `Agent Hints > Tech Lead` | `~/.claude/agents/jarfis/tech-lead.md` |
-| `Agent Hints > Security Engineer` | `~/.claude/agents/jarfis/senior-security-engineer.md` |
-| `Agent Hints > DevOps Engineer` | `~/.claude/agents/jarfis/senior-devops-sre-engineer.md` |
-| `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/senior-ux-designer.md` |
-| `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/senior-product-owner.md` |
-| `Agent Hints > Architect` | `~/.claude/agents/jarfis/technical-architect.md` |
+| `Agent Hints > Frontend Engineer` | `~/.claude/agents/jarfis/personas/frontend-developer.md` |
+| `Agent Hints > Backend Engineer` | `~/.claude/agents/jarfis/personas/backend-developer.md` |
+| `Agent Hints > QA Engineer` | `~/.claude/agents/jarfis/personas/qa-engineer.md` |
+| `Agent Hints > Tech Lead` | `~/.claude/agents/jarfis/personas/tech-lead.md` |
+| `Agent Hints > Security Engineer` | `~/.claude/agents/jarfis/personas/security-engineer.md` |
+| `Agent Hints > DevOps Engineer` | `~/.claude/agents/jarfis/personas/devops-engineer.md` |
+| `Agent Hints > UX Designer` | `~/.claude/agents/jarfis/personas/ux-designer.md` |
+| `Agent Hints > Product Owner` | `~/.claude/agents/jarfis/personas/product-owner.md` |
+| `Agent Hints > Architect` | `~/.claude/agents/jarfis/personas/technical-architect.md` |
 | `Workflow Patterns` | Kept in `learnings.md` (not copied to work.md — applied via sys-upgrade only, not loaded at runtime) |
+
+> Note (ADR-0001, M1 v4.1-m1): personas now live under `agents/jarfis/personas/` with no senior- prefix; v3 senior-* domain knowledge is absorbed into the base persona files.
 
 **1-2. Automatic Scope Classification**
 

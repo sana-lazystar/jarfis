@@ -2,7 +2,7 @@
 
 > **Locale**: All user-facing output (banners, messages, AskUserQuestion labels) in `$LOCALE`. Internal reasoning English OK. If `$LOCALE` is unset, read `~/.claude/.jarfis-locale`; otherwise auto-detect from user input and persist it.
 > **Spec**: Detailed design in `~/Upscales/jarfis-v4-migration/system-spec.md` §9 (flow chart) + §9.2 (Phase × executor matrix). Required Inputs: §16. state schema: implement-plan.md A.1.
-> **Naming**: This file is the v4 orchestrator (`/jarfis:work`). v3 orchestrator is archived at `work-legacy.md` (M7 swap).
+> **Naming**: This file is the v4 orchestrator (`/jarfis:work`). The v3 orchestrator is no longer shipped — it was removed in v4.1 (ADR-0002). For emergency rollback, check out git tag `v4.0.7`.
 
 User input: `$ARGUMENTS`
 
@@ -21,7 +21,7 @@ Phase 3 runs only when `state.design.mode != null`. Phase 2 + Phase 3 run in par
 
 **State write rule (architecture §1 principle #6)**: Only the main session writes to `.jarfis-state.json`. tmux sub-agents write exclusively to `phase-results/phase{N}/attempt{K}.json` and Phase output directories (`discovery/`, `planning/`, `design/`, `review/`, `ops/`, etc.). The main session reads sub-agent meta and reflects selected fields into state.
 
-**v4 entry point**: `/jarfis:work` invokes this file. The v3 orchestrator is archived at `~/.claude/commands/jarfis/work-legacy.md` for reference only (M7 swap).
+**v4 entry point**: `/jarfis:work` invokes this file. The v3 orchestrator (`work-legacy.md`) was removed in v4.1 per ADR-0002; rollback to git tag `v4.0.7` if you need the v3 path.
 
 ---
 

@@ -195,7 +195,7 @@ Meetings can run long, so prepare for context loss due to auto-compact:
 
 PO/TL autonomously summon experts when specialized knowledge is needed.
 
-**Available experts:** Architect (technical-architect), Security (senior-security-engineer), DevOps (senior-devops-sre-engineer), UX (senior-ux-designer), QA (senior-qa-engineer)
+**Available experts:** Architect (technical-architect), Security (security-engineer), DevOps (devops-engineer), UX (ux-designer), QA (qa-engineer)
 
 > Note: Each agent's model follows the work.md Agent Mapping (SSOT).
 

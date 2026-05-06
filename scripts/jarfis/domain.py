@@ -692,7 +692,7 @@ domain:
 
 roles:
   plan:
-    - persona: senior-product-owner
+    - persona: product-owner
       skills: []
       model: opus
   design:
@@ -701,7 +701,7 @@ roles:
       model: opus
   implement:
     - name: engineer
-      persona: senior-backend-engineer
+      persona: backend-developer
       skills: []
       model: sonnet
       commit_prefix: "ENG"

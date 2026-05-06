@@ -11,7 +11,6 @@
     ├── jarfis-index.md            # This file — JARFIS system overview
     ├── agent-composition.yaml     # v4 agent composition spec — persona + skills + context (ADR-17; consumed by `jarfis_cli.py compose`)
     ├── work.md                    # v4 orchestrator — T/0/1a/1b/G1/2∥3/G2/4/4.5/5/G3/6 flow, tmux-per-phase, single-writer state rule (255 lines)
-    ├── work-legacy.md             # ⚠️ DEPRECATED v3 orchestrator — archived at M7 swap (2026-04-19); rollback safety window, expires 2026-05-03 (909 lines)
     ├── work-meeting.md            # Planning kickoff meeting — PO/TL open discussion → artifact generation, mid-save compact resilience (256 lines)
     ├── sys-implement.md           # JARFIS self-modification + Dialectic Review ratchet convergence + Python TDD rules (294 lines)
     ├── sys-upgrade.md             # Learning item management + 3-block independent structure + Dialectic Review + agent whitelist protection (298 lines)
@@ -83,7 +82,6 @@
 | `/jarfis` | `jarfis.md` | Display command list |
 | `/jarfis:work-meeting` | `jarfis/work-meeting.md` | Planning kickoff meeting (PO/TL open discussion → artifact generation) |
 | `/jarfis:work` | `jarfis/work.md` | v4 full workflow: triage → pre-flight → discovery → plan → design → implement → ops-readiness → review → retro |
-| ~~`/jarfis:work-legacy`~~ | `jarfis/work-legacy.md` | ⚠️ DEPRECATED v3 orchestrator — 2-week rollback window (expires 2026-05-03). For new work use `/jarfis:work` (v4). Removal target: v4.0.9+ |
 | `/jarfis:project-init` | `jarfis/project-init.md` | Project analysis → generate `./.jarfis-project/project-profile.md` |
 | `/jarfis:project-update` | `jarfis/project-update.md` | Incremental profile update (commit hash-based, date fallback) |
 | `/jarfis:sys-implement` | `jarfis/sys-implement.md` | JARFIS system self-modification/feature addition + version bump (Dialectic Review scope) |
@@ -133,7 +131,7 @@
   - `jarfis_cli.py wiki` — Wiki semantic search (deprecated → search wiki; backward compatibility)
   - `jarfis_cli.py domain` — Domain Pack management (list/detect/agents/compose/validate/scaffold/install)
 - `~/.claude/scripts/jarfis/` — Python module directory (referenced by `jarfis_cli.py`)
-  - `state.py` — .jarfis-state.json CRUD (v4 schema: scope[] + org + baseCommit + sessionKey + phases.{N}.status; v3 flat keys dual-emit retained until work-legacy.md removal)
+  - `state.py` — .jarfis-state.json CRUD (v4 schema: work{} + org + sessionKey + phases.{N}.status; v3 flat-key dual emit removed in v4.1 per ADR-0002 — backward-compat read still accepted)
   - `verify.py` — Unified gate/phase/pattern verification (`gate-check` + `phase-check` + `phase-verify` + `pattern-detect`). v4 replacement for v3 `jarfis-black` LLM gate — deterministic Python, ~10ms, machine-verifiable (ADR-15; 1,349 lines)
   - `verify_helpers.py` — Shared helpers for verify.py entrypoints
   - `tmux_claude.py` — tmux-per-phase orchestration (B1 isolation: exact-match session name only; `--save-pane` post-mortem debugging; v4.0.4)
@@ -241,7 +239,7 @@
 ## Modification Checklist
 - Command name change: rename file + grep/replace references across all files
 - New command addition: create md file under `jarfis/` + add to `jarfis.md` list + update this index
-- `work.md` is the v4 orchestrator (255 lines — drastically reduced from v3 work-legacy.md's 909 via externalization to `prompts/`)
+- `work.md` is the v4 orchestrator (255 lines — drastically reduced from the v3 909-line monolith via externalization to `prompts/`)
 - **Externalization structure** (distill v10+):
   - work.md contains only workflow flow/rules
   - Agent Task prompt → edit `prompts/phase{N}.md`
@@ -256,4 +254,4 @@
 - **Git repo**: check path in `~/.claude/.jarfis-source` (default: `~/repos/jarfis`).
 - **Dialectic Review scope (ADR-13 + F-14)**: Advocate/Critic agents apply **only** to sys-implement/sys-upgrade/sys-distill. Workflow phases (phase*.md) rely on P7 Deterministic Foundation + TDD Ratchet (conditional), not Dialectic.
 - **v3 state detection**: `.jarfis-state.json` with `project_name` (no `sessionKey`) → v4 work.md halts with guidance message in `$LOCALE`. Never silently migrate (F-08 + MIGRATION.md §3).
-- **work-legacy.md lifecycle**: archived 2026-04-19 (M7 swap, v4.0.0 release); rollback window expires **2026-05-03**; removal target v4.0.9+ (combined with state.py v3 flat-key dual-emit removal as a single cleanup item).
+- **v3 fallback removal (v4.1, ADR-0002)**: legacy `work-legacy.md` and the `state.py:cmd_init` v3 flat-key dual emit were removed in M2; emergency rollback now relies solely on git tag `v4.0.7` + `rollback.sh`.

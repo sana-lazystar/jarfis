@@ -1,22 +1,41 @@
 # .jarfis-state.json Schema
 
-Full structure example of the workflow state file:
+> **v4.1 (M2.11, ADR-0002)**: ``cmd_init`` emits the v4 nested shape only.
+> v3 flat keys (``project_name`` / ``work_name`` / ``work_input`` /
+> ``docs_dir`` / ``branch`` / ``branches`` / ``source_meeting``) are no
+> longer written when a new state file is created. The legacy section at
+> the bottom of this document is retained for archival reference and for
+> validators that still accept pre-v4.1 state files as input.
+
+## v4 Nested Schema (current — emitted by ``cmd_init``)
+
+The v4 shape splits identity (``work``), orchestration flags
+(``sessionKey`` / ``locale`` / ``org`` / ``domain`` / ``design`` /
+``responsive`` / ``api`` / ``devops`` / ``po_extras``), and phase
+lifecycle (``status`` / ``current_phase`` / ``phases`` /
+``key_decisions`` / ``last_checkpoint``).
 
 ```json
 {
-  "project_name": "Summary of planning content",
-  "work_name": "20250101-feat-TICKET-123",
-  "work_input": "feat/TICKET-123",
-  "docs_dir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
-  "branch": "feat/TICKET-123",
-  "status": "in-progress",
+  "sessionKey": "jf-1a2b3c4d",
   "locale": "ko",
-  "key_decisions": ["REST over GraphQL — existing team experience", "PostgreSQL — leverage existing infrastructure"],
-  "branches": {
-    "backend": "feat/TICKET-123",
-    "frontend": "feat/TICKET-123"
+  "org": null,
+  "domain": "web",
+  "design": { "mode": null, "figmaPages": [] },
+  "responsive": null,
+  "api": { "mode": null },
+  "devops": false,
+  "po_extras": [],
+  "work": {
+    "name": "20250101-feat-TICKET-123",
+    "input": "feat/TICKET-123",
+    "docsDir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
+    "startedAt": "2025-01-01T00:00:00Z",
+    "meetings": [],
+    "projectName": "Summary of planning content"
   },
-  "source_meeting": "20250101-payment-system-renewal",
+  "status": "in-progress",
+  "key_decisions": ["REST over GraphQL — existing team experience", "PostgreSQL — leverage existing infrastructure"],
   "started_at": "2025-01-01T00:00:00Z",
   "current_phase": 1,
   "workspace": {
@@ -221,3 +240,29 @@ Compares pass rates before and after Fix implementation in projects with a test 
 | fix_baseline_pass_rate | float(0.0-1.0) | Test pass rate before Fix started |
 | fix_current_pass_rate | float(0.0-1.0) | Test pass rate after Fix completed |
 | action | string | `accept` (pass rate maintained/improved), `reject` (declined, retry), `user_override` (user forced proceed), `disabled` (no test runner available) |
+
+---
+
+## Legacy v3 Flat Keys (Removed in v4.1)
+
+> **참고용. v4.1 에서 ``cmd_init`` 은 더 이상 emit 하지 않음.**
+>
+> 아래 키들은 v3 ``work-legacy.md`` 가 사용하던 평탄 표현. ADR-0002 에 따라
+> ``work-legacy.md`` 가 v4.1 에서 제거되면서 dual-emit 의 근거가 사라졌다.
+> ``cmd_validate`` / ``cmd_list_workflows`` 는 backward-compat 차원에서
+> 기존 v3 state 파일 읽기는 계속 허용하지만, 신규 state 는 v4 nested
+> 셰이프만 작성된다.
+
+| v3 Flat Key | v4 Replacement | Notes |
+|-------------|---------------|-------|
+| ``project_name`` | ``work.projectName`` | Human-readable label |
+| ``work_name`` | ``work.name`` | Identifier (``YYYYMMDD-…``) |
+| ``work_input`` | ``work.input`` | Branch/topic input |
+| ``docs_dir`` | ``work.docsDir`` | Workspace dir |
+| ``branch`` | (n/a — derive from ``work.input``) | v3 single-branch field |
+| ``branches`` | (n/a — multi-project covered by ``workspace.projects``) | v3 per-role branch map |
+| ``source_meeting`` | (n/a) | v3 meeting hand-off field |
+
+> ``state.py:cmd_validate`` accepts state files lacking ``work.*`` if the
+> v3 flat keys are present (transition shim). Once all in-flight workflows
+> have rotated through v4.1+, the v3 fallback can be deleted.

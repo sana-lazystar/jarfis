@@ -23,11 +23,11 @@ def domains_env(tmp_path):
         "min_core_version": "3.0.0",
         "domain": {"name": "web", "display_name": "Web Development"},
         "roles": {
-            "plan": [{"persona": "senior-product-owner", "skills": [], "model": "opus"}],
+            "plan": [{"persona": "product-owner", "skills": [], "model": "opus"}],
             "implement": [
                 {
                     "name": "frontend_engineer",
-                    "persona": "senior-frontend-engineer",
+                    "persona": "frontend-developer",
                     "skills": ["react"],
                     "model": "sonnet",
                     "commit_prefix": "FE",
@@ -35,7 +35,7 @@ def domains_env(tmp_path):
                 },
                 {
                     "name": "backend_engineer",
-                    "persona": "senior-backend-engineer",
+                    "persona": "backend-developer",
                     "skills": [],
                     "model": "sonnet",
                     "commit_prefix": "BE",
@@ -173,7 +173,7 @@ class TestAgents:
     def test_get_plan_agents(self, domains_env):
         result = agents("web", "plan", domains_env)
         assert len(result) == 1
-        assert result[0]["persona"] == "senior-product-owner"
+        assert result[0]["persona"] == "product-owner"
 
     def test_nonexistent_phase(self, domains_env):
         result = agents("web", "nonexistent", domains_env)
@@ -187,7 +187,7 @@ class TestCompose:
         result = compose("web", "frontend_engineer", "Build a form",
                          domains_dir=domains_env)
         assert result["fallback"] is False
-        assert result["agent_type"] == "senior-frontend-engineer"
+        assert result["agent_type"] == "frontend-developer"
         assert "Build a form" in result["prompt_content"]
         assert "react" in result["loaded_skills"]
 
@@ -364,6 +364,29 @@ class TestScaffold:
 
         scaffold("test", str(domains_dir))
         assert open(yaml_path).read() == original
+
+    def test_scaffold_uses_base_personas(self, tmp_path):
+        """ADR-0001 §3.3 / M2.2: Scaffold template must use base personas
+        (no `senior-` prefix). Loaded yaml must reference personas that
+        exist in agents/jarfis/personas/.
+        """
+        import yaml as _yaml
+        domains_dir = tmp_path / "domains"
+        domains_dir.mkdir()
+        scaffold("sample", str(domains_dir))
+        yaml_path = os.path.join(str(domains_dir), "sample.yaml")
+        with open(yaml_path) as f:
+            content = f.read()
+
+        # Hard guard: no senior- references at all in scaffold output
+        assert "senior-" not in content, \
+            f"Scaffold template still contains senior- reference:\n{content}"
+
+        config = _yaml.safe_load(content)
+        plan_personas = [r["persona"] for r in config["roles"]["plan"]]
+        implement_personas = [r["persona"] for r in config["roles"]["implement"]]
+        assert "product-owner" in plan_personas
+        assert "backend-developer" in implement_personas
 
 
 # ── _resolve_skill_path ──

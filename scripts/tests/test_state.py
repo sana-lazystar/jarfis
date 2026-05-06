@@ -19,17 +19,45 @@ from jarfis.state import (
 
 class TestCmdInit:
     def test_creates_state_file(self, tmp_path):
+        """v4.1 (M2.11, ADR-0002): cmd_init emits the v4 nested shape.
+
+        v3 flat keys (project_name, work_name, work_input, docs_dir,
+        branch, branches, source_meeting) are no longer emitted — work-legacy
+        is gone, so the dual-emit rationale evaporates. Surviving top-level
+        keys (status, started_at, current_phase, phases, etc.) belong to
+        the v4 schema and stay.
+        """
         sf = str(tmp_path / "work" / ".jarfis-state.json")
         cmd_init([sf, "my-project", "20260324-feature", str(tmp_path / "docs")])
         assert os.path.isfile(sf)
         with open(sf) as f:
             data = json.load(f)
-        assert data["project_name"] == "my-project"
-        assert data["work_name"] == "20260324-feature"
+
+        # v4 nested shape is the SSOT for project/work identity.
+        assert data["work"]["name"] == "20260324-feature"
+        assert data["work"]["docsDir"].endswith("docs")
+        assert "sessionKey" in data and data["sessionKey"].startswith("jf-")
+        assert "domain" in data
+        assert "locale" in data
+
+        # v4 lifecycle keys remain at top level (consumed by phase prompts).
         assert data["status"] == "in-progress"
         assert data["current_phase"] == 0
         assert "0" in data["phases"]
         assert data["phases"]["0"]["status"] == "in_progress"
+
+    def test_no_v3_flat_keys_emitted(self, tmp_path):
+        """ADR-0002 §3.2: v3 flat keys must no longer appear in fresh state."""
+        sf = str(tmp_path / "work" / ".jarfis-state.json")
+        cmd_init([sf, "my-project", "20260324-feature", str(tmp_path / "docs")])
+        with open(sf) as f:
+            data = json.load(f)
+        for forbidden in (
+            "project_name", "work_name", "work_input",
+            "docs_dir", "branch", "branches", "source_meeting",
+        ):
+            assert forbidden not in data, \
+                f"v3 flat key '{forbidden}' should not be emitted by cmd_init"
 
     def test_creates_parent_directories(self, tmp_path):
         sf = str(tmp_path / "deep" / "nested" / ".jarfis-state.json")
