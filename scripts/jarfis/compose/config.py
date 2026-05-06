@@ -56,17 +56,28 @@ def load_composition(yaml_path):
 def load_extra_skills_by_framework(yaml_path):
     """Load the optional `extra_skills_by_framework:` section.
 
-    Returns a dict[str, tuple[str, ...]] keyed by framework name. Missing
-    section yields an empty dict. Invalid shape raises ConfigError.
+    Returns a dict whose keys are either:
+        * a plain framework string (``"react"``)        — v4.0 behavior, matches any domain.
+        * a ``(framework, domain)`` 2-tuple             — v4.1 (M4.4, ADR-0003 §4),
+          domain-specific. Tuple wins over the string fallback when
+          both are present for the same framework.
 
-    The section lives alongside `agents:` in agent-composition.yaml:
+    YAML can't express tuple keys natively, so v4.1 supports an
+    ``framework@domain`` string syntax that we normalize to a tuple
+    on load. Missing section yields an empty dict. Invalid shape
+    raises ConfigError.
+
+    Example::
 
         extra_skills_by_framework:
-          vue:    [vue]
-          react:  [react, browser]
+          vue:                 [vue]                     # any domain
+          react:               [react, browser]          # any domain
+          react@web:           [react, browser]          # web-specific
+          react-native@mobile: [react-native]            # mobile-specific
+          tauri@desktop:       [tauri-backend, rust]     # desktop-specific
 
-    Used by `compose/skills.py` as step 3 of the 4-stage fallback chain
-    (system-spec §5.5). Step 4 delegates to v3 `domain.yaml roles[].skills`.
+    Used by ``compose/skills.py`` as step 3 of the 4-stage fallback chain
+    (system-spec §5.5). Step 4 delegates to v3 ``domain.yaml roles[].skills``.
     """
     if not os.path.isfile(yaml_path):
         raise ConfigError(f"agent-composition.yaml not found: {yaml_path}")
@@ -100,7 +111,18 @@ def load_extra_skills_by_framework(yaml_path):
                 f"extra_skills_by_framework[{fw}]: must be list[str] "
                 f"(got {skills!r}) [{yaml_path}]"
             )
-        result[fw] = tuple(skills)
+        # M4.4: ``framework@domain`` syntax → 2-tuple key.
+        if "@" in fw:
+            parts = fw.split("@", 1)
+            if len(parts) != 2 or not parts[0] or not parts[1]:
+                raise ConfigError(
+                    f"extra_skills_by_framework: malformed key {fw!r} — "
+                    f"expected `framework@domain` [{yaml_path}]"
+                )
+            key = (parts[0], parts[1])
+        else:
+            key = fw
+        result[key] = tuple(skills)
     return result
 
 

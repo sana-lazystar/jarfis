@@ -127,6 +127,66 @@ def cmd_set_nested(args, audit_path=None):
     json_output({"success": True, "key_path": key_path})
 
 
+def migrate_v40_to_v41(state):
+    """Forward-compat shim: backfill ``scope[i].domain`` from the legacy
+    single ``state.domain`` so v4.0.x state files keep working when read
+    by v4.1 callers (compose, validate, list-workflows).
+
+    ADR-0003 §2.1 forward-compat block. Idempotent — applying the
+    function twice yields the same result. ``state.domain`` itself is
+    preserved untouched.
+
+    Behavior matrix:
+
+    | state.domain | scope[i].domain | After migration       |
+    |--------------|-----------------|-----------------------|
+    | "web"        | absent          | scope[i].domain="web" |
+    | "web"        | "mobile"        | "mobile" (unchanged)  |
+    | absent       | absent          | absent (cannot infer) |
+    | absent       | "desktop"       | "desktop" (unchanged) |
+
+    Mutates the input dict and also returns it so callers can chain.
+    """
+    if not isinstance(state, dict):
+        return state
+    workspace = state.get("workspace")
+    if not isinstance(workspace, dict):
+        return state
+    scopes = workspace.get("scope")
+    if not isinstance(scopes, list):
+        return state
+    legacy_domain = state.get("domain")
+    if not legacy_domain:
+        return state
+    for entry in scopes:
+        if not isinstance(entry, dict):
+            continue
+        if "domain" not in entry or entry.get("domain") in (None, ""):
+            entry["domain"] = legacy_domain
+    return state
+
+
+def get_scope_domain(scope, state):
+    """Resolve the domain for a single scope using the v4.1 → v4.0
+    fallback ladder (ADR-0003 §2.1).
+
+        1. ``scope[i].domain``    — v4.1 source of truth.
+        2. ``state.domain``       — v4.0.x legacy single domain.
+        3. ``None``               — caller must trigger detect /
+           AskUserQuestion. We do NOT raise here; the dispatch matrix
+           lives in work.md and surfaces the right user prompt.
+    """
+    if isinstance(scope, dict):
+        sd = scope.get("domain")
+        if sd:
+            return sd
+    if isinstance(state, dict):
+        sd = state.get("domain")
+        if sd:
+            return sd
+    return None
+
+
 def cmd_init(args):
     state_file = args[0] if args else ""
     project_name = args[1] if len(args) > 1 else ""
@@ -176,7 +236,13 @@ def cmd_init(args):
         "status": "in-progress",
         "key_decisions": [],
         "current_phase": 0,
-        "workspace": {},
+        # v4.1 (M4.2, ADR-0003 §2.1): workspace.scope is the per-project
+        # array consumed by Phase 0 step 5 (and step 7 for per-scope
+        # domain detection). Seeded as ``[]`` so subsequent
+        # ``set-nested workspace.scope.0.domain`` writes have a
+        # predictable parent. The legacy single ``state.domain`` (above)
+        # remains for v4.0.x compat readers — see migrate_v40_to_v41().
+        "workspace": {"scope": []},
         "phases": {
             "0": {"status": "in_progress"},
             "1": {"status": "pending"},

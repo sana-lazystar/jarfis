@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-06 | Version: 4.0.7 (M7 → 4.1.0)
+> Do not edit manually. Last updated: 2026-05-06 (M4) | Version: 4.0.7 (M7 → 4.1.0)
 
 ## File Structure
 ```
@@ -40,7 +40,8 @@
     ├── domains/                   # v3.0 Domain Pack infrastructure (metadata only in v4 — skills relocated to ../skills/)
     │   ├── _schema.yaml           # Domain Pack specification (Published Language, EP1-7)
     │   ├── web.yaml               # Web Development domain pack — base personas only (M2 ADR-0001)
-    │   └── desktop.yaml           # Desktop (Tauri) domain pack — design+ux-designer, review+qa+security (M3 ADR-0003)
+    │   ├── desktop.yaml           # Desktop (Tauri) domain pack — design+ux-designer, review+qa+security (M3 ADR-0003)
+    │   └── mobile.yaml            # Mobile (React Native) domain pack — α release scope, rn_engineer role (M4 ADR-0004)
     ├── skills/                    # Flat Skills catalog (v4 — relocated from domains/{web,desktop}/skills/; 16 skills)
     │   ├── aws-lambda.md · biome-lint.md · browser.md · cargo-clippy.md
     │   ├── cognito.md · dynamodb.md · express.md · nodejs.md

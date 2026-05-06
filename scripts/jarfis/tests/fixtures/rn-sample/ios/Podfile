@@ -1,0 +1,10 @@
+# RN sample Podfile (fixture-only — exists to trip the mobile.yaml ios/Podfile indicator).
+require_relative '../node_modules/react-native/scripts/react_native_pods'
+
+platform :ios, '13.0'
+prepare_react_native_project!
+
+target 'rnsample' do
+  config = use_native_modules!
+  use_react_native!(:path => config[:reactNativePath])
+end

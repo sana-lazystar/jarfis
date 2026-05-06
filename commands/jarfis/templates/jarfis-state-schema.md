@@ -41,11 +41,32 @@ lifecycle (``status`` / ``current_phase`` / ``phases`` /
   "workspace": {
     // NOTE: This "workspace" represents the project structure (monorepo/multi-project),
     // and is separate from the v2 "Organization (Org)" concept. Org is managed via org-profile.md.
-    "type": "monorepo | multi-project",
-    "projects": {
-      "backend": { "path": ".", "framework": "next.js" },
-      "frontend": { "path": ".", "framework": "next.js" }
-    }
+    "structure": "monorepo | multi-project",
+    "scope": [
+      // v4.1 (M4.2, ADR-0003 §2.1): scope[] is the per-project array
+      // populated in Phase 0 step 5. Phase 0 step 7 fills `domain` per
+      // entry; downstream Phase 4 implement uses scope[i].domain to
+      // dispatch the correct role (rust_engineer / rn_engineer / ...).
+      {
+        "name": "tauri-shell",
+        "path": "/abs/path/to/shell",
+        "type": "frontend | backend | mobile | desktop",
+        "framework": "tauri | react | react-native | ...",
+        "languages": ["ts", "rust"],
+        "domain": "desktop",          // ← v4.1 per-scope domain (M4.2)
+        "branch": "20260101-feature",
+        "baseCommit": "abc123"
+      },
+      {
+        "name": "mobile-app",
+        "path": "/abs/path/to/app",
+        "type": "mobile",
+        "framework": "react-native",
+        "domain": "mobile",
+        "branch": "20260101-feature",
+        "baseCommit": "def456"
+      }
+    ]
   },
   "phases": {
     "0": { "status": "completed" },
@@ -161,6 +182,28 @@ Phase 4 TDD code quality ratchet state. Only created when `state.tddEnabled: tru
 - `task_index`: Number of tasks that have passed the ratchet so far
 - `test_modifications`: Array of records where the implementation agent modified test files. Each entry: `file` (path), `task` (task ID), `reason` (commit message). Subject to validation during Phase 5 QA
 - `history`: Per-task ratchet decision history. `task`: task ID, `pass_rate`: pass rate at decision time, `action`: `accept` (pass rate maintained/improved), `reject` (pass rate declined, retry required), `skipped_after_max_retries` (2 failures, proceed anyway), `attempt`: attempt number on retry
+
+### workspace.scope[i].domain (v4.1 — M4.2, ADR-0003)
+
+Per-scope domain assignment. Populated by Phase 0 step 7 of work.md
+(dispatch matrix — high-conf single / tie / low-conf / greenfield /
+multi-domain monorepo / user override). Allowed values: ``"web"``,
+``"desktop"``, ``"mobile"``. Multi-domain monorepos (Tauri shell +
+RN app, etc.) end up with different values per scope.
+
+**Forward compatibility**: v4.0.x state files used a single
+top-level ``state.domain`` for the whole workflow. v4.1 readers
+(``compose``, ``validate``, ``list-workflows``) automatically run
+``migrate_v40_to_v41(state)`` to backfill ``scope[i].domain`` from
+``state.domain`` when the per-scope field is absent. ``state.domain``
+itself is preserved untouched so legacy callers keep working.
+
+**Resolution order** in compose (``get_scope_domain(scope, state)``):
+
+1. ``scope[i].domain``    — v4.1 source of truth.
+2. ``state.domain``       — v4.0.x legacy single domain (fallback).
+3. ``None``               — caller (work.md Phase 0 step 7) MUST
+   trigger detect / AskUserQuestion before invoking compose.
 
 ### locale
 User language setting for the workflow. Auto-detected in Phase 0 or explicitly set via `/jarfis:locale`.

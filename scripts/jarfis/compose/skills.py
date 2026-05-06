@@ -82,8 +82,11 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
         state:      full jarfis-state.json dict. Only state["domain"] used.
         scope_entry: dict | None — scope[i]. `framework` key drives step 3,
                     `path` key drives step 1 project-profile lookup.
-        extra_skills_by_framework: dict[str, tuple[str, ...]] | None
-            — framework → skill name list. From agent-composition.yaml.
+        extra_skills_by_framework: dict | None
+            — keys may be either a plain framework string ``"react"``
+            (v4.0 behavior) OR a ``(framework, domain)`` 2-tuple ``("react-native", "mobile")``
+            (v4.1 — ADR-0003 §4). Tuple wins on collision. Values are
+            lists of flat skill names.
         max_skill_tokens: int | None — budget override (forwarded to
             domain.load_skills_for_role; steps 1/3 use remaining budget).
 
@@ -102,7 +105,17 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
 
     meta = {}
 
-    domain = state.get("domain") if isinstance(state, dict) else None
+    # M4.3 (ADR-0003 §2.1): scope[i].domain wins over the legacy
+    # state.domain. Falls through to None when neither is set; the
+    # caller (work.md Phase 0 step 7) is responsible for triggering
+    # detect / AskUserQuestion before compose runs.
+    domain = None
+    if isinstance(scope_entry, dict):
+        sd = scope_entry.get("domain")
+        if sd:
+            domain = sd
+    if not domain and isinstance(state, dict):
+        domain = state.get("domain")
     if not domain:
         meta["no_domain"] = True
         return [], [], "", meta
@@ -180,10 +193,19 @@ def load_skills_for_agent(agent_name, persona, state, scope_entry=None,
     loaded = list(loaded)
     truncated = list(truncated)
 
-    # Step 3: framework-based extras (system-spec §5.5)
+    # Step 3: framework-based extras (system-spec §5.5).
+    # M4.4 (ADR-0003 §4): keys may be either a plain framework string
+    # OR a (framework, domain) 2-tuple. Tuple form wins when both are
+    # configured for the same framework, so domain-specific extras
+    # (e.g. ``("react-native", "mobile") → ["react-native"]``) cannot
+    # leak into other domains.
     framework = (scope_entry or {}).get("framework") if isinstance(scope_entry, dict) else None
     extras_map = extra_skills_by_framework or {}
-    extras = extras_map.get(framework) if framework else None
+    extras = None
+    if framework:
+        extras = extras_map.get((framework, domain))
+        if extras is None:
+            extras = extras_map.get(framework)
     if extras:
         budget = _resolve_token_budget(domain, max_skill_tokens)
         token_used = estimate_tokens(skills_text)

@@ -198,8 +198,18 @@ def detect(project_dir, domains_dir=None):
     Wraps existing detect.py for framework detection, then matches
     against domain pack indicators for domain classification.
 
-    W1-5: Results sorted by (-confidence, name) for deterministic output.
-    S2: Returns tie flag when top-2 confidences are equal.
+    W1-5: Results sorted by ``(-confidence, -matched_count, name)`` for
+    deterministic output with quantity tiebreaking.
+    S2: Returns ``tie`` flag when top-2 share BOTH confidence AND
+    matched_count (a true ambiguity that work.md must resolve via
+    AskUserQuestion).
+
+    M4.7 — ADR-0003 §2.6 scoring update:
+        * ``confidence = max(matched_indicators)`` (was: mean).
+        * ``matched_count`` becomes the secondary sort key.
+        * Tauri-as-desktop tiebreaker: when ``tauri.conf.json`` or
+          ``src-tauri/`` is present in ``project_dir``, every desktop
+          indicator score is multiplied by 1.5 before the max is taken.
 
     Returns:
         Dict with 'matches' (list) and 'tie' (bool).
@@ -209,6 +219,9 @@ def detect(project_dir, domains_dir=None):
 
     if not os.path.isdir(project_dir):
         return {"matches": [], "tie": False}
+
+    # M4.7 — desktop weighting marker check (cheap, fixed-name lookups).
+    desktop_boost = _has_desktop_tauri_marker(project_dir)
 
     matches = []
 
@@ -220,31 +233,61 @@ def detect(project_dir, domains_dir=None):
             continue
 
         indicators = config.get("detect", {}).get("indicators", [])
-        total_score = 0.0
-        matched_count = 0
+        scores = []  # M4.7: collect raw scores for max-based aggregation.
 
         for indicator in indicators:
             score = _evaluate_indicator(indicator, project_dir)
             if score > 0:
-                total_score += score
-                matched_count += 1
+                # ADR-0003 §2.6 last paragraph: bump desktop scores when
+                # a Tauri marker is present so Tauri-as-web (react match
+                # on package.json) cannot outrank Tauri-as-desktop.
+                if desktop_boost and domain_name == "desktop":
+                    score = min(1.0, score * 1.5)
+                scores.append(score)
 
-        if matched_count > 0:
-            avg_confidence = total_score / matched_count
+        if scores:
+            confidence = max(scores)
             matches.append({
                 "domain": domain_name,
-                "confidence": round(avg_confidence, 3),
-                "matched_indicators": matched_count,
+                "confidence": round(confidence, 3),
+                "matched_indicators": len(scores),
             })
 
-    # W1-5: Deterministic sort — confidence desc, then name asc
-    matches.sort(key=lambda m: (-m["confidence"], m["domain"]))
+    # W1-5: Deterministic sort — confidence desc, matched_count desc, name asc.
+    matches.sort(
+        key=lambda m: (-m["confidence"], -m["matched_indicators"], m["domain"])
+    )
 
-    # S2: Detect tie between top-2
-    tie = (len(matches) >= 2
-           and matches[0]["confidence"] == matches[1]["confidence"])
+    # S2: True tie iff both confidence AND matched_count match between top-2.
+    tie = (
+        len(matches) >= 2
+        and matches[0]["confidence"] == matches[1]["confidence"]
+        and matches[0]["matched_indicators"] == matches[1]["matched_indicators"]
+    )
 
     return {"matches": matches, "tie": tie}
+
+
+def _has_desktop_tauri_marker(project_dir):
+    """Return True iff a recognizable Tauri-desktop marker exists under
+    ``project_dir``. Used by M4.7 to apply a 1.5x weight to desktop
+    indicator scores so Tauri-as-web (react in package.json) cannot
+    outrank Tauri-as-desktop on max-confidence ties.
+
+    Markers (any one suffices):
+        * ``<project>/tauri.conf.json``
+        * ``<project>/src-tauri/`` directory
+        * ``<project>/src-tauri/tauri.conf.json``
+    """
+    candidates = (
+        os.path.join(project_dir, "tauri.conf.json"),
+        os.path.join(project_dir, "src-tauri"),
+        os.path.join(project_dir, "src-tauri", "tauri.conf.json"),
+    )
+    for path in candidates:
+        if os.path.exists(path):
+            return True
+    return False
 
 
 def _evaluate_indicator(indicator, project_dir):
