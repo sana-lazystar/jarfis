@@ -17,9 +17,9 @@ if SCRIPTS_DIR not in sys.path:
 
 @pytest.fixture
 def jarfis_env(tmp_path, monkeypatch):
-    """Create an isolated JARFIS environment rooted in tmp_path.
+    """Create an isolated JARFIS environment rooted in tmp_path (v4.4 org-root layout).
 
-    Structure:
+    Structure (v4.4 — physical org-root data source):
         tmp_path/
         ├── .claude/                      (~/.claude equivalent)
         │   ├── .jarfis-source            (points to repo/)
@@ -27,29 +27,39 @@ def jarfis_env(tmp_path, monkeypatch):
         │   ├── .jarfis-personal-dir      (points to repo/.personal)
         │   ├── commands/jarfis/jarfis-index.md
         │   └── scripts/jarfis/__init__.py
-        └── repo/                         (JARFIS repo equivalent)
-            ├── VERSION
-            ├── CHANGELOG.md
-            └── .personal/
-                └── orgs/
-                    ├── orgs.json
-                    ├── _standalone/
-                    │   ├── works/
-                    │   ├── meetings/
-                    │   └── learnings.md
-                    └── TestOrg/
-                        ├── works/
-                        ├── meetings/
-                        └── learnings.md
+        ├── repo/                         (JARFIS repo equivalent)
+        │   ├── VERSION
+        │   ├── CHANGELOG.md
+        │   └── .personal/                (standalone bucket — flat)
+        │       ├── orgs/orgs.json        (registry pointing to TestOrg root)
+        │       ├── works/                (standalone works — flat)
+        │       ├── meetings/             (standalone meetings — flat)
+        │       └── learnings.md          (standalone learnings — flat)
+        └── org-root/                     (TestOrg physical root)
+            └── .jarfis-org/              (single org container)
+                ├── org-profile.md
+                ├── works/
+                ├── meetings/
+                └── learnings.md
 
-    Returns a dict with key paths.
+    Returns a dict with key paths. The 'standalone_*' keys map to flat
+    locations under personal_dir (not under orgs/_standalone/), and the
+    'testorg_*' keys map to {org_root}/.jarfis-org/ subdirs (not under
+    .personal/orgs/TestOrg/).
     """
     claude_dir = tmp_path / "claude"
     repo_dir = tmp_path / "repo"
     personal_dir = repo_dir / ".personal"
     orgs_dir = personal_dir / "orgs"
-    standalone_dir = orgs_dir / "_standalone"
-    testorg_dir = orgs_dir / "TestOrg"
+
+    # v4.4: standalone buckets are FLAT under personal_dir (no _standalone wrapper).
+    standalone_dir = personal_dir
+    standalone_works = personal_dir / "works"
+    standalone_meetings = personal_dir / "meetings"
+
+    # v4.4: TestOrg lives under {tmp_path}/org-root/.jarfis-org/ (the registered org_root).
+    testorg_root = tmp_path / "org-root"
+    testorg_dir = testorg_root / ".jarfis-org"
 
     # Create directories
     for d in [
@@ -61,8 +71,9 @@ def jarfis_env(tmp_path, monkeypatch):
         repo_dir / "commands" / "jarfis",
         repo_dir / "agents" / "jarfis",
         repo_dir / "hooks",
-        standalone_dir / "works",
-        standalone_dir / "meetings",
+        orgs_dir,
+        standalone_works,
+        standalone_meetings,
         testorg_dir / "works",
         testorg_dir / "meetings",
     ]:
@@ -83,11 +94,16 @@ def jarfis_env(tmp_path, monkeypatch):
         "> Last updated: 2026-03-24 | Version: 2.2.2\n"
     )
 
-    # Create orgs.json
-    orgs_json = {"orgs": [{"name": "TestOrg", "root": str(tmp_path / "org-root")}]}
+    # Create orgs.json with TestOrg pointing to its physical org_root.
+    orgs_json = {"orgs": [{"name": "TestOrg", "root": str(testorg_root)}]}
     (orgs_dir / "orgs.json").write_text(json.dumps(orgs_json, indent=2))
 
-    # Create standalone learnings
+    # Create org-profile.md so find_org_root() resolves correctly.
+    (testorg_dir / "org-profile.md").write_text(
+        "---\norg: TestOrg\nroot: " + str(testorg_root) + "\nsync: none\n---\n"
+    )
+
+    # Create learnings files at v4.4 locations.
     (standalone_dir / "learnings.md").write_text("# Learnings\n")
     (testorg_dir / "learnings.md").write_text("# TestOrg Learnings\n")
 
@@ -101,7 +117,7 @@ def jarfis_env(tmp_path, monkeypatch):
     # Isolate CWD: prevent get_org_dir(os.getcwd()) from picking up the
     # caller's real org root (e.g. when pytest is run from inside a project
     # with .jarfis-org/org-profile.md, find_org_root walks up and returns
-    # that real org's meetings dir, not the fixture's _standalone seed).
+    # that real org's meetings dir, not the fixture's flat seed).
     monkeypatch.chdir(tmp_path)
 
     # Update config files with renamed path
@@ -113,9 +129,12 @@ def jarfis_env(tmp_path, monkeypatch):
         "repo_dir": str(repo_dir),
         "personal_dir": str(personal_dir),
         "orgs_dir": str(orgs_dir),
+        # v4.4: standalone-related keys point to flat personal_dir locations.
         "standalone_dir": str(standalone_dir),
-        "standalone_works": str(standalone_dir / "works"),
-        "standalone_meetings": str(standalone_dir / "meetings"),
+        "standalone_works": str(standalone_works),
+        "standalone_meetings": str(standalone_meetings),
+        # v4.4: TestOrg keys point to {org_root}/.jarfis-org/ subdirs.
+        "testorg_root": str(testorg_root),
         "testorg_dir": str(testorg_dir),
         "testorg_works": str(testorg_dir / "works"),
         "testorg_meetings": str(testorg_dir / "meetings"),

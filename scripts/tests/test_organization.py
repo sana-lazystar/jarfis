@@ -75,6 +75,57 @@ class TestCmdInit:
                 os.path.join(org_root, ".jarfis-org", "wiki", section, "_index.md")
             )
 
+    def test_create_org_files_creates_meetings_works_dirs(self, jarfis_env, capsys):
+        """v4.4: _create_org_files also creates meetings/ and works/ in .jarfis-org/."""
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "v44-org-root")
+        os.makedirs(org_root, exist_ok=True)
+        cmd_init([org_root, "--confirm", "--name", "V44Org"])
+        capsys.readouterr()
+        assert os.path.isdir(os.path.join(org_root, ".jarfis-org", "meetings"))
+        assert os.path.isdir(os.path.join(org_root, ".jarfis-org", "works"))
+
+    def test_create_org_files_writes_learnings_md(self, jarfis_env, capsys):
+        """v4.4: _create_org_files writes learnings.md inside .jarfis-org/."""
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "v44-learn-root")
+        os.makedirs(org_root, exist_ok=True)
+        cmd_init([org_root, "--confirm", "--name", "V44LearnOrg"])
+        capsys.readouterr()
+        learnings_path = os.path.join(org_root, ".jarfis-org", "learnings.md")
+        assert os.path.isfile(learnings_path)
+        with open(learnings_path) as f:
+            content = f.read()
+        # Has a heading referring to the org name.
+        assert "V44LearnOrg" in content or "Learnings" in content
+
+    def test_create_org_files_writes_sync_field_none_for_non_git(self, jarfis_env, capsys):
+        """Critic Fix B: non-git org_root → org-profile.md frontmatter has sync: none."""
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "non-git-root")
+        os.makedirs(org_root, exist_ok=True)
+        # No .git here → not a git repo
+        cmd_init([org_root, "--confirm", "--name", "NonGitOrg"])
+        capsys.readouterr()
+        profile_path = os.path.join(org_root, ".jarfis-org", "org-profile.md")
+        with open(profile_path) as f:
+            content = f.read()
+        # YAML frontmatter contains sync: none
+        assert "sync: none" in content
+
+    def test_create_org_files_writes_sync_field_git_for_git_repo(self, jarfis_env, tmp_path, capsys):
+        """Critic Fix B: git org_root → org-profile.md frontmatter has sync: git."""
+        import subprocess
+        org_root = tmp_path / "git-org-root"
+        org_root.mkdir()
+        # Initialize git repo so `git -C ... rev-parse --show-toplevel` succeeds
+        subprocess.run(["git", "init", "-q", str(org_root)], check=True)
+        cmd_init([str(org_root), "--confirm", "--name", "GitOrg"])
+        capsys.readouterr()
+        profile_path = org_root / ".jarfis-org" / "org-profile.md"
+        content = profile_path.read_text()
+        assert "sync: git" in content
+
     def test_error_on_missing_dir(self):
         with pytest.raises(SystemExit):
             cmd_init(["/nonexistent/dir"])
@@ -134,24 +185,45 @@ class TestOrgsJson:
         assert len(data["orgs"]) == 1
         assert data["orgs"][0]["name"] == "TestOrg"
 
-    def test_register_org(self, jarfis_env):
+    def test_register_org_new_returns_registered_dict(self, jarfis_env):
+        """v4.4: register_org returns dict with 'registered': True for new entries."""
         result = register_org("NewOrg", "/path/to/new")
-        assert result is True
+        assert isinstance(result, dict)
+        assert result.get("success") is True
+        assert result.get("registered") is True
         data = read_orgs()
         names = [o["name"] for o in data["orgs"]]
         assert "NewOrg" in names
-        # Verify workspace dirs created
-        personal = jarfis_env["personal_dir"]
-        assert os.path.isdir(os.path.join(personal, "orgs", "NewOrg", "works"))
-        assert os.path.isdir(os.path.join(personal, "orgs", "NewOrg", "meetings"))
 
-    def test_register_org_duplicate(self, jarfis_env):
-        result = register_org("TestOrg", "/path")
-        assert result is False
+    def test_register_org_collision_returns_collision_flag(self, jarfis_env):
+        """v4.4 (defect D7): same name, DIFFERENT root → collision=True, no overwrite."""
+        # TestOrg is already registered to <tmp>/org-root
+        existing_root = jarfis_env["testorg_root"]
+        result = register_org("TestOrg", "/some/other/root")
+        assert result.get("success") is False
+        assert result.get("collision") is True
+        assert os.path.normpath(result["existing_root"]) == os.path.normpath(existing_root)
+        # Registry should NOT have been overwritten.
+        data = read_orgs()
+        registered = next(o for o in data["orgs"] if o["name"] == "TestOrg")
+        assert os.path.normpath(registered["root"]) == os.path.normpath(existing_root)
+
+    def test_register_org_idempotent_same_root(self, jarfis_env):
+        """v4.4 (defect D7): same name, SAME root → already_registered, no change."""
+        existing_root = jarfis_env["testorg_root"]
+        result = register_org("TestOrg", existing_root)
+        assert result.get("success") is True
+        assert result.get("already_registered") is True
+        # Registry has exactly one TestOrg entry (no duplicate).
+        data = read_orgs()
+        matches = [o for o in data["orgs"] if o["name"] == "TestOrg"]
+        assert len(matches) == 1
 
     def test_register_org_reserved_prefix(self, jarfis_env):
+        """Reserved prefix rejection still returns dict with reserved=True."""
         result = register_org("_reserved", "/path")
-        assert result is False
+        assert result.get("success") is False
+        assert result.get("reserved") is True
 
     def test_cmd_init_registers_org(self, jarfis_env, tmp_path, capsys):
         proj = tmp_path / "project1" / ".jarfis-project"

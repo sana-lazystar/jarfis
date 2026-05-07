@@ -1089,7 +1089,7 @@ def _phase_5_verify(state, docs_dir):
 
 
 def _phase_6_verify(state, docs_dir):
-    """Phase 6: retrospective.md + org 등록 시 wiki/INDEX.md 갱신 commit."""
+    """Phase 6: retrospective.md + org 등록 시 wiki/INDEX.md 갱신 commit + docsDir 위치(D5)."""
     missing = []
     retro = Path(docs_dir) / "retrospective.md"
     if not _h.check_file_exists(retro):
@@ -1110,6 +1110,30 @@ def _phase_6_verify(state, docs_dir):
         else:
             if not any(f.startswith(".jarfis-org/wiki/") and f.endswith("INDEX.md") for f in changed):
                 missing.append(f"wiki/INDEX.md 갱신 commit 없음 (org={org_name})")
+
+    # v4.4 (defect D5): docsDir position assertion. The state.work.docsDir
+    # must lie under {org_dir}/works/ where org_dir = get_org_dir(project_path).
+    # The orchestrator computes docs_dir = state.work.docsDir, so reuse it.
+    try:
+        from .utils import get_org_dir as _get_org_dir
+        # Pick a representative project path: first scope path if available.
+        workspace = state.get("workspace") or {}
+        scopes = workspace.get("scope") or []
+        project_path = None
+        if scopes:
+            project_path = scopes[0].get("path")
+        # Resolve org_dir based on project_path; falls back to standalone (flat).
+        org_dir = _get_org_dir(project_path) if project_path else None
+        if org_dir and docs_dir:
+            expected_prefix = os.path.join(os.path.abspath(org_dir), "works") + os.sep
+            actual = os.path.abspath(docs_dir)
+            if not (actual == expected_prefix.rstrip(os.sep) or actual.startswith(expected_prefix)):
+                missing.append(
+                    f"docsDir position invalid: {actual} not under {expected_prefix.rstrip(os.sep)}"
+                )
+    except Exception:
+        # Best-effort — never flip phase outcome on a soft check failure.
+        pass
 
     return missing
 

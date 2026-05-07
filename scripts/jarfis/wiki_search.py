@@ -287,7 +287,9 @@ def resolve_search_dirs(org_root=None, org_dir=None):
 
     Args:
         org_root: Organization root (project root with .jarfis-org/). For wiki.
-        org_dir: Organization workspace dir (.personal/orgs/{org}/). For meetings/works.
+        org_dir: Organization workspace dir. For meetings/works. v4.4
+                 semantic: ``{org_root}/.jarfis-org/`` for registered orgs,
+                 ``{personal}/`` flat for standalone (no _standalone wrapper).
 
     Returns:
         dict of {scope: target_dir} for existing directories only.

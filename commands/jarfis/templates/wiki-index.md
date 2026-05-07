@@ -1,6 +1,6 @@
 # Wiki INDEX.md Template
 
-Create `{org_root}/wiki/INDEX.md` with the structure below.
+Create `{org_root}/.jarfis-org/wiki/INDEX.md` with the structure below.
 
 ```markdown
 # Wiki Index

@@ -61,43 +61,76 @@ def _resolve_org_name(project_dir=None):
 
 
 def get_org_dir(project_dir=None):
-    """Resolve org-aware workspace directory.
+    """Resolve org-aware workspace directory (v4.4 — physical org-root data source).
 
-    Returns .personal/orgs/{org_name}/ for org projects,
-    .personal/orgs/_standalone/ for standalone projects.
+    Semantics:
+        - If ``project_dir`` is supplied AND ``find_org_root(project_dir)`` finds
+          an org-root with ``.jarfis-org/org-profile.md`` → return
+          ``{org_root}/.jarfis-org/`` (the single org container holding
+          wiki/, meetings/, works/, learnings.md).
+        - Otherwise (standalone — no org context) → return ``{personal_dir}/``
+          flat, with ``meetings/``, ``works/`` as direct subdirs of
+          ``.personal/``. The ``orgs/_standalone/`` wrapper used in v4.3 has
+          been abandoned (per ADR — v4.4 org-root data-source restructure).
 
     Args:
         project_dir: Project directory to determine org context.
-                     If None, uses _standalone.
+                     If None or not under any org, returns flat personal_dir.
     """
     personal = get_personal_dir()
-    org_name = _resolve_org_name(project_dir)
-    return os.path.join(personal, "orgs", org_name)
+    if project_dir:
+        org_root = find_org_root(project_dir)
+        if org_root:
+            jarfis_org = os.path.join(org_root, ".jarfis-org")
+            org_profile = os.path.join(jarfis_org, "org-profile.md")
+            if os.path.isfile(org_profile):
+                return jarfis_org
+    return personal
 
 
 def get_all_workspaces():
-    """List all org workspace directories for cross-org scanning.
+    """List all org workspace directories for cross-org scanning (v4.4 rewrite).
 
-    Returns list of absolute paths to each org workspace dir
-    (e.g., ['.personal/orgs/Medistream', '.personal/orgs/_standalone']).
+    Behavior (per Critic Fix A — ADR org-root data-source restructure):
+      1. Read ``{personal_dir}/orgs/orgs.json`` if present.
+      2. For each registered org with a ``root`` field, yield
+         ``{root}/.jarfis-org/`` if that directory exists.
+      3. Append ``{personal_dir}/`` itself as the standalone bucket
+         (flat — no ``_standalone`` wrapper).
+      4. Filter to existing directories only.
+
+    Returns list of absolute paths.
     """
     personal = get_personal_dir()
-    orgs_dir = os.path.join(personal, "orgs")
-    if not os.path.isdir(orgs_dir):
-        return []
     result = []
-    for entry in sorted(os.listdir(orgs_dir)):
-        full = os.path.join(orgs_dir, entry)
-        if os.path.isdir(full):
-            result.append(full)
+    orgs_json = os.path.join(personal, "orgs", "orgs.json")
+    if os.path.isfile(orgs_json):
+        try:
+            with open(orgs_json) as f:
+                data = json.load(f)
+            for entry in data.get("orgs", []):
+                root = entry.get("root")
+                if not root:
+                    continue
+                jarfis_org = os.path.join(root, ".jarfis-org")
+                if os.path.isdir(jarfis_org):
+                    result.append(jarfis_org)
+        except (json.JSONDecodeError, OSError):
+            pass
+
+    # Standalone bucket: flat personal_dir.
+    if os.path.isdir(personal):
+        result.append(personal)
     return result
 
 
 def get_learnings_path(project_dir=None):
-    """Resolve org-aware learnings.md path.
+    """Resolve org-aware learnings.md path (v4.4).
 
-    Returns .personal/orgs/{org}/learnings.md or
-    .personal/orgs/_standalone/learnings.md.
+    Returns ``{org_root}/.jarfis-org/learnings.md`` for registered orgs, or
+    ``{personal_dir}/learnings.md`` for standalone (flat). The path formula
+    is unchanged ({org_dir}/learnings.md); the change is in get_org_dir's
+    semantic.
     """
     ws = get_org_dir(project_dir)
     return os.path.join(ws, "learnings.md")

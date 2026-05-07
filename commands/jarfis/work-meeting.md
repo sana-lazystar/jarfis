@@ -33,7 +33,7 @@ engaging in free-form discussion with the user to explore and refine ideas.
      - If "Change name" is selected, accept a new name and update `$MEETING_NAME`
 
 2. **Create directory**
-   - `$JARFIS_ORG_DIR` = Org-aware workspace (based on org detection from `jarfis_cli.py preflight`. `.personal/orgs/{org}/` or `.personal/orgs/_standalone/`)
+   - `$JARFIS_ORG_DIR` = Org-aware workspace (v4.4, based on `jarfis_cli.py preflight.org_dir`: `{org_root}/.jarfis-org/` for registered org, `{JARFIS_SOURCE}/.personal/` for standalone). **`$JARFIS_ORG_DIR` is a convention variable derived from preflight, not an exported env var.**
    - `$MEETING_DIR` = `$JARFIS_ORG_DIR/meetings/{YYYYMMDD}-$MEETING_NAME/` (YYYYMMDD: meeting start date)
    - Create the directory: `mkdir -p $MEETING_DIR`
    - If a directory containing the same `$MEETING_NAME` already exists under `$JARFIS_ORG_DIR/meetings/`, prompt via AskUserQuestion:

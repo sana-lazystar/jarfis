@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.4.0] - 2026-05-07
+
+- implement: v4.4.0 — org_root data-source restructure (.jarfis-org single container; D1-D7 + Critic Fix A/B + auto-migration)
+
 ## [4.3.0] - 2026-05-07
 
 - implement: monorepo SSOT walk-up resolver fallback (.jarfis-project/ prefix-gated, org.root/.git/depth=3 boundary, dedupe with from_scope_indices) + project-init monorepo detection + project-profile Monorepo Layout template section

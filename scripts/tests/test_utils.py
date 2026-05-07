@@ -86,11 +86,14 @@ class TestResolveOrgName:
 
 
 class TestGetOrgDir:
-    def test_returns_standalone_without_project_dir(self, jarfis_env):
+    def test_returns_standalone_personal_flat_without_project_dir(self, jarfis_env):
+        """v4.4: standalone returns {personal_dir}/ flat (no orgs/_standalone/ wrapper)."""
         result = get_org_dir()
-        assert result.endswith(os.path.join("orgs", "_standalone"))
+        # Result should equal the personal_dir itself (with optional trailing slash).
+        assert os.path.normpath(result) == os.path.normpath(jarfis_env["personal_dir"])
 
-    def test_returns_org_workspace_with_project_dir(self, jarfis_env, tmp_path):
+    def test_returns_org_root_jarfis_org_with_project_dir(self, jarfis_env, tmp_path):
+        """v4.4: registered org returns {org_root}/.jarfis-org/."""
         org_root = tmp_path / "org"
         project = org_root / "project1"
         project.mkdir(parents=True)
@@ -98,29 +101,82 @@ class TestGetOrgDir:
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
         result = get_org_dir(str(project))
-        assert result.endswith(os.path.join("orgs", "TestOrg"))
+        # Result must end with .jarfis-org under the org_root.
+        assert os.path.normpath(result) == os.path.normpath(str(jarfis_dir))
+
+    def test_standalone_returns_personal_flat_when_no_org_marker(self, jarfis_env, tmp_path):
+        """v4.4: a project_dir without org marker also returns flat personal_dir."""
+        project = tmp_path / "loose-project"
+        project.mkdir()
+        result = get_org_dir(str(project))
+        assert os.path.normpath(result) == os.path.normpath(jarfis_env["personal_dir"])
 
 
 class TestGetAllWorkspaces:
-    def test_lists_all_org_dirs(self, jarfis_env):
+    def test_reads_orgs_json_and_yields_jarfis_org_paths(self, jarfis_env):
+        """v4.4: get_all_workspaces reads orgs.json and yields {root}/.jarfis-org/ for each."""
         result = get_all_workspaces()
-        names = [os.path.basename(p) for p in result]
-        assert "TestOrg" in names
-        assert "_standalone" in names
+        # TestOrg's .jarfis-org directory must be in result (via orgs.json lookup).
+        testorg_jarfis_org = jarfis_env["testorg_dir"]
+        assert any(os.path.normpath(p) == os.path.normpath(testorg_jarfis_org) for p in result)
 
-    def test_empty_when_no_orgs_dir(self, tmp_path, monkeypatch):
+    def test_includes_standalone_personal_dir(self, jarfis_env):
+        """v4.4: get_all_workspaces also appends {personal_dir}/ as standalone bucket."""
+        result = get_all_workspaces()
+        personal = jarfis_env["personal_dir"]
+        assert any(os.path.normpath(p) == os.path.normpath(personal) for p in result)
+
+    def test_filters_to_existing_dirs_only(self, jarfis_env):
+        """Orgs registered in orgs.json with non-existent .jarfis-org dirs are filtered out."""
+        # Add a bogus entry to orgs.json
+        orgs_json_path = os.path.join(jarfis_env["orgs_dir"], "orgs.json")
+        with open(orgs_json_path) as f:
+            data = json.load(f)
+        data["orgs"].append({"name": "GhostOrg", "root": "/nonexistent/ghost"})
+        with open(orgs_json_path, "w") as f:
+            json.dump(data, f)
+        result = get_all_workspaces()
+        # GhostOrg's .jarfis-org dir does not exist, so it should be filtered out.
+        assert not any("ghost" in p.lower() for p in result)
+
+    def test_empty_when_no_orgs_dir_and_no_personal(self, tmp_path, monkeypatch):
+        """No personal_dir at all (and no orgs.json) → empty result."""
         monkeypatch.setenv("HOME", str(tmp_path))
         (tmp_path / ".claude").mkdir()
         result = get_all_workspaces()
         assert result == []
 
+    def test_two_registered_orgs_both_yielded(self, jarfis_env, tmp_path):
+        """orgs.json with 2 entries → both .jarfis-org dirs are yielded."""
+        # Create a second org's physical root with .jarfis-org
+        org2_root = tmp_path / "org2-root"
+        org2_jarfis_org = org2_root / ".jarfis-org"
+        org2_jarfis_org.mkdir(parents=True)
+        (org2_jarfis_org / "org-profile.md").write_text("---\norg: Org2\n---\n")
+
+        # Append to orgs.json
+        orgs_json_path = os.path.join(jarfis_env["orgs_dir"], "orgs.json")
+        with open(orgs_json_path) as f:
+            data = json.load(f)
+        data["orgs"].append({"name": "Org2", "root": str(org2_root)})
+        with open(orgs_json_path, "w") as f:
+            json.dump(data, f)
+
+        result = get_all_workspaces()
+        normalized = [os.path.normpath(p) for p in result]
+        assert os.path.normpath(jarfis_env["testorg_dir"]) in normalized
+        assert os.path.normpath(str(org2_jarfis_org)) in normalized
+
 
 class TestGetLearningsPath:
-    def test_standalone_learnings(self, jarfis_env):
+    def test_standalone_learnings_under_personal_flat(self, jarfis_env):
+        """v4.4: standalone learnings.md sits directly under {personal_dir}/."""
         result = get_learnings_path()
-        assert result.endswith(os.path.join("_standalone", "learnings.md"))
+        expected = os.path.join(jarfis_env["personal_dir"], "learnings.md")
+        assert os.path.normpath(result) == os.path.normpath(expected)
 
-    def test_org_learnings(self, jarfis_env, tmp_path):
+    def test_org_learnings_under_jarfis_org(self, jarfis_env, tmp_path):
+        """v4.4: org learnings.md sits under {org_root}/.jarfis-org/learnings.md."""
         org_root = tmp_path / "org"
         project = org_root / "proj"
         project.mkdir(parents=True)
@@ -128,7 +184,8 @@ class TestGetLearningsPath:
         jarfis_dir.mkdir()
         (jarfis_dir / "org-profile.md").write_text("---\norg: TestOrg\n---\n")
         result = get_learnings_path(str(project))
-        assert result.endswith(os.path.join("TestOrg", "learnings.md"))
+        expected = os.path.join(str(jarfis_dir), "learnings.md")
+        assert os.path.normpath(result) == os.path.normpath(expected)
 
 
 class TestJsonOutput:

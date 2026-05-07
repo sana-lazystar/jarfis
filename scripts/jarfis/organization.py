@@ -10,10 +10,34 @@ Subcommands:
 import json
 import os
 import re
+import subprocess
 import sys
 from datetime import datetime
 
 from .utils import get_personal_dir, json_error, json_output
+
+
+def _detect_sync_mode(org_root):
+    """Detect sync mode for org_root frontmatter (Critic Fix B).
+
+    Returns ``"git"`` if ``git -C {org_root} rev-parse --show-toplevel``
+    succeeds (the org_root is inside a git work tree), else ``"none"``.
+
+    The third option (``"manual"``) is not auto-detected — it must be
+    set explicitly by the user (e.g. via migration prompt).
+    """
+    try:
+        result = subprocess.run(
+            ["git", "-C", org_root, "rev-parse", "--show-toplevel"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        if result.returncode == 0:
+            return "git"
+    except (FileNotFoundError, subprocess.TimeoutExpired, OSError):
+        pass
+    return "none"
 
 # Directories to exclude during project scanning
 EXCLUDE_DIRS = {
@@ -70,13 +94,21 @@ def _scan_projects(org_root):
 
 
 def _create_org_files(org_root, projects, org_name=None):
-    """Create Organization files: org-profile.md, wiki structure."""
+    """Create Organization files (v4.4 — single org-root container).
+
+    Creates under {org_root}/.jarfis-org/:
+      - org-profile.md (with sync: git|none frontmatter — Critic Fix B)
+      - wiki/INDEX.md + wiki/{PO,DESIGN,TA,QA}/_index.md
+      - meetings/ + works/ subdirectories
+      - learnings.md (header-only template)
+    """
     org_root = os.path.abspath(org_root)
     jarfis_dir = os.path.join(org_root, ".jarfis-org")
     wiki_dir = os.path.join(jarfis_dir, "wiki")
     if not org_name:
         org_name = os.path.basename(org_root)
     today = datetime.now().strftime("%Y-%m-%d")
+    sync_mode = _detect_sync_mode(org_root)
 
     created_files = []
 
@@ -93,6 +125,7 @@ def _create_org_files(org_root, projects, org_name=None):
         f.write(f"""---
 org: {org_name}
 root: {org_root}
+sync: {sync_mode}
 created: {today}
 ---
 
@@ -154,7 +187,20 @@ Details: QA/_index.md
 """)
         created_files.append(section_index)
 
-    # 4. Update project profiles with org: field
+    # 4. v4.4: meetings/ + works/ subdirectories under .jarfis-org/
+    meetings_dir = os.path.join(jarfis_dir, "meetings")
+    works_dir = os.path.join(jarfis_dir, "works")
+    os.makedirs(meetings_dir, exist_ok=True)
+    os.makedirs(works_dir, exist_ok=True)
+
+    # 5. v4.4: learnings.md header template
+    learnings_path = os.path.join(jarfis_dir, "learnings.md")
+    if not os.path.isfile(learnings_path):
+        with open(learnings_path, "w") as f:
+            f.write(f"# {org_name} Learnings\n\n")
+        created_files.append(learnings_path)
+
+    # 6. Update project profiles with org: field
     for p in projects:
         profile_path = os.path.join(p["absolute_path"], ".jarfis-project", "project-profile.md")
         if os.path.isfile(profile_path):
@@ -204,26 +250,43 @@ def _write_orgs(data):
 
 
 def register_org(name, root):
-    """Register org in orgs.json + create workspace dirs.
+    """Register org in orgs.json (v4.4 — collision-aware, defect D7).
 
-    Returns True if newly added, False if already exists.
-    Rejects names starting with '_' (reserved prefix).
+    Returns a dict describing the outcome:
+      - Reserved name (starts with '_'):
+          ``{"success": False, "reserved": True}``
+      - Org name exists with a DIFFERENT root (collision):
+          ``{"success": False, "collision": True,
+            "existing_root": ..., "new_root": ...}``
+        The registry is NOT modified.
+      - Org name exists with the SAME root (idempotent):
+          ``{"success": True, "already_registered": True}``
+      - Org not yet in registry → adds entry:
+          ``{"success": True, "registered": True}``
+
+    Truthiness: callers that previously relied on a True/False return value
+    can use ``bool(register_org(...).get("registered"))`` for the
+    "newly-added" condition. The legacy bool semantics are preserved by the
+    ``registered`` key (newly added → True; collision/duplicate → absent).
     """
     if name.startswith("_"):
-        return False
+        return {"success": False, "reserved": True}
+    abs_root = os.path.abspath(root)
     data = read_orgs()
     for org in data["orgs"]:
         if org["name"] == name:
-            return False
-    data["orgs"].append({"name": name, "root": os.path.abspath(root)})
+            existing_root = os.path.abspath(org.get("root", ""))
+            if existing_root == abs_root:
+                return {"success": True, "already_registered": True}
+            return {
+                "success": False,
+                "collision": True,
+                "existing_root": existing_root,
+                "new_root": abs_root,
+            }
+    data["orgs"].append({"name": name, "root": abs_root})
     _write_orgs(data)
-
-    # Create org workspace directories
-    personal = get_personal_dir()
-    org_ws = os.path.join(personal, "orgs", name)
-    os.makedirs(os.path.join(org_ws, "works"), exist_ok=True)
-    os.makedirs(os.path.join(org_ws, "meetings"), exist_ok=True)
-    return True
+    return {"success": True, "registered": True}
 
 
 def discover_unregistered_orgs():
@@ -285,7 +348,8 @@ def discover_unregistered_orgs():
                     dirs.clear()
                     continue
 
-                if register_org(org_name, abs_root):
+                reg_result = register_org(org_name, abs_root)
+                if reg_result.get("registered"):
                     discovered.append({"name": org_name, "root": abs_root})
 
                 dirs.clear()  # Don't descend further
@@ -387,8 +451,11 @@ def cmd_init(args):
     resolved_name = org_name or os.path.basename(os.path.abspath(org_root))
     created = _create_org_files(org_root, projects, org_name=resolved_name)
 
-    # Auto-register in orgs.json
-    registered = register_org(resolved_name, org_root)
+    # Auto-register in orgs.json (v4.4 dict-shaped result; expose the
+    # newly-registered boolean via the "registered" key for backward compat
+    # with the JSON consumers).
+    reg_result = register_org(resolved_name, org_root)
+    registered = bool(reg_result.get("registered"))
 
     json_output({
         "action": "init",
@@ -399,6 +466,7 @@ def cmd_init(args):
         "created_files": created,
         "created_count": len(created),
         "orgs_json_registered": registered,
+        "registration": reg_result,
     })
 
 

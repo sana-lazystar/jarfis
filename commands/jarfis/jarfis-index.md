@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.3.0
+> Do not edit manually. Last updated: 2026-05-07 | Version: 4.4.0
 
 ## File Structure
 ```
@@ -136,6 +136,7 @@
   - `jarfis_cli.py search` — Semantic search (search {all|meetings|works|wiki}, index, status; CWD-based Org resolution)
   - `jarfis_cli.py wiki` — Wiki semantic search (deprecated → search wiki; backward compatibility)
   - `jarfis_cli.py domain` — Domain Pack management (list/detect/agents/compose/validate/scaffold/install)
+  - `jarfis_cli.py migrate` — v4.3 → v4.4 org-root data-source migration (subcommand `v4.3-to-v4.4`; flags `--dry-run`, `--no-backup`)
 - `~/.claude/scripts/jarfis/` — Python module directory (referenced by `jarfis_cli.py`)
   - `state.py` — .jarfis-state.json CRUD (v4 schema: work{} + org + sessionKey + phases.{N}.status; v3 flat-key dual emit removed in v4.1 per ADR-0002 — backward-compat read still accepted)
   - `verify.py` — Unified gate/phase/pattern verification (`gate-check` + `phase-check` + `phase-verify` + `pattern-detect`). v4 replacement for v3 `jarfis-black` LLM gate — deterministic Python, ~10ms, machine-verifiable (ADR-15; 1,349 lines)
@@ -156,9 +157,10 @@
   - `utils.py` — Shared helpers
   - `validate.py` — Workflow validation module (state + artifact + wiki structure + Git status)
   - `version.py` — Semver version bump (VERSION + __init__.py + CHANGELOG)
+  - `migrate.py` — v4.3 → v4.4 org-root data-source migration (v4.4.0; 341 lines; moves `.personal/orgs/{name}/{meetings,works,learnings.md}` into `{org.root}/.jarfis-org/`, flattens `_standalone` bucket, rewrites active `.jarfis-state.json` docsDir strings, git-orphan detection + `sync` field write, dry-run + backup tarball + idempotency, archives legacy `orgs/` as `orgs.v4.3-archive/`)
   - `wiki_search.py` — Semantic search (sentence-transformers bge-m3, wiki/meetings/works/**jarfis** indexing+search + incremental update + memory guard + CPU forced + MPS memory deduction; jarfis scope reads `~/.claude/` + repo + `.personal/.jarfis-index/` ChromaDB, 1,409 lines)
   - `implement.py` — sys-implement workspace manager (v4.2.0 ADR-0003) — manifest/state/log/RESUME/README + atomic writes + plan-name validation + workspace lock + cmd_init/state/log/resume/archive/list + `validate_citations` (path:LNN backticks, ADR-0005) + `classify_verdict` (Force-Acknowledge) + `recommend_execution_mode` (ADR-0004) + `extract_changed_files` (Step 4.5 RAG hook) (925 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (26 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`)
+- `~/.claude/scripts/tests/` — pytest test directory (27 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`; 784 tests passing @ v4.4.0)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_architecture.py` — Architecture invariants (domain boundaries, import hygiene)
   - `test_state.py` · `test_verify.py`-family (`test_gate_check.py`, `test_phase_verify.py`) · `test_tmux_claude.py` · `test_trace.py` · `test_compose_warnings.py`
@@ -167,6 +169,7 @@
   - `test_sync.py` · `test_utils.py` · `test_version.py` · `test_wiki_search.py` · `test_level_check.py` · `test_jarfis_cli.py`
   - `test_implement.py` — sys-implement workspace + Force-Acknowledge dialectic + execution mode dispatch tests (v4.2.0; 670 lines, 57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / validate_citations / classify_verdict / recommend_execution_mode / extract_changed_files)
   - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; 10 tests covering walk-up engagement, prefix gating to `.jarfis-project/`, boundary precedence (org.root → `.git` ancestor → depth=3), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering)
+  - `test_migrate.py` — v4.3 → v4.4 migration tests (v4.4.0; 10 tests covering dry-run listing, meetings/works/learnings move under `.jarfis-org/`, standalone flatten, sync field git/none branch, state.json docsDir string rewrite, backup tarball, idempotent re-run)
 - `~/.claude/scripts/jarfis_check.sh` — grep-based JARFIS structural validation script (Phase headings, prompt files, version matching, model consistency)
 - `~/.claude/hooks/` — 4 hooks (all kill-switchable via env var)
   - `jarfis-pre-compact.sh` — PreCompact hook: backs up `.jarfis-state.json` + meeting files from `$JARFIS_ORG_DIR` before auto-compact (shell-only)
@@ -180,9 +183,9 @@
 - `~/.claude/.jarfis-personal-dir` — .personal directory path (default: `{JARFIS_SOURCE}/.personal`)
 - `~/.claude/.jarfis-locale` — Global locale setting (ko/en/ja); state.locale mirrors this
 - `~/.claude/.jarfis-venv/` — sentence-transformers venv (used by `wiki`/`search` commands via jarfis_cli.py auto re-exec)
-- `{JARFIS_SOURCE}/.personal/orgs/orgs.json` — Org registry (auto-registered during org-init)
-- `{JARFIS_SOURCE}/.personal/orgs/{org_name}/` — Per-Org workspace (works/, meetings/, learnings.md)
-- `{JARFIS_SOURCE}/.personal/orgs/_standalone/` — Workspace for unregistered Org users
+- `{JARFIS_SOURCE}/.personal/orgs/orgs.json` — Org registry (`org_name` → `org_root` path mapping; auto-registered during org-init)
+- `{org_root}/.jarfis-org/` — Per-Org container (`wiki/`, `meetings/`, `works/`, `learnings.md`; physical org-root based; v4.4.0)
+- `{JARFIS_SOURCE}/.personal/{meetings, works, learnings.md}` — Standalone fallback (no `wiki/`; flat, no `_standalone` wrapper)
 - `{JARFIS_SOURCE}/.personal/sys-implements/{plan-name}/` — sys-implement workspace (v4.2.0 ADR-0003): `manifest.json` (immutable) + `state.json` (mutable state machine) + `RESUME.md` + `README.md` + `log/NNNN-{step}-{event}.json` (append-only event log) + `artifacts/step{N}/` (per-step deliverables incl. step2/before+after diff snapshots) + `compensation/` (rollback dir; undo.sh auto-generation deferred to v4.2.1+ per D10)
 - `{JARFIS_SOURCE}/.personal/.jarfis-index/` — JARFIS self-knowledge ChromaDB (v4.2.0 ADR-0002 §2.4): `chroma.sqlite3` + `.vectors.npz` + collection `jarfis-system` (md/yaml/python files chunked + bge-m3 embeddings; refreshed via Step 4.5 incremental update; ~951 chunks @ 2026-05-07)
 - `$JARFIS_ORG_DIR/workflow-metrics.tsv` — Workflow metrics cumulative record (AutoResearch results.tsv pattern, appended at Phase 6 Step 6-2.5)

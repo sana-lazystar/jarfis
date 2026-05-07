@@ -99,13 +99,16 @@ Result banner:
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
   Organization Created
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
-📂 {$ORG_ROOT}/.jarfis-org/org-profile.md
+📂 {$ORG_ROOT}/.jarfis-org/org-profile.md  (frontmatter includes sync: git|none, auto-detected)
 📚 {$ORG_ROOT}/.jarfis-org/wiki/
    ├── INDEX.md
    ├── PO/_index.md
    ├── DESIGN/_index.md
    ├── TA/_index.md
    └── QA/_index.md
+🗂️ {$ORG_ROOT}/.jarfis-org/meetings/    (v4.4 — created by _create_org_files)
+🗂️ {$ORG_ROOT}/.jarfis-org/works/       (v4.4 — created by _create_org_files)
+📝 {$ORG_ROOT}/.jarfis-org/learnings.md  (v4.4 — header-only template)
 
 Next steps:
   1. cd {project_path} && /jarfis:project-init
@@ -113,3 +116,5 @@ Next steps:
      /jarfis:search-setup → /jarfis:search-index
 ━━━━━━━━━━━━━━━━━━━━━━━━━━
 ```
+
+> **v4.4 — `_create_org_files` outputs**: in addition to `org-profile.md` and the wiki tree, this initialization also creates `meetings/`, `works/`, and a header-only `learnings.md` directly under `.jarfis-org/`. The `sync` field in the org-profile frontmatter is auto-detected by `_detect_sync_mode(org_root)` — if `git -C {org_root} rev-parse --show-toplevel` succeeds, `sync: git`; otherwise `sync: none`. To set `sync: manual`, edit the frontmatter post-init.

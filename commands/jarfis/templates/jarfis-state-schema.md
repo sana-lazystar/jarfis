@@ -29,7 +29,9 @@ lifecycle (``status`` / ``current_phase`` / ``phases`` /
   "work": {
     "name": "20250101-feat-TICKET-123",
     "input": "feat/TICKET-123",
-    "docsDir": "{JARFIS_SOURCE}/.personal/orgs/{org_name}/works/20250101-feat-TICKET-123",
+    "docsDir": "{org_root}/.jarfis-org/works/20250101-feat-TICKET-123",
+    // v4.4 Note: docsDir now lives at the physical org_root's .jarfis-org container.
+    // Standalone fallback (no registered org): "{JARFIS_SOURCE}/.personal/works/{YYYYMMDD}-{slug}"
     "startedAt": "2025-01-01T00:00:00Z",
     "meetings": [],
     "projectName": "Summary of planning content"

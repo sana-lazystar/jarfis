@@ -109,6 +109,8 @@ def main():
         "compose": "jarfis.compose.__main__",
         "work-args": "jarfis.work_args",
         "implement": "jarfis.implement",
+        # v4.4 — ADR org-root data-source restructure: data layout migrator.
+        "migrate": "jarfis.migrate",
     }
 
     if command not in commands:

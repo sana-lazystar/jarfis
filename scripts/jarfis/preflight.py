@@ -16,11 +16,34 @@ from .organization import ensure_project_in_org_profile, read_orgs, register_org
 from .utils import _resolve_org_name, find_org_root, get_claude_dir, get_source_path, get_org_dir, json_output, STANDALONE_ORG
 
 
+def _validate_docsdir_position(docsdir, org_dir):
+    """Defect D6: validate docsDir lies under {org_dir}/works/.
+
+    Returns dict suitable for inclusion in preflight JSON output:
+      - {"valid": True} when docsDir is under the expected prefix.
+      - {"valid": False, "expected_prefix": ..., "actual": ...,
+         "error": "..."} otherwise.
+    """
+    expected_prefix = os.path.join(os.path.abspath(org_dir), "works") + os.sep
+    actual = os.path.abspath(docsdir)
+    # Use string-prefix match anchored on path separator to avoid partial-name
+    # collisions (e.g. /a/works-old/ vs /a/works/).
+    if actual.startswith(expected_prefix) or actual == expected_prefix.rstrip(os.sep):
+        return {"valid": True}
+    return {
+        "valid": False,
+        "expected_prefix": expected_prefix.rstrip(os.sep),
+        "actual": actual,
+        "error": "docsDir is outside org workspace",
+    }
+
+
 def main(args):
     project_dir = ""
     org_dir = ""
     check_meetings = False
     verbose = False
+    check_docsdir = ""
 
     i = 0
     while i < len(args):
@@ -30,6 +53,9 @@ def main(args):
         elif args[i] == "--check-meetings":
             check_meetings = True
             i += 1
+        elif args[i] == "--check-docsdir" and i + 1 < len(args):
+            check_docsdir = args[i + 1]
+            i += 2
         elif args[i] == "--verbose":
             verbose = True
             i += 1
@@ -164,10 +190,13 @@ def main(args):
         else:
             warnings.append("Organization is registered but wiki/INDEX.md is missing.")
 
-        # Resolve org name and auto-register if needed
+        # Resolve org name and auto-register if needed (v4.4: register_org
+        # returns a dict; expose the newly-registered boolean for backward
+        # compat with downstream consumers).
         org_name = _resolve_org_name(project_dir)
         if org_name and org_name != STANDALONE_ORG:
-            org_auto_registered = register_org(org_name, org_root)
+            reg_result = register_org(org_name, org_root)
+            org_auto_registered = bool(reg_result.get("registered"))
             if org_auto_registered:
                 log(f"Org auto-registered: {org_name}")
 
@@ -192,6 +221,11 @@ def main(args):
                     break
         log(f"Meetings: {has_meetings}")
 
+    # Defect D6: docsDir position validation (best-effort).
+    docsdir_validated = None
+    if check_docsdir:
+        docsdir_validated = _validate_docsdir_position(check_docsdir, org_dir)
+
     json_output({
         "project_dir": project_dir,
         "profile_path": profile_path,
@@ -214,5 +248,6 @@ def main(args):
         "org_profile": org_profile,
         "has_wiki": has_wiki,
         "wiki_index": wiki_index,
+        "docsDir_validated": docsdir_validated,
         "warnings": warnings,
     })

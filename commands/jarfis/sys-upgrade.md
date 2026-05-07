@@ -2,7 +2,7 @@
 
 > **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-Manages learning items in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) and applies them to actual agent/workflow prompts.
+Manages learning items in `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone) and applies them to actual agent/workflow prompts.
 
 > **`{JARFIS_SOURCE}` resolution**: Read `~/.claude/.jarfis-source` to find the JARFIS Git repo path. If absent, default to `~/repos/jarfis`.
 
@@ -12,7 +12,7 @@ Manages learning items in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/
 
 ### Step 1: Load Learning File
 
-Read the `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) file.
+Read the `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone) file.
 If the file does not exist, inform the user: "No learning file found yet. Please run the `/jarfis` workflow first." and terminate.
 
 If the file exists, parse it by section and display the current learning list to the user:
@@ -198,7 +198,7 @@ options:
 2. Use AskUserQuestion with **multiSelect: true** to let the user select items to delete.
    - Each option label: item number and content summary (e.g., "[FE-1] img tag indentation check")
    - description: full item content
-3. Remove the selected items from `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`).
+3. Remove the selected items from `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone).
 4. Display the deletion results and return to Step 2.
 
 ##### [Edit]
@@ -208,7 +208,7 @@ options:
 3. Show the current content of the selected item and use AskUserQuestion to receive new content.
    - question: "Enter the new content (Current: [current content summary])"
    - Allow free input via "Other"
-4. Replace the corresponding item in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`) with the input.
+4. Replace the corresponding item in `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone) with the input.
 5. Display the edit results and return to Step 2.
 
 ##### [Add]
@@ -231,7 +231,7 @@ options:
 2. Use AskUserQuestion to receive the learning content.
    - question: "Enter the learning content to add"
    - Allow free input via "Other"
-3. Auto-append today's date and add the item to the corresponding section in `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`).
+3. Auto-append today's date and add the item to the corresponding section in `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone).
    - Format: `- (input content) (YYYY-MM-DD)`
    - For Workflow Patterns: `- (input content) (YYYY-MM-DD, confirmed 1 time)`
 4. Display the addition results and return to Step 2.
@@ -250,7 +250,7 @@ options:
      - label: "Cancel"
        description: "Return without doing anything"
    ```
-2. If "Execute Clear" is selected: Remove all items (lines starting with `-`) from `$JARFIS_ORG_DIR/learnings.md` (Org-aware: `.personal/orgs/{org}/learnings.md`). Preserve section headers (`#`, `##`, `###`).
+2. If "Execute Clear" is selected: Remove all items (lines starting with `-`) from `$JARFIS_ORG_DIR/learnings.md` (Org-aware v4.4: `{org_root}/.jarfis-org/learnings.md` for registered orgs or `{JARFIS_SOURCE}/.personal/learnings.md` for standalone). Preserve section headers (`#`, `##`, `###`).
 3. Display the results and return to Step 2.
 
 ---
