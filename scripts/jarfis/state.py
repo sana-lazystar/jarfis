@@ -143,11 +143,51 @@ def cmd_set_nested(args, audit_path=None):
         obj = obj[k]
     obj[keys[-1]] = parsed_value
 
+    # design-supplied-mode-v1 (Step 2): writes that target ``design.mode``
+    # must propagate the mutual-exclusion invariants from ``set_design_mode``
+    # so figmaPages / suppliedPath stay consistent with the new mode. We
+    # apply this only on exact ``design.mode`` matches — sibling keys
+    # (e.g. ``design.figmaPages``) are left untouched so callers can still
+    # populate the new array after switching to figma mode.
+    if key_path == "design.mode":
+        set_design_mode(data, parsed_value)
+
     with open(state_file, "w") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
     _try_audit(audit_path, "PhaseCompleted", key_path=key_path)
     json_output({"success": True, "key_path": key_path})
+
+
+def set_design_mode(state, new_mode):
+    """Update ``state.design.mode`` and enforce mutual exclusion invariants.
+
+    SSOT contract for design-supplied-mode-v1 (Critic blocker #4 absorption):
+
+    | new_mode    | figmaPages | suppliedPath |
+    |-------------|------------|--------------|
+    | "figma"     | preserved  | reset to None |
+    | "supplied"  | reset to []| preserved    |
+    | "text"      | reset to []| reset to None |
+    | None        | reset to []| reset to None |
+
+    The helper is also invoked by ``cmd_set_nested`` whenever the caller
+    writes ``design.mode`` directly, so the invariant holds even when state
+    is mutated through the generic CLI path. Mutates ``state`` in place and
+    returns it so callers can chain.
+    """
+    if not isinstance(state, dict):
+        return state
+    design = state.setdefault("design", {})
+    design["mode"] = new_mode
+    if new_mode == "supplied":
+        design["figmaPages"] = []
+    elif new_mode == "figma":
+        design["suppliedPath"] = None
+    elif new_mode in ("text", None):
+        design["figmaPages"] = []
+        design["suppliedPath"] = None
+    return state
 
 
 def migrate_v40_to_v41(state):
@@ -238,7 +278,17 @@ def cmd_init(args):
         "locale": None,
         "org": None,
         "domain": None,
-        "design": {"mode": None, "figmaPages": []},
+        # design.suppliedPath / brandAssetsDir (Step 2 of design-supplied-mode-v1):
+        # SSOT-preserving fields populated when ``state.design.mode == "supplied"``.
+        # Mutual exclusion between figmaPages and suppliedPath is enforced by
+        # ``set_design_mode`` (and verified by ``verify._gate2_checks`` /
+        # ``_phase_3_verify`` at Gate 2).
+        "design": {
+            "mode": None,
+            "figmaPages": [],
+            "suppliedPath": None,
+            "brandAssetsDir": None,
+        },
         "responsive": None,
         "api": {"mode": None},
         "devops": False,

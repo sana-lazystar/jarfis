@@ -306,6 +306,13 @@ For each project in `$PROJECTS_JSON` that has `$DOCS_DIR/design/` output:
 Record counts per project for Step 5 summary append:
 - `{project_name}: {N} files synced` where N = `rsync` file transfer count.
 
+> **Supplied 모드 한정 동기화 항목** (`state.design.mode == "supplied"`):
+>   - `pages/{slug}/sitemap.md` (시안 동봉 시) → `wiki/DESIGN/pages/{project}/sitemap.md`
+>   - `pages/{slug}/ia.json`    (시안 동봉 시) → `wiki/DESIGN/pages/{project}/ia.json`
+>   - `assets/`                                → `wiki/DESIGN/pages/{project}/assets/`
+>   - 시안에 없는 항목은 **자동 생성하지 않는다** (SSOT — Critic blocker #3 흡수).
+>     `rsync -a` 가 시안 전체를 그대로 sync 하므로 동봉본만 wiki 에 도달한다.
+
 ---
 
 ## Step 4 — INDEX.md auto-rebuild (orchestrator step — jarfis-foreman executes directly)

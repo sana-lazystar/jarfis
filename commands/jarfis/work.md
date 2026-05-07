@@ -77,6 +77,12 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 8. **Meetings**: `jarfis_cli.py search meetings "<query>"` (fallback `jarfis_cli.py meetings 3`). User picks 0..N; record in state/discovery as needed.
 9. **Wiki loading** (only when `state.org != null`): follow the 4-step protocol in `~/.claude/commands/jarfis/prompts/wiki-loading.md` → write `{docsDir}/.wiki-cache.md`.
 10. **Preflight verify**: `jarfis_cli.py preflight` — exit 0 required before Phase 1a.
+11. **Supplied mode pre-validation** (only when `state.design.mode == "supplied"`):
+    - `state.design.suppliedPath` 가 절대경로 + 디렉토리 존재 확인.
+    - `<suppliedPath>/pages/` 서브디렉토리 존재 확인.
+    - 최소 1개 `<suppliedPath>/pages/{slug}/index.html` + 동일 디렉토리에 `reference.png` 동봉 확인.
+    - 검증 실패 시 AskUserQuestion (`$LOCALE`): "supplied 시안 경로가 유효하지 않습니다. 다시 입력 / 모드 변경 (text/figma) / 중단".
+    - **Phase 3 spawn 전에 main session 이 검증** (tmux 내부 검증은 디버그 비용 5배). Critic blocker #2 absorption — `state.design.mode` 가 `"supplied"` 인데 시안 경로가 invalid 이면 Phase 3 launch 전에 잡는다.
 
 ---
 
@@ -84,8 +90,10 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 
 Multi-round AskUserQuestion (one decision per turn, all labels in `$LOCALE`). Write each answer to state immediately; archive the full Q&A to `{docsDir}/discovery/po-qa.json`.
 
-- `design.mode`: figma | text | null (null skips Phase 3).
-- `design.figmaPages[]`: JSON array `[{title, url}]` (only when mode = figma).
+- `design.mode`: figma | text | supplied | null (null skips Phase 3). Mode 전환 시 `state.py.set_design_mode` (또는 `cmd_set_nested design.mode`) 가 mutual exclusion (`figmaPages` ↔ `suppliedPath`) 을 자동으로 정리한다.
+- `design.figmaPages[]`: JSON array `[{title, url}]` (only when mode = figma; mode 변경 시 reset).
+- `design.suppliedPath`: absolute directory path (only when mode = supplied; 디렉토리는 `pages/` 서브트리 + 최소 1개 `pages/{slug}/index.html` + `reference.png` 동봉 의무. supplied 모드 SSOT 약속 — 시스템은 시안에 없는 정보를 만들어 주입하지 않음).
+- `design.brandAssetsDir`: absolute directory path (선택; supplied 모드일 때 Org 공유 `$ORG_ROOT/.jarfis-org/wiki/DESIGN/brand-assets/` 권장).
 - `responsive`: `pc-only` | `pc-mobile` | `pc-mobile-tablet` | `mobile-only` (M5.3 / ADR-0004 §2.1 — `mobile-only` is the natural choice for `scope[].type == "mobile"` workloads where desktop viewport is N/A; the three PC levels apply when any `scope[].type == "frontend"`).
 - `api.mode`: design | swagger | null (only when no backend scope AND at least one frontend scope; swagger → also ask `api.swaggerUrl`).
 - `devops`: boolean (DevOps agent needed).

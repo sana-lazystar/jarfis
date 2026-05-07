@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.6.0] - 2026-05-07
+
+- implement: design-supplied-mode-v1 — design.mode='supplied' 신설 (외부 시안 SSOT 모드), Phase 3 Branch C, IA templates, verify+state mutual exclusion, SSOT 자동생성 금지
+
 ## [4.5.0] - 2026-05-07
 
 - implement: agent-skill-system-v1 — single /jarfis:agent command + agent_admin.py module (skill+persona registry CRUD, Context7-aware, diff-only YAML safety)

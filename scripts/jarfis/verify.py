@@ -407,6 +407,82 @@ def _gate2_checks(state, docs_dir):
                         "phases.3.mode=text, Step 3-2 not completed",
                     )
                 )
+    elif phase3_mode == "supplied":
+        # Supplied mode (design-supplied-mode-v1, Step 2) -- the design tree
+        # was copied verbatim from state.design.suppliedPath into
+        # $DOCS_DIR/design/. Layout: design/pages/{slug}/index.html +
+        # reference.png (responsive PNGs are filled in by the foreman, not
+        # required at Gate 2). SSOT: ia.json / sitemap.md are NOT auto-
+        # generated; their absence is acceptable here.
+        design_dir = os.path.join(docs_dir, "design")
+        if not os.path.isdir(design_dir):
+            results.append(
+                CheckResult(
+                    "design/ directory missing",
+                    CheckResult.FAIL,
+                    "phases.3.mode=supplied",
+                )
+            )
+        else:
+            pages_dir = os.path.join(design_dir, "pages")
+            if not os.path.isdir(pages_dir):
+                results.append(
+                    CheckResult(
+                        "design/pages/ missing",
+                        CheckResult.FAIL,
+                        "phases.3.mode=supplied — supplied 시안은 pages/{slug}/ 구조 의무",
+                    )
+                )
+            else:
+                has_valid_page = False
+                for slug in sorted(os.listdir(pages_dir)):
+                    page_dir = os.path.join(pages_dir, slug)
+                    if not os.path.isdir(page_dir):
+                        continue
+                    idx = os.path.join(page_dir, "index.html")
+                    ref = os.path.join(page_dir, "reference.png")
+                    if os.path.isfile(idx) and os.path.isfile(ref):
+                        has_valid_page = True
+                        results.append(
+                            CheckResult(
+                                f"design/pages/{slug}/ valid",
+                                CheckResult.PASS,
+                            )
+                        )
+                    else:
+                        results.append(
+                            CheckResult(
+                                f"design/pages/{slug}/ incomplete",
+                                CheckResult.FAIL,
+                                "missing index.html or reference.png",
+                            )
+                        )
+                if not has_valid_page:
+                    results.append(
+                        CheckResult(
+                            "design/pages/ has no valid page",
+                            CheckResult.FAIL,
+                            "최소 1개 page 가 index.html + reference.png 동봉 필요",
+                        )
+                    )
+
+        # Mutual exclusion (Critic blocker #4): when mode=="supplied",
+        # figmaPages must be empty. Reading both phases.3.figma_pages
+        # (legacy) and design.figmaPages (v4 nested) so any leftover from a
+        # mode switch trips the check.
+        figma_pages = (
+            _get_nested(state, "phases.3.figma_pages", [])
+            or _get_nested(state, "design.figmaPages", [])
+        )
+        if figma_pages:
+            results.append(
+                CheckResult(
+                    "figmaPages mutual exclusion violated",
+                    CheckResult.FAIL,
+                    "phases.3.mode=supplied 인데 figmaPages 가 비어있지 않음 — mode 전환 시 reset 누락",
+                )
+            )
+
     else:
         # mode is not set but Phase 3 should run -- something is wrong
         if phase3_status in ("pending", "in_progress"):
@@ -964,10 +1040,64 @@ def _phase_2_verify(state, docs_dir):
 
 
 def _phase_3_verify(state, docs_dir):
-    """Phase 3: design/ 디렉토리 + id별 index.html/reference.png + responsive 변종 + token-map.json."""
+    """Phase 3: design/ 디렉토리 + id별 index.html/reference.png + responsive 변종 + token-map.json.
+
+    For ``state.design.mode == "supplied"`` (design-supplied-mode-v1, Step
+    2), the verifier expects the supplied tree at
+    ``design/pages/{slug}/index.html`` + ``reference.png``. token-map.json
+    and ux-direction.md are NOT required (SSOT — only the supplied tree
+    counts; Critic blocker #3 absorption). Mutual exclusion against
+    ``design.figmaPages`` is enforced as a final guard.
+    """
     missing = []
     design_dir = Path(docs_dir) / "design"
 
+    design = state.get("design") or {}
+    mode = design.get("mode")
+
+    if mode == "supplied":
+        if not design_dir.is_dir():
+            missing.append("design/ 디렉토리 누락")
+            return missing
+
+        pages_dir = design_dir / "pages"
+        if not pages_dir.is_dir():
+            missing.append("design/pages/ 누락 (supplied 모드는 pages/{slug}/ 구조 의무)")
+        else:
+            has_valid_page = False
+            for slug_dir in sorted(pages_dir.iterdir()):
+                if not slug_dir.is_dir():
+                    continue
+                slug = slug_dir.name
+                idx_ok = _h.check_file_nonempty(slug_dir / "index.html")
+                ref_ok = _h.check_file_exists(slug_dir / "reference.png")
+                if not idx_ok:
+                    missing.append(
+                        f"design/pages/{slug}/index.html 누락 또는 빈 파일"
+                    )
+                if not ref_ok:
+                    missing.append(f"design/pages/{slug}/reference.png 누락")
+                if idx_ok and ref_ok:
+                    has_valid_page = True
+            if not has_valid_page and not missing:
+                # No page subdirectories at all (or all are empty)
+                missing.append(
+                    "design/pages/ 에 유효한 page 없음 (최소 1개 index.html + reference.png 필요)"
+                )
+
+        # Mutual exclusion (Critic blocker #4): supplied mode must have
+        # empty figmaPages. Even if state.py.set_design_mode was bypassed,
+        # verify.py rejects the state here.
+        figma_pages = design.get("figmaPages") or []
+        if figma_pages:
+            missing.append(
+                "figmaPages mutual exclusion 위반 — design.mode=supplied 인데 "
+                "figmaPages 가 비어있지 않음 (mode 전환 시 reset 누락)"
+            )
+
+        return missing
+
+    # Existing figma / text path -- unchanged behavior.
     if not design_dir.is_dir():
         missing.append("design/ 디렉토리 누락")
         return missing

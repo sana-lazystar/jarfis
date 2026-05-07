@@ -229,6 +229,120 @@ class TestPhase3:
         missing = _phase_3_verify(state, docs)
         assert any("order-list/index.html 누락 또는 빈 파일" in m for m in missing)
 
+    # -----------------------------------------------------------------------
+    # design-supplied-mode-v1 — Step 2 additions
+    #
+    # In supplied mode the design tree is copied verbatim from
+    # ``state.design.suppliedPath`` to ``$DOCS_DIR/design/`` BEFORE this
+    # verifier runs. The expected layout is ``design/pages/{slug}/index.html``
+    # + ``reference.png``. token-map.json and ux-direction.md are not
+    # required (SSOT: only the supplied tree counts).
+    # -----------------------------------------------------------------------
+    def _make_supplied_page(self, tmp_path, slug, *, with_ref=True, with_idx=True):
+        page_dir = tmp_path / "docs" / "design" / "pages" / slug
+        if with_idx:
+            _write(page_dir / "index.html", "<html></html>")
+        else:
+            page_dir.mkdir(parents=True, exist_ok=True)
+        if with_ref:
+            _write(page_dir / "reference.png", "png")
+
+    def test_supplied_pages_valid(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        self._make_supplied_page(tmp_path, "home")
+        self._make_supplied_page(tmp_path, "pricing")
+        assert _phase_3_verify(state, docs) == []
+
+    def test_supplied_design_dir_missing(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        # No design/ at all
+        missing = _phase_3_verify(state, docs)
+        assert any("design/ 디렉토리 누락" in m for m in missing)
+
+    def test_supplied_pages_dir_missing(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        # design/ exists but no pages/ subtree
+        (tmp_path / "docs" / "design").mkdir(parents=True)
+        missing = _phase_3_verify(state, docs)
+        assert any("design/pages/ 누락" in m for m in missing)
+
+    def test_supplied_no_valid_page(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        # page directory exists but reference.png missing
+        self._make_supplied_page(tmp_path, "home", with_ref=False)
+        missing = _phase_3_verify(state, docs)
+        assert any(
+            "design/pages/home/reference.png" in m for m in missing
+        ), missing
+
+    def test_supplied_no_index_html(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        self._make_supplied_page(tmp_path, "home", with_idx=False)
+        missing = _phase_3_verify(state, docs)
+        assert any(
+            "design/pages/home/index.html" in m for m in missing
+        ), missing
+
+    def test_supplied_figma_pages_violation(self, tmp_path):
+        """Mutual exclusion: mode == "supplied" but figmaPages is not [].
+        Should be flagged by the verifier so a Gate-2 read trips even if
+        ``set_design_mode`` was bypassed somehow."""
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [{"title": "Stale", "url": "https://figma.com/x"}],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        self._make_supplied_page(tmp_path, "home")
+        missing = _phase_3_verify(state, docs)
+        assert any(
+            "figmaPages mutual exclusion" in m or "figmaPages 가 비어있지 않음" in m
+            for m in missing
+        ), missing
+
 
 # ===========================================================================
 # Phase 4 (git subprocess) — use a real temp repo

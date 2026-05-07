@@ -21,7 +21,7 @@ lifecycle (``status`` / ``current_phase`` / ``phases`` /
   "locale": "ko",
   "org": null,
   "domain": "web",
-  "design": { "mode": null, "figmaPages": [] },
+  "design": { "mode": null, "figmaPages": [], "suppliedPath": null, "brandAssetsDir": null },
   "responsive": null,
   "api": { "mode": null },
   "devops": false,
@@ -171,6 +171,21 @@ lifecycle (``status`` / ``current_phase`` / ``phases`` /
 ```
 
 ## Field Descriptions
+
+### design.mode invariants (design-supplied-mode-v1, Step 2)
+
+`state.design` 의 4개 필드는 mutual exclusion 로 묶인다 — `state.py.set_design_mode()` (또는 `cmd_set_nested design.mode`) 가 자동 강제하고, `verify._gate2_checks` / `_phase_3_verify` 가 Gate 2 시 재검증한다.
+
+| `mode`       | `figmaPages`                | `suppliedPath`        | `brandAssetsDir` |
+|--------------|-----------------------------|-----------------------|------------------|
+| `"figma"`    | 비어있지 않음 (≥1 page)     | `null`                | `null` (선택)    |
+| `"text"`     | `[]`                        | `null`                | `null` (선택)    |
+| `"supplied"` | `[]`                        | 절대경로 (`pages/` 디렉토리 존재) | 절대경로 (선택; Org 공유 권장) |
+| `null`       | `[]`                        | `null`                | `null`           |
+
+**SSOT 약속 (Critic blocker #3 흡수)**: `mode == "supplied"` 일 때 시스템은 시안에 없는 정보 (`ia.json` / `sitemap.md` 등) 를 자동 생성하지 않는다. 시안에 동봉된 파일만 Phase 6 Track B 가 wiki 로 sync 한다. 시안에 미동봉인 항목은 wiki 에서도 누락된 채 남고, 사용자가 추후 직접 채워 넣어야 한다.
+
+mode 전환 시 invariant 위배 시나리오 (예: figma → supplied 로 바뀌었지만 `figmaPages` 가 잔존) 는 Critic blocker #4 absorption 으로 차단된다 — `set_design_mode` 가 자동 reset 하고, 우회 변경되었더라도 `phase-verify` 가 Gate 2 에서 거절한다.
 
 ### tddEnabled
 **Location: top-level (`state.tddEnabled`)** — v4.0.2 OBS-4 canonicalized here. The v4 runtime (`prompts/phase4.md`, `prompts/phase5.md`, `work.md`) reads and writes this flag at the top level; nested `phases.4.tdd_enabled` is deprecated. The main session sets it after phase4.md sub-agent reports `meta.tddEnabled` in phase-results.

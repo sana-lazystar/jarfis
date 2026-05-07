@@ -14,6 +14,7 @@ from jarfis.state import (
     cmd_write,
     cmd_list_workflows,
     main,
+    set_design_mode,
 )
 
 
@@ -298,3 +299,160 @@ class TestMain:
     def test_no_args_exits(self):
         with pytest.raises(SystemExit):
             main([])
+
+
+# ---------------------------------------------------------------------------
+# design-supplied-mode-v1 — Step 2 additions
+#
+# These tests pin the SSOT-preserving invariants required by Critic blocker
+# #4 (mutual exclusion) plus the new ``state.design.suppliedPath`` /
+# ``state.design.brandAssetsDir`` schema fields. The invariants are enforced
+# by ``state.set_design_mode`` and (separately) by ``verify._gate2_checks``
+# / ``verify._phase_3_verify``.
+# ---------------------------------------------------------------------------
+class TestDesignSuppliedSchema:
+    def test_default_design_supplied_path_null(self, tmp_path):
+        """cmd_init seeds suppliedPath / brandAssetsDir = None alongside
+        the existing mode/figmaPages defaults."""
+        sf = str(tmp_path / "work" / ".jarfis-state.json")
+        cmd_init([sf, "p", "20260507-feature", str(tmp_path / "docs")])
+        with open(sf) as f:
+            data = json.load(f)
+        design = data["design"]
+        assert design["mode"] is None
+        assert design["figmaPages"] == []
+        # New keys (Step 2 schema extension)
+        assert "suppliedPath" in design
+        assert design["suppliedPath"] is None
+        assert "brandAssetsDir" in design
+        assert design["brandAssetsDir"] is None
+
+
+class TestSetDesignMode:
+    def test_supplied_resets_figma_pages(self):
+        state = {
+            "design": {
+                "mode": "figma",
+                "figmaPages": [{"title": "Home", "url": "https://figma.com/x"}],
+                "suppliedPath": None,
+                "brandAssetsDir": None,
+            }
+        }
+        out = set_design_mode(state, "supplied")
+        assert out["design"]["mode"] == "supplied"
+        assert out["design"]["figmaPages"] == []
+        # suppliedPath is left for the caller to fill in (Phase 1a)
+        assert out is state  # in-place mutation
+
+    def test_figma_resets_supplied_path(self):
+        state = {
+            "design": {
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/path/mockup",
+                "brandAssetsDir": None,
+            }
+        }
+        set_design_mode(state, "figma")
+        assert state["design"]["mode"] == "figma"
+        assert state["design"]["suppliedPath"] is None
+
+    def test_text_resets_both(self):
+        state = {
+            "design": {
+                "mode": "supplied",
+                "figmaPages": [{"title": "X", "url": "u"}],
+                "suppliedPath": "/abs/m",
+                "brandAssetsDir": None,
+            }
+        }
+        set_design_mode(state, "text")
+        assert state["design"]["mode"] == "text"
+        assert state["design"]["figmaPages"] == []
+        assert state["design"]["suppliedPath"] is None
+
+    def test_null_resets_both(self):
+        state = {
+            "design": {
+                "mode": "supplied",
+                "figmaPages": [{"title": "X", "url": "u"}],
+                "suppliedPath": "/abs/m",
+                "brandAssetsDir": None,
+            }
+        }
+        set_design_mode(state, None)
+        assert state["design"]["mode"] is None
+        assert state["design"]["figmaPages"] == []
+        assert state["design"]["suppliedPath"] is None
+
+    def test_seeds_design_block_when_missing(self):
+        """Defensive: state without a ``design`` key still gets a
+        normalized block."""
+        state = {}
+        set_design_mode(state, "supplied")
+        assert "design" in state
+        assert state["design"]["mode"] == "supplied"
+        assert state["design"]["figmaPages"] == []
+
+
+class TestSetNestedDesignModeIntegration:
+    """``cmd_set_nested`` must trigger the same mutual-exclusion enforcement
+    when the caller writes ``design.mode`` directly. This is the integration
+    point used by work.md / phase3.md when persisting Phase 1a answers.
+    """
+
+    def _seed(self, tmp_path, **design):
+        sf = tmp_path / ".jarfis-state.json"
+        state = {
+            "work": {"name": "w", "docsDir": str(tmp_path / "docs")},
+            "started_at": "2026-05-07T00:00:00Z",
+            "current_phase": 0,
+            "phases": {},
+            "design": {
+                "mode": None,
+                "figmaPages": [],
+                "suppliedPath": None,
+                "brandAssetsDir": None,
+            },
+        }
+        state["design"].update(design)
+        sf.write_text(json.dumps(state))
+        return str(sf)
+
+    def test_set_nested_design_mode_supplied_clears_figma_pages(self, tmp_path, capsys):
+        sf = self._seed(
+            tmp_path,
+            mode="figma",
+            figmaPages=[{"title": "Home", "url": "https://figma.com/x"}],
+        )
+        cmd_set_nested([sf, "design.mode", '"supplied"'])
+        with open(sf) as f:
+            data = json.load(f)
+        assert data["design"]["mode"] == "supplied"
+        # Mutual exclusion must be enforced even via the generic set-nested
+        # path — otherwise figmaPages lingers and verify.py rejects the
+        # state at Gate 2.
+        assert data["design"]["figmaPages"] == []
+
+    def test_set_nested_design_mode_figma_clears_supplied_path(self, tmp_path, capsys):
+        sf = self._seed(tmp_path, mode="supplied", suppliedPath="/abs/m")
+        cmd_set_nested([sf, "design.mode", '"figma"'])
+        with open(sf) as f:
+            data = json.load(f)
+        assert data["design"]["mode"] == "figma"
+        assert data["design"]["suppliedPath"] is None
+
+    def test_set_nested_unrelated_path_unaffected(self, tmp_path, capsys):
+        """Writes outside ``design.mode`` must not trigger the helper."""
+        sf = self._seed(
+            tmp_path,
+            mode="figma",
+            figmaPages=[{"title": "Home", "url": "https://figma.com/x"}],
+        )
+        cmd_set_nested([sf, "phases.1.status", '"in_progress"'])
+        with open(sf) as f:
+            data = json.load(f)
+        # figmaPages preserved — only design.mode writes are intercepted
+        assert data["design"]["figmaPages"] == [
+            {"title": "Home", "url": "https://figma.com/x"}
+        ]

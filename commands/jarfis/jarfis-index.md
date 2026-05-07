@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.5.0
+> Do not edit manually. Last updated: 2026-05-07 | Version: 4.6.0
 
 ## File Structure
 ```
@@ -62,7 +62,9 @@
         ├── wiki-section-index.md  # Wiki section _index.md template
         ├── ux-direction.md        # UX direction document template
         ├── design-html-meta.md    # HTML mockup meta comment template
-        └── skill-template.md      # Skill file template (v4 new — checkpoint style used by sys-distill for skill creation)
+        ├── ia-schema.md           # ia.json schema for supplied design mode (Information Architecture; SSOT 자동생성 금지) — v4.6.0
+        ├── skill-template.md      # Skill file template (v4 new — checkpoint style used by sys-distill for skill creation)
+        └── sitemap.md             # Sitemap markdown template for supplied design mode (SSOT 자동생성 금지) — v4.6.0
 
 ~/.claude/agents/jarfis/           # JARFIS agent prompts (v4 — 4 agents + 9 personas, ALL ENGLISH + $LOCALE output)
 ├── jarfis-foreman.md              # v4 per-phase tmux executor — loads phase prompt, spawns sub-agents via Task + compose CLI, merges outputs (executor only, no autonomous judgment)
@@ -164,7 +166,7 @@
   - `migrate.py` — v4.3 → v4.4 org-root data-source migration (v4.4.0; 341 lines; moves `.personal/orgs/{name}/{meetings,works,learnings.md}` into `{org.root}/.jarfis-org/`, flattens `_standalone` bucket, rewrites active `.jarfis-state.json` docsDir strings, git-orphan detection + `sync` field write, dry-run + backup tarball + idempotency, archives legacy `orgs/` as `orgs.v4.3-archive/`)
   - `wiki_search.py` — Semantic search (sentence-transformers bge-m3, wiki/meetings/works/**jarfis** indexing+search + incremental update + memory guard + CPU forced + MPS memory deduction; jarfis scope reads `~/.claude/` + repo + `.personal/.jarfis-index/` ChromaDB, 1,409 lines)
   - `implement.py` — sys-implement workspace manager (v4.2.0 ADR-0003) — manifest/state/log/RESUME/README + atomic writes + plan-name validation + workspace lock + cmd_init/state/log/resume/archive/list + `validate_citations` (path:LNN backticks, ADR-0005) + `classify_verdict` (Force-Acknowledge) + `recommend_execution_mode` (ADR-0004) + `extract_changed_files` (Step 4.5 RAG hook) (925 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (28 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`; 805 tests passing @ v4.5.0)
+- `~/.claude/scripts/tests/` — pytest test directory (28 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`; 820 tests passing @ v4.6.0)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_architecture.py` — Architecture invariants (domain boundaries, import hygiene)
   - `test_state.py` · `test_verify.py`-family (`test_gate_check.py`, `test_phase_verify.py`) · `test_tmux_claude.py` · `test_trace.py` · `test_compose_warnings.py`
@@ -175,6 +177,8 @@
   - `test_implement.py` — sys-implement workspace + Force-Acknowledge dialectic + execution mode dispatch tests (v4.2.0; 670 lines, 57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / validate_citations / classify_verdict / recommend_execution_mode / extract_changed_files)
   - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; 10 tests covering walk-up engagement, prefix gating to `.jarfis-project/`, boundary precedence (org.root → `.git` ancestor → depth=3), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering)
   - `test_migrate.py` — v4.3 → v4.4 migration tests (v4.4.0; 10 tests covering dry-run listing, meetings/works/learnings move under `.jarfis-org/`, standalone flatten, sync field git/none branch, state.json docsDir string rewrite, backup tarball, idempotent re-run)
+  - `test_state.py` — state.py module tests; v4.6.0 supplied 모드 9개 추가 (TestDesignSuppliedSchema, TestSetDesignMode, TestSetNestedDesignModeIntegration) — design.mode mutual exclusion + set_design_mode helper coverage
+  - `test_phase_verify.py` — phase-verify entrypoint tests (M3 `_phase_3_verify`); v4.6.0 TestPhase3 supplied 모드 6개 추가 (mutual exclusion + per-page validation: pages/{slug}/index.html + reference.png + figmaPages == [] enforcement)
 - `~/.claude/scripts/jarfis_check.sh` — grep-based JARFIS structural validation script (Phase headings, prompt files, version matching, model consistency)
 - `~/.claude/hooks/` — 4 hooks (all kill-switchable via env var)
   - `jarfis-pre-compact.sh` — PreCompact hook: backs up `.jarfis-state.json` + meeting files from `$JARFIS_ORG_DIR` before auto-compact (shell-only)
@@ -203,9 +207,13 @@
 - `jarfis.md` → references all commands (helper text)
 - `work-meeting.md` → independent (optionally references project-profile, context, learnings) + mid-save for compact resilience
 - `work.md` → v4 orchestrator. References `/jarfis:project-init` (profile load guide) + meeting artifacts (Phase 0 queries `jarfis_cli.py meetings` + AskUserQuestion selection + dynamic scan of selected meeting dir) + `.compact-backups/` reference (on Resume) + `prompts/*.md` (per-Phase executor prompts, loaded by jarfis-foreman in each phase's tmux session) + `agent-composition.yaml` (via `jarfis_cli.py compose`). v3 state detected → halt + advise user; **no silent migration** (per F-08).
+- `work.md` Phase 0 → step 11 supplied mode pre-validation (preflight 직후 main session 검증; suppliedPath 디렉토리 + pages/ + 최소 1개 page index.html+reference.png).
 - `prompts/*.md` → agent prompts externalized from work.md; loaded by **jarfis-foreman** inside each phase's dedicated tmux session (`{sessionKey}-phase{N}`).
 - `prompts/phase3.md` → unified figma + text design path (parallel multi-Figma page processing, per-section v5 generation, Framelink MCP + asset download + token-map + UX Designer reproduction + PO/UX review loop).
+- `prompts/phase3.md` → Branch A (figma) / Branch B (text) / **Branch C (supplied — v4.6.0)**: jarfis-foreman 이 외부 시안 디렉토리(`state.design.suppliedPath`)를 `$DOCS_DIR/design/` 로 cp/rsync + 누락 responsive PNG 만 Playwright 캡처. ux-designer spawn 안 함. ia.json/sitemap.md 자동생성 금지.
 - `templates/*.md` → artifact templates externalized from work.md/work-meeting.md (generated by distill, loaded when needed in corresponding Phase).
+- `templates/sitemap.md` → supplied 모드 한정 IA 사이트맵 마크다운 템플릿. 사용자가 시안에 직접 동봉. **시스템 자동 생성 금지** (SSOT). Phase 6 Track B 가 wiki/DESIGN/pages/{project}/sitemap.md 로 sync.
+- `templates/ia-schema.md` → supplied 모드 한정 ia.json 스키마 문서. 사용자가 시안에 직접 동봉. **시스템 자동 생성 금지** (SSOT). 미동봉 시 wiki sync 시 ia.json 생략.
 - `project-update.md` → references `/jarfis:project-init` (guide when no profile exists, analysis criteria reference).
 - `project-init.md` → references `templates/project-profile.md` (profile artifact format).
 - `sys-distill.md` → reads `jarfis-index.md` first → measures tokens via `jarfis_cli.py measure` → analyzes commands/jarfis/*.md + agents/jarfis/*.md, updates this index.
@@ -236,6 +244,7 @@
 - `phase4.md` → Phase 2 handoff read/write instructions (key_decisions, warnings, unresolved) + Artifact Loading Checklist (required/conditional file distinction) + TDD Step 4-0.5 (QA test-first authoring) + BE/FE TDD Green Phase blocks (TDD Ratchet conditional on `$TDD_ENABLED == 'true'`).
 - `phase5.md` → Phase 4 Agent Status injection (phase4_agents status forwarding) + Fix agent original design reference (architecture.md, tasks.md) + Learning Candidate Detection (records learning_candidates when same fix category repeats 2+ times) + pattern-detect for review round convergence.
 - `phase6.md` → Suggested Learnings section (auto-generates learning candidates based on learning_candidates) + Wiki re-indexing via `jarfis_cli.py search index wiki` after wiki update (best-effort) + appends `workflow-metrics.tsv`.
+- `prompts/phase6.md` Track B → rsync 가 시안 전체를 wiki/DESIGN/pages/{project}/ 로 sync (sitemap.md, ia.json, assets/ 자동 포함). supplied 모드 한정으로 시안에 없는 항목은 자동 생성하지 않는다 (SSOT).
 - `wiki-loading.md` → calls `jarfis_cli.py search wiki` in 4-Step Step 3 (fallback: LLM judgment).
 - `wiki_search.py` → referenced by wiki-loading.md/phase6.md/org-init.md/work.md/work-meeting.md/search.md. Supports both `jarfis_cli.py search` (new) and `jarfis_cli.py wiki` (deprecated). **v4.2.0**: also serves the `jarfis` scope (self-knowledge index over `~/.claude/` + repo + `.personal/.jarfis-index/`) consumed by jarfis-engineer Mode B + advocate/critic dialectic context-gathering. `cmd_index_jarfis` supports `--incremental --files <csv>` for Step 4.5 RAG hook.
 - `implement.py` → backs `jarfis_cli.py implement` subcommand (init/state/log/resume/archive/list); also exposes `validate_citations()`, `classify_verdict()`, `recommend_execution_mode()`, `extract_changed_files()` consumed inline by sys-implement.md Steps 1.5/1.7/4.5. Dotted-key state paths (`steps.step1.5.status` etc.) addressed via greedy longest-prefix match in `_set_nested_key`.
@@ -246,6 +255,8 @@
 - `phase6.md` → auto-calls `jarfis_cli.py search index wiki` + `search index works` (best-effort).
 - `org-init.md` → displays `/jarfis:search-setup` → `/jarfis:search-index` guide on completion.
 - `verify.py` → referenced by work.md Gate Point Rules (mandatory `gate-check` before any Gate presentation); also provides `phase-check` (Phase start) and `phase-verify` / `pattern-detect` (tmux foreman).
+- `state.py` → `set_design_mode(state, new_mode)` helper (v4.6.0): mode 전환 시 invariant 강제 (supplied → figmaPages=[]; figma → suppliedPath=null; text/null → 둘 다 reset). `cmd_set_nested` 가 design.mode 변경 시 자동 호출.
+- `verify.py` → `_gate2_checks` 와 `_phase_3_verify` 둘 다 mode == "supplied" 분기 추가 (defense in depth): `pages/{slug}/index.html` + `reference.png` 존재 검증, figmaPages mutual exclusion 검사. 위반 시 design 검증 silent skip 방지 (Critic blocker #1).
 - `tmux_claude.py` → used by jarfis-foreman to create/reattach/tear down phase-specific tmux sessions (`{sessionKey}-phase{N}`); enforces B1 exact-match isolation; `--save-pane` option for post-mortem debug.
 - `trace.py` → opt-in via `JARFIS_TRACE=1`; `trace.log_event(event, attrs)` called from hot paths in tmux_claude / verify / compose; output JSONL at `/tmp/jarfis-trace.jsonl` (or `$JARFIS_TRACE_PATH`).
 - `agent-composition.yaml` → consumed by `jarfis_cli.py compose`; defines per-agent persona + scope + skills_from_domain + context (base: project | all-projects | docs | org | org_wiki).
@@ -283,3 +294,4 @@
 - **RAG self-knowledge auto-update (v4.2.0 ADR-0002 §2.4)**: sys-implement Step 4.5 calls `jarfis_cli.py search index jarfis --incremental --files <csv>` after Step 4 sync. Best-effort — failure logs but does not roll back the sync.
 - **v3 state detection**: `.jarfis-state.json` with `project_name` (no `sessionKey`) → v4 work.md halts with guidance message in `$LOCALE`. Never silently migrate (F-08 + MIGRATION.md §3).
 - **v3 fallback removal (v4.1, ADR-0002)**: legacy `work-legacy.md` and the `state.py:cmd_init` v3 flat-key dual emit were removed in M2; emergency rollback now relies solely on git tag `v4.0.7` + `rollback.sh`.
+- **Supplied design mode (v4.6.0+)**: `state.design.mode = "supplied"` 는 외부 시안(HTML+assets)을 jarfis-foreman 이 cp 하는 모드. **SSOT 원칙**: 시안 = 유일 진실. 시스템은 시안에 없는 sitemap.md/ia.json 을 자동 생성하지 않는다 (`templates/sitemap.md`, `templates/ia-schema.md` 둘 다 명시). suppliedPath 변경 시 `verify.py` mode 분기 + `state.py set_design_mode` invariant 동기화 의무. `agent-composition.yaml` ux-designer 는 supplied 모드에서 spawn 되지 않음 (Branch C 는 foreman-only orchestrator step).

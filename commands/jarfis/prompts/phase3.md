@@ -12,9 +12,11 @@
 
 ### jarfis-foreman precompute (from $STATE_FILE)
 
-- `$DESIGN_MODE` = `state.design.mode` ∈ {"figma", "text"}
+- `$DESIGN_MODE` = `state.design.mode` ∈ {"figma", "text", "supplied"}
 - `$RESPONSIVE` = `state.responsive` ∈ {"pc-only", "pc-mobile", "pc-mobile-tablet"}
 - `$FIGMA_PAGES_JSON` = `state.design.figmaPages` (figma mode; array of `{title, url}`)
+- `$SUPPLIED_PATH` = `state.design.suppliedPath` (supplied mode only; absolute directory path — `pages/` 서브트리 + 최소 1개 `pages/{slug}/index.html` + `reference.png` 의무. main session 의 Phase 0 step 11 에서 사전 검증됨)
+- `$BRAND_ASSETS_DIR` = `state.design.brandAssetsDir` (선택; 절대경로. supplied 모드일 때 Org 공유 `$ORG_ROOT/.jarfis-org/wiki/DESIGN/brand-assets/` 권장)
 - `$ORG_ROOT` = `state.org.root` (empty string when org not registered)
 - `$COMMON_SKIP_JSON` = `state.design.common_components_skip` (figma mode; array or `"[]"`; set by main session before Phase 3 — see "Common-component handling" below)
 
@@ -497,6 +499,129 @@ jarfis-foreman does NOT open the browser. After phase-verify PASS, the main sess
 open $DOCS_DIR/design/_index.html
 ```
 and presents Gate 2.
+
+---
+
+# Branch C — supplied path (`$DESIGN_MODE == "supplied"`)
+
+외부에서 완성된 시안을 그대로 가져와 작업에 사용하는 모드. ux-designer 는 시안을 **생성하지 않으며**, jarfis-foreman 이 시안 디렉토리를 `$DOCS_DIR/design/` 으로 복사하고 누락된 responsive PNG 만 Playwright 로 캡처한다.
+
+## SSOT 원칙
+
+- 시안이 유일한 진실의 출처. 시스템은 시안에 없는 정보(`ia.json` / `sitemap.md` 등)를 자동 생성하지 않는다.
+- 시안에 `sitemap.md` / `ia.json` 가 동봉되어 있으면 그대로 사용. 미동봉 시 Phase 6 Track B 가 단순 page-listing 만 wiki 로 sync (사용자가 추후 직접 보강).
+- 브랜드 자산은 Org 공유 디렉토리(`$ORG_ROOT/.jarfis-org/wiki/DESIGN/brand-assets/`)에서만 참조. `$BRAND_ASSETS_DIR` state 는 그 절대경로 기록.
+- ux-designer 는 spawn 되지 않는다 (supplied 모드는 authoring X).
+
+## 입력 디렉토리 고정 구조 (`$SUPPLIED_PATH` 가 가리키는 위치)
+
+```
+<suppliedPath>/
+  pages/
+    {slug-1}/index.html
+    {slug-1}/reference.png
+    {slug-1}/reference-mobile.png   (선택; 미존재 시 jarfis-foreman 이 캡처)
+    {slug-1}/reference-tablet.png   (선택)
+    {slug-2}/index.html
+    {slug-2}/reference.png
+  assets/                            (이미지/폰트/아이콘 — 시안 HTML 에서 상대경로 참조)
+  tokens.json                        (선택)
+  sitemap.md                         (선택)
+  ia.json                            (선택)
+```
+
+## Step 1 — Validation + Copy (orchestrator step — jarfis-foreman 직접)
+
+```bash
+# 1. 디렉토리 존재 + 구조 검증 (실패 시 attempt{K}.json status=error)
+if [ ! -d "$SUPPLIED_PATH" ] || [ ! -d "$SUPPLIED_PATH/pages" ]; then
+  echo '{"status":"error","reason":"supplied_path_invalid","reasonDetail":"directory or pages/ missing"}' > $DOCS_DIR/phase-results/phase3/attempt{K}.json
+  exit 1
+fi
+
+# 2. 최소 1개 page 검증
+PAGE_COUNT=$(find "$SUPPLIED_PATH/pages" -mindepth 2 -maxdepth 2 -name index.html | wc -l)
+if [ "$PAGE_COUNT" -eq 0 ]; then
+  echo '{"status":"error","reason":"no_supplied_pages","reasonDetail":"pages/{slug}/index.html 누락"}' > $DOCS_DIR/phase-results/phase3/attempt{K}.json
+  exit 1
+fi
+
+# 3. 전체 디렉토리 복사 (파일 내용 read X — pure shell op)
+mkdir -p $DOCS_DIR/design
+rsync -a "$SUPPLIED_PATH/" "$DOCS_DIR/design/"
+```
+
+## Step 2 — Responsive capture fallback (jarfis-foreman 직접, Playwright)
+
+각 page 의 `reference-mobile.png` / `reference-tablet.png` 가 시안에 동봉되지 않은 경우만 캡처:
+
+```bash
+case "$RESPONSIVE" in
+  pc-mobile)        TARGETS="mobile" ;;
+  pc-mobile-tablet) TARGETS="mobile tablet" ;;
+  *) TARGETS="" ;;
+esac
+
+for slug in $(ls $DOCS_DIR/design/pages/); do
+  for tgt in $TARGETS; do
+    out="$DOCS_DIR/design/pages/$slug/reference-$tgt.png"
+    [ -f "$out" ] && continue   # 시안 동봉본 우선
+    # Use mcp__playwright__browser_navigate + browser_resize + browser_take_screenshot
+    # (구체 호출은 ux-designer 와 동일 패턴; foreman 이 직접 MCP 호출)
+  done
+done
+```
+
+> Note: jarfis-foreman 이 직접 Playwright MCP 호출 가능 (system-spec). page `index.html` 내용을 읽지 않고 단순 navigate + screenshot 만 수행하므로 context 영향 적음.
+
+## Step 3 — `_index.html` ToC 생성 (orchestrator step, ls 기반)
+
+```bash
+cd $DOCS_DIR/design
+cat > _index.html <<'HEADER'
+<!doctype html><html><head><meta charset="utf-8">
+<title>Design Index — Supplied</title></head><body><h1>Pages</h1><ul>
+HEADER
+for f in $(ls -1 pages/*/index.html 2>/dev/null); do
+  slug=$(echo "$f" | sed 's|pages/\(.*\)/index.html|\1|')
+  echo "<li><a href=\"$f\">$slug</a></li>" >> _index.html
+done
+echo '</ul></body></html>' >> _index.html
+```
+
+## Step 4 — Write `phase-results/phase3/attempt{K}.json`
+
+```json
+{
+  "status": "completed",
+  "reason": "",
+  "reasonDetail": "",
+  "meta": {
+    "mode": "supplied",
+    "design_source": "supplied",
+    "pages": <M>,
+    "suppliedPath": "$SUPPLIED_PATH",
+    "responsive_captured": ["mobile","tablet" 등],
+    "responsive_supplied": ["mobile","tablet" 등],
+    "tokens_json_present": true,
+    "sitemap_md_present":  true,
+    "ia_json_present":     true,
+    "brand_assets_dir":    "$BRAND_ASSETS_DIR"
+  }
+}
+```
+
+> `responsive_supplied` 는 시안에 동봉되어 있던 캡처 타겟 목록. `responsive_captured` 는 jarfis-foreman 이 Playwright 로 새로 만든 타겟 목록. 둘은 disjoint.
+>
+> `tokens_json_present` / `sitemap_md_present` / `ia_json_present` 는 단순 boolean — 파일 존재 여부만 기록한다. **자동 생성 금지** (Critic blocker #3 흡수).
+>
+> `brand_assets_dir` 가 비어있으면 `null`.
+
+## SSOT 위반 금지 (반복 강조)
+
+- jarfis-foreman 은 `sitemap.md` / `ia.json` 를 **자동 생성하지 않는다** (Critic blocker #3 흡수).
+- 시안에 없으면 meta 에 `false` 기록. Phase 6 Track B 가 page-listing 기반 단순 INDEX 만 생성.
+- ux-designer 는 spawn 되지 않는다 (supplied 모드는 authoring X).
 
 ---
 

@@ -294,7 +294,7 @@ Orchestrator-provided:
   dev_server_url: <dev_server_url>
 
 Inputs to read:
-- $DOCS_DIR/design/{path}/reference.png       (primary authority — Figma OR text-mode capture)
+- $DOCS_DIR/design/{path}/reference.png       (primary authority — Figma OR text-mode OR supplied)
 - $DOCS_DIR/design/{path}/index.html          (supplementary reference)
 - $DOCS_DIR/design/section-map.json           (figma mode only — for problem section identification)
 
@@ -616,7 +616,8 @@ At phase completion, perform the following in order:
        "unresolved_issues": 0,
        "pathological_patterns": $(echo "$PATTERNS_JSON" | jq -c '.patterns // []'),
        "pattern_details":       $(echo "$PATTERNS_JSON" | jq -c '.details  // {}'),
-       "learning_candidates":   $LC_JSON
+       "learning_candidates":   $LC_JSON,
+       "design_source":         "$(jq -r '.design.mode // ""' $STATE_FILE)"
      }
    }
    EOF
