@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.3.0] - 2026-05-07
+
+- implement: monorepo SSOT walk-up resolver fallback (.jarfis-project/ prefix-gated, org.root/.git/depth=3 boundary, dedupe with from_scope_indices) + project-init monorepo detection + project-profile Monorepo Layout template section
+
 ## [4.2.0] - 2026-05-07
 
 Minor release — sys-implement reborn as a Saga-style state machine with self-knowledge RAG and a Force-Acknowledge dialectic. Major surface change is invisible from outside (`/jarfis:sys-implement` still entry point), but every run now produces a versioned, resumable workspace and the dialectic converges on file:line citations rather than free-form rhetoric.

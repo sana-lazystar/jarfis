@@ -222,11 +222,31 @@ def _compose(args):
         if isinstance(target, list):
             joined_parts = []
             any_injected = False
-            for idx, sub_target in enumerate(target):
-                scope_name = state["workspace"]["scope"][idx].get("name", f"idx{idx}")
+            scope_list = state["workspace"]["scope"]
+            for idx, target_item in enumerate(target):
+                if isinstance(target_item, dict):
+                    # Walk-up dedupe entry: shared SSOT across N scope indices.
+                    sub_target = target_item["path"]
+                    scope_indices = target_item["from_scope_indices"]
+                    scope_names = [
+                        scope_list[i].get("name", f"idx{i}")
+                        for i in scope_indices
+                    ]
+                    if len(scope_names) == 1:
+                        label = f"### ({scope_names[0]})"
+                    else:
+                        label = (
+                            "### (monorepo SSOT shared by: "
+                            + ", ".join(scope_names) + ")"
+                        )
+                else:
+                    # Legacy list[str] (non-walkup paths).
+                    sub_target = target_item
+                    scope_name = scope_list[idx].get("name", f"idx{idx}")
+                    label = f"### ({scope_name})"
                 rr = read_and_extract(sub_target, entry.sections, optional=entry.optional)
                 if rr.text:
-                    joined_parts.append(f"### ({scope_name})\n{rr.text.strip()}")
+                    joined_parts.append(f"{label}\n{rr.text.strip()}")
                     any_injected = True
             content = "\n\n".join(joined_parts) if joined_parts else None
             block_meta["injected"] = any_injected

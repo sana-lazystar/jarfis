@@ -21,6 +21,15 @@ Do not include sections that were not analyzed at the given depth (no empty sect
 - **Package Manager**: (e.g., pnpm 9)
 - **Key Dependencies**: (list of core libraries)
 
+## Monorepo Layout (omit if single-project — N/A)
+- **Root path**: `<absolute path>`
+- **Workspace tool**: `pnpm | cargo | nx | lerna | turborepo | mixed | none`
+- **Sub-packages**:
+  - `packages/<name>` — type=`backend|frontend|...`, stack=`...`
+- **`.jarfis-project/` 배치**: `single-root | per-package | hybrid`
+- **공유 항목 (root profile에서 derive)**: Tech Stack / Coding Conventions / Licensing / ...
+- **Per-package override 항목**: (per-package 모드에서만)
+
 ## Active Skills (optional)
 > Sub-agent에 자동 주입할 skill 이름 명시. `~/.claude/commands/jarfis/skills/`의 파일 이름 참조.
 > 비워두면 Tech Stack 섹션 자동 매칭 또는 framework 매핑(`agent-composition.yaml::extra_skills_by_framework`)으로 자동 결정.

@@ -139,6 +139,28 @@ Analyze the following items:
 
 > **deep depth complete → proceed to Step 4**
 
+### Step 4.0: Monorepo Detection (optional)
+
+Before writing the profile, detect monorepo indicators in the current directory:
+
+- `pnpm-workspace.yaml` (pnpm)
+- `Cargo.toml` containing `[workspace]` section (Cargo)
+- `package.json` containing `"workspaces"` field (npm/yarn)
+- `nx.json` (Nx)
+- `lerna.json` (Lerna)
+- `turbo.json` (Turborepo)
+
+If any indicator matches, ask:
+
+> AskUserQuestion: "monorepo 감지됨 (`<indicator>`). `.jarfis-project/` 배치 방식?"
+> - **(a) 단일 SSOT — monorepo root에만 작성** (Recommended; resolver walk-up이 자동 처리)
+> - **(b) per-package profile** — 각 sub-package에 별도 작성 (sub-package별 stack/convention 다를 때)
+> - **(c) hybrid** — root에 공통 + 일부 package에 override
+
+Persist the choice to `.jarfis-project/.monorepo-mode` (single-line marker: `single-root` | `per-package` | `hybrid`).
+
+If no indicator detected, skip this step entirely (single-project flow).
+
 ### Step 4: Generate Profile Document
 
 Save the analysis results to `./.jarfis-project/project-profile.md`.

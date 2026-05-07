@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.2.0
+> Do not edit manually. Last updated: 2026-05-07 | Version: 4.3.0
 
 ## File Structure
 ```
@@ -17,7 +17,7 @@
     ├── sys-distill.md             # Prompt distillation + agent whitelist protection + Dialectic Review — command analysis only (314 lines)
     ├── sys-version.md             # Version management/updates (160 lines)
     ├── sys-health.md              # Zombie Claude process diagnosis/cleanup (72 lines)
-    ├── project-init.md            # Project profile creation (180 lines)
+    ├── project-init.md            # Project profile creation + Step 4.0 monorepo detection (v4.3.0; 202 lines)
     ├── project-update.md          # Incremental profile update — commit hash-based change detection (175 lines)
     ├── org.md                     # Full organization list — orgs.json + unregistered Org auto-discovery + CWD highlight (98 lines)
     ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide (115 lines)
@@ -142,7 +142,7 @@
   - `verify_helpers.py` — Shared helpers for verify.py entrypoints
   - `tmux_claude.py` — tmux-per-phase orchestration (B1 isolation: exact-match session name only; `--save-pane` post-mortem debugging; v4.0.4)
   - `trace.py` — Performance tracing module — opt-in via `JARFIS_TRACE` env var; `trace.log_event` API → `/tmp/jarfis-trace.jsonl` (or `$JARFIS_TRACE_PATH`); ~0.008% overhead when enabled, zero cost when off (ADR-20; v4.0.5)
-  - `compose/` — Compose CLI package (`__main__.py` + `assembler.py` + `config.py` + `context7_research.py` + `models.py` + `reader.py` + `resolver.py` + `skills.py` + `skills_lib.py` + `validate.py`) — deterministic agent composition with 4-stage skill fallback, N-3 section-missing audit; `context7_research.py` (v4.1.1 B15) carries Tier-1 hint parsing + Tier-2/3 disambiguation + ResearchSession (cost guard + cache + telemetry)
+  - `compose/` — Compose CLI package (`__main__.py` + `assembler.py` + `config.py` + `context7_research.py` + `models.py` + `reader.py` + `resolver.py` + `skills.py` + `skills_lib.py` + `validate.py`) — deterministic agent composition with 4-stage skill fallback, N-3 section-missing audit; `context7_research.py` (v4.1.1 B15) carries Tier-1 hint parsing + Tier-2/3 disambiguation + ResearchSession (cost guard + cache + telemetry); `resolver.py` (v4.3.0) walk-up fallback for monorepo SSOT — `base: all-projects` paths prefixed `.jarfis-project/` ascend `scope[i].path` until org.root / `.git` ancestor / depth=3 boundary, dedupe by absolute path with `from_scope_indices` provenance, trace event `compose_walkup_resolved`
   - `domain.py` — Domain Pack management module (list/detect/agents/compose/validate/scaffold/install)
   - `audit.py` — Audit log module (append-only JSONL)
   - `detect.py` — Framework/language auto-detection
@@ -158,7 +158,7 @@
   - `version.py` — Semver version bump (VERSION + __init__.py + CHANGELOG)
   - `wiki_search.py` — Semantic search (sentence-transformers bge-m3, wiki/meetings/works/**jarfis** indexing+search + incremental update + memory guard + CPU forced + MPS memory deduction; jarfis scope reads `~/.claude/` + repo + `.personal/.jarfis-index/` ChromaDB, 1,409 lines)
   - `implement.py` — sys-implement workspace manager (v4.2.0 ADR-0003) — manifest/state/log/RESUME/README + atomic writes + plan-name validation + workspace lock + cmd_init/state/log/resume/archive/list + `validate_citations` (path:LNN backticks, ADR-0005) + `classify_verdict` (Force-Acknowledge) + `recommend_execution_mode` (ADR-0004) + `extract_changed_files` (Step 4.5 RAG hook) (925 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (25 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`)
+- `~/.claude/scripts/tests/` — pytest test directory (26 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_architecture.py` — Architecture invariants (domain boundaries, import hygiene)
   - `test_state.py` · `test_verify.py`-family (`test_gate_check.py`, `test_phase_verify.py`) · `test_tmux_claude.py` · `test_trace.py` · `test_compose_warnings.py`
@@ -166,6 +166,7 @@
   - `test_preflight.py` · `test_quality_gate.py` · `test_organization.py` · `test_validate.py`
   - `test_sync.py` · `test_utils.py` · `test_version.py` · `test_wiki_search.py` · `test_level_check.py` · `test_jarfis_cli.py`
   - `test_implement.py` — sys-implement workspace + Force-Acknowledge dialectic + execution mode dispatch tests (v4.2.0; 670 lines, 57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / validate_citations / classify_verdict / recommend_execution_mode / extract_changed_files)
+  - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; 10 tests covering walk-up engagement, prefix gating to `.jarfis-project/`, boundary precedence (org.root → `.git` ancestor → depth=3), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering)
 - `~/.claude/scripts/jarfis_check.sh` — grep-based JARFIS structural validation script (Phase headings, prompt files, version matching, model consistency)
 - `~/.claude/hooks/` — 4 hooks (all kill-switchable via env var)
   - `jarfis-pre-compact.sh` — PreCompact hook: backs up `.jarfis-state.json` + meeting files from `$JARFIS_ORG_DIR` before auto-compact (shell-only)
