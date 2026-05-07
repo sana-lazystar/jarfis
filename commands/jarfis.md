@@ -47,6 +47,7 @@ Display the following as-is:
   /jarfis:sys-implement   Modify the JARFIS system itself
   /jarfis:sys-version     Check version + update
   /jarfis:sys-health      Diagnose/clean up zombie processes
+  /jarfis:agent           Manage skills + inspect personas (skill list/add/update/remove, persona list)
 
   [Org] = Organization registration required
     With Org registration, wiki knowledge is auto-injected into work/work-meeting,

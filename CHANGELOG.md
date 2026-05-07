@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.5.0] - 2026-05-07
+
+- implement: agent-skill-system-v1 — single /jarfis:agent command + agent_admin.py module (skill+persona registry CRUD, Context7-aware, diff-only YAML safety)
+
 ## [4.4.0] - 2026-05-07
 
 - implement: v4.4.0 — org_root data-source restructure (.jarfis-org single container; D1-D7 + Critic Fix A/B + auto-migration)

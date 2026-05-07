@@ -25,6 +25,7 @@ Commands:
     compose          Compose agent invocation (persona + skills + context) [v4 — M2]
     work-args        Parse /jarfis:work $ARGUMENTS for --domain / --scope-domain overrides [v4.1 — M3]
     implement        sys-implement deliverables workspace (init/state/log/resume/list/archive) [v4.2 — ADR-0003]
+    agent            Skill+persona registry CRUD (skill list/add/update/remove, persona list) [v4.5 — agent-skill-system-v1]
 """
 
 import os
@@ -111,6 +112,8 @@ def main():
         "implement": "jarfis.implement",
         # v4.4 — ADR org-root data-source restructure: data layout migrator.
         "migrate": "jarfis.migrate",
+        # v4.5 — agent-skill-system-v1: skill+persona CRUD module.
+        "agent": "jarfis.agent_admin",
     }
 
     if command not in commands:

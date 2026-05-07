@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.4.0
+> Do not edit manually. Last updated: 2026-05-07 | Version: 4.5.0
 
 ## File Structure
 ```
@@ -9,6 +9,7 @@
 ├── jarfis.md                      # Main helper — command list + examples (71 lines)
 └── jarfis/
     ├── jarfis-index.md            # This file — JARFIS system overview
+    ├── agent.md                       # Agent skill+persona registry CRUD (skill list/add/update/remove, persona list); Context7-aware skill_add; diff-only composition.yaml safety (172 lines)
     ├── agent-composition.yaml     # v4 agent composition spec — persona + skills + context (ADR-17; consumed by `jarfis_cli.py compose`)
     ├── work.md                    # v4 orchestrator — T/0/1a/1b/G1/2∥3/G2/4/4.5/5/G3/6 flow, tmux-per-phase, single-writer state rule (255 lines)
     ├── work-meeting.md            # Planning kickoff meeting — PO/TL open discussion → artifact generation, mid-save compact resilience (256 lines)
@@ -86,6 +87,7 @@
 | Command | File | Role |
 |---------|------|------|
 | `/jarfis` | `jarfis.md` | Display command list |
+| `/jarfis:agent` | `jarfis/agent.md` | Skill+persona registry CRUD — skill list/add/update/remove (Context7-aware, diff-only YAML), persona list |
 | `/jarfis:work-meeting` | `jarfis/work-meeting.md` | Planning kickoff meeting (PO/TL open discussion → artifact generation) |
 | `/jarfis:work` | `jarfis/work.md` | v4 full workflow: triage → pre-flight → discovery → plan → design → implement → ops-readiness → review → retro |
 | `/jarfis:project-init` | `jarfis/project-init.md` | Project analysis → generate `./.jarfis-project/project-profile.md` |
@@ -123,6 +125,7 @@
   - `jarfis_cli.py phase-check` — Phase-start prerequisite validation (Gate approval + prior Phase complete)
   - `jarfis_cli.py phase-verify` — Per-phase output verification (consumed by tmux foreman)
   - `jarfis_cli.py pattern-detect` — Review round pattern detection (Phase 5 review_round loop)
+  - `jarfis_cli.py agent` — Skill+persona registry CRUD (`agent {skill,persona} {list,add,update,remove}`); SSOT = skill `.md` files; agent-composition.yaml is read-only from Python (diff-only via stdout); env-var configurable for testability (`JARFIS_SKILLS_DIR`, `JARFIS_COMPOSITION_PATH`). [v4.5 — agent-skill-system-v1]
   - `jarfis_cli.py compose` — Compose agent invocation — persona + skills + context (v4 M2; 4-stage skill fallback chain, reads `agent-composition.yaml`)
   - `jarfis_cli.py detect` — Framework/language auto-detection (file pattern-based JSON output)
   - `jarfis_cli.py measure` — Prompt file token measurement + structural diagnosis (used in sys-distill D-0/D-1/D-4)
@@ -145,6 +148,7 @@
   - `trace.py` — Performance tracing module — opt-in via `JARFIS_TRACE` env var; `trace.log_event` API → `/tmp/jarfis-trace.jsonl` (or `$JARFIS_TRACE_PATH`); ~0.008% overhead when enabled, zero cost when off (ADR-20; v4.0.5)
   - `compose/` — Compose CLI package (`__main__.py` + `assembler.py` + `config.py` + `context7_research.py` + `models.py` + `reader.py` + `resolver.py` + `skills.py` + `skills_lib.py` + `validate.py`) — deterministic agent composition with 4-stage skill fallback, N-3 section-missing audit; `context7_research.py` (v4.1.1 B15) carries Tier-1 hint parsing + Tier-2/3 disambiguation + ResearchSession (cost guard + cache + telemetry); `resolver.py` (v4.3.0) walk-up fallback for monorepo SSOT — `base: all-projects` paths prefixed `.jarfis-project/` ascend `scope[i].path` until org.root / `.git` ancestor / depth=3 boundary, dedupe by absolute path with `from_scope_indices` provenance, trace event `compose_walkup_resolved`
   - `domain.py` — Domain Pack management module (list/detect/agents/compose/validate/scaffold/install)
+  - `agent_admin.py` — `jarfis_cli.py agent` backend; reads `commands/jarfis/skills/*.md` + `commands/jarfis/agent-composition.yaml` (read-only); never writes composition.yaml — only diff stdout for `--bind-framework`; default-dry-run for skill add/remove; CLI subparsers for skill {list/add/update/remove} + persona list (462 lines)
   - `audit.py` — Audit log module (append-only JSONL)
   - `detect.py` — Framework/language auto-detection
   - `level_check.py` — AI-native maturity auto-collection (filesystem survey + jsonl session parsing, orchestration detection)
@@ -160,13 +164,14 @@
   - `migrate.py` — v4.3 → v4.4 org-root data-source migration (v4.4.0; 341 lines; moves `.personal/orgs/{name}/{meetings,works,learnings.md}` into `{org.root}/.jarfis-org/`, flattens `_standalone` bucket, rewrites active `.jarfis-state.json` docsDir strings, git-orphan detection + `sync` field write, dry-run + backup tarball + idempotency, archives legacy `orgs/` as `orgs.v4.3-archive/`)
   - `wiki_search.py` — Semantic search (sentence-transformers bge-m3, wiki/meetings/works/**jarfis** indexing+search + incremental update + memory guard + CPU forced + MPS memory deduction; jarfis scope reads `~/.claude/` + repo + `.personal/.jarfis-index/` ChromaDB, 1,409 lines)
   - `implement.py` — sys-implement workspace manager (v4.2.0 ADR-0003) — manifest/state/log/RESUME/README + atomic writes + plan-name validation + workspace lock + cmd_init/state/log/resume/archive/list + `validate_citations` (path:LNN backticks, ADR-0005) + `classify_verdict` (Force-Acknowledge) + `recommend_execution_mode` (ADR-0004) + `extract_changed_files` (Step 4.5 RAG hook) (925 lines)
-- `~/.claude/scripts/tests/` — pytest test directory (27 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`; 784 tests passing @ v4.4.0)
+- `~/.claude/scripts/tests/` — pytest test directory (28 test modules covering all jarfis/ modules; run via `python3 -m pytest ~/.claude/scripts/tests/ -v --tb=short`; 805 tests passing @ v4.5.0)
   - `conftest.py` — Shared fixtures (jarfis_env, state_file, project_dir — tmpdir-based isolation)
   - `test_architecture.py` — Architecture invariants (domain boundaries, import hygiene)
   - `test_state.py` · `test_verify.py`-family (`test_gate_check.py`, `test_phase_verify.py`) · `test_tmux_claude.py` · `test_trace.py` · `test_compose_warnings.py`
   - `test_detect.py` · `test_domain.py` · `test_audit.py` · `test_measure.py` · `test_meetings.py`
   - `test_preflight.py` · `test_quality_gate.py` · `test_organization.py` · `test_validate.py`
   - `test_sync.py` · `test_utils.py` · `test_version.py` · `test_wiki_search.py` · `test_level_check.py` · `test_jarfis_cli.py`
+  - `test_agent_admin.py` — agent_admin module tests (v4.5; 21 tests across TestSkillList/TestSkillAdd/TestSkillUpdate/TestSkillRemove/TestPersonaList/TestDispatcher; covers dry-run vs --apply, name validation, framework binding diff suggestion, persona enumeration; uses env-var injection for fixture isolation)
   - `test_implement.py` — sys-implement workspace + Force-Acknowledge dialectic + execution mode dispatch tests (v4.2.0; 670 lines, 57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / validate_citations / classify_verdict / recommend_execution_mode / extract_changed_files)
   - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; 10 tests covering walk-up engagement, prefix gating to `.jarfis-project/`, boundary precedence (org.root → `.git` ancestor → depth=3), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering)
   - `test_migrate.py` — v4.3 → v4.4 migration tests (v4.4.0; 10 tests covering dry-run listing, meetings/works/learnings move under `.jarfis-org/`, standalone flatten, sync field git/none branch, state.json docsDir string rewrite, backup tarball, idempotent re-run)
@@ -193,6 +198,8 @@
 - `{JARFIS_SOURCE}/CHANGELOG.md` — Keep-a-Changelog format change history
 
 ## Internal Reference Map
+- `agent.md` → user-facing slash command. Calls `jarfis_cli.py agent` for CRUD; orchestrates Context7 MCP at the slash-command layer (skill add/update flesh-out); never auto-writes `agent-composition.yaml` — surfaces diff lines for manual application.
+- `agent_admin.py` → backs `jarfis_cli.py agent` subcommand (skill list/add/update/remove + persona list). Reads `commands/jarfis/skills/*.md` + `commands/jarfis/agent-composition.yaml` (safe_load only). **Never writes composition.yaml** (Critic blocker: 51-line operator-spec comments must be preserved). Skill `.md` is SSOT; framework/role binding is opt-in via diff suggestion to stdout.
 - `jarfis.md` → references all commands (helper text)
 - `work-meeting.md` → independent (optionally references project-profile, context, learnings) + mid-save for compact resilience
 - `work.md` → v4 orchestrator. References `/jarfis:project-init` (profile load guide) + meeting artifacts (Phase 0 queries `jarfis_cli.py meetings` + AskUserQuestion selection + dynamic scan of selected meeting dir) + `.compact-backups/` reference (on Resume) + `prompts/*.md` (per-Phase executor prompts, loaded by jarfis-foreman in each phase's tmux session) + `agent-composition.yaml` (via `jarfis_cli.py compose`). v3 state detected → halt + advise user; **no silent migration** (per F-08).
@@ -263,6 +270,7 @@
   - Adding/removing a Phase → update work.md + corresponding prompts/ + templates/ simultaneously
   - `~/.claude/agents/jarfis/*.md` are Agent tool role prompts (separate from work.md)
 - **Agent composition (v4)**: modifications to `agent-composition.yaml` require validation via `jarfis_cli.py compose --validate` (checks base/path resolvability + section existence; stderr warning on missing sections recorded in meta.context_files).
+- **Agent skill registry (v4.5+)**: skill `.md` files in `commands/jarfis/skills/` are SSOT. Add via `/jarfis:agent skill add <name>` (default dry-run; `--apply` writes file). Framework binding via `--bind-framework <fw>` produces a diff suggestion only — `agent-composition.yaml` must be hand-edited (operator-spec comments are load-bearing per `~/.claude/commands/jarfis/agent-composition.yaml:1-51`). Removal via `/jarfis:agent skill remove <name>` (dry-run shows references first; `--apply` deletes file but does NOT auto-cleanup yaml refs).
 - **State write rule (v4 ADR-18)**: only the main session writes `.jarfis-state.json`; tmux sub-agents write to `phase-results/phase{N}/attempt{K}.json` + phase output dirs. Violating this breaks the single-writer invariant.
 - **Version management**: after sys-implement/sys-distill/sys-upgrade completion → update VERSION + .jarfis-version + __init__.py + this index (`Version:` header) + CHANGELOG.
 - **Repo sync**: after sys-implement/sys-distill/sys-upgrade completion → run `python3 ~/.claude/scripts/jarfis_cli.py sync` (manual copy prohibited).
