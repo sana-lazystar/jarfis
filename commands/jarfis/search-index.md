@@ -2,7 +2,7 @@
 
 > **Locale**: All user-facing output must be presented in $LOCALE language. Internal instructions: English.
 
-> Batch-create or refresh semantic indexes for wiki, meetings, and works across registered Orgs.
+> Batch-create or refresh semantic indexes for wiki, meetings, works (per-Org) and the JARFIS self-knowledge corpus (`jarfis` scope, org-agnostic — ADR-0002).
 
 User request: $ARGUMENTS
 
@@ -16,7 +16,8 @@ User request: $ARGUMENTS
 ## Flag Parsing
 
 - If `$ARGUMENTS` contains the `--current` flag: Index current Org only
-- No flag: Index all Orgs (default)
+- If `$ARGUMENTS` contains the `--jarfis` flag: Index ONLY the JARFIS self-knowledge corpus (org-agnostic). Skip per-Org indexing.
+- No flag: Index all Orgs (default). Append `--jarfis` to also refresh the JARFIS index in the same run.
 
 ## Execution Flow
 
@@ -92,6 +93,16 @@ python3 ~/.claude/scripts/jarfis_cli.py search index meetings --org-root {org_ro
 # Works
 python3 ~/.claude/scripts/jarfis_cli.py search index works --org-root {org_root}
 ```
+
+### 3-bis. JARFIS self-knowledge index (org-agnostic, ADR-0002)
+
+When `--jarfis` flag is set OR running full mode without `--current`, also build/refresh the JARFIS system index. This is org-independent — there is exactly one global index at `{JARFIS_SOURCE}/.personal/.jarfis-index/`.
+
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py search index jarfis
+```
+
+The first run takes ~5 minutes (~75 markdown + ~25 Python files chunked + embedded). Subsequent rebuilds re-encode the full corpus (incremental update is M6 — see ADR-0002 §2.4).
 
 On first run, display the bge-m3 model download notice:
 ```

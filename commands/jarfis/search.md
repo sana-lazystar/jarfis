@@ -17,7 +17,8 @@ Separate flags and query from `$ARGUMENTS`:
 | `--meetings` | Search meetings only |
 | `--works` | Search works only |
 | `--wiki` | Search wiki only |
-| (none) | Search all (default) |
+| `--jarfis` | Search the JARFIS self-knowledge corpus only (org-agnostic — commands/jarfis, agents/jarfis, scripts/jarfis, hooks; ADR-0002) |
+| (none) | Search all per-Org scopes (meetings + works + wiki). `--jarfis` is NOT included in `all` because it is a separate, system-level corpus. |
 
 Multiple flags allowed: `--meetings --works query` searches meetings + works only
 
@@ -36,6 +37,7 @@ If `$QUERY` is empty, use AskUserQuestion to prompt for a search term.
 - `--meetings`: `meetings`
 - `--works`: `works`
 - `--wiki`: `wiki`
+- `--jarfis`: `jarfis` (org-agnostic — runs against `{JARFIS_SOURCE}/.personal/.jarfis-index/`)
 - Multiple flags: Search only the specified scopes (call CLI for each, then merge results)
 
 ### 3. Run Search

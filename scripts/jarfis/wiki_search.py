@@ -9,9 +9,9 @@ Legacy subcommands (via jarfis_cli.py wiki):
     rebuild-index <org_root>                Regenerate INDEX.md from section _index.md files (M6)
 
 New subcommands (via jarfis_cli.py search):
-    search {all|meetings|works|wiki} <query> [--top-k N] [--pretty]
-    index {all|meetings|works|wiki} [--org-root PATH]
-    status [--org-root PATH]
+    search {all|meetings|works|wiki|jarfis} <query> [--top-k N] [--pretty]
+    index {all|meetings|works|wiki|jarfis} [--org-root PATH]
+    status [--org-root PATH] [jarfis]
 """
 
 import json
@@ -31,7 +31,37 @@ CHUNK_TOKEN_THRESHOLD = 500  # approx chars * 0.25; we use char count / 4 as pro
 SCORE_THRESHOLD = 0.5
 MODEL_NAME = "BAAI/bge-m3"
 
-VALID_SCOPES = ("all", "meetings", "works", "wiki")
+VALID_SCOPES = ("all", "meetings", "works", "wiki", "jarfis")
+
+# --- JARFIS self-knowledge scope (ADR-0002 — M3) ---
+# Index location: {JARFIS_SOURCE}/.personal/.jarfis-index/  (org-agnostic, global)
+JARFIS_INDEX_DIR_NAME = ".jarfis-index"
+
+# Source roots scanned for jarfis-system index. Paths relative to ~/.claude/.
+# (commands/jarfis/, agents/jarfis/, scripts/jarfis/, hooks/, plus a few config files)
+JARFIS_INCLUDE_REL = (
+    "commands/jarfis",
+    "agents/jarfis",
+    "scripts/jarfis",
+    "scripts/tests",
+    "hooks",
+)
+JARFIS_INCLUDE_FILES_AT_CLAUDE_ROOT = (
+    "scripts/jarfis_cli.py",
+    ".jarfis-source",
+    ".jarfis-version",
+    ".jarfis-personal-dir",
+    ".jarfis-locale",
+)
+JARFIS_FILE_EXTS = (".md", ".py", ".sh", ".yaml", ".yml")
+JARFIS_EXCLUDE_DIRS = (
+    "__pycache__",
+    ".distill-backup",
+    ".implement-backup",
+    ".compact-backups",
+    ".jarfis-venv",
+    JARFIS_INDEX_DIR_NAME,
+)
 MEMORY_THRESHOLD_GB = float(os.environ.get("JARFIS_MEMORY_THRESHOLD_GB", "4.0"))
 
 VENV_DIR = os.path.join(os.path.expanduser("~"), ".claude", ".jarfis-venv")
@@ -603,9 +633,9 @@ def search_main(args):
     """
     if not args:
         json_error(
-            "Usage: jarfis_cli.py search {all|meetings|works|wiki} <query> [--top-k N] [--pretty]\n"
-            "       jarfis_cli.py search index {all|meetings|works|wiki} [--org-root PATH]\n"
-            "       jarfis_cli.py search status [--org-root PATH]"
+            "Usage: jarfis_cli.py search {all|meetings|works|wiki|jarfis} <query> [--top-k N] [--pretty]\n"
+            "       jarfis_cli.py search index {all|meetings|works|wiki|jarfis} [--org-root PATH]\n"
+            "       jarfis_cli.py search status [--org-root PATH] [jarfis]"
         )
 
     subcmd = args[0]
@@ -613,10 +643,23 @@ def search_main(args):
     # --- search index ---
     if subcmd == "index":
         if len(args) < 2:
-            json_error("Usage: jarfis_cli.py search index {all|meetings|works|wiki} [--org-root PATH]")
+            json_error("Usage: jarfis_cli.py search index {all|meetings|works|wiki|jarfis} [--org-root PATH]")
         scope = args[1]
         if scope not in VALID_SCOPES:
             json_error(f"Unknown scope: {scope}. Available: {', '.join(VALID_SCOPES)}")
+
+        # JARFIS self-knowledge — org-agnostic, separate path
+        if scope == "jarfis":
+            incremental = "--incremental" in args
+            files_filter = None
+            if "--files" in args:
+                idx = args.index("--files")
+                if idx + 1 < len(args):
+                    files_filter = [
+                        p.strip() for p in args[idx + 1].split(",") if p.strip()
+                    ]
+            cmd_index_jarfis(incremental=incremental, files_filter=files_filter)
+            return
 
         # Parse --org-root
         org_root_arg = None
@@ -650,6 +693,13 @@ def search_main(args):
 
     # --- search status ---
     if subcmd == "status":
+        # Check if user specifically wants the jarfis-system index status
+        if "jarfis" in args:
+            statuses = [cmd_status_jarfis()]
+            pretty = "--pretty" in args
+            _output({"statuses": statuses}, pretty)
+            return
+
         org_root_arg = None
         if "--org-root" in args:
             idx = args.index("--org-root")
@@ -684,6 +734,11 @@ def search_main(args):
 
     query = remaining[0]
 
+    # JARFIS self-knowledge scope — org-agnostic, separate index
+    if scope == "jarfis":
+        cmd_search_jarfis(query, top_k, pretty)
+        return
+
     org_root, org_dir = _resolve_dirs_from_cwd()
     dirs = resolve_search_dirs(org_root=org_root, org_dir=org_dir)
 
@@ -697,6 +752,410 @@ def search_main(args):
                 f"Available: {', '.join(dirs.keys()) if dirs else 'none (run /jarfis:org-init)'}",
             )
         cmd_search_single(dirs[scope], query, top_k, scope, pretty)
+
+
+# --- JARFIS self-knowledge scope (ADR-0002 — M3) ---
+
+
+def get_jarfis_index_dir():
+    """Return {JARFIS_SOURCE}/.personal/.jarfis-index/."""
+    from .utils import get_personal_dir
+    return os.path.join(get_personal_dir(), JARFIS_INDEX_DIR_NAME)
+
+
+def _is_excluded_jarfis_path(rel_path):
+    """True if any path component matches JARFIS_EXCLUDE_DIRS."""
+    parts = rel_path.split(os.sep)
+    return any(p in JARFIS_EXCLUDE_DIRS for p in parts)
+
+
+def _collect_jarfis_files(claude_dir=None):
+    """Walk ~/.claude/ JARFIS roots and collect indexable files.
+
+    Returns list of {rel_path, full_path, content, ext} dicts.
+    `rel_path` is relative to claude_dir (e.g. "commands/jarfis/sys-implement.md").
+    """
+    from .utils import get_claude_dir
+    if claude_dir is None:
+        claude_dir = get_claude_dir()
+    files = []
+
+    # Walk include directories
+    for include_rel in JARFIS_INCLUDE_REL:
+        root = os.path.join(claude_dir, include_rel)
+        if not os.path.isdir(root):
+            continue
+        for dirpath, dirnames, filenames in os.walk(root):
+            # Prune excluded subdirs in-place so os.walk skips them
+            dirnames[:] = [d for d in dirnames if d not in JARFIS_EXCLUDE_DIRS]
+            for fname in filenames:
+                if fname.startswith("."):
+                    # Skip dotfiles inside walk targets (e.g. .DS_Store)
+                    continue
+                ext = os.path.splitext(fname)[1].lower()
+                if ext not in JARFIS_FILE_EXTS:
+                    continue
+                full_path = os.path.join(dirpath, fname)
+                rel_path = os.path.relpath(full_path, claude_dir)
+                if _is_excluded_jarfis_path(rel_path):
+                    continue
+                try:
+                    with open(full_path, encoding="utf-8") as f:
+                        content = f.read()
+                except (OSError, UnicodeDecodeError):
+                    continue
+                if not content.strip():
+                    continue
+                files.append({
+                    "rel_path": rel_path,
+                    "full_path": full_path,
+                    "content": content,
+                    "ext": ext,
+                })
+
+    # Top-level individual files (jarfis_cli.py + .jarfis-* configs)
+    for rel in JARFIS_INCLUDE_FILES_AT_CLAUDE_ROOT:
+        full_path = os.path.join(claude_dir, rel)
+        if not os.path.isfile(full_path):
+            continue
+        ext = os.path.splitext(rel)[1].lower() or ".txt"
+        try:
+            with open(full_path, encoding="utf-8") as f:
+                content = f.read()
+        except (OSError, UnicodeDecodeError):
+            continue
+        if not content.strip():
+            continue
+        files.append({
+            "rel_path": rel,
+            "full_path": full_path,
+            "content": content,
+            "ext": ext,
+        })
+
+    return files
+
+
+def _chunk_python_file(rel_path, content):
+    """Split a Python file into function/class units.
+
+    Strategy: for files <= CHUNK_TOKEN_THRESHOLD tokens, single chunk.
+    Otherwise split on top-level `def `, `async def `, or `class `.
+    """
+    if _estimate_tokens(content) <= CHUNK_TOKEN_THRESHOLD:
+        return [{"file": rel_path, "section": None, "text": f"[{rel_path}]\n{content}"}]
+    # Split on top-level definitions (line starts with def/async def/class)
+    parts = re.split(r"(?m)^(?=(?:async\s+def\s+|def\s+|class\s+))", content)
+    chunks = []
+    for part in parts:
+        part = part.rstrip()
+        if not part:
+            continue
+        # Extract first def/class name as section heading
+        head = re.match(r"^(?:async\s+def|def|class)\s+([A-Za-z_][A-Za-z0-9_]*)", part)
+        section = head.group(1) if head else None
+        prefixed = f"[{rel_path}] {f'[{section}] ' if section else ''}{part}"
+        chunks.append({"file": rel_path, "section": section, "text": prefixed})
+    return chunks if chunks else [{"file": rel_path, "section": None, "text": f"[{rel_path}]\n{content}"}]
+
+
+def _chunk_jarfis_file(rel_path, content, ext):
+    """Dispatch chunking by file extension."""
+    if ext == ".md":
+        # Reuse markdown chunker (## heading split)
+        return _chunk_file(rel_path, content)
+    if ext == ".py":
+        return _chunk_python_file(rel_path, content)
+    # .sh, .yaml, .yml — small, single chunk
+    if _estimate_tokens(content) <= CHUNK_TOKEN_THRESHOLD * 2:
+        return [{"file": rel_path, "section": None, "text": f"[{rel_path}]\n{content}"}]
+    # Long shell/yaml — split by blank-line groups (rare)
+    blocks = re.split(r"\n\s*\n", content)
+    chunks = []
+    for i, blk in enumerate(blocks):
+        blk = blk.strip()
+        if not blk:
+            continue
+        chunks.append({
+            "file": rel_path,
+            "section": f"block-{i}",
+            "text": f"[{rel_path}] [block-{i}]\n{blk}",
+        })
+    return chunks if chunks else [{"file": rel_path, "section": None, "text": f"[{rel_path}]\n{content}"}]
+
+
+def _filter_chunks_for_incremental(meta: dict, embeddings, removed_files):
+    """Return (filtered_meta_chunks, filtered_embeddings) excluding chunks
+    whose `file` is in removed_files. Preserves index ↔ embedding alignment.
+    """
+    import numpy as np
+    chunks_meta = meta.get("chunks", [])
+    keep_indices = [
+        i for i, c in enumerate(chunks_meta)
+        if c.get("file") not in removed_files
+    ]
+    new_meta_chunks = [chunks_meta[i] for i in keep_indices]
+    if len(keep_indices) == len(chunks_meta):
+        return new_meta_chunks, embeddings  # nothing removed, fast path
+    new_embeddings = embeddings[keep_indices] if len(keep_indices) > 0 else embeddings[:0]
+    return new_meta_chunks, new_embeddings
+
+
+def cmd_index_jarfis(incremental: bool = False, files_filter=None):
+    """Build embedding index for the JARFIS self-knowledge corpus.
+
+    Args:
+        incremental: when True, re-encode only `files_filter` and merge with
+                     existing index (existing chunks for those files are removed first).
+                     When False (default), full rebuild from scratch.
+        files_filter: list of source_relpath strings (relative to ~/.claude/) to
+                      include in the incremental update. Required when incremental=True.
+
+    Output (overwrites in place):
+        {JARFIS_SOURCE}/.personal/.jarfis-index/.vectors.npz
+        {JARFIS_SOURCE}/.personal/.jarfis-index/.vectors-meta.json
+    """
+    _ensure_dependencies()
+    import numpy as np
+
+    if incremental:
+        if not files_filter:
+            json_error(
+                "Incremental update requires --files <comma-separated paths>"
+            )
+        # Filter existing files corpus to only the files_filter set
+        all_files = _collect_jarfis_files()
+        target_set = set(files_filter)
+        files = [f for f in all_files if f["rel_path"] in target_set]
+        # Some files may have been deleted — those won't appear in all_files
+        # but we still need to remove their chunks from the existing index.
+        deleted = [p for p in files_filter if p not in {f["rel_path"] for f in files}]
+    else:
+        files = _collect_jarfis_files()
+        deleted = []
+
+    if not files and not (incremental and deleted):
+        json_error("No JARFIS files collected for indexing")
+
+    new_chunks = []
+    for f in files:
+        chunks = _chunk_jarfis_file(f["rel_path"], f["content"], f["ext"])
+        for c in chunks:
+            c["ext"] = f["ext"]
+            new_chunks.append(c)
+
+    if not new_chunks and not (incremental and deleted):
+        json_error("No content to index after chunking")
+
+    index_dir = get_jarfis_index_dir()
+    os.makedirs(index_dir, exist_ok=True)
+    vectors_path = os.path.join(index_dir, VECTORS_FILE)
+    meta_path = os.path.join(index_dir, META_FILE)
+
+    # Encode new chunks (skip if no new content — pure deletion case)
+    if new_chunks:
+        model = _load_model()
+        texts = [c["text"] for c in new_chunks]
+        new_embeddings = model.encode(
+            texts, batch_size=2, show_progress_bar=True, normalize_embeddings=True
+        )
+    else:
+        new_embeddings = None
+
+    if incremental and os.path.isfile(vectors_path) and os.path.isfile(meta_path):
+        # Merge with existing index
+        existing = np.load(vectors_path)
+        existing_embeddings = existing["embeddings"]
+        with open(meta_path, encoding="utf-8") as fh:
+            existing_meta = json.load(fh)
+
+        # Remove all chunks whose `file` matches files_filter (both updated and deleted)
+        kept_chunks, kept_embeddings = _filter_chunks_for_incremental(
+            existing_meta, existing_embeddings, set(files_filter)
+        )
+
+        if new_embeddings is not None and len(new_chunks) > 0:
+            all_embeddings = np.vstack([kept_embeddings, new_embeddings])
+            new_chunks_meta = [
+                {
+                    "file": c["file"],
+                    "section": c.get("section"),
+                    "ext": c.get("ext"),
+                    "preview": c["text"][:120],
+                }
+                for c in new_chunks
+            ]
+            chunks_meta = kept_chunks + new_chunks_meta
+        else:
+            all_embeddings = kept_embeddings
+            chunks_meta = kept_chunks
+
+        # Recount total_files: collect_jarfis_files length on full corpus
+        total_files = len(_collect_jarfis_files())
+        meta = {
+            "indexed_at": time.time(),
+            "model": MODEL_NAME,
+            "scope": "jarfis",
+            "jarfis_version": existing_meta.get("jarfis_version", "unknown"),
+            "total_files": total_files,
+            "total_chunks": len(chunks_meta),
+            "chunks": chunks_meta,
+        }
+        chunks_added = len(new_chunks)
+        chunks_removed = len(existing_meta.get("chunks", [])) - len(kept_chunks)
+    else:
+        # Full rebuild
+        all_embeddings = new_embeddings
+        chunks_meta = [
+            {
+                "file": c["file"],
+                "section": c.get("section"),
+                "ext": c.get("ext"),
+                "preview": c["text"][:120],
+            }
+            for c in new_chunks
+        ]
+        # JARFIS version for metadata
+        from .utils import get_claude_dir
+        version_file = os.path.join(get_claude_dir(), ".jarfis-version")
+        jarfis_version = "unknown"
+        if os.path.isfile(version_file):
+            try:
+                with open(version_file) as fh:
+                    jarfis_version = fh.read().strip()
+            except OSError:
+                pass
+        meta = {
+            "indexed_at": time.time(),
+            "model": MODEL_NAME,
+            "scope": "jarfis",
+            "jarfis_version": jarfis_version,
+            "total_files": len(files),
+            "total_chunks": len(chunks_meta),
+            "chunks": chunks_meta,
+        }
+        chunks_added = len(new_chunks)
+        chunks_removed = 0
+
+    np.savez_compressed(vectors_path, embeddings=all_embeddings)
+    with open(meta_path, "w", encoding="utf-8") as f:
+        json.dump(meta, f, ensure_ascii=False, indent=2)
+
+    json_output({
+        "status": "indexed",
+        "scope": "jarfis",
+        "directory": index_dir,
+        "incremental": incremental,
+        "files_processed": len(files),
+        "files_deleted_from_index": len(deleted) if incremental else 0,
+        "chunks_added": chunks_added,
+        "chunks_removed": chunks_removed,
+        "total_chunks": meta["total_chunks"],
+        "vectors_path": vectors_path,
+    })
+
+
+def _check_staleness_jarfis(meta, claude_dir=None):
+    """Check for stale JARFIS files (modified after last indexing)."""
+    from .utils import get_claude_dir
+    if claude_dir is None:
+        claude_dir = get_claude_dir()
+    indexed_at = meta.get("indexed_at", 0)
+    stale = []
+    files = _collect_jarfis_files(claude_dir)
+    for f in files:
+        try:
+            mtime = os.path.getmtime(f["full_path"])
+            if mtime > indexed_at:
+                stale.append(f["rel_path"])
+        except OSError:
+            continue
+    return stale
+
+
+def _search_jarfis_index(query, top_k=DEFAULT_TOP_K):
+    """Search the JARFIS self-knowledge index. Returns (results, stale_warning)."""
+    import numpy as np
+
+    index_dir = get_jarfis_index_dir()
+    vectors_path = os.path.join(index_dir, VECTORS_FILE)
+    meta_path = os.path.join(index_dir, META_FILE)
+    if not os.path.isfile(vectors_path) or not os.path.isfile(meta_path):
+        return [], None
+
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+
+    stale = _check_staleness_jarfis(meta)
+    stale_warning = None
+    if stale:
+        stale_warning = f"{len(stale)} JARFIS file(s) modified since last indexing: {', '.join(stale[:5])}"
+
+    data = np.load(vectors_path)
+    embeddings = data["embeddings"]
+    model = _load_model()
+    query_vec = model.encode([query], normalize_embeddings=True)
+    scores = np.dot(embeddings, query_vec.T).flatten()
+
+    top_indices = np.argsort(scores)[::-1][:top_k]
+    chunks_meta = meta.get("chunks", [])
+    results = []
+    seen_files = set()
+    for idx in top_indices:
+        if idx >= len(chunks_meta):
+            continue
+        score = float(scores[idx])
+        if score < SCORE_THRESHOLD:
+            continue
+        chunk = chunks_meta[idx]
+        file_path = chunk["file"]
+        if file_path in seen_files:
+            continue
+        seen_files.add(file_path)
+        results.append({
+            "source": "jarfis",
+            "file_path": file_path,
+            "section": chunk.get("section"),
+            "ext": chunk.get("ext"),
+            "score": round(score, 4),
+            "preview": chunk.get("preview", "")[:200],
+        })
+    return results, stale_warning
+
+
+def cmd_search_jarfis(query, top_k=DEFAULT_TOP_K, pretty=False):
+    """Run a search against the JARFIS self-knowledge index."""
+    _ensure_dependencies()
+    results, stale_warning = _search_jarfis_index(query, top_k)
+    output = {"query": query, "scope": "jarfis", "results": results, "total_results": len(results)}
+    if stale_warning:
+        output["stale_warning"] = stale_warning
+    _output(output, pretty)
+
+
+def cmd_status_jarfis():
+    """Show JARFIS index status."""
+    index_dir = get_jarfis_index_dir()
+    meta_path = os.path.join(index_dir, META_FILE)
+    if not os.path.isfile(meta_path):
+        return {"source": "jarfis", "indexed": False, "directory": index_dir}
+    with open(meta_path, encoding="utf-8") as f:
+        meta = json.load(f)
+    stale = _check_staleness_jarfis(meta)
+    from datetime import datetime as _dt
+    indexed_at = meta.get("indexed_at", 0)
+    return {
+        "source": "jarfis",
+        "indexed": True,
+        "directory": index_dir,
+        "model": meta.get("model", "unknown"),
+        "jarfis_version": meta.get("jarfis_version", "unknown"),
+        "total_files": meta.get("total_files", 0),
+        "total_chunks": meta.get("total_chunks", 0),
+        "indexed_at": _dt.fromtimestamp(indexed_at).isoformat() if indexed_at else None,
+        "stale_files": len(stale),
+        "stale_list": stale[:10] if stale else [],
+    }
 
 
 # --- INDEX.md rebuild (M6) ---

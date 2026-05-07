@@ -156,6 +156,7 @@ extra_skills_by_framework:
   nestjs: [express, nodejs]
   fastify: [nodejs]
   serverless: [aws-lambda, nodejs]   # Serverless Framework
+  cloudflare-workers: [cloudflare, nodejs]  # Workers / Pages Functions / Durable Objects
 
   # Languages (framework 없을 때 fallback)
   typescript: [biome-lint]

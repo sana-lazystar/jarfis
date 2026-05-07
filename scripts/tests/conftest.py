@@ -98,6 +98,12 @@ def jarfis_env(tmp_path, monkeypatch):
     claude_dir.rename(real_claude)
     claude_dir = real_claude
 
+    # Isolate CWD: prevent get_org_dir(os.getcwd()) from picking up the
+    # caller's real org root (e.g. when pytest is run from inside a project
+    # with .jarfis-org/org-profile.md, find_org_root walks up and returns
+    # that real org's meetings dir, not the fixture's _standalone seed).
+    monkeypatch.chdir(tmp_path)
+
     # Update config files with renamed path
     (claude_dir / ".jarfis-source").write_text(str(repo_dir))
     (claude_dir / ".jarfis-personal-dir").write_text(str(personal_dir))

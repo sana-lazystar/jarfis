@@ -7,6 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.2.0] - 2026-05-07
+
+Minor release — sys-implement reborn as a Saga-style state machine with self-knowledge RAG and a Force-Acknowledge dialectic. Major surface change is invisible from outside (`/jarfis:sys-implement` still entry point), but every run now produces a versioned, resumable workspace and the dialectic converges on file:line citations rather than free-form rhetoric.
+
+### Added
+- **`jarfis-engineer` Hybrid Persona + Spawnable mode (ADR-0001)**: Mode A loaded as session persona for general JARFIS context; Mode B spawnable via `Task` for tmux-isolated execution per ADR-0004. Pre-Hybrid v4-migration body archived verbatim at `agents/jarfis/legacy/v4-migration-jarfis-engineer.md`.
+- **RAG self-knowledge (ADR-0002)**: ChromaDB collection `jarfis-system` at `{JARFIS_SOURCE}/.personal/.jarfis-index/` indexes `~/.claude/` + repo md/yaml/python files with sentence-transformers bge-m3 embeddings. Query via `jarfis_cli.py search jarfis "<keywords>"`. Incremental update via `search index jarfis --incremental --files <csv>`. ~951 chunks at release.
+- **sys-implement workspace (ADR-0003)**: every `/jarfis:sys-implement` run produces `{JARFIS_SOURCE}/.personal/sys-implements/{plan-name}/` with `manifest.json` (immutable) + `state.json` (mutable state machine) + append-only `log/NNNN-{step}-{event}.json` + `artifacts/step{N}/` (per-step deliverables incl. step2/before+after diff snapshots) + `compensation/` (rollback dir; see Migration). Saga + LangGraph + Command + Clean Architecture synthesis — no external orchestrator dep.
+- **Execution Mode dispatch (ADR-0004)**: sys-implement Step 1.7 selects `single` (main Claude direct) vs `tmux` (jarfis-engineer Mode B) via `recommend_execution_mode(impact_scope)`. Force-tmux when file_count ≥ 6 OR change_type=structural. `--mode=single`/`--mode=tmux` overrides. "Skip Step 2" available for analysis-only plans.
+- **RAG auto-update (ADR-0002 §2.4)**: sys-implement Step 4.5 calls `jarfis_cli.py search index jarfis --incremental --files <csv>` after Step 4 sync. Best-effort — failure logs but does not roll back.
+- **`jarfis_cli.py implement` subcommand**: `init` / `state` (--get / --set / --set-nested) / `log append` / `resume` / `archive` / `list`. Plan-name validated against `^[a-z][a-z0-9-]*$` (≤40 chars).
+- **Skill: cloudflare** (`commands/jarfis/skills/cloudflare.md`) — Cloudflare Workers / Pages Functions / Durable Objects expertise. Mapped via `cloudflare-workers: [cloudflare, nodejs]` in `agent-composition.yaml`.
+
+### Changed
+- **Dialectic Review → Force-Acknowledge (ADR-0005)**: 1-round; orchestrator runs `validate_citations()` (form-only check — path on disk + line in range; backticked `path:LNN` mandatory). No valid citation = formal violation. Three verdicts: ACKNOWLEDGED-advocate-wins / ACKNOWLEDGED-critic-wins / UNRESOLVED → user Confirm.
+- **`jarfis-advocate.md` / `jarfis-critic.md`**: mandatory Citation Format + explicit `### Conceded` block (Concession Protocol).
+- **`sys-implement.md`** (294 → 555 lines): Step 0 workspace init, Step 1.5 force-ack rewrite, Step 1.7 mode dispatch (new), Step 4.5 RAG hook (new). Step 0 → Step 5 mandatory order enforced.
+- **`wiki_search.py`** (~950 → 1,409 lines): adds `jarfis` scope (reads `~/.claude/` + repo + `.personal/.jarfis-index/`) + `--incremental --files <csv>` for Step 4.5 hook.
+- **`commands/jarfis/search.md` / `search-index.md`**: `jarfis` scope added.
+- **`commands/jarfis/skills/aws-lambda.md`**: cost guard one-liner added under Version & Environment Notes (M7.2 small E2E dogfood).
+
+### Fixed
+- **Test isolation**: `scripts/tests/conftest.py` `jarfis_env` fixture now `monkeypatch.chdir(tmp_path)` — previously, `meetings.main()` calling `get_org_dir(os.getcwd())` walked up to the caller's real org root (e.g. when pytest was invoked from inside an org-marked project), bypassing the fixture's seed and surfacing 3 spurious `test_meetings.py` failures.
+- **`implement.py:_set_nested_key`**: dotted literal keys (`step1.5`, `step3.5`, `step4.5`) were silently nested as `step1 → "5"`, leaving the real keys at `pending`. Fixed with greedy longest-prefix match honoring existing literal keys + 2 regression tests.
+
+### Tests
+- **751 PASSED** (was 704 baseline + 28 M4 + 14 M3.2 + 20 M5.1 + 11 M6 + 2 M7.2 dotted-key regression gates; 0 regressions across all gates). New module: `test_implement.py` (57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / `validate_citations` / `classify_verdict` / `recommend_execution_mode` / `extract_changed_files`). 26 test modules total.
+
+### Migration
+- **No code change required for users.** Existing `/jarfis:sys-implement` invocations transparently produce the new workspace.
+- **`compensation/undo.sh` rollback automation deferred to v4.2.1** (D10): ADR-0003 §3.2 already noted self-rollback safety holes (idempotency, three-way consistency across `~/.claude/` + repo + RAG, external mutation blindness). v4.2.1 will redesign `/jarfis:sys-rollback` around `git revert` of the Step 5 commit SHA — git history as truth source. Until then, manual revert remains the recommended rollback path.
+- **Skipped during v4.2.0 release**: tmux mode end-to-end exercise (no large change in scope to trigger `recommend_execution_mode → tmux`); will surface naturally in user workflow. `_TECH_STACK_ALIASES` cloudflare/workers/wrangler entries (M7.2 medium critic flag) tracked as follow-up.
+
 ## [4.1.1] - 2026-05-06
 
 Patch release — v4.1.1 backlog items B1, B2, B15 (β cut). Tooling self-bootstrapping verified at release: B1 fix syncs fixtures cleanly, B2 fix updates `Last updated: ... (note) | Version: ...` index lines without manual intervention.

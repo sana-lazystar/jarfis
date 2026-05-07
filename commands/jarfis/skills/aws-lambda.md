@@ -28,6 +28,7 @@ query_topics: [handlers, layers, environment variables, triggers, IAM roles]
 - Node.js 22.x (AL2023 런타임) 권장. 18.x EOL 2025-07.
 - Architecture: `arm64` (Graviton2) 비용 20% ↓ + 성능 유사. 단, native module은 arm64 빌드 필요.
 - `AWS_REGION`, `AWS_LAMBDA_FUNCTION_NAME` 등 자동 주입 env var는 로컬 테스트 시 mock 필요.
+- **Cost guard 기본값**: 신규 함수는 reserved concurrency (예: 100~500) + AWS Budgets alert 둘 다 설정 — runaway invoke 1건이 월 예산 폭발시키는 일을 막는다.
 
 ## Related Skills
 - `nodejs` (핸들러 작성), `dynamodb`/`s3`/`cognito` (공통 조합), `serverless`/`sam`/`cdk` (배포 도구)

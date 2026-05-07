@@ -24,6 +24,7 @@ Commands:
     domain           Domain pack management (list/detect/agents/compose/validate/scaffold/install)
     compose          Compose agent invocation (persona + skills + context) [v4 — M2]
     work-args        Parse /jarfis:work $ARGUMENTS for --domain / --scope-domain overrides [v4.1 — M3]
+    implement        sys-implement deliverables workspace (init/state/log/resume/list/archive) [v4.2 — ADR-0003]
 """
 
 import os
@@ -74,7 +75,7 @@ def _maybe_reexec_in_venv(command):
 def main():
     if len(sys.argv) < 2:
         print(
-            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org|wiki|search> [args...]"}',
+            '{"error":"Usage: jarfis <state|detect|measure|preflight|meetings|version|sync|quality-gate|validate|org|wiki|search|implement> [args...]"}',
             file=sys.stderr,
         )
         sys.exit(1)
@@ -107,6 +108,7 @@ def main():
         "domain": "jarfis.domain",
         "compose": "jarfis.compose.__main__",
         "work-args": "jarfis.work_args",
+        "implement": "jarfis.implement",
     }
 
     if command not in commands:

@@ -340,3 +340,219 @@ class TestConstants:
 
     def test_score_threshold_reasonable(self):
         assert 0.0 < SCORE_THRESHOLD < 1.0
+
+
+# ── ADR-0002 (M3) — JARFIS self-knowledge scope ─────────────────────
+
+
+class TestJarfisScope:
+    def test_jarfis_in_valid_scopes(self):
+        from jarfis.wiki_search import VALID_SCOPES
+        assert "jarfis" in VALID_SCOPES
+
+    def test_get_jarfis_index_dir_under_personal(self, jarfis_env):
+        from jarfis.wiki_search import get_jarfis_index_dir
+        path = get_jarfis_index_dir()
+        assert path.startswith(jarfis_env["personal_dir"])
+        assert path.endswith(".jarfis-index")
+
+    def test_collect_jarfis_files_includes_md(self, jarfis_env):
+        from jarfis.wiki_search import _collect_jarfis_files
+        cmd_dir = os.path.join(jarfis_env["claude_dir"], "commands", "jarfis")
+        os.makedirs(cmd_dir, exist_ok=True)
+        sample = os.path.join(cmd_dir, "sample.md")
+        with open(sample, "w") as f:
+            f.write("# Sample\n\n## Section A\nbody\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        rels = [f["rel_path"] for f in files]
+        assert "commands/jarfis/sample.md" in rels
+
+    def test_collect_jarfis_files_includes_python(self, jarfis_env):
+        from jarfis.wiki_search import _collect_jarfis_files
+        scripts_jarfis = os.path.join(
+            jarfis_env["claude_dir"], "scripts", "jarfis"
+        )
+        os.makedirs(scripts_jarfis, exist_ok=True)
+        sample = os.path.join(scripts_jarfis, "sample.py")
+        with open(sample, "w") as f:
+            f.write("def foo():\n    return 1\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        exts = {f["ext"] for f in files}
+        assert ".py" in exts
+
+    def test_collect_jarfis_files_excludes_pycache(self, jarfis_env):
+        from jarfis.wiki_search import _collect_jarfis_files
+        cache_dir = os.path.join(
+            jarfis_env["claude_dir"], "scripts", "jarfis", "__pycache__"
+        )
+        os.makedirs(cache_dir, exist_ok=True)
+        with open(os.path.join(cache_dir, "junk.py"), "w") as f:
+            f.write("# should be skipped\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        rels = [f["rel_path"] for f in files]
+        assert not any("__pycache__" in r for r in rels)
+
+    def test_collect_jarfis_files_excludes_distill_backup(self, jarfis_env):
+        from jarfis.wiki_search import _collect_jarfis_files
+        backup_dir = os.path.join(
+            jarfis_env["claude_dir"], "scripts", "jarfis", ".distill-backup"
+        )
+        os.makedirs(backup_dir, exist_ok=True)
+        with open(os.path.join(backup_dir, "old.md"), "w") as f:
+            f.write("# old\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        rels = [f["rel_path"] for f in files]
+        assert not any(".distill-backup" in r for r in rels)
+
+    def test_collect_jarfis_files_includes_legacy(self, jarfis_env):
+        """Legacy archive remains indexable per ADR-0002 §2.2."""
+        from jarfis.wiki_search import _collect_jarfis_files
+        legacy_dir = os.path.join(
+            jarfis_env["claude_dir"], "agents", "jarfis", "legacy"
+        )
+        os.makedirs(legacy_dir, exist_ok=True)
+        with open(os.path.join(legacy_dir, "old.md"), "w") as f:
+            f.write("# legacy\nbody\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        rels = [f["rel_path"] for f in files]
+        assert "agents/jarfis/legacy/old.md" in rels
+
+    def test_collect_jarfis_files_includes_jarfis_cli(self, jarfis_env):
+        from jarfis.wiki_search import _collect_jarfis_files
+        cli_path = os.path.join(jarfis_env["claude_dir"], "scripts", "jarfis_cli.py")
+        with open(cli_path, "w") as f:
+            f.write("# jarfis_cli\n")
+        files = _collect_jarfis_files(jarfis_env["claude_dir"])
+        rels = [f["rel_path"] for f in files]
+        assert "scripts/jarfis_cli.py" in rels
+
+
+class TestChunkPython:
+    def test_small_python_single_chunk(self):
+        from jarfis.wiki_search import _chunk_python_file
+        chunks = _chunk_python_file("a.py", "x = 1\ny = 2\n")
+        assert len(chunks) == 1
+        assert chunks[0]["section"] is None
+
+    def test_large_python_splits_by_def(self):
+        from jarfis.wiki_search import _chunk_python_file
+        body = "\n".join([
+            "import os",
+            "",
+            "def foo():\n    return 1\n" + ("    # filler\n" * 200),
+            "",
+            "def bar():\n    return 2\n" + ("    # filler\n" * 200),
+            "",
+            "class Baz:\n    pass\n" + ("    # filler\n" * 200),
+        ])
+        chunks = _chunk_python_file("big.py", body)
+        sections = [c["section"] for c in chunks]
+        assert "foo" in sections
+        assert "bar" in sections
+        assert "Baz" in sections
+
+
+class TestChunkJarfisFile:
+    def test_dispatches_md_to_chunk_file(self):
+        from jarfis.wiki_search import _chunk_jarfis_file
+        long_md = "# Title\n" + "## Section A\nbody\n" * 100 + "## Section B\nmore\n" * 100
+        chunks = _chunk_jarfis_file("a.md", long_md, ".md")
+        assert len(chunks) >= 2
+
+    def test_dispatches_yaml_single_chunk_when_small(self):
+        from jarfis.wiki_search import _chunk_jarfis_file
+        yaml_body = "agents:\n  product-owner:\n    persona: product-owner\n"
+        chunks = _chunk_jarfis_file("composition.yaml", yaml_body, ".yaml")
+        assert len(chunks) == 1
+
+
+class TestSearchMainJarfisRouting:
+    def test_search_main_index_jarfis_recognized(self, jarfis_env, monkeypatch):
+        from jarfis import wiki_search
+
+        called = {}
+
+        def fake_index_jarfis(incremental=False, files_filter=None):
+            called["yes"] = True
+            called["incremental"] = incremental
+            called["files_filter"] = files_filter
+            wiki_search.json_output({"status": "indexed", "scope": "jarfis"})
+
+        monkeypatch.setattr(wiki_search, "cmd_index_jarfis", fake_index_jarfis)
+        wiki_search.search_main(["index", "jarfis"])
+        assert called.get("yes") is True
+        assert called["incremental"] is False
+        assert called["files_filter"] is None
+
+    def test_search_main_search_jarfis_recognized(self, jarfis_env, monkeypatch):
+        from jarfis import wiki_search
+
+        called = {}
+
+        def fake_search_jarfis(query, top_k, pretty):
+            called["query"] = query
+            called["top_k"] = top_k
+            wiki_search.json_output({"query": query, "results": []})
+
+        monkeypatch.setattr(wiki_search, "cmd_search_jarfis", fake_search_jarfis)
+        wiki_search.search_main(["jarfis", "test query", "--top-k", "3"])
+        assert called["query"] == "test query"
+        assert called["top_k"] == 3
+
+    def test_search_main_index_jarfis_incremental(self, jarfis_env, monkeypatch):
+        """--incremental --files <csv> must reach cmd_index_jarfis with proper args."""
+        from jarfis import wiki_search
+
+        called = {}
+
+        def fake_index_jarfis(incremental=False, files_filter=None):
+            called["incremental"] = incremental
+            called["files_filter"] = files_filter
+            wiki_search.json_output({"status": "indexed", "incremental": incremental})
+
+        monkeypatch.setattr(wiki_search, "cmd_index_jarfis", fake_index_jarfis)
+        wiki_search.search_main([
+            "index", "jarfis",
+            "--incremental",
+            "--files", "commands/jarfis/x.md,scripts/jarfis/y.py",
+        ])
+        assert called["incremental"] is True
+        assert called["files_filter"] == [
+            "commands/jarfis/x.md",
+            "scripts/jarfis/y.py",
+        ]
+
+
+class TestFilterChunksForIncremental:
+    def test_removes_specified_files(self):
+        from jarfis.wiki_search import _filter_chunks_for_incremental
+        import numpy as np
+        meta = {"chunks": [
+            {"file": "a.md", "section": None, "preview": "a"},
+            {"file": "b.md", "section": None, "preview": "b"},
+            {"file": "a.md", "section": "S2", "preview": "a2"},
+        ]}
+        embeddings = np.array([[1, 0], [0, 1], [0.5, 0.5]], dtype=float)
+        new_chunks, new_embs = _filter_chunks_for_incremental(meta, embeddings, {"a.md"})
+        assert len(new_chunks) == 1
+        assert new_chunks[0]["file"] == "b.md"
+        assert new_embs.shape == (1, 2)
+        assert (new_embs[0] == [0, 1]).all()
+
+    def test_removes_nothing_returns_original(self):
+        from jarfis.wiki_search import _filter_chunks_for_incremental
+        import numpy as np
+        meta = {"chunks": [{"file": "a.md", "preview": "a"}]}
+        embeddings = np.array([[1, 0]], dtype=float)
+        new_chunks, new_embs = _filter_chunks_for_incremental(meta, embeddings, {"unrelated.md"})
+        assert len(new_chunks) == 1
+        assert new_embs is embeddings  # fast path — same object
+
+    def test_removes_all_returns_empty(self):
+        from jarfis.wiki_search import _filter_chunks_for_incremental
+        import numpy as np
+        meta = {"chunks": [{"file": "a.md", "preview": "a"}]}
+        embeddings = np.array([[1, 0]], dtype=float)
+        new_chunks, new_embs = _filter_chunks_for_incremental(meta, embeddings, {"a.md"})
+        assert new_chunks == []
+        assert new_embs.shape == (0, 2)
