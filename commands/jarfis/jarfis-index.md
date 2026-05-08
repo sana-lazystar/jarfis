@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.7.0
+> Do not edit manually. Last updated: 2026-05-08 | Version: 4.8.0
 
 ## File Structure
 ```
@@ -35,7 +35,7 @@
     │   ├── phase3.md              # Phase 3 Design (figma + text unified) — parallel multi-page processing, per-section v5 generation (546 lines)
     │   ├── phase4.md              # Phase 4 Implementation — parallel BE/FE/DevOps + security pre-review + TDD Step 4-0.5 + TDD Ratchet (conditional on $TDD_ENABLED) (320 lines)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness — DevOps-owned, `phase_id = "4-5"` (117 lines)
-    │   ├── phase5.md              # Phase 5 Review & QA — review_round loop + pattern-detect + Phase 4 Agent Status injection + Learning Candidate Detection (628 lines)
+    │   ├── phase5.md              # Phase 5 Review & QA — review_round loop + pattern-detect + Phase 4 Agent Status injection + Learning Candidate Detection + Step 5-5 Host Smoke Test (per-scope `type ∈ {desktop,mobile,frontend}` OR profile `Host Smoke: required`; `host_smoke_max_attempts=2`; fabricate 금지) (841 lines; +Step 5-5 v4.8.0 phase5-host-smoke-test-v1)
     │   ├── phase6.md              # Phase 6 Retrospective + Wiki 2-track Sync + Workflow Metrics + semantic index refresh (416 lines)
     │   └── wiki-loading.md        # Wiki loading shared module — 4-step protocol + semantic search fallback (47 lines)
     ├── domains/                   # v3.0 Domain Pack infrastructure (metadata only in v4 — skills relocated to ../skills/)
@@ -55,7 +55,7 @@
         ├── jarfis-state-schema.md # .jarfis-state.json v4 schema — scope[] + org{} + baseCommit + sessionKey + phases.{N}.status + phase-results/
         ├── learnings.md           # jarfis-learnings.md template — Universal/Project-Specific structure
         ├── project-context.md     # project-context.md template
-        ├── project-profile.md     # Project profile template + org back-reference
+        ├── project-profile.md     # Project profile template + org back-reference + § Host Smoke Scenarios (deep — required for desktop/mobile/frontend; opt-in for backend/CLI; consumed by Phase 5 Step 5-5; v4.8.0)
         ├── meeting-artifacts.md   # Meeting artifact 4-type templates (summary/notes/decisions/tech-research)
         ├── org-profile.md         # Organization profile template
         ├── wiki-index.md          # Wiki INDEX.md initial template
@@ -80,7 +80,7 @@
     ├── frontend-developer.md      # FE perspective (109 lines) — Classic Web/Modern Frameworks/Cross-Browser/Performance Infra + Learned Rules (12~15 항목, 5 카테고리 균형)
     ├── backend-developer.md       # BE perspective (92 lines) — Languages/Frameworks/Databases/Server Types/Troubleshooting + production-ready judgment
     ├── devops-engineer.md         # DevOps perspective (73 lines) — CI/CD, containers, IaC, Reliability/Observability/FinOps, behavioral guidelines
-    ├── qa-engineer.md             # QA perspective (122 lines) — test design, risk assessment, compatibility, Quality Advocate mindset, escalation
+    ├── qa-engineer.md             # QA perspective (123 lines) — test design, risk assessment, compatibility, Quality Advocate mindset, escalation, Host smoke vs mock review (v4.8.0)
     ├── security-engineer.md       # Security perspective (133 lines) — threat modeling mindset, Detection Patterns, Quality Gate, escalation (도구별 STRIDE/SAST/DAST 는 별도 skill 후보)
     └── ux-designer.md             # UX perspective (175 lines) — user empathy, Constraint-First, Nielsen Checkpoints, Trade-off Matrix, WCAG 2.2 AA, Critique Loop, Learned Rules (reference.png + Figma)
 ```
@@ -242,7 +242,7 @@
 - `jarfis-session-start.sh` → discovers in-progress workflows at SessionStart → injects context via stdout (kill switch: `JARFIS_SESSION_RESTORE=0`).
 - `quality_gate.py` → called by jarfis-quality-gate.sh; runs biome/prettier + tsc (auto-detects project root).
 - `phase4.md` → Phase 2 handoff read/write instructions (key_decisions, warnings, unresolved) + Artifact Loading Checklist (required/conditional file distinction) + TDD Step 4-0.5 (QA test-first authoring) + BE/FE TDD Green Phase blocks (TDD Ratchet conditional on `$TDD_ENABLED == 'true'`).
-- `phase5.md` → Phase 4 Agent Status injection (phase4_agents status forwarding) + Fix agent original design reference (architecture.md, tasks.md) + Learning Candidate Detection (records learning_candidates when same fix category repeats 2+ times) + pattern-detect for review round convergence.
+- `phase5.md` → Phase 4 Agent Status injection (phase4_agents status forwarding) + Fix agent original design reference (architecture.md, tasks.md) + Learning Candidate Detection (records learning_candidates when same fix category repeats 2+ times) + pattern-detect for review round convergence + **Step 5-5 Host Smoke Test (v4.8.0)**: review rounds all-PASS 직후 `$HOST_SMOKE_SCOPES` (per-scope `type ∈ {desktop,mobile,frontend}` OR profile § Host Smoke Scenarios `Host Smoke: required`) 에 대해 qa-engineer spawn 으로 host shell 실행 (`$HOST_SMOKE_MAX_ATTEMPTS=2`, in-loop diagnosis+fix 미러). Scenarios 미동봉 시 `status=error reason=host_smoke_missing_scenarios` (fabricate 금지). 최종 FAIL 시 `reason=host_smoke_failed`. `meta.host_smoke = {executed, scopes:{name:{status,attempts}}}`.
 - `phase6.md` → Suggested Learnings section (auto-generates learning candidates based on learning_candidates) + Wiki re-indexing via `jarfis_cli.py search index wiki` after wiki update (best-effort) + appends `workflow-metrics.tsv`.
 - `prompts/phase6.md` Track B → rsync 가 시안 전체를 wiki/DESIGN/pages/{project}/ 로 sync (sitemap.md, ia.json, assets/ 자동 포함). supplied 모드 한정으로 시안에 없는 항목은 자동 생성하지 않는다 (SSOT).
 - `wiki-loading.md` → calls `jarfis_cli.py search wiki` in 4-Step Step 3 (fallback: LLM judgment).
@@ -295,3 +295,4 @@
 - **v3 state detection**: `.jarfis-state.json` with `project_name` (no `sessionKey`) → v4 work.md halts with guidance message in `$LOCALE`. Never silently migrate (F-08 + MIGRATION.md §3).
 - **v3 fallback removal (v4.1, ADR-0002)**: legacy `work-legacy.md` and the `state.py:cmd_init` v3 flat-key dual emit were removed in M2; emergency rollback now relies solely on git tag `v4.0.7` + `rollback.sh`.
 - **Supplied design mode (v4.6.0+)**: `state.design.mode = "supplied"` 는 외부 시안(HTML+assets)을 jarfis-foreman 이 cp 하는 모드. **SSOT 원칙**: 시안 = 유일 진실. 시스템은 시안에 없는 sitemap.md/ia.json 을 자동 생성하지 않는다 (`templates/sitemap.md`, `templates/ia-schema.md` 둘 다 명시). suppliedPath 변경 시 `verify.py` mode 분기 + `state.py set_design_mode` invariant 동기화 의무. `agent-composition.yaml` ux-designer 는 supplied 모드에서 spawn 되지 않음 (Branch C 는 foreman-only orchestrator step).
+- **Phase 5 Host Smoke Test (v4.8.0+, phase5-host-smoke-test-v1)**: Phase 5 마지막 round all-PASS 직후 host-runnable scope 에 대해 macOS host e2e smoke test 1회 강제 실행. **트리거 (per-scope, NOT work-wide)**: `scope[i].type ∈ {desktop, mobile, frontend}` OR `scope[i].path/.jarfis-project/project-profile.md` § "Host Smoke Scenarios" 의 `**Host Smoke**: required|optional`. `state.devops` 는 트리거 아님 (deployment plan 신호일 뿐 host runnability 와 무관). **Fabricate 금지**: scenarios 미동봉 + required type → `status=error reason=host_smoke_missing_scenarios`. **FAIL 루프 방지**: `host_smoke_max_attempts = 2` (별도 예산), in-loop diagnosis+fix mirror Step 5-4. 최종 FAIL → `status=error reason=host_smoke_failed`. **Backend/CLI 영향 없음** (opt-in 안 하면 skip — 기존 medistream-market-frontend 회귀 영향 0).

@@ -9,6 +9,7 @@
 - `$DOCS_DIR` = tmux workspace
 - `$STATE_FILE` = `$DOCS_DIR/.jarfis-state.json`
 - `$MAX_REVIEW_ROUNDS` = 3 (M8)
+- `$HOST_SMOKE_MAX_ATTEMPTS` = 2 (Step 5-5; budget independent of review_round)
 
 ### jarfis-foreman precompute (from $STATE_FILE)
 
@@ -18,6 +19,11 @@
 - `$TDD_ENABLED` = `state.tddEnabled`
 - `$TEST_MODS_JSON` = `state.phase4_tests.test_modifications` (array or `"[]"`)
 - For each `scope[i]`: `$DIFF_CMD[i]` = `git -C {scope[i].path} diff {scope[i].baseCommit}..HEAD`
+- `$HOST_SMOKE_SCOPES` = subset of `state.workspace.scope[]` qualifying for Step 5-5 (Host Smoke Test):
+  - `scope[i].type ∈ {"desktop", "mobile", "frontend"}` (host-runnable types) **OR**
+  - `scope[i].path/.jarfis-project/project-profile.md` declares `Host Smoke: required`
+    (grep for `^- \*\*Host Smoke\*\*: required` under `## Host Smoke Scenarios`)
+  - Backend/CLI/lib without explicit opt-in → not in `$HOST_SMOKE_SCOPES` (mock review sufficient).
 
 ## Required Inputs (consumed by reviewer sub-agents)
 
@@ -57,7 +63,27 @@ while round <= $MAX_REVIEW_ROUNDS:
     Step 5-3 — call pattern-detect; append warnings to review.md
 
   Step 5-4 — Check unresolved issues (reviewer spawn responses indicate PASS/REVISION count)
-    if all PASS: break
+    if all PASS:
+      Step 5-5 — Host Smoke Test (CONDITIONAL on $HOST_SMOKE_SCOPES non-empty)
+        If $HOST_SMOKE_SCOPES is empty: break (no host-runnable scopes — mock review sufficient)
+        Else:
+          For each scope[i] in $HOST_SMOKE_SCOPES:
+            Read scope[i] project-profile.md "## Host Smoke Scenarios" section
+            If section missing AND scope[i].type ∈ {desktop, mobile, frontend}:
+              phase-results.status = "error" + reasonDetail = "missing Host Smoke Scenarios for required scope[i]"
+              EXIT (no fabrication — foreman cannot synthesize project semantics)
+            attempt = 1
+            while attempt <= $HOST_SMOKE_MAX_ATTEMPTS:
+              spawn qa-engineer (Step 5-5 Host Smoke prompt)
+              If [HOST_SMOKE: status=PASS]:
+                meta.host_smoke[scope_i] = "passed"; continue to next scope
+              Elif attempt < $HOST_SMOKE_MAX_ATTEMPTS:
+                spawn tech-lead diagnosis + fix (mirror Step 5-4 diagnosis+fix pattern)
+                attempt += 1
+              Else:
+                phase-results.status = "error" + reasonDetail = "host_smoke FAIL on scope=N: <detail>"
+                EXIT
+          All scopes PASS → break
     else:       spawn TL for diagnosis (which also emits learning_candidates)
                 spawn FE/BE for fixes
                 round += 1
@@ -592,6 +618,183 @@ Report completion in your final response:
 
 ---
 
+## Step 5-5 — Host Smoke Test (CONDITIONAL on `$HOST_SMOKE_SCOPES` non-empty)
+
+Runs **after** all reviewer rounds reach all-PASS, **before** the review_round loop breaks. Closes the mock-only verification gap that Phase 5 review cannot detect (e.g., macOS-specific paths, GUI display server, native socket paths, shell PATH context, packaging/signing, daemon/socket lifecycle).
+
+### When to run
+
+For each `scope[i]` in `$HOST_SMOKE_SCOPES`:
+
+- **Required (auto)**: `scope[i].type ∈ {"desktop", "mobile", "frontend"}` — host-runnable by nature.
+- **Opt-in**: `scope[i].path/.jarfis-project/project-profile.md` contains `## Host Smoke Scenarios` with `**Host Smoke**: required` (or `optional` — both opt in).
+- **Skip**: backend/CLI/lib stacks without explicit opt-in. Mock-only review is acceptable.
+
+If `$HOST_SMOKE_SCOPES` is empty → break the review_round loop normally (no host smoke).
+
+### Pre-spawn validation (orchestrator step — jarfis-foreman executes)
+
+For each `scope[i]` in `$HOST_SMOKE_SCOPES`:
+
+```bash
+PROFILE=$scope[i].path/.jarfis-project/project-profile.md
+if ! grep -q "^## Host Smoke Scenarios" "$PROFILE" 2>/dev/null; then
+  if [ "$scope[i].type" = "desktop" ] || [ "$scope[i].type" = "mobile" ] || [ "$scope[i].type" = "frontend" ]; then
+    # ABORT — fabrication prohibited (per Critic v1; foreman cannot synthesize "happy-path")
+    write phase-results/phase5/attempt{K}.json with:
+      status = "error"
+      reason = "host_smoke_missing_scenarios"
+      reasonDetail = "Host Smoke Scenarios section missing in $PROFILE for required scope (type=$scope[i].type). Add the section to project-profile.md or change scope[i].type."
+    EXIT
+  fi
+fi
+```
+
+### Compose invocation (jarfis-foreman executes, per qualifying scope)
+
+```bash
+COMPOSE=$(python3 ~/.claude/scripts/jarfis_cli.py compose \
+  --agent qa-engineer --scope-index $i --state $STATE_FILE)
+# Task spawn with the Host Smoke prompt below.
+```
+
+### Sub-agent task prompt — host smoke (jarfis-foreman injects, per scope per attempt)
+
+```
+You are the QA engineer running the Host Smoke Test for scope[$i] (name={scope[$i].name}, type={scope[$i].type}) in attempt {attempt} of {host_smoke_max_attempts}.
+
+This is a REAL host execution — you are running the project on the actual macOS host shell, not in a mock environment. Phase 5 reviewer rounds passed; this gate exists because mock review cannot detect host-integration failures (macOS paths, display server, native sockets, shell PATH, packaging, daemon lifecycle).
+
+Inputs to read:
+- scope[$i].path/.jarfis-project/project-profile.md   (HIGHEST AUTHORITY — read § "Host Smoke Scenarios")
+- $DOCS_DIR/review/diagnosis.md                        (if attempt > 1 — fix context from previous failure)
+- scope[$i].path/CLAUDE.md                             (if present — project-level rules)
+
+Procedure:
+1. Read § "Host Smoke Scenarios" in project-profile.md.
+   - If "Scenarios:" subsection lists items, execute each in order.
+   - Each item has: name + commands + expected_signal (stdout pattern OR exit code OR file artifact).
+2. cd into scope[$i].path before running any command.
+3. Execute scenarios using Bash tool (real shell, no sandbox). For long-running processes (e.g. `cargo run`, `pnpm dev`), use background mode + Monitor + explicit teardown.
+4. For each scenario:
+   - Capture stdout/stderr, exit code, and observable signals.
+   - Compare against expected_signal.
+   - Mark PASS/FAIL with concrete evidence (line in output, file path, exit code).
+5. On FAIL:
+   - Capture last 50 lines of relevant log output.
+   - Identify whether failure is host-environment (PATH, signing, display, port collision, etc.) or business-logic.
+   - Do NOT attempt fixes — diagnosis happens via tech-lead spawn (orchestrator next step).
+6. Cleanup: terminate all background processes you started; delete temp files you created.
+
+Output file (OVERWRITE if exists):
+  $DOCS_DIR/review/host-smoke/scope-{i}-attempt-{attempt}.md
+
+Content format:
+  ### Host Smoke — {scope_name} (attempt {attempt})
+  | # | Scenario | Expected | Actual | Verdict |
+  |---|----------|----------|--------|---------|
+  | 1 | ...      | ...      | ...    | PASS    |
+  | 2 | ...      | ...      | ...    | FAIL    |
+
+  #### FAIL details (if any)
+  Scenario: {N}
+  Command: {cmd}
+  Output (last 50 lines):
+  ```
+  ...
+  ```
+  Likely cause: {host-env / business-logic / unclear}
+
+At the END of your final response to the Task tool, emit ONE summary line:
+  [HOST_SMOKE: scope={scope_name} attempt={attempt} status=PASS|FAIL failed_scenarios={N1,N2,...}]
+```
+
+jarfis-foreman fills `{i}`, `{scope_name}`, `{scope[$i].type}`, `{attempt}`, `{host_smoke_max_attempts}`.
+
+### FAIL recovery (orchestrator step — mirrors Step 5-4 diagnosis+fix)
+
+When `[HOST_SMOKE: status=FAIL]` and `attempt < $HOST_SMOKE_MAX_ATTEMPTS`:
+
+1. Spawn tech-lead-reviewer with the diagnosis prompt below (NOT the Step 5-4 review diagnosis — separate prompt scoped to host smoke).
+2. The diagnosis sub-agent reads `scope-{i}-attempt-{attempt}.md` + scope[$i].path source, identifies the host-integration root cause, and writes `host-smoke-diagnosis-{i}-{attempt}.md`.
+3. Diagnosis sub-agent's final response includes a `<HOST_SMOKE_FIX_DIRECTIVES>...</HOST_SMOKE_FIX_DIRECTIVES>` block (same shape as Step 5-4 `<FIX_DIRECTIVES>`).
+4. Orchestrator parses the JSON, spawns the appropriate role(s) (frontend-developer / backend-developer / devops-engineer) per scope to apply fixes.
+5. Increment `attempt`; re-spawn host smoke (Step 5-5 main prompt).
+
+### Sub-agent task prompt — host smoke diagnosis (jarfis-foreman injects, per FAIL)
+
+```
+You are the tech-lead reviewer producing a host-integration root-cause diagnosis for scope[$i] (attempt {attempt} FAILED).
+
+Inputs:
+- $DOCS_DIR/review/host-smoke/scope-{i}-attempt-{attempt}.md       (failure evidence)
+- scope[$i].path source (especially: macOS-specific paths, native socket/PATH, build/packaging config, display/signing config)
+- $DOCS_DIR/planning/architecture.md                                 (verify original design intent)
+
+Procedure:
+1. List all FAIL scenarios from the host-smoke output.
+2. Group by host-integration category:
+   - PATH / shell context
+   - macOS-specific paths (sockets, keychain, /tmp vs /var, application support)
+   - GUI/display/notarization/code-signing
+   - Background process / daemon lifecycle
+   - Packaging / build artifact location
+   - Origin allowlist / network config (e.g., trycloudflare)
+   - Other
+3. For each group, identify root cause at code/config level (file path + line).
+4. Emit fix directives (assignee role + scope-index + target file + caveats).
+
+Output to $DOCS_DIR/review/host-smoke-diagnosis-{i}-{attempt}.md using:
+
+## Host Smoke Failure Diagnosis — scope[$i], attempt {attempt}
+
+### Group 1: {host-integration category}
+Failed Scenarios: {N1, N2}
+Root Cause: {code/config-level analysis}
+Fix Directive:
+| Assignee       | File                  | Fix Description |
+|----------------|-----------------------|-----------------|
+| BE scope-idx 0 | src/socket.rs:42      | Use macOS-native socket path |
+
+(repeat per group)
+
+═══════════════════════════════════════════════
+Fix directive map (include in your FINAL RESPONSE)
+═══════════════════════════════════════════════
+
+<HOST_SMOKE_FIX_DIRECTIVES>
+[
+  {"role": "backend-developer", "scope_index": 0, "group": "macOS socket path"},
+  {"role": "devops-engineer",   "scope_index": 0, "group": "code-signing config"}
+]
+</HOST_SMOKE_FIX_DIRECTIVES>
+
+If no actionable fix is possible (e.g. external service outage), emit:
+<HOST_SMOKE_FIX_DIRECTIVES>
+[]
+</HOST_SMOKE_FIX_DIRECTIVES>
+
+This map is the spawn directory for the orchestrator; the .md file is the source of truth for the fix content.
+```
+
+### Final FAIL handling
+
+When `attempt == $HOST_SMOKE_MAX_ATTEMPTS` and still FAIL:
+
+```bash
+# orchestrator writes phase-results error JSON
+write phase-results/phase5/attempt{K}.json:
+  status = "error"
+  reason = "host_smoke_failed"
+  reasonDetail = "scope=$i failed after $HOST_SMOKE_MAX_ATTEMPTS attempts. Last failed scenarios: {list}. See host-smoke/scope-$i-attempt-$attempt.md."
+  meta.host_smoke = { "scope_$i": "failed", ... }
+EXIT (no further phases until user intervention)
+```
+
+User interpretation: at Gate 3, the main session reads `phase-results/phase5/attempt{K}.json` and surfaces the host smoke failure. User decides whether to manually fix + re-run Phase 5, or pivot the design (re-enter Phase 2).
+
+---
+
 ## Completion Protocol
 
 At phase completion, perform the following in order:
@@ -600,6 +803,8 @@ At phase completion, perform the following in order:
    - `$DOCS_DIR/review/review.md` (concatenated across all rounds)
    - `$DOCS_DIR/review/api-contract-check.md` (when `api-spec.md` exists)
    - `$DOCS_DIR/review/diagnosis.md` (when issues were found)
+   - `$DOCS_DIR/review/host-smoke/scope-{i}-attempt-{N}.md` (when Step 5-5 ran)
+   - `$DOCS_DIR/review/host-smoke-diagnosis-{i}-{N}.md` (when Step 5-5 had any FAIL attempt)
    - Fix commits (under each `scope[i].path`)
    - Temp files remain at `$DOCS_DIR/review/tmp/round-{N}/*.md` for debugging
 2. **(Optional) Handoff document**
@@ -617,12 +822,19 @@ At phase completion, perform the following in order:
        "pathological_patterns": $(echo "$PATTERNS_JSON" | jq -c '.patterns // []'),
        "pattern_details":       $(echo "$PATTERNS_JSON" | jq -c '.details  // {}'),
        "learning_candidates":   $LC_JSON,
-       "design_source":         "$(jq -r '.design.mode // ""' $STATE_FILE)"
+       "design_source":         "$(jq -r '.design.mode // ""' $STATE_FILE)",
+       "host_smoke":            $HOST_SMOKE_RESULT_JSON
      }
    }
    EOF
    # Error: status=error with reason/reasonDetail
+   #   reason values: "host_smoke_missing_scenarios" | "host_smoke_failed" | "<other>"
    ```
+
+   `$HOST_SMOKE_RESULT_JSON` shape:
+   - When Step 5-5 did not run (no qualifying scopes): `{"executed": false}`
+   - When all qualifying scopes passed: `{"executed": true, "scopes": {"<scope_name>": {"status": "passed", "attempts": N}, ...}}`
+   - When any scope failed final attempt: same shape with `"status": "failed"` and `"failed_scenarios": [...]`
 
 **Strict order**: artifacts → (handoff) → phase-results JSON.
 Do NOT write to `.jarfis-state.json` (the main Claude owns it). At Gate 3 the main session reads this meta and conditionally surfaces the "Re-design Phase 2" option.

@@ -83,4 +83,33 @@ Do not include sections that were not analyzed at the given depth (no empty sect
 
 ## Notes & Caveats (deep)
 (Technical peculiarities, TODO/FIXME summary, important notes)
+
+## Host Smoke Scenarios (deep — required for desktop/mobile/frontend, opt-in for backend/CLI)
+> Phase 5 Step 5-5 가 이 섹션을 읽어 macOS host에서 실제 e2e smoke test 1회를 실행한다.
+> Mock 환경 review가 통과해도 host integration 이슈 (macOS 경로, GUI display, native socket, packaging/signing 등) 를 잡기 위함.
+> `scope[i].type ∈ {desktop, mobile, frontend}` 인 scope에서 이 섹션이 누락되면 Phase 5는 `status=error` 로 중단한다 (시스템은 시나리오를 fabricate 하지 않는다).
+
+- **Host Smoke**: required | optional | not-applicable
+  - `required` — desktop/mobile/frontend 의 자연 default. Phase 5 마지막에 강제 실행.
+  - `optional` — backend/CLI 인데 host 검증을 원하는 경우 명시적 opt-in. Phase 5 강제 실행.
+  - `not-applicable` — pure library, lambda, server-only 등 host 실행 자체가 의미 없음. Phase 5 skip.
+
+### Scenarios
+> 시나리오는 N개 정의 가능. 각 시나리오는 (name + commands + expected_signal) 3-tuple.
+
+1. **Build & launch**
+   - commands: `pnpm build && pnpm start` (예시)
+   - expected_signal: stdout `Server listening on :3000` 또는 exit 0 + `dist/` 디렉토리 생성
+2. **Happy-path 1회** (해당 프로젝트의 가장 핵심적인 user journey 1개)
+   - commands: 예) `curl -s localhost:3000/health` 또는 GUI app `Cmd+N` → 새 창 생성 확인
+   - expected_signal: HTTP 200 / 특정 stdout 패턴 / 특정 파일 생성 / 특정 socket 응답
+3. **(데몬/장기 프로세스인 경우)** lifecycle 종료
+   - commands: `kill -SIGTERM $PID && wait $PID`
+   - expected_signal: graceful shutdown 로그 + exit 0
+
+### Caveats (선택)
+- 외부 서비스 의존 (DB / API): mock 또는 docker-compose 명시
+- 포트 충돌 회피: 실행 시 사용 포트 명시
+- 코드 사이닝/공증 필요 여부 (macOS app)
+- 타임아웃 권장값 (각 시나리오별)
 ```

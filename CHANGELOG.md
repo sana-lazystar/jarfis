@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.8.0] - 2026-05-08
+
+- implement: Phase 5 Step 5-5 Host Smoke Test rule (per-scope trigger; max_attempts=2; fabricate 금지)
+
 ## [4.7.0] - 2026-05-07
 
 - implement: extend compose resolver walk-up — add .jarfis-org/ prefix gate + bump depth cap 3→5 (monorepo-ssot-walkup-fix-v1)
