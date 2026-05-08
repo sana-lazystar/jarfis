@@ -9,20 +9,22 @@ The five `base` kinds map to different roots within `state`:
 
 `resolve_working_dir` follows the same per-project/work-wide split (M11).
 
-`all-projects` walk-up (monorepo SSOT, v4.2):
-    When `path` starts with `.jarfis-project/`, the resolver probes each
-    `scope[i].path` for the requested file; if absent, it walks parent
-    directories one step at a time until a match is found or a boundary
-    is hit. Boundaries (most restrictive first):
+`all-projects` walk-up (monorepo SSOT, v4.2; depth bumped to 5 in
+sys-implement monorepo-ssot-walkup-fix-v1):
+    When `path` starts with `.jarfis-project/` or `.jarfis-org/`, the
+    resolver probes each `scope[i].path` for the requested file; if
+    absent, it walks parent directories one step at a time until a match
+    is found or a boundary is hit. Boundaries (most restrictive first):
         1. `state.org.root` — never cross above the registered org root.
         2. Nearest ancestor `.git/` — VCS root sentinel.
-        3. Hard depth limit = 3 parent moves — final guard.
+        3. Hard depth limit = 5 parent moves — final guard.
     Resolved paths are deduped; when 2+ scopes share an SSOT, the entry
     records all originating scope indices via `from_scope_indices`.
 
-    Return shape for `.jarfis-project/` paths is `list[dict]` with keys
-    `{path, from_scope_indices}`. For other paths the legacy `list[str]`
-    is preserved (caller distinguishes by element type).
+    Return shape for walk-up-gated paths (`.jarfis-project/` and
+    `.jarfis-org/`) is `list[dict]` with keys `{path, from_scope_indices}`.
+    For other paths the legacy `list[str]` is preserved (caller
+    distinguishes by element type).
 """
 
 import os
@@ -31,8 +33,11 @@ from .errors import ScopeIndexError
 
 
 ORG_WIKI_SUBDIR = os.path.join(".jarfis-org", "wiki")
-_WALKUP_PREFIX = ".jarfis-project" + os.sep
-_WALKUP_DEPTH_LIMIT = 3
+_WALKUP_PREFIXES = (
+    ".jarfis-project" + os.sep,
+    ".jarfis-org" + os.sep,
+)
+_WALKUP_DEPTH_LIMIT = 5  # was 3 — bumped per sys-implement monorepo-ssot-walkup-fix-v1
 
 
 def resolve_path(base, path, state, scope_index):
@@ -121,12 +126,17 @@ def resolve_working_dir(scope, state, scope_index):
 
 
 def _is_walkup_path(path):
-    """True iff `path` is gated for walk-up resolution (.jarfis-project/...).
+    """True iff `path` is gated for walk-up resolution.
 
-    Accepts both POSIX (`/`) and OS-native separators so YAML configs that
-    hard-code `/` work on every platform.
+    Accepts both POSIX (`/`) and OS-native separators so YAML configs
+    hard-coding `/` work on every platform.
+
+    Currently gated prefixes: `.jarfis-project/`, `.jarfis-org/`.
     """
-    return path.startswith(".jarfis-project/") or path.startswith(_WALKUP_PREFIX)
+    posix_prefixes = (".jarfis-project/", ".jarfis-org/")
+    if any(path.startswith(p) for p in posix_prefixes):
+        return True
+    return any(path.startswith(p) for p in _WALKUP_PREFIXES)
 
 
 def _resolve_all_projects_walkup(path, scope, state):
@@ -173,7 +183,7 @@ def _walkup_for_scope(scope_path, rel_path, org_root):
         1. org_root — if set and current dir is at-or-above org_root,
            but we already moved up past org_root → stop.
         2. .git ancestor — if current dir contains a .git, stop after probing.
-        3. depth limit (3 parent moves) — hard guard.
+        3. depth limit (5 parent moves) — hard guard.
 
     The candidate dir at step k is reached by moving up k times from
     scope_path. We probe at each candidate (including step 0). After a

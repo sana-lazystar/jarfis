@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-07 | Version: 4.6.0
+> Do not edit manually. Last updated: 2026-05-07 | Version: 4.7.0
 
 ## File Structure
 ```
@@ -148,7 +148,7 @@
   - `verify_helpers.py` — Shared helpers for verify.py entrypoints
   - `tmux_claude.py` — tmux-per-phase orchestration (B1 isolation: exact-match session name only; `--save-pane` post-mortem debugging; v4.0.4)
   - `trace.py` — Performance tracing module — opt-in via `JARFIS_TRACE` env var; `trace.log_event` API → `/tmp/jarfis-trace.jsonl` (or `$JARFIS_TRACE_PATH`); ~0.008% overhead when enabled, zero cost when off (ADR-20; v4.0.5)
-  - `compose/` — Compose CLI package (`__main__.py` + `assembler.py` + `config.py` + `context7_research.py` + `models.py` + `reader.py` + `resolver.py` + `skills.py` + `skills_lib.py` + `validate.py`) — deterministic agent composition with 4-stage skill fallback, N-3 section-missing audit; `context7_research.py` (v4.1.1 B15) carries Tier-1 hint parsing + Tier-2/3 disambiguation + ResearchSession (cost guard + cache + telemetry); `resolver.py` (v4.3.0) walk-up fallback for monorepo SSOT — `base: all-projects` paths prefixed `.jarfis-project/` ascend `scope[i].path` until org.root / `.git` ancestor / depth=3 boundary, dedupe by absolute path with `from_scope_indices` provenance, trace event `compose_walkup_resolved`
+  - `compose/` — Compose CLI package (`__main__.py` + `assembler.py` + `config.py` + `context7_research.py` + `models.py` + `reader.py` + `resolver.py` + `skills.py` + `skills_lib.py` + `validate.py`) — deterministic agent composition with 4-stage skill fallback, N-3 section-missing audit; `context7_research.py` (v4.1.1 B15) carries Tier-1 hint parsing + Tier-2/3 disambiguation + ResearchSession (cost guard + cache + telemetry); `resolver.py` (v4.3.0; v4.7.0 monorepo-ssot-walkup-fix-v1) walk-up fallback for monorepo SSOT — `base: all-projects` paths prefixed `.jarfis-project/` OR `.jarfis-org/` ascend `scope[i].path` until org.root / `.git` ancestor / depth=5 boundary, dedupe by absolute path with `from_scope_indices` provenance, trace event `compose_walkup_resolved`
   - `domain.py` — Domain Pack management module (list/detect/agents/compose/validate/scaffold/install)
   - `agent_admin.py` — `jarfis_cli.py agent` backend; reads `commands/jarfis/skills/*.md` + `commands/jarfis/agent-composition.yaml` (read-only); never writes composition.yaml — only diff stdout for `--bind-framework`; default-dry-run for skill add/remove; CLI subparsers for skill {list/add/update/remove} + persona list (462 lines)
   - `audit.py` — Audit log module (append-only JSONL)
@@ -175,7 +175,7 @@
   - `test_sync.py` · `test_utils.py` · `test_version.py` · `test_wiki_search.py` · `test_level_check.py` · `test_jarfis_cli.py`
   - `test_agent_admin.py` — agent_admin module tests (v4.5; 21 tests across TestSkillList/TestSkillAdd/TestSkillUpdate/TestSkillRemove/TestPersonaList/TestDispatcher; covers dry-run vs --apply, name validation, framework binding diff suggestion, persona enumeration; uses env-var injection for fixture isolation)
   - `test_implement.py` — sys-implement workspace + Force-Acknowledge dialectic + execution mode dispatch tests (v4.2.0; 670 lines, 57 tests covering plan-name validation / cmd_init/state/log/resume/archive/list / validate_citations / classify_verdict / recommend_execution_mode / extract_changed_files)
-  - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; 10 tests covering walk-up engagement, prefix gating to `.jarfis-project/`, boundary precedence (org.root → `.git` ancestor → depth=3), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering)
+  - `test_compose_resolver_walkup.py` — monorepo SSOT walk-up resolver tests (v4.3.0; v4.7.0 expanded to 14 tests) covering walk-up engagement, prefix gating to `.jarfis-project/` AND `.jarfis-org/`, boundary precedence (org.root → `.git` ancestor → depth=5), per-package precedence, dedupe with `from_scope_indices`, shared SSOT label rendering
   - `test_migrate.py` — v4.3 → v4.4 migration tests (v4.4.0; 10 tests covering dry-run listing, meetings/works/learnings move under `.jarfis-org/`, standalone flatten, sync field git/none branch, state.json docsDir string rewrite, backup tarball, idempotent re-run)
   - `test_state.py` — state.py module tests; v4.6.0 supplied 모드 9개 추가 (TestDesignSuppliedSchema, TestSetDesignMode, TestSetNestedDesignModeIntegration) — design.mode mutual exclusion + set_design_mode helper coverage
   - `test_phase_verify.py` — phase-verify entrypoint tests (M3 `_phase_3_verify`); v4.6.0 TestPhase3 supplied 모드 6개 추가 (mutual exclusion + per-page validation: pages/{slug}/index.html + reference.png + figmaPages == [] enforcement)

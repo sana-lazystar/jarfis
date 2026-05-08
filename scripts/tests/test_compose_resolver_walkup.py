@@ -1,17 +1,18 @@
 """Resolver walk-up + monorepo SSOT dedupe tests (TDD-first).
 
 Spec: /Users/sanhalee/repos/jarfis/.personal/sys-implements/monorepo-ssot-walkup-v1/step2-prompt.md
+Extended (v4.2.x): /Users/sanhalee/repos/jarfis/.personal/sys-implements/monorepo-ssot-walkup-fix-v1/step2-prompt.md
 
 The `all-projects` branch of `resolve_path` must walk up parent
 directories when a sub-package has no `.jarfis-project/` of its own,
 falling back to a shared root profile. The walk-up is gated:
-    * engages only for paths starting with ".jarfis-project/"
-    * bounded by org.root, nearest .git ancestor, hard depth-3 limit
+    * engages for paths starting with ".jarfis-project/" OR ".jarfis-org/"
+    * bounded by org.root, nearest .git ancestor, hard depth-5 limit
     * dedupes when 2+ scopes resolve to the same absolute file
 
 Return shape:
     * non-prefix-gated path → list[str] (legacy shape)
-    * .jarfis-project/ path → list[dict{path, from_scope_indices}]
+    * .jarfis-project/ or .jarfis-org/ path → list[dict{path, from_scope_indices}]
 """
 
 from __future__ import annotations
@@ -231,15 +232,18 @@ def test_walkup_bounded_by_git_ancestor(tmp_path):
     assert os.path.abspath(entry["path"]) != os.path.abspath(str(forbidden))
 
 
-def test_walkup_bounded_by_depth_3(tmp_path):
-    """No org, no .git; profile at depth-4 → not found, original returned."""
+def test_walkup_bounded_by_depth_5(tmp_path):
+    """No org, no .git; profile beyond depth-5 → not found, original returned.
+
+    Layout: top/L1/L2/L3/L4/L5/L6/scope (7 levels under top).
+    Profile at top requires 7 walk-up steps; new hard cap is 5 — so the
+    walk-up still cannot reach top, the original probe is returned. This
+    asserts the boundary still functions at the new depth=5 ceiling.
+    """
     from jarfis.compose.resolver import resolve_path
 
-    # layout: top/L1/L2/L3/L4/scope   — scope is 5 levels under top
-    #         top/.jarfis-project/profile.md     — profile at top (5 walk-up steps)
-    # Hard depth-3 cap means walk-up cannot reach top.
     top = tmp_path / "top"
-    scope = top / "L1" / "L2" / "L3" / "L4" / "scope"
+    scope = top / "L1" / "L2" / "L3" / "L4" / "L5" / "L6" / "scope"
     scope.mkdir(parents=True)
     (top / ".jarfis-project").mkdir()
     (top / ".jarfis-project" / "project-profile.md").write_text("x")
@@ -257,6 +261,114 @@ def test_walkup_bounded_by_depth_3(tmp_path):
         str(scope), ".jarfis-project", "project-profile.md"
     )
     assert os.path.abspath(entry["path"]) == os.path.abspath(expected_probe)
+
+
+# ── New tests for monorepo-ssot-walkup-fix-v1 ────────────────────────
+
+
+def test_walkup_engages_for_jarfis_org_prefix(tmp_path):
+    """`.jarfis-org/learnings.md` from sub-package → walk-up engages, finds ancestor."""
+    from jarfis.compose.resolver import resolve_path
+
+    # Layout: root/.git, root/.jarfis-org/learnings.md, root/packages/daemon
+    root = tmp_path / "monorepo"
+    (root / ".git").mkdir(parents=True)
+    (root / ".jarfis-org").mkdir(parents=True)
+    (root / ".jarfis-org" / "learnings.md").write_text("# org learnings\n")
+    pkg = root / "packages" / "daemon"
+    pkg.mkdir(parents=True)
+
+    state = _state_with_scope([str(pkg)], names=["daemon"])
+    result = resolve_path(
+        "all-projects", ".jarfis-org/learnings.md", state, None
+    )
+    assert isinstance(result, list)
+    assert len(result) == 1
+    entry = result[0]
+    assert isinstance(entry, dict), (
+        f".jarfis-org/ paths must return list[dict]; got {type(entry)}"
+    )
+    expected = root / ".jarfis-org" / "learnings.md"
+    assert os.path.abspath(entry["path"]) == os.path.abspath(str(expected))
+    assert entry["from_scope_indices"] == [0]
+
+
+def test_jarfis_org_prefix_returns_dict_shape(tmp_path):
+    """`.jarfis-org/` resolution shape contract: list[dict{path, from_scope_indices}]."""
+    from jarfis.compose.resolver import resolve_path
+
+    root = tmp_path / "monorepo"
+    (root / ".git").mkdir(parents=True)
+    (root / ".jarfis-org").mkdir(parents=True)
+    (root / ".jarfis-org" / "learnings.md").write_text("x")
+    pkg = root / "packages" / "daemon"
+    pkg.mkdir(parents=True)
+
+    state = _state_with_scope([str(pkg)], names=["daemon"])
+    result = resolve_path(
+        "all-projects", ".jarfis-org/learnings.md", state, None
+    )
+    assert isinstance(result, list)
+    assert len(result) == 1
+    entry = result[0]
+    assert isinstance(entry, dict)
+    # Required keys per the .jarfis-project/ shape contract
+    assert set(entry.keys()) >= {"path", "from_scope_indices"}
+    assert isinstance(entry["path"], str)
+    assert isinstance(entry["from_scope_indices"], list)
+    assert all(isinstance(i, int) for i in entry["from_scope_indices"])
+
+
+def test_jarfis_org_per_package_wins(tmp_path):
+    """Both root + sub-package `.jarfis-org/` exist → sub-package wins, no walk-up."""
+    from jarfis.compose.resolver import resolve_path
+
+    root = tmp_path / "monorepo"
+    (root / ".git").mkdir(parents=True)
+    (root / ".jarfis-org").mkdir(parents=True)
+    (root / ".jarfis-org" / "learnings.md").write_text("# root org\n")
+    pkg = root / "packages" / "daemon"
+    (pkg / ".jarfis-org").mkdir(parents=True)
+    (pkg / ".jarfis-org" / "learnings.md").write_text("# pkg org\n")
+
+    state = _state_with_scope([str(pkg)], names=["daemon"])
+    result = resolve_path(
+        "all-projects", ".jarfis-org/learnings.md", state, None
+    )
+    assert len(result) == 1
+    entry = result[0]
+    expected = pkg / ".jarfis-org" / "learnings.md"
+    assert os.path.abspath(entry["path"]) == os.path.abspath(str(expected))
+    assert entry["from_scope_indices"] == [0]
+
+
+def test_walkup_depth_5_finds_at_depth_5(tmp_path):
+    """Profile reachable at exactly 5 walk-up steps → new depth-5 cap finds it.
+
+    Layout: top/L1/L2/L3/L4/scope (scope is 5 dirs under top).
+    Profile at top/.jarfis-project/project-profile.md requires exactly 5
+    parent moves. Under the previous depth-3 cap this would NOT be found;
+    under the new depth-5 cap it MUST be found.
+    """
+    from jarfis.compose.resolver import resolve_path
+
+    top = tmp_path / "top"
+    scope = top / "L1" / "L2" / "L3" / "L4" / "scope"
+    scope.mkdir(parents=True)
+    (top / ".jarfis-project").mkdir()
+    profile = top / ".jarfis-project" / "project-profile.md"
+    profile.write_text("# top profile\n")
+
+    state = _state_with_scope([str(scope)], names=["scope"])
+    result = resolve_path(
+        "all-projects", ".jarfis-project/project-profile.md", state, None
+    )
+    assert len(result) == 1
+    entry = result[0]
+    assert os.path.abspath(entry["path"]) == os.path.abspath(str(profile)), (
+        f"depth-5 walk-up failed to find profile at {profile}; got {entry['path']}"
+    )
+    assert entry["from_scope_indices"] == [0]
 
 
 def test_dedupe_uses_shared_ssot_label_in_main(tmp_path, capsys):
