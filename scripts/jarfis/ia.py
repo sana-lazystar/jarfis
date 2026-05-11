@@ -16,6 +16,10 @@ Subcommands (jarfis_cli.py registration):
         3-way confirm-merge. Conflicts surfaced; caller resolves.
     list-pages --work P [--slugs s1,s2]
         Query pages from work IA.
+    probe <docs_dir>
+        Stage 3 F3 — Resume Dispatch IA-missing detector. Exits 0 when
+        discovery/ia/manifest.json is a non-empty regular file, exits 1
+        otherwise. JSON written to stdout regardless of exit code.
 
 Validation rules (R1~R12):
     R1  manifest.json exists                                always
@@ -41,6 +45,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import re
 import shutil
 import sys
@@ -776,6 +781,37 @@ def merge_3way(
     )
 
 
+def probe(docs_dir: str) -> dict:
+    """Probe whether IA SSOT exists at ``docs_dir``. Used by Resume Dispatch (F3).
+
+    A "present" IA is defined as a non-empty regular file at
+    ``{docs_dir}/discovery/ia/manifest.json``. A zero-byte file is treated
+    as absent so that an accidental `touch manifest.json` does not silence
+    the IA-missing prompt.
+
+    Returns:
+        {
+            "present": bool,                          # manifest.json non-empty file
+            "manifest_path": str,                     # absolute path probed
+            "baseline_present": bool,                 # .baseline/manifest.json non-empty
+        }
+    """
+    manifest = os.path.join(docs_dir, "discovery", "ia", "manifest.json")
+    baseline = os.path.join(docs_dir, "discovery", "ia", ".baseline", "manifest.json")
+
+    def _nonempty(p: str) -> bool:
+        try:
+            return os.path.isfile(p) and os.path.getsize(p) > 0
+        except OSError:
+            return False
+
+    return {
+        "present": _nonempty(manifest),
+        "manifest_path": manifest,
+        "baseline_present": _nonempty(baseline),
+    }
+
+
 def list_pages_in_scope(
     work_ia: Path,
     *,
@@ -879,6 +915,18 @@ def _emit_merge(args) -> int:
     return 0
 
 
+def _emit_probe(args) -> int:
+    """`jarfis ia probe <docs_dir>` — Stage 3 F3 dialectic absorption.
+
+    Always prints JSON to stdout; exit 0 when manifest present, exit 1
+    when absent. work.md Resume Dispatch parses the JSON regardless of
+    exit code so the user can be prompted in $LOCALE before resuming.
+    """
+    result = probe(args.docs_dir)
+    print(json.dumps(result, ensure_ascii=False))
+    sys.exit(0 if result["present"] else 1)
+
+
 def _emit_list_pages(args) -> int:
     slugs_filter = None
     if args.slugs:
@@ -936,6 +984,13 @@ def main(argv) -> int:
     p_lp.add_argument("--work", required=True, type=Path)
     p_lp.add_argument("--slugs", default=None, help="comma-separated slug filter")
 
+    # Stage 3 F3 — Resume Dispatch IA-missing probe.
+    p_probe = sub.add_parser(
+        "probe",
+        help="Probe whether docs_dir has a non-empty discovery/ia/manifest.json.",
+    )
+    p_probe.add_argument("docs_dir", type=str)
+
     try:
         args = parser.parse_args(argv)
     except SystemExit as exc:
@@ -948,7 +1003,7 @@ def main(argv) -> int:
 
     if args.cmd is None:
         json_error(
-            "Usage: jarfis ia <snapshot|validate|merge|list-pages> [args...]"
+            "Usage: jarfis ia <snapshot|validate|merge|list-pages|probe> [args...]"
         )
         return 1  # unreachable
 
@@ -963,6 +1018,7 @@ def main(argv) -> int:
         "validate": _emit_validate,
         "merge": _emit_merge,
         "list-pages": _emit_list_pages,
+        "probe": _emit_probe,
     }
     handler = handlers.get(args.cmd)
     if handler is None:

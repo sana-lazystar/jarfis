@@ -38,6 +38,11 @@ On entry, detect whether a workflow is already in progress:
 1. Resolve candidate `docsDir`: prefer `$ARGUMENTS` if it looks like a path, else CWD, else most recent under `$JARFIS_ORG_DIR/works/`. (`$JARFIS_ORG_DIR` is a convention variable derived from `preflight.org_dir` — v4.4: `{org_root}/.jarfis-org/` for registered orgs, `{JARFIS_SOURCE}/.personal/` flat for standalone — not an exported env var.)
 2. If `{docsDir}/.jarfis-state.json` exists, inspect its top-level keys:
    - `sessionKey` present → **v4 state**. AskUserQuestion (labels in `$LOCALE`): "Resume from current phase" / "Start over" / "Abort". On Resume: load state; skip any Phase whose `phases.{N}.status == "verified"`; re-enter from `state.currentPhase` (verify idempotence first — if the Phase artifacts already pass `phase-verify`, promote to `verified` without re-running).
+   - **IA-missing probe (Stage 3 F3 — R-7 mitigation)**: before resuming, run `python3 ~/.claude/scripts/jarfis_cli.py ia probe {docsDir}`. Exit 1 (IA absent) AND `state.phases["1b"].status == "verified"` → AskUserQuestion (`$LOCALE`):
+     - "Manual IA 작성 후 재진입" — abort Resume, surface guide to author `discovery/ia/manifest.json`
+     - "Force resume (skip IA check)" — set transient env `JARFIS_FORCE_RESUME_NO_IA=1`; phase-verify will not call IA check this run
+     - "Abort"
+   The probe is a pure read; does not mutate state.
    - `project_name` present (no `sessionKey`) → **v3 state detected**. Tell the user (in `$LOCALE`): "v3 workflow state detected at this path. Continue with the legacy `/jarfis:work` (v3) for this work; start v4 work in a new directory." Halt — do NOT migrate state silently.
 3. No state file → proceed to Phase T with a fresh session.
 

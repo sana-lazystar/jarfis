@@ -979,7 +979,15 @@ def _parse_tasks_md_ids(tasks_md_path):
 
 
 def _phase_1b_verify(state, docs_dir):
-    """Phase 1b: discovery/ 산출물 3종 + prd 섹션 4개 + ux-direction ID kebab-case."""
+    """Phase 1b: discovery/ 산출물 3종 + prd 섹션 4개 + ux-direction ID kebab-case.
+
+    Stage 3 (ia-as-po-ssot-v2-spine F1 — forward-only auto-detect):
+        IA validation gated on `discovery/ia/` directory existence. When
+        present, run validate_ia (PO Phase 1b scope = L0-L1 only, so
+        strict=False); baseline-missing is a **warning** (stderr), NOT a
+        FAIL — D10 forward-only contract means pre-Stage-4 works that
+        never ran snapshot_org_ia must still pass.
+    """
     missing = []
     discovery = Path(docs_dir) / "discovery"
 
@@ -1005,6 +1013,24 @@ def _phase_1b_verify(state, docs_dir):
                 missing.append(
                     f"ux-direction.md ID kebab-case 위반: {', '.join(invalid_ids)}"
                 )
+
+    # NEW: IA validation (Stage 3 F1 — conditional on dir existence).
+    # PO Phase 1b owns SSOT but only L0-L1 are mandatory at this stage,
+    # so we use strict=False to skip R10/R11 frontmatter completeness
+    # rules until Phase 2 absorption.
+    ia_dir = discovery / "ia"
+    if ia_dir.is_dir():
+        from .ia import validate_ia  # local import — keeps verify.py decoupled at module load
+        result = validate_ia(str(ia_dir), strict=False)
+        if not result.valid:
+            missing.extend(f"discovery/ia: {e}" for e in result.errors)
+        # baseline-missing = separate warning channel (D10 forward-only — F1).
+        baseline = ia_dir / ".baseline" / "manifest.json"
+        if not baseline.is_file():
+            sys.stderr.write(
+                "[phase-verify warning] phase=1b discovery/ia/.baseline/manifest.json missing "
+                "(snapshot_org_ia 미실행; D10 forward-only — verify 는 통과)\n"
+            )
 
     return missing
 
@@ -1036,6 +1062,11 @@ def _phase_2_verify(state, docs_dir):
         reason = "backend scope" if _h.has_backend(state) else "api.mode=swagger"
         missing.append(f"planning/api-spec.md 누락 ({reason})")
 
+    # NEW: IA L2 — tasks ↔ pages mapping (Stage 3).
+    ia_dir = Path(docs_dir) / "discovery" / "ia"
+    if ia_dir.is_dir():
+        missing.extend(_h.check_ia_pages_match_tasks(ia_dir, tasks_md))
+
     return missing
 
 
@@ -1055,6 +1086,10 @@ def _phase_3_verify(state, docs_dir):
     design = state.get("design") or {}
     mode = design.get("mode")
 
+    # TODO(Stage 4 — phase1b prompt rewrite): re-enable IA pages match for supplied mode
+    # once PO SSOT import-then-discard contract is wired in prompts/phase1b.md.
+    # Until then, supplied designer slugs and PO IA slugs may diverge legitimately
+    # (Stage 3 dialectic F2 absorption).
     if mode == "supplied":
         if not design_dir.is_dir():
             missing.append("design/ 디렉토리 누락")
@@ -1122,6 +1157,11 @@ def _phase_3_verify(state, docs_dir):
     if not _h.check_file_exists(design_dir / "token-map.json"):
         missing.append("design/token-map.json 누락")
 
+    # NEW: IA L3 — design slugs ↔ IA pages 1:1 mapping (Stage 3; figma/text only).
+    ia_dir = Path(docs_dir) / "discovery" / "ia"
+    if ia_dir.is_dir():
+        missing.extend(_h.check_ia_pages_match_design(ia_dir, design_dir, mode=mode))
+
     return missing
 
 
@@ -1176,6 +1216,20 @@ def _phase_4_verify(state, docs_dir):
                     f"FE scope {p.get('name','?')}에서 CSS var(-- 사용 없음 (token-map.json 존재)"
                 )
 
+    # NEW: FE route ↔ IA route best-effort warning (Stage 3, R-8).
+    # Pure stderr warnings — never escalate into missing[] (framework drift
+    # would cause false positives across React/Vue/Next variants).
+    ia_dir = Path(docs_dir) / "discovery" / "ia"
+    if ia_dir.is_dir():
+        for p in scopes:
+            if p.get("type") != "frontend":
+                continue
+            warnings = _h.check_fe_routes_match_ia(
+                p.get("path", ""), p.get("baseCommit", ""), ia_dir
+            )
+            for w in warnings:
+                sys.stderr.write(f"[phase-verify warning] phase=4 {w}\n")
+
     return missing
 
 
@@ -1214,6 +1268,11 @@ def _phase_5_verify(state, docs_dir):
     if _h.check_file_exists(Path(docs_dir) / "planning" / "api-spec.md"):
         if not _h.check_file_exists(Path(docs_dir) / "review" / "api-contract-check.md"):
             missing.append("review/api-contract-check.md 누락 (api-spec.md 존재)")
+
+    # NEW: review.md page coverage ↔ IA pages (Stage 3).
+    ia_dir = Path(docs_dir) / "discovery" / "ia"
+    if ia_dir.is_dir():
+        missing.extend(_h.check_ia_pages_match_review(ia_dir, review_md))
 
     return missing
 
@@ -1264,6 +1323,11 @@ def _phase_6_verify(state, docs_dir):
     except Exception:
         # Best-effort — never flip phase outcome on a soft check failure.
         pass
+
+    # NEW: Org IA merge artifact check (Stage 3; best-effort skip if Stage 6 not done).
+    ia_dir = Path(docs_dir) / "discovery" / "ia"
+    if ia_dir.is_dir() and _h.org_registered(state):
+        missing.extend(_h.check_ia_merge_artifacts(state, docs_dir))
 
     return missing
 

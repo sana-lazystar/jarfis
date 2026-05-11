@@ -681,3 +681,363 @@ class TestEvaluators:
         assert not vh.org_registered({"org": None})
         assert not vh.org_registered({})
         assert vh.org_registered({"org": {"name": "x", "root": "/p"}})
+
+
+# ===========================================================================
+# Stage 3 — IA SSOT integration across Phase verifiers
+#
+# Tests the L4 Verification layer added by ia-as-po-ssot-v2-spine Stage 3.
+# Settled dialectic fixes (F1+F2+F3) are exercised here:
+#   F1 — discovery/ia/ dir absent → no FAIL added (forward-only auto-detect).
+#   F1 — .baseline/manifest.json missing → stderr WARNING, missing[] empty.
+#   F2 — Phase 3 supplied mode → skip IA design check (TODO Stage 4).
+#   R-8 — Phase 4 FE route mismatch → stderr WARNING, missing[] unchanged.
+# ===========================================================================
+def _make_ia(ia_dir, slugs, routes=None):
+    """Build a minimal IA dir with manifest.json + pages/{slug}.md."""
+    ia_dir.mkdir(parents=True, exist_ok=True)
+    (ia_dir / "pages").mkdir(exist_ok=True)
+    pages = []
+    for slug in slugs:
+        route = (routes or {}).get(slug, f"/{slug}")
+        pages.append(
+            {
+                "slug": slug,
+                "route": route,
+                "title": slug.title(),
+                "role": "public",
+                "parent": None,
+                "depth": 1,
+                "detail": f"pages/{slug}.md",
+            }
+        )
+        (ia_dir / "pages" / f"{slug}.md").write_text(
+            f"---\nslug: {slug}\nroute: {route}\ntitle: {slug}\nrole: public\ndepth: 1\n---\n\n## Notes\n",
+            encoding="utf-8",
+        )
+    manifest = {"version": "2.0", "project": "test", "pages": pages}
+    (ia_dir / "manifest.json").write_text(
+        json.dumps(manifest, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    return ia_dir
+
+
+def _add_baseline(ia_dir):
+    """Snapshot manifest.json into .baseline/ — mirrors snapshot_org_ia output."""
+    baseline = ia_dir / ".baseline"
+    baseline.mkdir(exist_ok=True)
+    (baseline / "manifest.json").write_text(
+        (ia_dir / "manifest.json").read_text(encoding="utf-8"),
+        encoding="utf-8",
+    )
+
+
+class TestIAIntegrationPhase1b:
+    def _seed_discovery(self, tmp_path):
+        docs_p = tmp_path / "docs"
+        _write(docs_p / "discovery" / "prd.md", _prd_full())
+        _write(docs_p / "discovery" / "working-backwards.md", "x")
+        return docs_p
+
+    def test_ia_present_valid_pass(self, tmp_path):
+        state, docs = _state(tmp_path)
+        self._seed_discovery(tmp_path)
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])
+        _add_baseline(ia_dir)
+        assert _phase_1b_verify(state, docs) == []
+
+    def test_ia_dir_absent_no_fail(self, tmp_path):
+        # F1 — forward-only auto-detect: IA dir missing = no FAIL.
+        state, docs = _state(tmp_path)
+        self._seed_discovery(tmp_path)
+        # No discovery/ia at all
+        assert _phase_1b_verify(state, docs) == []
+
+    def test_ia_invalid_fails(self, tmp_path):
+        state, docs = _state(tmp_path)
+        self._seed_discovery(tmp_path)
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        ia_dir.mkdir(parents=True)
+        # Write invalid manifest (missing version + bad slug)
+        (ia_dir / "manifest.json").write_text(
+            json.dumps({"pages": [{"slug": "BadSlug", "route": "/x"}]})
+        )
+        missing = _phase_1b_verify(state, docs)
+        assert any("discovery/ia" in m for m in missing), missing
+
+    def test_baseline_missing_warning_not_fail(self, tmp_path, capsys):
+        # F1 — baseline missing emits stderr warning, NOT in missing[].
+        state, docs = _state(tmp_path)
+        self._seed_discovery(tmp_path)
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])
+        # No .baseline/manifest.json
+        missing = _phase_1b_verify(state, docs)
+        # IA itself is valid → no IA-related missing entries
+        assert not any(".baseline" in m for m in missing), missing
+        assert not any("baseline" in m for m in missing), missing
+        captured = capsys.readouterr()
+        assert "baseline" in captured.err.lower()
+
+
+class TestIAIntegrationPhase2:
+    def _base_planning(self, tmp_path):
+        p = tmp_path / "docs" / "planning"
+        _write(p / "architecture.md", "x")
+        _write(p / "test-strategy.md", "x")
+        return p
+
+    def test_ia_present_valid_pass(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        p = self._base_planning(tmp_path)
+        _write(
+            p / "tasks.md",
+            "## Frontend Tasks — admin-fe\n- [ ] FE-1 implement `home`\n",
+        )
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])
+        assert _phase_2_verify(state, docs) == []
+
+    def test_ia_dir_absent_no_fail(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        p = self._base_planning(tmp_path)
+        _write(p / "tasks.md", "## Frontend Tasks — admin-fe\n- [ ] FE-1\n")
+        # No discovery/ia
+        assert _phase_2_verify(state, docs) == []
+
+    def test_tasks_reference_unknown_slug_fails(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        p = self._base_planning(tmp_path)
+        _write(
+            p / "tasks.md",
+            "## Frontend Tasks — admin-fe\n- [ ] FE-1 work on `contact`\n",
+        )
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])  # no contact page
+        missing = _phase_2_verify(state, docs)
+        assert any("contact" in m for m in missing), missing
+
+
+class TestIAIntegrationPhase3:
+    def _setup_ux(self, tmp_path, ids):
+        _write(
+            tmp_path / "docs" / "discovery" / "ux-direction.md",
+            "".join(f"### {uid}\n\n" for uid in ids),
+        )
+
+    def _make_design(self, tmp_path, uid):
+        d = tmp_path / "docs" / "design" / uid
+        _write(d / "index.html", "<html></html>")
+        _write(d / "reference.png", "png")
+
+    def test_figma_ia_match_design_pass(self, tmp_path):
+        state, docs = _state(
+            tmp_path, design={"mode": "figma"}, responsive="pc-only",
+        )
+        self._setup_ux(tmp_path, ["home"])
+        self._make_design(tmp_path, "home")
+        _write(tmp_path / "docs" / "design" / "token-map.json", "{}")
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])
+        assert _phase_3_verify(state, docs) == []
+
+    def test_figma_design_mismatch_fails(self, tmp_path):
+        state, docs = _state(
+            tmp_path, design={"mode": "figma"}, responsive="pc-only",
+        )
+        self._setup_ux(tmp_path, ["home"])
+        self._make_design(tmp_path, "home")
+        _write(tmp_path / "docs" / "design" / "token-map.json", "{}")
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        # IA has "about" but design only has "home"
+        _make_ia(ia_dir, ["home", "about"])
+        missing = _phase_3_verify(state, docs)
+        assert any("about" in m for m in missing), missing
+
+    def test_supplied_mode_skips_ia_check(self, tmp_path):
+        # F2 — supplied mode skips check_ia_pages_match_design entirely (deferred to Stage 4).
+        state, docs = _state(
+            tmp_path,
+            design={
+                "mode": "supplied",
+                "figmaPages": [],
+                "suppliedPath": "/abs/mockup",
+                "brandAssetsDir": None,
+            },
+        )
+        # Build supplied page structure (passes the existing supplied verifier).
+        page_dir = tmp_path / "docs" / "design" / "pages" / "supplied-home"
+        _write(page_dir / "index.html", "<html></html>")
+        _write(page_dir / "reference.png", "png")
+        # IA has totally different slugs — supplied mode must NOT flag this.
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["unrelated-slug"])
+        missing = _phase_3_verify(state, docs)
+        # No IA-related missing entries expected
+        assert not any("IA" in m or "unrelated-slug" in m for m in missing), missing
+
+
+class TestIAIntegrationPhase4:
+    def test_ia_dir_absent_no_warnings(self, tmp_path):
+        repo = tmp_path / "fe"
+        repo.mkdir()
+        _init_repo(repo)
+        base = _commit(repo, "init", {"README.md": "x"})
+        _commit(
+            repo,
+            "jarfis(FE-1): implement",
+            {"src/login.ts": "const x = 'var(--color-primary)';\n"},
+        )
+        state, docs = _state(
+            tmp_path,
+            workspace={
+                "scope": [
+                    {"name": "admin-fe", "type": "frontend", "path": str(repo), "baseCommit": base}
+                ]
+            },
+        )
+        _write(
+            tmp_path / "docs" / "planning" / "tasks.md",
+            "## Frontend Tasks — admin-fe\n- [ ] FE-1\n",
+        )
+        _write(tmp_path / "docs" / "design" / "token-map.json", "{}")
+        # No discovery/ia → no IA check
+        assert _phase_4_verify(state, docs) == []
+
+    def test_fe_route_missing_warning_not_in_missing(self, tmp_path, capsys):
+        # R-8 — IA route absent from FE code → stderr warning, NOT a FAIL.
+        repo = tmp_path / "fe"
+        repo.mkdir()
+        _init_repo(repo)
+        base = _commit(repo, "init", {"README.md": "x"})
+        _commit(
+            repo,
+            "jarfis(FE-1): implement",
+            {
+                "src/App.tsx": "const x = 'var(--color-primary)';\n"
+                "<Route path=\"/home\" element={<Home/>} />\n",
+            },
+        )
+        state, docs = _state(
+            tmp_path,
+            workspace={
+                "scope": [
+                    {"name": "admin-fe", "type": "frontend", "path": str(repo), "baseCommit": base}
+                ]
+            },
+        )
+        _write(
+            tmp_path / "docs" / "planning" / "tasks.md",
+            "## Frontend Tasks — admin-fe\n- [ ] FE-1\n",
+        )
+        _write(tmp_path / "docs" / "design" / "token-map.json", "{}")
+        # IA route /about NOT in FE code
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home", "about"], routes={"home": "/home", "about": "/about"})
+        missing = _phase_4_verify(state, docs)
+        # /about must NOT appear in missing[] (R-8 framework drift)
+        assert not any("/about" in m for m in missing), missing
+        captured = capsys.readouterr()
+        assert "/about" in captured.err
+
+
+class TestIAIntegrationPhase5:
+    def _base_review_for_admin_fe(self):
+        return (
+            "### admin-fe\n\n"
+            "#### Tech Lead\n- ok\n\n"
+            "#### QA\n- ok\n\n"
+            "#### Security\n- ok\n"
+        )
+
+    def test_ia_slugs_in_review_pass(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        body = self._base_review_for_admin_fe() + "\n\n## Pages reviewed\n- home\n"
+        _write(tmp_path / "docs" / "review" / "review.md", body)
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home"])
+        assert _phase_5_verify(state, docs) == []
+
+    def test_ia_dir_absent_no_extra_fails(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        _write(
+            tmp_path / "docs" / "review" / "review.md",
+            self._base_review_for_admin_fe(),
+        )
+        # No IA → standard verifier output (no IA-related missing)
+        missing = _phase_5_verify(state, docs)
+        assert not any("IA" in m or "page" in m.lower() and "review.md" in m and "home" in m for m in missing), missing
+
+    def test_slug_missing_from_review_fails(self, tmp_path):
+        state, docs = _state(
+            tmp_path,
+            workspace={"scope": [{"name": "admin-fe", "type": "frontend"}]},
+        )
+        _write(
+            tmp_path / "docs" / "review" / "review.md",
+            self._base_review_for_admin_fe(),  # no mention of slugs
+        )
+        ia_dir = tmp_path / "docs" / "discovery" / "ia"
+        _make_ia(ia_dir, ["home", "about"])
+        missing = _phase_5_verify(state, docs)
+        assert any("home" in m or "about" in m for m in missing), missing
+
+
+class TestIAIntegrationPhase6:
+    def test_no_org_no_extra_fails(self, tmp_path):
+        state, docs = _state(tmp_path)
+        _write(tmp_path / "docs" / "retrospective.md", "x")
+        # IA exists in work, but no org → skip merge check
+        _make_ia(tmp_path / "docs" / "discovery" / "ia", ["home"])
+        assert _phase_6_verify(state, docs) == []
+
+    def test_org_ia_merge_mismatch_fails(self, tmp_path):
+        org_root = tmp_path / "org"
+        org_root.mkdir()
+        _init_repo(org_root)
+        # Create org IA wiki for project "w1" with only `home`
+        org_ia = org_root / ".jarfis-org" / "wiki" / "PO" / "projects" / "w1" / "ia"
+        _make_ia(org_ia, ["home"])
+        (org_ia / "merge.log").write_text("merged at 2026-05-11\n")
+        # Commit so HEAD~1 exists (Phase 6 also runs git_changed_files)
+        _commit(
+            org_root,
+            "init org wiki",
+            {
+                ".jarfis-org/wiki/INDEX.md": "# Index\n",
+                ".jarfis-org/wiki/PO/projects/w1/ia/manifest.json":
+                    (org_ia / "manifest.json").read_text(),
+                ".jarfis-org/wiki/PO/projects/w1/ia/merge.log": "merged\n",
+            },
+        )
+        _commit(
+            org_root,
+            "docs(wiki): bump",
+            {".jarfis-org/wiki/INDEX.md": "# Index v2\n"},
+        )
+        state, docs = _state(
+            tmp_path,
+            org={"name": "Org", "root": str(org_root)},
+            work={"docsDir": str(tmp_path / "docs"), "name": "w1"},
+        )
+        _write(tmp_path / "docs" / "retrospective.md", "x")
+        # Work IA has `about` extra (not yet merged into org)
+        _make_ia(tmp_path / "docs" / "discovery" / "ia", ["home", "about"])
+        missing = _phase_6_verify(state, docs)
+        assert any("about" in m for m in missing), missing
