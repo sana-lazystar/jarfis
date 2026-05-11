@@ -641,10 +641,10 @@ PROFILE=$scope[i].path/.jarfis-project/project-profile.md
 if ! grep -q "^## Host Smoke Scenarios" "$PROFILE" 2>/dev/null; then
   if [ "$scope[i].type" = "desktop" ] || [ "$scope[i].type" = "mobile" ] || [ "$scope[i].type" = "frontend" ]; then
     # ABORT — fabrication prohibited (per Critic v1; foreman cannot synthesize "happy-path")
-    write phase-results/phase5/attempt{K}.json with:
-      status = "error"
-      reason = "host_smoke_missing_scenarios"
-      reasonDetail = "Host Smoke Scenarios section missing in $PROFILE for required scope (type=$scope[i].type). Add the section to project-profile.md or change scope[i].type."
+    # Emit error via atomic + sentinel (tmux-claude-completion-signal-v1):
+    RESULT=$DOCS_DIR/phase-results/phase5/attempt{K}.json
+    echo '{"status":"error","reason":"host_smoke_missing_scenarios","reasonDetail":"Host Smoke Scenarios section missing in '"$PROFILE"' for required scope (type='"$scope[i].type"'). Add the section to project-profile.md or change scope[i].type."}' > $RESULT.tmp
+    mv $RESULT.tmp $RESULT && touch $RESULT.done
     EXIT
   fi
 fi
@@ -782,12 +782,17 @@ This map is the spawn directory for the orchestrator; the .md file is the source
 When `attempt == $HOST_SMOKE_MAX_ATTEMPTS` and still FAIL:
 
 ```bash
-# orchestrator writes phase-results error JSON
-write phase-results/phase5/attempt{K}.json:
-  status = "error"
-  reason = "host_smoke_failed"
-  reasonDetail = "scope=$i failed after $HOST_SMOKE_MAX_ATTEMPTS attempts. Last failed scenarios: {list}. See host-smoke/scope-$i-attempt-$attempt.md."
-  meta.host_smoke = { "scope_$i": "failed", ... }
+# orchestrator writes phase-results error JSON (atomic + sentinel, tmux-claude-completion-signal-v1)
+RESULT=$DOCS_DIR/phase-results/phase5/attempt{K}.json
+cat > $RESULT.tmp <<EOF
+{
+  "status": "error",
+  "reason": "host_smoke_failed",
+  "reasonDetail": "scope=$i failed after $HOST_SMOKE_MAX_ATTEMPTS attempts. Last failed scenarios: {list}. See host-smoke/scope-$i-attempt-$attempt.md.",
+  "meta": {"host_smoke": {"scope_$i": "failed"}}
+}
+EOF
+mv $RESULT.tmp $RESULT && touch $RESULT.done
 EXIT (no further phases until user intervention)
 ```
 

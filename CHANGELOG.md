@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.13.0] - 2026-05-11
+
+- implement: tmux-claude completion signal v1 — omo pattern (sentinel + atomic rename + idle watchdog), timeout removed
+
 ## [4.12.0] - 2026-05-11
 
 - implement: IA SSOT Stage 6a — Org IA wiki location (compose slug substitution + organization.py + strategist Org IA inject + phase6 3-way merge)

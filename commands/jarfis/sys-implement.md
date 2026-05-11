@@ -352,7 +352,7 @@ python3 ~/.claude/scripts/jarfis_cli.py implement state {plan-name} --set execut
 
 ##### tmux mode — jarfis-engineer Mode B in dedicated tmux session
 
-1. Compose the step prompt: write `{planDir}/step2-prompt.md` with the full instruction set (subset of this Step 2 body, customized to the impact_scope) plus a Completion Protocol footer (per ADR-0001 §Mode B).
+1. Compose the step prompt: write `{planDir}/step2-prompt.md` with the full instruction set (subset of this Step 2 body, customized to the impact_scope) plus a Completion Protocol footer (per ADR-0001 §Mode B). The footer **must** spell out the atomic-rename + sentinel sequence verbatim — see "Completion Protocol (Mode B contract)" below.
 2. Launch tmux:
    ```bash
    python3 ~/.claude/scripts/jarfis/tmux_claude.py \
@@ -362,11 +362,38 @@ python3 ~/.claude/scripts/jarfis_cli.py implement state {plan-name} --set execut
      --workspace $(cat ~/.claude/.jarfis-source) \
      --save-pane {planDir}/phase-results/step2/attempt{K}.pane.log
    ```
+   `tmux_claude.py` has no `--timeout` (v4.13 — tmux-claude-completion-signal-v1). Parent waits on `{result}.done` sentinel; idle watchdog catches sub-Claude that fails to emit the sentinel.
+
    Inside tmux, jarfis-engineer (Mode B) spawns and:
    - RAG-searches the affected files
    - Applies edits to `~/.claude/`
    - Runs Python TDD if scripts/ touched
-   - Writes `attempt{K}.json` with `{status, artifacts[], files_modified[], tdd_results, missing[], notes}`
+   - Writes `attempt{K}.json` via atomic rename + sentinel (see Completion Protocol below)
+
+### Completion Protocol (Mode B contract — tmux-claude-completion-signal-v1)
+
+Mode B sub-agent **must** terminate by emitting these three steps in order. Skipping any step leaves the parent's `poll()` waiting on the sentinel; the idle watchdog (3 min default) will eventually fail the attempt, but explicit emission is required for correct completion.
+
+```bash
+# Append the final result file path to RESULT (absolute path passed via --result).
+RESULT={planDir}/phase-results/step2/attempt{K}.json
+
+# 1. Write JSON to a tmp file.
+cat > "$RESULT.tmp" <<'EOF'
+{ "status": "completed", "files_modified": [...], "artifacts": [...],
+  "tdd_results": {...}, "missing": [], "notes": "..." }
+EOF
+
+# 2. Atomic publish (POSIX rename(2) — single filesystem only).
+mv "$RESULT.tmp" "$RESULT"
+
+# 3. Touch sentinel — this is the signal that wakes the parent.
+touch "$RESULT.done"
+```
+
+After step 3 the sub-agent **may** exit or sit idle — both are fine. The parent reads `{RESULT}` only after seeing `{RESULT}.done`, so atomic rename guarantees no partial-JSON race.
+
+If the work fails (status `needs_retry` or `blocked`), the JSON still uses the same three-step emission — only the `status` field differs.
 3. Read the `attempt{K}.json` from main and branch on `status`:
    - `completed` → proceed
    - `needs_retry` → AskUserQuestion (retry / debug / abort) → `K += 1`, max 3 retries

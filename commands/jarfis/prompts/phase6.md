@@ -46,10 +46,13 @@ mkdir -p "$(dirname "$LOCK_FILE")"
 exec 200>"$LOCK_FILE"
 if ! flock -w 300 200; then
   # 5-minute timeout reached — another /jarfis:work is holding the wiki lock.
+  # Emit error via atomic + sentinel (tmux-claude-completion-signal-v1).
   mkdir -p $DOCS_DIR/phase-results/phase6
-  cat > $DOCS_DIR/phase-results/phase6/attempt{K}.json <<EOF
+  RESULT=$DOCS_DIR/phase-results/phase6/attempt{K}.json
+  cat > $RESULT.tmp <<EOF
 {"status":"error","reason":"wiki_lock_timeout","reasonDetail":"Another /jarfis:work run is holding $LOCK_FILE. Retry after it completes."}
 EOF
+  mv $RESULT.tmp $RESULT && touch $RESULT.done
   exit 1
 fi
 # Critical section (Step 1 ~ Step 6) runs below while fd 200 is held.
@@ -460,10 +463,11 @@ At phase completion, perform the following in order:
    - Wiki updates (Track A via sub-agent + Track B via rsync + INDEX.md auto-rebuild + Track C via CLI) — only when `$ORG_ROOT` non-empty, all serialized under `.wiki.lock`
    - `$ORG_ROOT/workflow-metrics.tsv` append (best-effort)
 2. **(Optional) Handoff document**
-3. **Write phase-results/phase6/attempt{K}.json** (last step):
+3. **Write phase-results/phase6/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash
    mkdir -p $DOCS_DIR/phase-results/phase6
-   cat > $DOCS_DIR/phase-results/phase6/attempt{K}.json <<EOF
+   RESULT=$DOCS_DIR/phase-results/phase6/attempt{K}.json
+   cat > $RESULT.tmp <<EOF
    {
      "status": "completed",
      "reason": "",
@@ -475,7 +479,9 @@ At phase completion, perform the following in order:
      }
    }
    EOF
-   # Error: status=error with reason/reasonDetail
+   mv $RESULT.tmp $RESULT          # atomic publish
+   touch $RESULT.done              # sentinel — wakes parent poll()
+   # Error: same emit pattern with status=error
    ```
 4. **Release wiki lock**: `flock -u 200` (automatic on jarfis-foreman exit, but explicit release preferred).
 

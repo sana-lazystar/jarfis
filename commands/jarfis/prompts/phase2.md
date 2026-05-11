@@ -157,15 +157,14 @@ At phase completion, perform the following in order:
    - `$DOCS_DIR/planning/tasks.md` (2D structure + Task ID + References)
    - `$DOCS_DIR/planning/test-strategy.md`
 2. **(Optional) Handoff document**
-3. **Write phase-results/phase2/attempt{K}.json** (last step):
+3. **Write phase-results/phase2/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash
    mkdir -p $DOCS_DIR/phase-results/phase2
-   # Success
-   echo '{"status":"completed","reason":"","reasonDetail":""}' \
-     > $DOCS_DIR/phase-results/phase2/attempt{K}.json
-   # Error
-   echo '{"status":"error","reason":"...","reasonDetail":"..."}' \
-     > $DOCS_DIR/phase-results/phase2/attempt{K}.json
+   RESULT=$DOCS_DIR/phase-results/phase2/attempt{K}.json
+   echo '{"status":"completed","reason":"","reasonDetail":""}' > $RESULT.tmp
+   # OR for error: echo '{"status":"error","reason":"...","reasonDetail":"..."}' > $RESULT.tmp
+   mv $RESULT.tmp $RESULT          # atomic publish
+   touch $RESULT.done              # sentinel — wakes parent poll()
    ```
 
 **Strict order**: artifacts → (handoff) → phase-results JSON.

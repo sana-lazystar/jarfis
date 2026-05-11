@@ -168,15 +168,16 @@ At phase completion, perform the following in order:
    - `$DOCS_DIR/discovery/prd.md` (including the Technical Feasibility section)
    - `$DOCS_DIR/discovery/ux-direction.md` (if `state.design.mode != null`)
 2. **(Optional) Handoff document**: only when extra data does not fit into spec artifacts
-3. **Write phase-results/phase1b/attempt{K}.json** (last step):
+3. **Write phase-results/phase1b/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash
    mkdir -p $DOCS_DIR/phase-results/phase1b
+   RESULT=$DOCS_DIR/phase-results/phase1b/attempt{K}.json
    # Success
-   echo '{"status":"completed","reason":"","reasonDetail":""}' \
-     > $DOCS_DIR/phase-results/phase1b/attempt{K}.json
-   # Error
-   echo '{"status":"error","reason":"...","reasonDetail":"..."}' \
-     > $DOCS_DIR/phase-results/phase1b/attempt{K}.json
+   echo '{"status":"completed","reason":"","reasonDetail":""}' > $RESULT.tmp
+   # OR Error
+   # echo '{"status":"error","reason":"...","reasonDetail":"..."}' > $RESULT.tmp
+   mv $RESULT.tmp $RESULT          # atomic publish
+   touch $RESULT.done              # sentinel — wakes parent poll()
    ```
 
 **Strict order**: artifacts → (handoff) → phase-results JSON.

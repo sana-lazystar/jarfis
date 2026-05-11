@@ -533,16 +533,20 @@ and presents Gate 2.
 ## Step 1 — Validation + Copy (orchestrator step — jarfis-foreman 직접)
 
 ```bash
+# Atomic + sentinel emit helper (tmux-claude-completion-signal-v1)
+RESULT=$DOCS_DIR/phase-results/phase3/attempt{K}.json
+emit_error () { echo "$1" > $RESULT.tmp; mv $RESULT.tmp $RESULT; touch $RESULT.done; }
+
 # 1. 디렉토리 존재 + 구조 검증 (실패 시 attempt{K}.json status=error)
 if [ ! -d "$SUPPLIED_PATH" ] || [ ! -d "$SUPPLIED_PATH/pages" ]; then
-  echo '{"status":"error","reason":"supplied_path_invalid","reasonDetail":"directory or pages/ missing"}' > $DOCS_DIR/phase-results/phase3/attempt{K}.json
+  emit_error '{"status":"error","reason":"supplied_path_invalid","reasonDetail":"directory or pages/ missing"}'
   exit 1
 fi
 
 # 2. 최소 1개 page 검증
 PAGE_COUNT=$(find "$SUPPLIED_PATH/pages" -mindepth 2 -maxdepth 2 -name index.html | wc -l)
 if [ "$PAGE_COUNT" -eq 0 ]; then
-  echo '{"status":"error","reason":"no_supplied_pages","reasonDetail":"pages/{slug}/index.html 누락"}' > $DOCS_DIR/phase-results/phase3/attempt{K}.json
+  emit_error '{"status":"error","reason":"no_supplied_pages","reasonDetail":"pages/{slug}/index.html 누락"}'
   exit 1
 fi
 

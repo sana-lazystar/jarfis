@@ -297,10 +297,11 @@ At phase completion, perform the following in order:
 
 1. **Produce spec artifacts**: code (git commits under each `scope[i].path`) + `$DOCS_DIR/planning/security-guidelines.md` + `$DOCS_DIR/ops/infra-runbook.md` (when devops + Category B tasks exist)
 2. **(Optional) Handoff document**
-3. **Write phase-results/phase4/attempt{K}.json** (last step):
+3. **Write phase-results/phase4/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash
    mkdir -p $DOCS_DIR/phase-results/phase4
-   cat > $DOCS_DIR/phase-results/phase4/attempt{K}.json <<EOF
+   RESULT=$DOCS_DIR/phase-results/phase4/attempt{K}.json
+   cat > $RESULT.tmp <<EOF
    {
      "status": "completed",
      "reason": "",
@@ -312,7 +313,9 @@ At phase completion, perform the following in order:
      }
    }
    EOF
-   # Error: status=error with reason/reasonDetail
+   mv $RESULT.tmp $RESULT          # atomic publish
+   touch $RESULT.done              # sentinel — wakes parent poll()
+   # Error: status=error with reason/reasonDetail (same emit pattern)
    ```
 
 **Strict order**: artifacts → (handoff) → phase-results JSON.

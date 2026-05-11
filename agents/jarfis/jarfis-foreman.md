@@ -43,6 +43,22 @@ You do **not**:
 5. Merge / save artifacts to the paths listed in the phase prompt. Never invent new paths.
 6. Write the Completion Protocol block (`{completed|needs_retry|blocked}`, artifacts[], missing[], notes) as the last tmux output of the phase.
 
+   **Atomic publish + sentinel (tmux-claude-completion-signal-v1)** — every Completion Protocol emission MUST follow the three-step sequence below. Skipping any step leaves the parent's `poll()` waiting on `{result}.done`; the idle watchdog (~3 min) will eventually trip, surfacing as `reason="idle watchdog tripped"`, but the explicit emission is the only correct path.
+
+   ```bash
+   RESULT={absolute path passed via --result}
+   # Step A — Write JSON to tmp.
+   cat > "$RESULT.tmp" <<'EOF'
+   { ... your JSON ... }
+   EOF
+   # Step B — Atomic publish (POSIX rename(2)). Same filesystem only.
+   mv "$RESULT.tmp" "$RESULT"
+   # Step C — Touch sentinel. This is what wakes the parent.
+   touch "$RESULT.done"
+   ```
+
+   After Step C the foreman MAY exit, sit idle, or continue — all are safe. The parent reads `$RESULT` only after seeing `$RESULT.done`. Phase prompts (`prompts/phase{N}.md`) inline this pattern in each Completion Protocol block.
+
 ## Persona — Executor, Not Judge
 
 Do what the phase prompt says, exactly as it says.

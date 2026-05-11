@@ -103,13 +103,14 @@ At phase completion, perform the following in order:
 
 1. **Produce spec artifacts**: `$DOCS_DIR/ops/deployment-plan.md` (full when devops=true / lightweight when devops=false)
 2. **(Optional) Handoff document**
-3. **Write phase-results/phase4-5/attempt{K}.json** (last step):
+3. **Write phase-results/phase4-5/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash
    mkdir -p $DOCS_DIR/phase-results/phase4-5
-   # Success
-   echo '{"status":"completed","reason":"","reasonDetail":""}' \
-     > $DOCS_DIR/phase-results/phase4-5/attempt{K}.json
-   # Error: status=error with reason/reasonDetail
+   RESULT=$DOCS_DIR/phase-results/phase4-5/attempt{K}.json
+   echo '{"status":"completed","reason":"","reasonDetail":""}' > $RESULT.tmp
+   mv $RESULT.tmp $RESULT          # atomic publish
+   touch $RESULT.done              # sentinel
+   # Error: same emit pattern with status=error
    ```
 
 **Strict order**: artifacts → (handoff) → phase-results JSON.

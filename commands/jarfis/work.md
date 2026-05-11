@@ -128,6 +128,7 @@ For each tmux phase:
    ```
    - Append `--mcp-config ~/.claude/.mcp.json` only if the M6 MCP inheritance check falls back (M1 Step 1.4 Scenario 2 outcome).
    - `--save-pane` (v4.0.4 N-1) captures the full tmux scrollback right before the session is killed. Use the standard `phase-results/phase{N}/attempt{K}.pane.log` path so every retry gets its own log. Capture is best-effort: a failure emits a warning but never flips the phase outcome.
+   - **Completion signal (tmux-claude-completion-signal-v1 — v4.13)**: `tmux_claude.py` no longer accepts `--timeout`. Sub-agent emits completion via atomic rename + sentinel — see Completion Protocol footer in `prompts/phase{N}.md`. Parent (`poll()`) wakes on `{result_path}.done`; if sub-agent goes idle (`❯` prompt) with no pane change for ~3 min, idle watchdog trips with `reason="idle watchdog tripped"`.
 
    **Bash tool `description` convention (UX-2)**: when invoking this command via the harness Bash tool with `run_in_background: true`, set `description = "JARFIS Phase {phase_id} execution"` on the first attempt and `description = "JARFIS Phase {phase_id} retry attempt {K}"` on retries. Harness background-completion notifications are rendered as `Background command "{description}" completed`, so the `JARFIS` prefix keeps context legible across multi-work sessions. The `Background command` wrapper itself is fixed by the Claude Code harness and cannot be customized — only the quoted description is controllable.
 4. **Read the result file** when tmux exits. Branch on `status`:
@@ -175,7 +176,7 @@ Before presenting any Gate:
 | Condition | Action |
 |---|---|
 | `phase-check` BLOCKED | Display `blockers[]`. Return to prior Phase / Gate. Do NOT launch tmux. |
-| `tmux_claude.py` exit 1 (timeout / runtime error) | Report result.json `reason` + `reasonDetail` verbatim in `$LOCALE`. Set `phases.{N}.status = "failed"`. No auto-retry. |
+| `tmux_claude.py` exit 1 (session crash / idle watchdog / runtime error) | Report result.json `reason` + `reasonDetail` verbatim in `$LOCALE`. Set `phases.{N}.status = "failed"`. No auto-retry. (v4.13 — wall-clock timeout removed; failure surfaces are `session crashed before sentinel`, `idle watchdog tripped`, or sub-agent-emitted error JSON.) |
 | `gate-check` FAIL | Display `missing[]`. Return to current Phase. Do NOT present the Gate. |
 | `phase-verify` FAIL + `attempt < 2` | Auto-retry silently (one-line note at next Phase start: "Phase {N} retry ({K}/{MAX_RETRIES})"). |
 | `phase-verify` FAIL + `attempt >= 2` | AskUserQuestion: Manual completion / Force next Phase / Abort workflow. |
