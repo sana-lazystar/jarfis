@@ -50,6 +50,24 @@
 #   stderr 경고 + meta.context_files[].missing_sections 기록 (N-3).
 # ────────────────────────────────────────────────────────────────
 
+# ────────────────────────────────────────────────────────────────
+# IA SSOT inject (v4.10+ Stage 2 — D7 4-Layer Defense L1 layer)
+# ────────────────────────────────────────────────────────────────
+# 10개 IA-relevant agent 에 work IA manifest (`discovery/ia/manifest.json`) 가
+# context 로 inject 된다. PO + tech-lead-strategist 는 추가로
+# `discovery/ia/.baseline/manifest.json` 도 받아 D4 3-way merge 와 D12 confirm
+# 보고서 작성 시 baseline 대비 변경분을 진단할 수 있다.
+#
+# 정책:
+#   - 전부 `optional: true` + `importance: recommended` (D10 forward-only).
+#     기존 work 가 IA 도입 전이어도 본 yaml 변경만으로는 깨지지 않음.
+#   - Stage 3 의 phase-level gate (verify.py) 가 후속 enforcement 담당.
+#   - 페이지 본문(pages/*.md) 은 inject X — token cost 회피, on-demand 는
+#     `jarfis_cli.py ia list-pages` 로 조회.
+#   - Org IA reference (`org_wiki/PO/projects/{slug}/ia/`) 는 본 stage 범위 외 —
+#     Stage 6 phase6.md 작업에서 추가.
+# ────────────────────────────────────────────────────────────────
+
 agents:
   product-owner:
     persona: product-owner
@@ -57,6 +75,8 @@ agents:
     skills_from_domain: false
     context:
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/.baseline/manifest.json, optional: true, importance: recommended}
 
   technical-architect:
     persona: technical-architect
@@ -65,6 +85,7 @@ agents:
     context:
       - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: false, importance: required}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   tech-lead-reviewer:                # Phase 5 코드 리뷰
     persona: tech-lead
@@ -74,6 +95,7 @@ agents:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-profile.md, sections: [Architecture, Coding Conventions, Notes & Caveats], optional: false, importance: required}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   tech-lead-strategist:              # Phase 6 회고
     persona: tech-lead
@@ -84,6 +106,8 @@ agents:
       # project-profile.md는 bonus context. 없어도 회고 가능.
       - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Architecture, Notes & Caveats], optional: true, importance: recommended}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/.baseline/manifest.json, optional: true, importance: recommended}
 
   qa-engineer:
     persona: qa-engineer
@@ -93,6 +117,7 @@ agents:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-profile.md, sections: [Coding Conventions, Scripts & Commands], optional: false, importance: required}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   security-engineer:
     persona: security-engineer
@@ -101,6 +126,7 @@ agents:
     context:
       - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture], optional: true, importance: recommended}   # AI review (M4 Step 4.2): 모든 프로젝트 인증/권한 구조 통합 파악. optional (미등록 프로젝트 허용)
       - {base: docs, path: .wiki-cache.md, sections: [Security], optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   ux-designer:
     persona: ux-designer
@@ -108,6 +134,7 @@ agents:
     skills_from_domain: false
     context:
       - {base: org_wiki, path: DESIGN/, optional: true, importance: required}    # design 작업의 핵심 reference (org=null이면 skip, importance:required이므로 메인이 경고)
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   devops-engineer:                   # Phase 4 + 4.5 모두
     persona: devops-engineer
@@ -117,6 +144,7 @@ agents:
     context:
       - {base: all-projects, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Architecture, Config Summary, Scripts & Commands], optional: false, importance: required}
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   frontend-developer:
     persona: frontend-developer
@@ -126,6 +154,7 @@ agents:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
       - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands, Notes & Caveats], optional: false, importance: required}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
   backend-developer:
     persona: backend-developer
@@ -135,6 +164,7 @@ agents:
       - {base: project, path: .jarfis-project/project-rule.md, optional: true, importance: recommended}
       - {base: project, path: .jarfis-project/project-context.md, optional: true, importance: optional}
       - {base: project, path: .jarfis-project/project-profile.md, sections: [Tech Stack, Coding Conventions, Reusable Components, Scripts & Commands, Notes & Caveats], optional: false, importance: required}
+      - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
 # ────────────────────────────────────────────────────────────────
 # Framework → Skill 자동 매핑 (옵션 1, system-spec §5.5 4단계 fallback chain의 step 3)
