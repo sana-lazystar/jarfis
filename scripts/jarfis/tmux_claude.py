@@ -24,6 +24,14 @@ import json
 import argparse
 import atexit
 
+# Allow direct invocation (`python3 tmux_claude.py ...`): ensure the parent
+# directory (scripts/) is on sys.path so the `jarfis` package is importable
+# regardless of CWD. When called via `python3 -m jarfis.tmux_claude` or from
+# jarfis_cli.py, sys.path is already correct and this insertion is a no-op.
+_SCRIPTS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _SCRIPTS_DIR not in sys.path:
+    sys.path.insert(0, _SCRIPTS_DIR)
+
 from jarfis import trace
 
 POLL_INTERVAL = 3                       # 초

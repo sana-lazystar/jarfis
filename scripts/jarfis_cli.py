@@ -26,6 +26,7 @@ Commands:
     work-args        Parse /jarfis:work $ARGUMENTS for --domain / --scope-domain overrides [v4.1 — M3]
     implement        sys-implement deliverables workspace (init/state/log/resume/list/archive) [v4.2 — ADR-0003]
     agent            Skill+persona registry CRUD (skill list/add/update/remove, persona list) [v4.5 — agent-skill-system-v1]
+    ia               IA snapshot/validate/merge/list-pages (manifest.json + pages/{slug}.md + shared.json) [ia-as-po-ssot-v2-spine]
 """
 
 import os
@@ -114,6 +115,8 @@ def main():
         "migrate": "jarfis.migrate",
         # v4.5 — agent-skill-system-v1: skill+persona CRUD module.
         "agent": "jarfis.agent_admin",
+        # ia-as-po-ssot-v2-spine — Stage 1: IA snapshot/validate/merge module.
+        "ia": "jarfis.ia",
     }
 
     if command not in commands:
