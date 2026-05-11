@@ -25,9 +25,22 @@ sys-implement monorepo-ssot-walkup-fix-v1):
     `.jarfis-org/`) is `list[dict]` with keys `{path, from_scope_indices}`.
     For other paths the legacy `list[str]` is preserved (caller
     distinguishes by element type).
+
+Placeholder substitution (Stage 6a — ia-spine-stage6a-org-wiki):
+    `path` may contain literal `{project_slug}` placeholders. When the
+    caller supplies `slug_context={"project_slug": "<name>"}`, every
+    occurrence is replaced BEFORE `os.path.join` so the resolved
+    filesystem target points at the real per-project directory (e.g.
+    `wiki/PO/projects/myproj/ia/manifest.json`). Unknown placeholder
+    keys are left literal — the reader will then mark file_not_found
+    instead of raising. Supported placeholders for Stage 6a:
+        `{project_slug}` — value from `state.workspace.scope[0].name`
+                           (single-project work); monorepo multi-scope
+                           semantics deferred to Stage 6b+.
 """
 
 import os
+import re
 
 from .errors import ScopeIndexError
 
@@ -39,9 +52,52 @@ _WALKUP_PREFIXES = (
 )
 _WALKUP_DEPTH_LIMIT = 5  # was 3 — bumped per sys-implement monorepo-ssot-walkup-fix-v1
 
+# Stage 6a — placeholder pattern: `{name}` where name is an identifier.
+# Unknown keys are left literal (the file_not_found path remains the caller's
+# diagnostic surface — we never raise on missing placeholder data).
+_PLACEHOLDER_RE = re.compile(r"\{([a-zA-Z_][a-zA-Z0-9_]*)\}")
 
-def resolve_path(base, path, state, scope_index):
+
+def _interpolate_placeholders(path, ctx):
+    """Substitute `{key}` placeholders in `path` using `ctx` mapping.
+
+    Args:
+        path: path string with optional `{key}` placeholders.
+        ctx:  dict mapping placeholder name → value. May be falsy/None
+              (no substitution attempted; path returned unchanged).
+
+    Returns:
+        str — path with known placeholders replaced; unknown ones left
+        literal.
+
+    Stage 6a supported keys: `project_slug` (state.workspace.scope[0].name
+    when work has exactly one scope). Missing key in ctx → literal preserved
+    (caller's choice — reader will mark file_not_found downstream).
+    """
+    if not ctx:
+        return path
+
+    def _repl(match):
+        key = match.group(1)
+        if key in ctx and ctx[key] is not None:
+            return str(ctx[key])
+        return match.group(0)  # leave literal `{key}` when unknown
+
+    return _PLACEHOLDER_RE.sub(_repl, path)
+
+
+def resolve_path(base, path, state, scope_index, slug_context=None):
     """Resolve one (base, path) pair to absolute filesystem target(s).
+
+    Args:
+        base:         one of {project, all-projects, docs, org, org_wiki}.
+        path:         relative path from the base, may contain `{key}`
+                      placeholders (see Stage 6a docstring).
+        state:        loaded `.jarfis-state.json` dict.
+        scope_index:  0-based index into `state.workspace.scope[]` (required
+                      for `project`).
+        slug_context: optional dict for placeholder substitution. None →
+                      placeholders pass through untouched (back-compat).
 
     Returns:
         str           absolute path (project / docs / org / org_wiki)
@@ -54,6 +110,11 @@ def resolve_path(base, path, state, scope_index):
     Raises:
         ScopeIndexError — scope_index missing or out of range for project base.
     """
+    # Stage 6a — substitute placeholders BEFORE joining so the resulting
+    # filesystem target is real (e.g. wiki/PO/projects/myproj/ia/manifest.json).
+    if slug_context:
+        path = _interpolate_placeholders(path, slug_context)
+
     if base == "project":
         scope = _require_scope(state)
         if scope_index is None:

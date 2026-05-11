@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.12.0] - 2026-05-11
+
+- implement: IA SSOT Stage 6a — Org IA wiki location (compose slug substitution + organization.py + strategist Org IA inject + phase6 3-way merge)
+
 ## [4.11.0] - 2026-05-11
 
 - implement: IA SSOT Stage 3 — L4 Verification (6 phase-verify IA gates + 5 helpers + ia.probe + Resume Dispatch)

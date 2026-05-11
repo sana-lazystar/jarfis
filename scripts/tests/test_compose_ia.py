@@ -213,6 +213,103 @@ class TestComposeIAInjectWiring:
         )
         assert baseline["injected"] is True
 
+    # ── Stage 6a — Org IA inject (F3a: strategist, NOT PO) ──────────────
+
+    def test_strategist_receives_org_ia_inject_with_substituted_slug(
+        self, tmp_path, capsys
+    ):
+        """tech-lead-strategist gets `PO/projects/{slug}/ia/manifest.json` inject
+        with `{project_slug}` substituted to scope[0].name (Stage 6a F3a)."""
+        # Set up org_root + wiki/PO/projects/{slug}/ia/manifest.json
+        org_root = tmp_path / "org"
+        slug = "synth"
+        ia_dir = org_root / ".jarfis-org" / "wiki" / "PO" / "projects" / slug / "ia"
+        ia_dir.mkdir(parents=True)
+        (ia_dir / "manifest.json").write_text(
+            '{"slug": "synth", "version": 1, "pages": []}'
+        )
+
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        # Compose synth state — single scope so default --project-slug = scope[0].name.
+        state = {
+            "locale": "ko",
+            "work": {"docsDir": str(docs)},
+            "workspace": {
+                "scope": [
+                    {
+                        "name": slug,
+                        "path": str(tmp_path),
+                        "type": "web",
+                        "domain": "web",
+                        "framework": "react",
+                    }
+                ]
+            },
+            "org": {"root": str(org_root)},
+        }
+        state_path = tmp_path / ".jarfis-state.json"
+        state_path.write_text(json.dumps(state, indent=2))
+
+        _run_compose_json("tech-lead-strategist", state_path)
+        payload = json.loads(capsys.readouterr().out)
+
+        # The rendered context_files[] entry should still carry the *literal*
+        # `{project_slug}` placeholder in `path` (the yaml is verbatim).
+        # The substitution happens behind the scenes in resolver before
+        # filesystem read. So we assert injected=True (file was found because
+        # substitution worked).
+        org_ia_path = "PO/projects/{project_slug}/ia/manifest.json"
+        entry = _ctx_entry(payload, org_ia_path)
+        assert entry is not None, (
+            "tech-lead-strategist must declare Org IA inject in its context block "
+            f"(path={org_ia_path})"
+        )
+        assert entry["injected"] is True, (
+            f"Org IA inject should resolve to disk after slug substitution; "
+            f"entry={entry}"
+        )
+
+    def test_po_does_NOT_receive_org_ia_inject(self, tmp_path, capsys):
+        """F3a: PO unchanged — Org IA reference goes to strategist, NOT PO.
+
+        PO keeps its work-IA + work-IA-baseline injects (Stage 2). It must
+        NOT additionally receive `PO/projects/{slug}/ia/...` (Stage 6a).
+        """
+        org_root = tmp_path / "org"
+        slug = "synth"
+        ia_dir = org_root / ".jarfis-org" / "wiki" / "PO" / "projects" / slug / "ia"
+        ia_dir.mkdir(parents=True)
+        (ia_dir / "manifest.json").write_text("{}")
+
+        docs = tmp_path / "docs"
+        docs.mkdir()
+        state = {
+            "locale": "ko",
+            "work": {"docsDir": str(docs)},
+            "workspace": {
+                "scope": [
+                    {
+                        "name": slug,
+                        "path": str(tmp_path),
+                        "type": "web",
+                        "domain": "web",
+                        "framework": "react",
+                    }
+                ]
+            },
+            "org": {"root": str(org_root)},
+        }
+        state_path = tmp_path / ".jarfis-state.json"
+        state_path.write_text(json.dumps(state, indent=2))
+
+        _run_compose_json("product-owner", state_path)
+        payload = json.loads(capsys.readouterr().out)
+        paths = [c["path"] for c in payload["meta"]["context_files"]]
+        assert "PO/projects/{project_slug}/ia/manifest.json" not in paths, (
+            "PO must NOT receive Org IA inject (F3a — strategist is the merge author)"
+        )
+
     def test_baseline_absent_in_non_author_agent(self, tmp_path, capsys):
         """ux-designer 같은 non-author 에는 baseline entry 자체가 없어야 함."""
         docs = tmp_path / "docs"

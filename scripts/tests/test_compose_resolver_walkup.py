@@ -371,6 +371,97 @@ def test_walkup_depth_5_finds_at_depth_5(tmp_path):
     assert entry["from_scope_indices"] == [0]
 
 
+# ── Stage 6a — `{project_slug}` substitution in resolver ─────────────
+
+
+def test_substitutes_project_slug_in_path(tmp_path):
+    """`{project_slug}` in path is substituted before os.path.join (Stage 6a)."""
+    from jarfis.compose.resolver import resolve_path
+
+    org_root = tmp_path / "org"
+    (org_root / ".jarfis-org" / "wiki" / "PO" / "projects" / "myproj" / "ia").mkdir(
+        parents=True
+    )
+    state = {"org": {"root": str(org_root)}}
+
+    resolved = resolve_path(
+        "org_wiki",
+        "PO/projects/{project_slug}/ia/manifest.json",
+        state,
+        None,
+        slug_context={"project_slug": "myproj"},
+    )
+    expected = os.path.join(
+        str(org_root), ".jarfis-org", "wiki", "PO", "projects",
+        "myproj", "ia", "manifest.json",
+    )
+    assert resolved == expected, (
+        f"`{{project_slug}}` substitution failed: got {resolved!r}, want {expected!r}"
+    )
+
+
+def test_leaves_unknown_placeholder_literal(tmp_path):
+    """Unknown placeholder key → leave literal (caller's choice, no exception)."""
+    from jarfis.compose.resolver import resolve_path
+
+    org_root = tmp_path / "org"
+    (org_root / ".jarfis-org" / "wiki").mkdir(parents=True)
+    state = {"org": {"root": str(org_root)}}
+
+    # `{unknown_key}` is not in ctx → leave literal so reader marks file_not_found
+    resolved = resolve_path(
+        "org_wiki",
+        "PO/projects/{unknown_key}/ia/manifest.json",
+        state,
+        None,
+        slug_context={"project_slug": "myproj"},
+    )
+    assert "{unknown_key}" in resolved, (
+        f"unknown placeholder should remain literal; got {resolved!r}"
+    )
+
+
+def test_no_substitution_when_ctx_none(tmp_path):
+    """slug_context=None → path passes through untouched (back-compat)."""
+    from jarfis.compose.resolver import resolve_path
+
+    org_root = tmp_path / "org"
+    (org_root / ".jarfis-org" / "wiki").mkdir(parents=True)
+    state = {"org": {"root": str(org_root)}}
+
+    resolved = resolve_path(
+        "org_wiki",
+        "PO/projects/{project_slug}/ia/manifest.json",
+        state,
+        None,
+        slug_context=None,
+    )
+    # Literal `{project_slug}` survives — no substitution attempted.
+    assert "{project_slug}" in resolved
+
+
+def test_substitution_works_with_org_wiki_base(tmp_path):
+    """Stage 6a end-to-end: org_wiki + {project_slug} + slug_context."""
+    from jarfis.compose.resolver import resolve_path
+
+    org_root = tmp_path / "org"
+    target_dir = org_root / ".jarfis-org" / "wiki" / "PO" / "projects" / "acme" / "ia"
+    target_dir.mkdir(parents=True)
+    (target_dir / "manifest.json").write_text('{"slug": "acme"}')
+    state = {"org": {"root": str(org_root)}}
+
+    resolved = resolve_path(
+        "org_wiki",
+        "PO/projects/{project_slug}/ia/manifest.json",
+        state,
+        None,
+        slug_context={"project_slug": "acme"},
+    )
+    assert os.path.isfile(resolved), (
+        f"resolved Org IA manifest path should exist on disk: {resolved}"
+    )
+
+
 def test_dedupe_uses_shared_ssot_label_in_main(tmp_path, capsys):
     """Integration: compose --dry-run emits shared-SSOT label for fixture."""
     from jarfis.compose.__main__ import main

@@ -140,7 +140,39 @@ def _parse_args(argv):
                         help="Dry-run output format. `markdown` (default) is "
                              "human-readable; `json` is machine-readable for "
                              "further tooling.")
+    # Stage 6a (ia-spine-stage6a-org-wiki) — slug substitution context.
+    parser.add_argument("--project-slug", default=None,
+                        help="Value for the `{project_slug}` placeholder used "
+                             "in yaml context paths (e.g. Org IA inject for "
+                             "tech-lead-strategist). When omitted and the "
+                             "state has exactly one scope, defaults to "
+                             "state.workspace.scope[0].name. monorepo "
+                             "(multi-scope) work is out-of-scope for Stage 6a.")
     return parser.parse_args(argv)
+
+
+def _derive_slug_context(args, state):
+    """Build the slug_context dict used by resolver.resolve_path (Stage 6a).
+
+    Precedence (highest first):
+        1. ``--project-slug`` CLI override.
+        2. ``state.workspace.scope[0].name`` when state has exactly one
+           scope (single-project work; monorepo deferred to Stage 6b+).
+        3. ``None`` — placeholders survive literal; reader marks file_not_found.
+
+    Returns:
+        dict | None — passed to ``resolve_path(..., slug_context=...)``.
+    """
+    if args.project_slug:
+        return {"project_slug": args.project_slug}
+    if state is None:
+        return None
+    scope = (state.get("workspace") or {}).get("scope")
+    if isinstance(scope, list) and len(scope) == 1:
+        name = scope[0].get("name")
+        if name:
+            return {"project_slug": name}
+    return None
 
 
 def _compose(args):
@@ -164,6 +196,9 @@ def _compose(args):
             f"(known: {sorted(composition.keys())})"
         )
     extra_skills_map = load_extra_skills_by_framework(args.composition)
+
+    # Stage 6a — slug substitution ctx (Org IA per-project paths).
+    slug_context = _derive_slug_context(args, state)
 
     meta = {}
 
@@ -208,7 +243,10 @@ def _compose(args):
             block_meta["sections"] = list(entry.sections)
 
         try:
-            target = resolve_path(entry.base, entry.path, state, args.scope_index)
+            target = resolve_path(
+                entry.base, entry.path, state, args.scope_index,
+                slug_context=slug_context,
+            )
         except ComposeError as e:
             block_meta.update({"injected": False, "reason": str(e)})
             context_files_meta.append(block_meta)

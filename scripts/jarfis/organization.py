@@ -187,6 +187,15 @@ Details: QA/_index.md
 """)
         created_files.append(section_index)
 
+    # 3b. Stage 6a — Org IA per-project sub-tree under wiki/PO/projects/{name}/ia/.
+    # G-A guard (audit:402, R-18): only when at least one project is registered.
+    # Re-init safe: os.makedirs(..., exist_ok=True). Empty `projects` → no tree.
+    if projects:
+        po_projects_dir = os.path.join(wiki_dir, "PO", "projects")
+        for p in projects:
+            ia_dir = os.path.join(po_projects_dir, p["name"], "ia")
+            os.makedirs(ia_dir, exist_ok=True)
+
     # 4. v4.4: meetings/ + works/ subdirectories under .jarfis-org/
     meetings_dir = os.path.join(jarfis_dir, "meetings")
     works_dir = os.path.join(jarfis_dir, "works")
@@ -411,6 +420,16 @@ def ensure_project_in_org_profile(org_root, project_dir):
 
     with open(profile_path, "w") as f:
         f.write(content)
+
+    # Stage 6a — also ensure the per-project Org IA sub-tree exists so the
+    # later Phase 6 IA 3-way merge has a writable destination. Mirrors the
+    # block in `_create_org_files`; co-located here because this is the OTHER
+    # mutation path that adds a project entry to org-profile.md.
+    wiki_po_projects = os.path.join(
+        org_root, ".jarfis-org", "wiki", "PO", "projects"
+    )
+    ia_dir = os.path.join(wiki_po_projects, name, "ia")
+    os.makedirs(ia_dir, exist_ok=True)
 
     return True
 

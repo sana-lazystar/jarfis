@@ -355,3 +355,117 @@ class TestExcludeDirs:
         assert "node_modules" in EXCLUDE_DIRS
         assert ".git" in EXCLUDE_DIRS
         assert "__pycache__" in EXCLUDE_DIRS
+
+
+class TestOrgIAPerProjectSubtree:
+    """Stage 6a — Org IA per-project sub-tree under wiki/PO/projects/{slug}/ia/.
+
+    `_create_org_files` must mkdir(exist_ok=True) one ia/ dir per project so
+    later Phase 6 IA merge has a writable target. cmd_scan / re-init must be
+    idempotent — re-running must not error on existing dirs and must add
+    newly detected projects.
+    """
+
+    def test_create_org_files_creates_po_projects_ia_dir_per_project(
+        self, jarfis_env, capsys
+    ):
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "ia-subtree-org")
+        # Two projects under org_root
+        for name in ("alpha", "beta"):
+            proj = os.path.join(org_root, name, ".jarfis-project")
+            os.makedirs(proj, exist_ok=True)
+            with open(os.path.join(proj, "project-profile.md"), "w") as f:
+                f.write(f"# Project Profile: {name}\n\n> Type: backend\n")
+
+        cmd_init([org_root, "--confirm", "--name", "IASubtreeOrg"])
+        capsys.readouterr()
+
+        for name in ("alpha", "beta"):
+            ia_dir = os.path.join(
+                org_root, ".jarfis-org", "wiki", "PO", "projects", name, "ia"
+            )
+            assert os.path.isdir(ia_dir), (
+                f"expected Org IA per-project dir at {ia_dir}"
+            )
+
+    def test_create_org_files_skips_when_projects_empty(self, jarfis_env, capsys):
+        """G-A guard: no projects → PO/projects/ tree NOT created (audit:402 / R-18).
+
+        We still allow wiki/PO/ itself (the section _index.md is created
+        unconditionally), but the projects/ sub-tree must be empty/absent.
+        """
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "ia-empty-org")
+        os.makedirs(org_root, exist_ok=True)
+        cmd_init([org_root, "--confirm", "--name", "IAEmptyOrg"])
+        capsys.readouterr()
+
+        po_dir = os.path.join(org_root, ".jarfis-org", "wiki", "PO")
+        assert os.path.isdir(po_dir), "PO section dir should exist regardless"
+        projects_dir = os.path.join(po_dir, "projects")
+        # When projects=[], the projects subtree must not contain any per-project
+        # ia/ directories. The dir itself may or may not exist; what we assert is
+        # that no project ia/ dir was spuriously fabricated.
+        if os.path.isdir(projects_dir):
+            entries = [
+                e for e in os.listdir(projects_dir)
+                if os.path.isdir(os.path.join(projects_dir, e))
+            ]
+            assert entries == [], (
+                f"projects/ subtree should be empty when no projects detected; "
+                f"got {entries}"
+            )
+
+    def test_create_org_files_idempotent_on_reinit(self, jarfis_env, capsys):
+        """Re-running cmd_init with --confirm must not error if ia/ dirs exist."""
+        base = os.path.dirname(jarfis_env["claude_dir"])
+        org_root = os.path.join(base, "ia-reinit-org")
+        proj = os.path.join(org_root, "gamma", ".jarfis-project")
+        os.makedirs(proj, exist_ok=True)
+        with open(os.path.join(proj, "project-profile.md"), "w") as f:
+            f.write("# Project Profile: gamma\n\n> Type: frontend\n")
+
+        cmd_init([org_root, "--confirm", "--name", "IAReinitOrg"])
+        capsys.readouterr()
+        ia_dir = os.path.join(
+            org_root, ".jarfis-org", "wiki", "PO", "projects", "gamma", "ia"
+        )
+        assert os.path.isdir(ia_dir)
+
+        # Second run — must succeed (exist_ok=True).
+        cmd_init([org_root, "--confirm", "--name", "IAReinitOrg"])
+        capsys.readouterr()
+        assert os.path.isdir(ia_dir)
+
+    def test_ensure_project_creates_ia_dir(self, tmp_path):
+        """When a NEW project is added later, ensure_project_in_org_profile must
+        also create its wiki/PO/projects/{name}/ia/ directory so Phase 6 merge
+        has a target."""
+        org_root = tmp_path / "post-init-org"
+        jarfis = org_root / ".jarfis-org"
+        wiki_po = jarfis / "wiki" / "PO"
+        wiki_po.mkdir(parents=True)
+        # Minimal org-profile.md table (placeholder row).
+        (jarfis / "org-profile.md").write_text(
+            "---\norg: PostInitOrg\nroot: " + str(org_root) + "\n---\n\n"
+            "# Organization Profile\n\n## Projects\n\n"
+            "| Name | Path | Type | Profile |\n"
+            "|------|------|------|---------|\n"
+            "| (none) | | | |\n"
+        )
+
+        # New project added after org init.
+        new_proj = org_root / "delta"
+        new_jarfis = new_proj / ".jarfis-project"
+        new_jarfis.mkdir(parents=True)
+        (new_jarfis / "project-profile.md").write_text(
+            "# Project Profile: delta\n\n> Type: backend\n"
+        )
+
+        added = ensure_project_in_org_profile(str(org_root), str(new_proj))
+        assert added is True
+        ia_dir = jarfis / "wiki" / "PO" / "projects" / "delta" / "ia"
+        assert ia_dir.is_dir(), (
+            f"ensure_project_in_org_profile should mkdir {ia_dir} for Phase 6 merge"
+        )

@@ -64,8 +64,11 @@
 #   - Stage 3 의 phase-level gate (verify.py) 가 후속 enforcement 담당.
 #   - 페이지 본문(pages/*.md) 은 inject X — token cost 회피, on-demand 는
 #     `jarfis_cli.py ia list-pages` 로 조회.
-#   - Org IA reference (`org_wiki/PO/projects/{slug}/ia/`) 는 본 stage 범위 외 —
-#     Stage 6 phase6.md 작업에서 추가.
+#   - Org IA reference (`org_wiki/PO/projects/{slug}/ia/`) 는 Stage 6a 에서
+#     tech-lead-strategist 만 inject (audit:96 — Phase 6 merge author).
+#     `{project_slug}` 는 compose CLI `--project-slug` (또는 single-scope
+#     fallback = `state.workspace.scope[0].name`) 로 치환된다. monorepo
+#     multi-scope work 의 per-project Org IA semantics 는 Stage 6b+ 이전.
 # ────────────────────────────────────────────────────────────────
 
 agents:
@@ -97,7 +100,7 @@ agents:
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
       - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
 
-  tech-lead-strategist:              # Phase 6 회고
+  tech-lead-strategist:              # Phase 6 회고 + IA merge author (Stage 6a)
     persona: tech-lead
     scope: work-wide
     skills_from_domain: true
@@ -108,6 +111,10 @@ agents:
       - {base: docs, path: .wiki-cache.md, optional: true, importance: recommended}
       - {base: docs, path: discovery/ia/manifest.json, optional: true, importance: recommended}
       - {base: docs, path: discovery/ia/.baseline/manifest.json, optional: true, importance: recommended}
+      # Stage 6a — Org IA reference (single-project work; multi-project semantics deferred to 6b+).
+      # `{project_slug}` is substituted by compose CLI (--project-slug or scope[0].name fallback).
+      # NOTE: path is QUOTED — bare `{project_slug}` collides with YAML flow-mapping syntax.
+      - {base: org_wiki, path: "PO/projects/{project_slug}/ia/manifest.json", optional: true, importance: recommended}
 
   qa-engineer:
     persona: qa-engineer

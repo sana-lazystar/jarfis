@@ -89,6 +89,67 @@ Orchestrator-provided context:
   today:                <today_iso8601_date>
 
 ═══════════════════════════════════════════════
+TASK B-2 — IA 3-way merge (Stage 6a — Org IA promotion; runs FIRST)
+═══════════════════════════════════════════════
+
+SKIP this task entirely when ANY of the following is true:
+  - org_root is empty (no org registered).
+  - $DOCS_DIR/discovery/ia/manifest.json does NOT exist (this work did not
+    produce a work-IA).
+
+Otherwise, perform the 3-way merge BEFORE writing retrospective.md so
+TASK A can cite the resulting change set.
+
+Path definitions:
+  baseline_path = $DOCS_DIR/discovery/ia/.baseline          (snapshot taken at Phase 1b)
+  current_path  = $ORG_ROOT/.jarfis-org/wiki/PO/projects/{project_slug}/ia   (Org IA live state)
+  work_path     = $DOCS_DIR/discovery/ia                    (work IA produced by PO this run)
+
+  {project_slug} resolves from state.workspace.scope[0].name. monorepo
+  (multi-scope) work is out-of-scope for Stage 6a — if state.workspace.scope[]
+  has more than one entry, SKIP this task and record
+  `meta.ia_merge.skipped_reason = "multi_scope_deferred_6b"` in the attempt JSON.
+
+Procedure:
+  1. Compose the three paths above using the precompute variables.
+  2. Run the dry-run merge:
+       python3 ~/.claude/scripts/jarfis_cli.py ia merge \
+         --baseline <baseline_path> \
+         --current  <current_path> \
+         --work     <work_path> \
+         --dry-run
+     Capture stdout JSON as $IA_MERGE_DRY.
+  3. Parse $IA_MERGE_DRY:
+       - `changes[]`        — pure-add / pure-modify / pure-delete entries.
+       - `conflicts[]`      — slugs modified in BOTH current and work since baseline.
+       - `applied`          — false in dry-run mode (always).
+  4. If `conflicts[]` is non-empty:
+       - Emit `meta.ia_merge.conflicts[]` (slug + detail) to the phase-results
+         attempt JSON so the main session can yield D12 confirm via
+         AskUserQuestion. Do NOT proceed to --apply autonomously.
+       - Cite the conflicts in TASK A's "What to Improve" section so the
+         retrospective records the merge tension.
+  5. If `conflicts[]` is empty AND the user has pre-confirmed (D12 already
+     resolved upstream — the main session passes `--apply` intent via the
+     phase prompt substitution; default is dry-run only), re-run with:
+       python3 ~/.claude/scripts/jarfis_cli.py ia merge \
+         --baseline <baseline_path> \
+         --current  <current_path> \
+         --work     <work_path> \
+         --apply --dest <current_path>
+     Record `meta.ia_merge.applied = true` and the merged dest_dir in
+     the attempt JSON. The Org IA live state now reflects the merge.
+  6. If `conflicts[]` is empty but no apply intent is supplied, leave Org IA
+     untouched; record `meta.ia_merge.applied = false` and the proposed
+     changes[] so the main session can present them for user review.
+
+Capture for retrospective citation:
+  - Summary line: "IA merge: +{adds} adds, ~{mods} mods, -{dels} dels,
+    {conflicts} conflicts ({applied|dry-run})".
+  - Include this line in TASK A's "Project-Specific Learnings" section so
+    retrospective.md reflects the IA promotion outcome.
+
+═══════════════════════════════════════════════
 TASK A — Retrospective (ALWAYS run)
 ═══════════════════════════════════════════════
 
