@@ -31,6 +31,7 @@
 - `$DOCS_DIR/planning/architecture.md` — TL, Security
 - `$DOCS_DIR/planning/test-strategy.md` — QA
 - **git diff** per scope — each sub-agent runs its `$DIFF_CMD[i]` inside its spawn
+- `$DOCS_DIR/discovery/ia/manifest.json` — TL (full IA), QA (coverage), Security (L0 role + L2 data_sources + L4 auth_model)
 
 ## Conditional Inputs (consumed by reviewer sub-agents)
 
@@ -38,6 +39,8 @@
 - `$DOCS_DIR/planning/security-guidelines.md` — Security (Phase 4 Step 1 output)
 - `$DOCS_DIR/ops/deployment-plan.md` — TL (Phase 4.5 output)
 - `$DOCS_DIR/design/{id}/index.html` + `reference*.png` — UX when `$DESIGN_MODE != null`
+- `$DOCS_DIR/discovery/ia/pages/{slug}.md` — read on-demand per scope; TL/QA/Sec/UX
+- `$DOCS_DIR/discovery/ia/shared.json` — Security L4 review
 
 ---
 
@@ -212,6 +215,12 @@ Review criteria:
 - Technical debt
 - Deployment-plan feasibility
 
+**IA scope (Stage 4)**:
+- Read `$DOCS_DIR/discovery/ia/manifest.json` for route/role coverage of the diff.
+- Per scope, verify diff covers every task IA mentions (slug:route ↔ implemented route).
+- Surface mismatches as `[IA_GAP: ...]`.
+- Full pages/{slug}.md Read only on suspected mismatch (token budget).
+
 Output file (OVERWRITE if it exists):
   $DOCS_DIR/review/tmp/round-{round}/tech-lead-scope-{i}.md
 
@@ -265,6 +274,11 @@ QA items:
 - Performance — Pass/Fail vs PRD Performance Budget
 - Accessibility (only if Frontend exists)
 
+**IA scope (Stage 4)**:
+- Cross-check `$DOCS_DIR/discovery/ia/pages/{slug}.md` `user_tasks[]` (L1) — ensure each
+  user_task has at least one Phase 4 test scenario covering it.
+- Missing test coverage → REVISION with `[IA_GAP: {slug}/{user_task}]`.
+
 Output file (OVERWRITE if it exists):
   $DOCS_DIR/review/tmp/round-{round}/qa-scope-{i}.md
 
@@ -298,6 +312,11 @@ Review items:
 - Sensitive data exposure check
 - Dependency vulnerability check
 - Security headers + CORS (only when applicable)
+
+**IA scope (Stage 4 — Security-specific)**:
+- L0 (manifest): for each `role: admin` page, verify auth middleware + permission check.
+- L2 (pages frontmatter `data_sources` + `api_endpoints`): verify sensitive data masked in logs.
+- L4 (shared.json `auth_model`): verify configured strategy matches implementation.
 
 Output file (OVERWRITE if it exists):
   $DOCS_DIR/review/tmp/round-{round}/security-scope-{i}.md
@@ -349,6 +368,11 @@ Responsive verification (per state.responsive):
      pc-only          → 1920×1080
      pc-mobile        → + 390×844
      pc-mobile-tablet → + 768×1024
+
+**IA scope (Stage 4 — UX-specific)**:
+- Read `$DOCS_DIR/discovery/ia/pages/{slug}.md` frontmatter `components[]` + `primary_cta`.
+- Verify FE implementation renders these — primary_cta visible above the fold.
+- Branch C tolerate: L3 may be empty → fallback to design HTML reference.
 
 Fallback when reference.png is absent (legacy workflow):
 - Primary comparison becomes HTML mockup vs FE only.

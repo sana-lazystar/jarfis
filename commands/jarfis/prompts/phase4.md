@@ -27,11 +27,14 @@ If `state.tddEnabled` is missing (e.g., the upstream decision step was skipped),
 - `$DOCS_DIR/planning/architecture.md` — consumed by security, QA, FE, BE, DevOps
 - `$DOCS_DIR/planning/tasks.md` — consumed by security, QA, FE, BE, DevOps (PRIMARY for implementers)
 - `$DOCS_DIR/planning/test-strategy.md` — consumed by QA
+- `$DOCS_DIR/discovery/ia/manifest.json` — consumed by FE for route enumeration + auth-guard derivation (L0 role); BE for L2 contract verification
 
 ## Conditional Inputs (consumed by sub-agents)
 
 - `$DOCS_DIR/planning/api-spec.md` — consumed by BE + by FE (type hints); exists if any `scope[].type == "backend"` OR `state.api.mode == "swagger"`
 - `$DOCS_DIR/design/{id}/index.html` + `reference.png` + `token-map.json` (+ `reference-mobile.png` / `reference-tablet.png` per responsive) — consumed by FE when `state.design.mode != null`
+- `$DOCS_DIR/discovery/ia/pages/{slug}.md` — consumed by FE on-demand per assigned task (R-12 mitigation: default `ia list-pages` only; full pages/{slug}.md via Read tool when L2/L3/L4 details required)
+- `$DOCS_DIR/discovery/ia/shared.json` — consumed by BE + DevOps when L4 auth_model needed
 
 ---
 
@@ -218,6 +221,21 @@ Design Application Checklist (MANDATORY before committing any FE task):
 □ Colors use token-map.json variables where mapped, raw hex for unmapped
 If ANY checkbox fails → fix before committing.
 Do NOT commit code that works functionally but lacks styling.
+
+**IA Read Order (NEW — Stage 4)**:
+1. Initial scan: `python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia`
+   - Returns compact list of {slug, route, title, role, detail_path} — base map for routes.
+2. For each assigned task in tasks.md:
+   - Match Task ID's project-name suffix to IA pages (by route or slug reference).
+   - On-demand Read $DOCS_DIR/discovery/ia/pages/{slug}.md (only the ones tied to your task).
+   - Use:
+     - L0 `role` → auth-guard (public = no guard, auth = require login, admin = role check).
+     - L0 `route` → router definition (next.config / vue-router / react-router path).
+     - L3 `components` → component skeleton (if frontmatter has `components: []`, fall back
+       to design HTML structure — Branch C tolerate).
+     - L3 `primary_cta` → ensure the page renders this CTA prominently.
+3. Discrepancy: if tasks.md says "implement /foo" but manifest has no slug for /foo →
+   STOP, surface to tech-lead-reviewer.
 ```
 
 ### Sub-agent task prompt — BE injection (jarfis-foreman appends ONLY when `$HAS_API_SPEC == "true"` AND role=backend-developer)
@@ -227,6 +245,14 @@ API Contract Compliance:
 - Endpoint paths, HTTP methods, and parameters MUST match $DOCS_DIR/planning/api-spec.md exactly.
 - Return error-response shapes as defined in api-spec.md (code, errorKey, message).
 - Deviations → record rationale in the commit message body.
+
+**IA L2 read (NEW — Stage 4)**:
+- For each endpoint you implement, cross-check against IA:
+  - Read pages/{slug}.md frontmatter `api_endpoints[]` — ensure your endpoint path appears
+    in at least one page that calls it.
+  - If IA `api_endpoints[]` references a path your task does not implement, surface as
+    `[IA_GAP: {slug} expects {endpoint}]` in commit message body (TL reviewer will check).
+- shared.json `auth_model` 의 강제 — auth middleware 가 IA L4 와 일치 (jwt / session / oauth2).
 ```
 
 ### Sub-agent task prompt — DevOps injection (jarfis-foreman appends when role=devops-engineer)
@@ -240,6 +266,12 @@ Category handling (from tasks.md):
     Do NOT execute cloud changes directly.
     Instead, write a step-by-step runbook to $DOCS_DIR/ops/infra-runbook.md:
     prerequisites, commands with exact arguments, verification, rollback.
+
+**IA L4 read (NEW — Stage 4)**:
+- Read $DOCS_DIR/discovery/ia/shared.json `auth_model` + `global_state[]`.
+- Infrastructure must support the declared auth_model (e.g. jwt → secret rotation;
+  oauth2 → provider endpoint).
+- `global_state[]` 의 store 들 (redis, dynamodb 등) 가 IaC / deployment 에 포함되었는지 확인.
 ```
 
 ### Sub-agent task prompt — TDD injection (jarfis-foreman appends to BE/FE spawns ONLY when `$TDD_ENABLED == "true"`)

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.15.0] - 2026-05-12
+
+- implement: IA SSOT Stage 4 — 7 phase prompts Required Inputs IA + sub-agent read/write directives (PO L0+L1, TA L2+L4, UX L3, FE/BE/DevOps/Reviewers IA scopes); B1+B2 dialectic fixes (phase1b ux-direction IA author block 즉시 제거 + phase3 Branch C L3 contract note)
+
 ## [4.14.0] - 2026-05-12
 
 - implement: IA SSOT Stage 7 — templates/ia-schema.md v2.0 reauthored (PO SSOT, L0~L4, R1~R12) + sitemap.md IA 일원화 약속

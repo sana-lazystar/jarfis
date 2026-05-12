@@ -16,6 +16,7 @@
 
 - `$DOCS_DIR/planning/architecture.md`
 - `$DOCS_DIR/planning/tasks.md`
+- `$DOCS_DIR/discovery/ia/shared.json` — IA L4 (auth_model + global_state)
 
 ## Conditional Inputs (consumed by devops-engineer sub-agent)
 
@@ -65,6 +66,8 @@ Produce $DOCS_DIR/ops/deployment-plan.md with the sections below — ALL REQUIRE
 - [ ] External dependencies: stability + SLA documented
 - [ ] Dev server startup (npm run dev / yarn dev / etc.) works
       — prerequisite for Phase 5 UX review (build errors block that review).
+- [ ] IA L4 alignment: $DOCS_DIR/discovery/ia/shared.json `auth_model` 인프라 지원 확인 (Stage 4)
+- [ ] IA L4 global_state: 선언된 state stores (redis/dynamodb 등) 가 deployment 에 포함됨
 
 ## Research Notes  (Optional — add only when Category B tasks required external research)
 - AWS service comparison / new runtime / etc. Use context7, WebSearch, or docs. Cite sources.
@@ -87,6 +90,8 @@ Produce $DOCS_DIR/ops/deployment-plan.md with ONLY the lightweight sections belo
 - [ ] Environment variables: all newly required variables documented
 - [ ] External dependencies: stability verified
 - [ ] Dev server startup works (prerequisite for Phase 5 UX review)
+- [ ] IA L4 alignment: $DOCS_DIR/discovery/ia/shared.json `auth_model` 인프라 지원 확인 (Stage 4)
+- [ ] IA L4 global_state: 선언된 state stores (redis/dynamodb 등) 가 deployment 에 포함됨
 
 > DevOps role is not required in this workflow (see Required Roles in PRD).
 > Deployment Strategy / Rollback Plan sections are OMITTED.

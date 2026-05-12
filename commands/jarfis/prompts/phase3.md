@@ -24,6 +24,8 @@
 
 - `$DOCS_DIR/discovery/prd.md`
 - `$DOCS_DIR/discovery/ux-direction.md`
+- `$DOCS_DIR/discovery/ia/manifest.json` — Phase 1b PO IA (L0+L1+L2; consumed by ux-designer for L3 authoring)
+- `$DOCS_DIR/discovery/ia/pages/{slug}.md` — read on-demand per page in Branch A/B
 
 ## Conditional Inputs (consumed by ux-designer sub-agent)
 
@@ -164,6 +166,17 @@ F3c. Asset population + full assembly (per page)
      (photo → <img>, icon → <img>, bg → background-image).
   2. Assemble section content.html files into the final page index.html.
   3. Finalize $DOCS_DIR/design/{page_path}/index.html.
+
+**IA L3 population (NEW — Stage 4)**:
+After each page's design HTML is finalized:
+- Read $DOCS_DIR/discovery/ia/pages/{slug}.md frontmatter (PO + TA wrote L0+L1+L2).
+- Append L3 fields:
+    components: [<list of major component identifiers — e.g. hero, feature-grid, cta-button>]
+    primary_cta: "<the page's primary call-to-action string — e.g. 'Sign up'>"
+- Write back via the IA pages helper (do NOT modify other frontmatter fields):
+    python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia --slugs {slug}
+    # Then Edit tool to update the components/primary_cta frontmatter keys only.
+- Re-validate after all pages: python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia
 
 ═══════════════════════════════════════════════
 After all pages complete F3c: ToC + responsive capture
@@ -420,6 +433,17 @@ Procedure:
    pc-mobile-tablet → also capture reference-mobile.png + reference-tablet.png (768×1024)
    Use mcp__playwright__browser_resize + browser_take_screenshot (fullPage=true).
 
+**IA L3 population (NEW — Stage 4)**:
+After each page's design HTML is finalized:
+- Read $DOCS_DIR/discovery/ia/pages/{slug}.md frontmatter (PO + TA wrote L0+L1+L2).
+- Append L3 fields:
+    components: [<list of major component identifiers — e.g. hero, feature-grid, cta-button>]
+    primary_cta: "<the page's primary call-to-action string — e.g. 'Sign up'>"
+- Write back via the IA pages helper (do NOT modify other frontmatter fields):
+    python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia --slugs {slug}
+    # Then Edit tool to update the components/primary_cta frontmatter keys only.
+- Re-validate after all pages: python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia
+
 Report when done:
   [TEXT_MOCKUPS_DONE: pages={M} token_baseline_used={true|false}]
 ```
@@ -512,6 +536,13 @@ and presents Gate 2.
 - 시안에 `sitemap.md` / `ia.json` 가 동봉되어 있으면 그대로 사용. 미동봉 시 Phase 6 Track B 가 단순 page-listing 만 wiki 로 sync (사용자가 추후 직접 보강).
 - 브랜드 자산은 Org 공유 디렉토리(`$ORG_ROOT/.jarfis-org/wiki/DESIGN/brand-assets/`)에서만 참조. `$BRAND_ASSETS_DIR` state 는 그 절대경로 기록.
 - ux-designer 는 spawn 되지 않는다 (supplied 모드는 authoring X).
+- **L3 contract note (Stage 4 + B2 dialectic fix)**: 시안 동봉 `ia.json` 은 L0+L1 만 보장 —
+  L3 (`components`, `primary_cta`) 는 공백일 수 있다. PO 가 Phase 1b 에서 `import` 한 후,
+  Branch C 에서는 ux-designer 가 spawn 되지 않으므로 L3 는 시안 제공자의 ia.json 에 명시
+  되어 있을 때만 채워진다.
+  Phase 4 FE 는 L3 공백 tolerate (pages/{slug}.md frontmatter 의 `components: []` 또는
+  missing key 처리; on-demand Read 후 fallback default). 시안 제작자가 L3 까지 채워
+  동봉했으면 PO 가 Phase 1b 에서 그대로 import 한 상태로 사용된다 (D8).
 
 ## 입력 디렉토리 고정 구조 (`$SUPPLIED_PATH` 가 가리키는 위치)
 

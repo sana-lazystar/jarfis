@@ -10,10 +10,12 @@
 ## Required Inputs (consumed by TA sub-agent)
 
 - `$DOCS_DIR/discovery/prd.md` — includes the Technical Feasibility section appended in Phase 1b
+- `$DOCS_DIR/discovery/ia/manifest.json` — Phase 1b PO IA (consumed by TA for L2 contract authoring)
 
 ## Conditional Inputs (consumed by TA sub-agent)
 
 - `$DOCS_DIR/discovery/ux-direction.md` — if `state.design.mode != null`
+- `$DOCS_DIR/discovery/ia/pages/{slug}.md` — read on-demand per page when TA needs to populate L2 fields
 
 ---
 
@@ -86,6 +88,21 @@ Produce the following artifacts under $DOCS_DIR/planning/:
        - Decision: {chosen option}
        - Rationale: {trade-off analysis}
        - Impact: {resulting changes or constraints}
+
+   **IA L2 + L4 population (NEW — Stage 4)**:
+   - Read $DOCS_DIR/discovery/ia/manifest.json (PO L0+L1 only at this point).
+   - For each page in scope, read $DOCS_DIR/discovery/ia/pages/{slug}.md and update its frontmatter:
+     - L2: data_sources (list of data model names from architecture.md data model section)
+           api_endpoints (list of endpoint paths the page calls — match architecture.md API design)
+   - For cross-cutting state (auth model, layout shells, design tokens reference), populate
+     $DOCS_DIR/discovery/ia/shared.json:
+       {
+         "design_tokens": "<optional — name of design tokens artifact in DESIGN wiki>",
+         "auth_model": "<jwt | session | oauth2 | custom — top-level auth strategy>",
+         "global_state": ["<list of state stores cross-pages>"]
+       }
+   - Re-validate: python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia
+   - Do NOT modify L0/L1 (PO 의 source of truth). 변경 필요 시 retrospective 에 기록.
 
 2. $DOCS_DIR/planning/api-spec.md — CONDITIONAL
    Generate ONLY when api_spec_required == "true" OR api_mode_swagger == "true".

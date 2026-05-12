@@ -9,6 +9,24 @@
 - `$STATE_FILE` = `$DOCS_DIR/.jarfis-state.json`
 - `$LOCALE` = global locale (`~/.claude/.jarfis-locale`)
 
+### jarfis-foreman precompute (Org IA snapshot — Stage 4)
+
+```bash
+- $ORG_ROOT = state.org.root (empty when org not registered)
+- $PROJECT_SLUG = state.workspace.scope[0].name (multi-scope monorepo: out-of-scope for Stage 4 — see audit:114-115; per scope[0] only)
+- snapshot Org IA → discovery/ia/.baseline/ (Stage 1 ia.py snapshot subcommand):
+    if [ -n "$ORG_ROOT" ] && [ -d "$ORG_ROOT/.jarfis-org/wiki/PO/projects/$PROJECT_SLUG/ia" ]; then
+      python3 ~/.claude/scripts/jarfis_cli.py ia snapshot \
+        --src "$ORG_ROOT/.jarfis-org/wiki/PO/projects/$PROJECT_SLUG/ia" \
+        --dest "$DOCS_DIR/discovery/ia/.baseline" \
+        --create-empty-if-missing
+    else
+      python3 ~/.claude/scripts/jarfis_cli.py ia snapshot \
+        --src /dev/null --dest "$DOCS_DIR/discovery/ia/.baseline" \
+        --create-empty-if-missing
+    fi
+```
+
 ## Required Inputs (consumed by sub-agents — not by jarfis-foreman)
 
 The sub-agents spawned in this phase MUST read the following. jarfis-foreman's role is to ensure each sub-agent's task prompt tells it which files to read.
@@ -17,6 +35,7 @@ The sub-agents spawned in this phase MUST read the following. jarfis-foreman's r
 - `$DOCS_DIR/.wiki-cache.md` — org wiki cache, if `state.org != null` — consumed by PO
 - Every file listed in `state.work.meetings[]` — consumed by PO when the user picked meetings in Phase 0
 - `$DOCS_DIR/discovery/prd.md` (just written by PO in Step 1) — consumed by TA in Step 2
+- `$DOCS_DIR/discovery/ia/.baseline/manifest.json` — Org IA snapshot at Phase 1b entry (read-only baseline for PO; written by jarfis-foreman precompute above)
 
 ## Conditional Inputs
 
@@ -102,14 +121,41 @@ Produce the following artifacts:
      link or summarize.
 
 3. $DOCS_DIR/discovery/ux-direction.md — ONLY if state.design.mode != null
-   - IA & URL Structure
    - Tone & Voice
    - Pages: headings, content structure, requirements, interaction patterns
      (sync/async, loading, error)
-   - ID field for each page/section — kebab-case REQUIRED, regex ^[a-z][a-z0-9-]*$
-     (invalid IDs cause phase-verify to FAIL).
    - Responsive scope: reflect state.responsive (pc-only | pc-mobile | pc-mobile-tablet)
    - Single file — do NOT split.
+   - **DO NOT** author an "IA & URL Structure" section — IA SSOT 는 별도 산출물 (#4 아래).
+     IA 정량 메타데이터 (slug, route, role, parent, depth) 는 #4 의 discovery/ia/manifest.json
+     에만 쓴다. ux-direction.md 의 page 식별자는 자유 텍스트로 충분 (IA slug 와 link 만 명시).
+
+4. $DOCS_DIR/discovery/ia/ — Information Architecture (NEW — IA SSOT, ia-as-po-ssot-v2-spine Stage 4)
+   - Read $DOCS_DIR/discovery/ia/.baseline/manifest.json (Org IA snapshot at Phase 1b entry)
+   - For each page in scope (derived from PRD + ux-direction.md Pages section):
+     - Append/merge into $DOCS_DIR/discovery/ia/manifest.json `pages[]` with L0+L1:
+       - L0: slug, route, title, role (public|auth|admin), parent (slug or null), depth (int)
+       - L1: title (already in L0), and create $DOCS_DIR/discovery/ia/pages/{slug}.md
+         with YAML frontmatter containing:
+           slug, route, title, role, parent, depth        (mirror manifest entry)
+           purpose: "<short page-existence rationale>"
+           user_tasks: ["<top user goals as bullets>"]
+         and a "## Notes" body for prose details.
+     - L2 (data_sources, api_endpoints) / L3 (components, primary_cta) / L4 (shared.json)
+       은 후속 phase 가 채운다 — PO 는 L0+L1 만.
+   - slug regex: ^[a-z][a-z0-9-]*$ (verify.py R3 강제). 중복 slug/route 금지 (R4/R5).
+   - Cold-start: manifest.version = "2.0", project = state.workspace.scope[0].name.
+   - Write the manifest sorted by slug for deterministic diff.
+   - Validate before completion:
+       python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia
+     (exit 2 = validation FAIL → fix before phase-results emission)
+
+5. Supplied design mode (state.design.mode == "supplied") — IA import (D8, Stage 7 alignment):
+   - If $SUPPLIED_PATH/ia.json or $SUPPLIED_PATH/pages/ia.json exists, read it as REFERENCE.
+   - Import L0+L1 fields into PO's own discovery/ia/manifest.json + pages/{slug}.md.
+   - 시안 동봉 ia.json 이 L2/L3 까지 포함하면 그대로 import (PO 가 후속 phase 의 권한을 침해하지 않는 한도 — i.e. PO 는 시안의 components 를 기록만, 의역/추가 X).
+   - 시안에 ia.json 없으면 zero-base author (위 #4 와 동일).
+   - SSOT: discovery/ia/ — supplied 동봉본은 보조 reference, 자체 manifest 가 진실.
 ```
 
 ### Meeting file discovery (jarfis-foreman executes before spawning)
@@ -167,6 +213,9 @@ At phase completion, perform the following in order:
    - `$DOCS_DIR/discovery/working-backwards.md`
    - `$DOCS_DIR/discovery/prd.md` (including the Technical Feasibility section)
    - `$DOCS_DIR/discovery/ux-direction.md` (if `state.design.mode != null`)
+   - `$DOCS_DIR/discovery/ia/manifest.json` (always — IA SSOT)
+   - `$DOCS_DIR/discovery/ia/pages/{slug}.md` (one per manifest entry)
+   - `$DOCS_DIR/discovery/ia/.baseline/manifest.json` (foreman-written; PO does NOT write here)
 2. **(Optional) Handoff document**: only when extra data does not fit into spec artifacts
 3. **Write phase-results/phase1b/attempt{K}.json** (last step — atomic + sentinel, tmux-claude-completion-signal-v1):
    ```bash

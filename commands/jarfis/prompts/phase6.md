@@ -26,11 +26,14 @@
 - `$DOCS_DIR/planning/architecture.md`
 - `$DOCS_DIR/planning/tasks.md`
 - `$DOCS_DIR/review/review.md`
+- `$DOCS_DIR/discovery/ia/manifest.json` + `$DOCS_DIR/discovery/ia/pages/` — work IA (Stage 6a TASK B-2 의 work-side input)
+- `$DOCS_DIR/discovery/ia/.baseline/manifest.json` + `.baseline/pages/` — Phase 1b 의 baseline snapshot (Stage 6a TASK B-2 의 baseline-side input)
 
 ## Conditional Inputs (consumed by tech-lead-strategist sub-agent)
 
 - `$DOCS_DIR/review/diagnosis.md` — when Phase 5 diagnosed issues
 - `$ORG_ROOT/.jarfis-org/wiki/INDEX.md` + section `_index.md` + existing wiki files — when `$ORG_ROOT` non-empty (Track A merge target)
+- `$ORG_ROOT/.jarfis-org/wiki/PO/projects/{project_slug}/ia/` — Org IA current state (Stage 6a TASK B-2 의 current-side input)
 
 ---
 
