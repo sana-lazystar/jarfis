@@ -3,36 +3,16 @@
 UX direction document from the PO to the UX Designer. Created as `$DOCS_DIR/ux-direction.md`.
 Single-file structure — do not split.
 
+> **Stage 8 (v4.17+)**: IA & URL Structure 메타데이터는 `$DOCS_DIR/discovery/ia/manifest.json` 에 (PO SSOT, Stage 1+). Pages 디테일 (Heading/Content/Requirements/Interaction Patterns) 은 `$DOCS_DIR/discovery/ia/pages/{slug}.md` 의 `## Notes` body 로 흡수됨. ux-direction.md 는 페이지-비특이적 톤 + (supplied 모드 한정) 외부 시안 reference 만 담는다.
+
 ```markdown
 # UX Direction
-
-## IA & URL Structure
-
-| URL | Page | Description |
-|-----|------|-------------|
-| / | Home | |
 
 ## Tone & Voice
 
 - Overall tone:
 - Error message tone:
 - CTA style:
-
-## Pages
-
-### / (Home)
-
-**Heading**:
-**Content**:
-**Requirements**: What the user should be able to do
-**Interaction Patterns**: (sync/async, loading strategy, etc.)
-
-### /{url-path}
-
-**Heading**:
-**Content**:
-**Requirements**:
-**Interaction Patterns**:
 ```
 
 ## External Mockup Reference (supplied 모드 한정)

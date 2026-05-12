@@ -121,18 +121,18 @@ Produce the following artifacts:
      link or summarize.
 
 3. $DOCS_DIR/discovery/ux-direction.md — ONLY if state.design.mode != null
-   - Tone & Voice
-   - Pages: headings, content structure, requirements, interaction patterns
-     (sync/async, loading, error)
+   - Tone & Voice (overall tone, error message tone, CTA style)
    - Responsive scope: reflect state.responsive (pc-only | pc-mobile | pc-mobile-tablet)
    - Single file — do NOT split.
-   - **DO NOT** author an "IA & URL Structure" section — IA SSOT 는 별도 산출물 (#4 아래).
+   - **DO NOT** author an "IA & URL Structure" section or per-page "Pages" details (Stage 8):
      IA 정량 메타데이터 (slug, route, role, parent, depth) 는 #4 의 discovery/ia/manifest.json
-     에만 쓴다. ux-direction.md 의 page 식별자는 자유 텍스트로 충분 (IA slug 와 link 만 명시).
+     에만 쓴다. Per-page 디테일 (Heading/Content/Requirements/Interaction Patterns) 은 #4 의
+     discovery/ia/pages/{slug}.md `## Notes` body 에 흡수된다. ux-direction.md 는 페이지-비특이적
+     톤만 담는다 (+ supplied 모드 한정 External Mockup Reference 섹션).
 
-4. $DOCS_DIR/discovery/ia/ — Information Architecture (NEW — IA SSOT, ia-as-po-ssot-v2-spine Stage 4)
+4. $DOCS_DIR/discovery/ia/ — Information Architecture (IA SSOT, ia-as-po-ssot-v2-spine)
    - Read $DOCS_DIR/discovery/ia/.baseline/manifest.json (Org IA snapshot at Phase 1b entry)
-   - For each page in scope (derived from PRD + ux-direction.md Pages section):
+   - For each page in scope (derived from PRD; per-page details go into pages/{slug}.md Notes body):
      - Append/merge into $DOCS_DIR/discovery/ia/manifest.json `pages[]` with L0+L1:
        - L0: slug, route, title, role (public|auth|admin), parent (slug or null), depth (int)
        - L1: title (already in L0), and create $DOCS_DIR/discovery/ia/pages/{slug}.md

@@ -15,7 +15,6 @@ import re
 import subprocess
 from pathlib import Path
 
-KEBAB_RE = re.compile(r"^[a-z][a-z0-9-]*$")
 TASK_COMMIT_RE_TPL = r"jarfis\({task_id}\)\s*:"
 CSS_VAR_RE = re.compile(r"var\(--")
 
@@ -124,13 +123,6 @@ def ux_direction_ids(ux_direction_md) -> list[str]:
     except OSError:
         return []
     return [m.group(1).strip() for m in _ID_HEADING_RE.finditer(text)]
-
-
-def check_kebab_case_ids(ux_direction_md) -> tuple[bool, list[str]]:
-    """Return (all_valid, invalid_ids) for `###` headings."""
-    ids = ux_direction_ids(ux_direction_md)
-    invalid = [i for i in ids if not KEBAB_RE.match(i)]
-    return (not invalid, invalid)
 
 
 # ---------------------------------------------------------------------------

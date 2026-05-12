@@ -100,18 +100,6 @@ class TestPhase1b:
         missing = _phase_1b_verify(state, docs)
         assert any("Required Roles" in m for m in missing)
 
-    def test_fail_ux_direction_kebab_violation(self, tmp_path):
-        state, docs = _state(tmp_path, design={"mode": "figma"})
-        _write(tmp_path / "docs" / "discovery" / "prd.md", _prd_full())
-        _write(tmp_path / "docs" / "discovery" / "working-backwards.md", "x")
-        _write(
-            tmp_path / "docs" / "discovery" / "ux-direction.md",
-            "### Order_List\n### user-profile\n",
-        )
-        missing = _phase_1b_verify(state, docs)
-        assert any("Order_List" in m for m in missing)
-
-
 # ===========================================================================
 # Phase 2
 # ===========================================================================

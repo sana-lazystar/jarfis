@@ -112,8 +112,18 @@ navigation:
 
 ### Notes body
 
-- 페이지 디테일 (Heading / Content / Requirements / Interaction Patterns) 흡수 (Stage 8 결정).
+- 페이지 디테일 (Stage 8 — ux-direction.md Pages 섹션 흡수) 를 담는다.
 - frontmatter 의 정량 정보와 별개의 사람-읽기용 노트.
+- **권장 sub-headings** (audit R-22 mitigation — 디자이너 brief 의 strict format 보존):
+  ```markdown
+  ## Notes
+
+  **Heading**: <페이지 상단 제목 + sub-copy>
+  **Content**: <주요 콘텐츠 블록 — 위에서 아래 순서>
+  **Requirements**: <사용자가 이 페이지에서 할 수 있어야 하는 것>
+  **Interaction Patterns**: <sync/async, loading strategy, error handling, animation 등>
+  ```
+- 위 4개 sub-headings 은 권장이며 강제 아님. 페이지 성격에 따라 추가/생략 가능.
 
 ## `shared.json` 스키마 (optional, L4)
 

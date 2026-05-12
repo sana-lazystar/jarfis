@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.17.0] - 2026-05-12
+
+- implement: IA SSOT Stage 8 — ux-direction.md cleanup (IA & URL Structure + Pages sections removed; Pages 디테일 → ia pages/{slug}.md Notes body 흡수; verify.py kebab-case check removed; ia-schema.md Notes sub-headings 명시). **All P0/P1 stages complete.**
+
 ## [4.16.0] - 2026-05-12
 
 - implement: IA SSOT Stage 5 — 9 personas IA Read Order sections (PO Full author, TA L2+L4, UX L3, FE Full read, BE L2, DevOps L4, QA Full coverage, Sec L0+L2+L4, TL R-14 dual mode)

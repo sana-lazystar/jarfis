@@ -979,7 +979,7 @@ def _parse_tasks_md_ids(tasks_md_path):
 
 
 def _phase_1b_verify(state, docs_dir):
-    """Phase 1b: discovery/ 산출물 3종 + prd 섹션 4개 + ux-direction ID kebab-case.
+    """Phase 1b: discovery/ 산출물 3종 + prd 섹션 4개 + IA validation.
 
     Stage 3 (ia-as-po-ssot-v2-spine F1 — forward-only auto-detect):
         IA validation gated on `discovery/ia/` directory existence. When
@@ -987,6 +987,12 @@ def _phase_1b_verify(state, docs_dir):
         strict=False); baseline-missing is a **warning** (stderr), NOT a
         FAIL — D10 forward-only contract means pre-Stage-4 works that
         never ran snapshot_org_ia must still pass.
+
+    Stage 8: ux-direction.md kebab-case ID check 제거 — IA R3 slug regex
+        (ia.py:66) 가 대체. ux-direction.md 의 Pages 디테일은 IA pages/
+        {slug}.md Notes body 로 흡수됨. ux-direction 파일 존재 자체는 여전히
+        design.mode != null 일 때 강제 (Tone & Voice + supplied External
+        Mockup Reference 보존).
     """
     missing = []
     discovery = Path(docs_dir) / "discovery"
@@ -1007,12 +1013,6 @@ def _phase_1b_verify(state, docs_dir):
         mode = (state.get("design") or {}).get("mode")
         if not _h.check_file_exists(ux_path):
             missing.append(f"discovery/ux-direction.md 누락 (design.mode={mode})")
-        else:
-            valid, invalid_ids = _h.check_kebab_case_ids(ux_path)
-            if not valid:
-                missing.append(
-                    f"ux-direction.md ID kebab-case 위반: {', '.join(invalid_ids)}"
-                )
 
     # NEW: IA validation (Stage 3 F1 — conditional on dir existence).
     # PO Phase 1b owns SSOT but only L0-L1 are mandatory at this stage,
