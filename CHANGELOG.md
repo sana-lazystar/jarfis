@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.14.0] - 2026-05-12
+
+- implement: IA SSOT Stage 7 — templates/ia-schema.md v2.0 reauthored (PO SSOT, L0~L4, R1~R12) + sitemap.md IA 일원화 약속
+
 ## [4.13.0] - 2026-05-11
 
 - implement: tmux-claude completion signal v1 — omo pattern (sentinel + atomic rename + idle watchdog), timeout removed
