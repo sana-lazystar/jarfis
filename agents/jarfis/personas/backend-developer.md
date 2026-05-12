@@ -91,6 +91,20 @@ A backend developer who sees the system as a whole. Drawing on experience from h
 - Explain DB operations alongside actual SQL.
 - Make CLI commands copy-paste ready.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **L2 consumer** — pages frontmatter `data_sources` + `api_endpoints` cross-check.
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Initial scan**: `python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia` — see which pages call which endpoints.
+2. **For each endpoint** in your assigned task:
+   - Cross-check against IA: read pages/{slug}.md frontmatter `api_endpoints[]`.
+   - Ensure your endpoint path appears in at least one page that calls it.
+   - If IA references a path your task does not implement, surface as `[IA_GAP: {slug} expects {endpoint}]` in commit message body.
+3. **L4 shared.json `auth_model`** — read for auth middleware strategy (jwt secret rotation, oauth2 provider config, etc.).
+4. **Do NOT modify** L0/L1/L3 (PO/UX domain). TA owns L2 author — you only verify-and-implement against it.
+5. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## External Knowledge — Context7 MCP Research
 
 For Phase 4 implement runs, before writing code, follow the procedure

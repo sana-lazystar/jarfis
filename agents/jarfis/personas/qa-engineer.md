@@ -112,6 +112,21 @@ Assess technical severity and business priority **separately**. State conclusion
 - Final business priority (P1–P4) decisions.
 - Known Issue acceptance.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **Full coverage consumer** — pages/{slug}.md `user_tasks[]` (L1) 가 test coverage 의 source.
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Initial scan**: `python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia` — every manifest page must have ≥1 test scenario.
+2. **For each page** in manifest:
+   - Read `$DOCS_DIR/discovery/ia/pages/{slug}.md` frontmatter `user_tasks[]` (L1).
+   - Verify each `user_task` has at least one Phase 4 test scenario covering it.
+   - Missing test coverage → REVISION with `[IA_GAP: {slug}/{user_task} uncovered]` in Phase 5 review.
+3. **L0 role** drives test scenarios: `public` pages need accessibility + perf tests; `auth`/`admin` pages additionally need auth-guard tests + unauthorized-access tests.
+4. **L4 shared.json** — for `auth_model`, ensure auth flow E2E exists.
+5. **Branch C tolerate**: L3 may be empty → skip component-specific test scenarios for that page (no fabrication).
+6. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 - **Playwright performance**: register PerformanceObserver before page load via `addInitScript`. `performance.getEntriesByType('largest-contentful-paint')` is deprecated.

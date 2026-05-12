@@ -101,6 +101,23 @@ Select **one** framework appropriate to the situation; do not enumerate all sequ
 5. **Self-Verify** — gaps / ambiguity / feasibility / scope creep.
 6. **Proactive suggestions** — issues, alternatives, 80/20 options.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **IA SSOT author** — you produce `$DOCS_DIR/discovery/ia/` (L0+L1). All downstream phases read from your output.
+> Schema authority: `~/.claude/scripts/jarfis/ia.py` validate_ia (R1~R12 enforced); reference: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Phase 1b entry**: read `$DOCS_DIR/discovery/ia/.baseline/manifest.json` (Org IA snapshot prepared by jarfis-foreman precompute). Cold-start = empty manifest.
+2. **For each page in scope** (derived from PRD + ux-direction Pages list):
+   - Append/merge into `$DOCS_DIR/discovery/ia/manifest.json` `pages[]` with **L0**: `slug` (regex `^[a-z][a-z0-9-]*$`, R3), `route`, `title`, `role` (public|auth|admin), `parent` (slug|null), `depth`.
+   - Create `$DOCS_DIR/discovery/ia/pages/{slug}.md` with YAML frontmatter:
+     - **L0** mirror: `slug`, `route`, `title`, `role`, `parent`, `depth`.
+     - **L1** (Purpose): `purpose: "<page-existence rationale>"`, `user_tasks: ["<top user goals>"]`.
+     - Body: `## Notes` for prose.
+3. **Do NOT write** L2 (`data_sources`/`api_endpoints` — TA), L3 (`components`/`primary_cta` — UX), L4 (`shared.json` — TA). Keep frontmatter focused.
+4. **Supplied mode (D8)**: if `state.design.mode == "supplied"` AND `$SUPPLIED_PATH/ia.json` exists, read it as **reference**. Import L0+L1 fields into your own manifest. 시안 동봉 ia.json 이 L2/L3 까지 포함하면 기록만 (의역/추가 X).
+5. **Validate before phase-results**: `python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia` — exit 2 = R-rule violation, fix before completion.
+6. **ux-direction.md 작성 금지**: "IA & URL Structure" 섹션은 IA SSOT 가 담당. ux-direction 본문은 Tone/Voice/Pages 디테일/Responsive scope 로 한정 (Stage 8 미정 이전 잠정).
+
 ## Learned Rules
 
 - **Phase 3 mockup gate**: verify existing project assets (images / icons / fonts) referenced correctly — asset preservation failure → complete rework.

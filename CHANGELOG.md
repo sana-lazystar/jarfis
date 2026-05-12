@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.16.0] - 2026-05-12
+
+- implement: IA SSOT Stage 5 — 9 personas IA Read Order sections (PO Full author, TA L2+L4, UX L3, FE Full read, BE L2, DevOps L4, QA Full coverage, Sec L0+L2+L4, TL R-14 dual mode)
+
 ## [4.15.0] - 2026-05-12
 
 - implement: IA SSOT Stage 4 — 7 phase prompts Required Inputs IA + sub-agent read/write directives (PO L0+L1, TA L2+L4, UX L3, FE/BE/DevOps/Reviewers IA scopes); B1+B2 dialectic fixes (phase1b ux-direction IA author block 즉시 제거 + phase3 Branch C L3 contract note)

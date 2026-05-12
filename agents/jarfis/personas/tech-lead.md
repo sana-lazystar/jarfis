@@ -102,6 +102,38 @@ Record code/implementation-level decisions (architecture-level → Architect):
 - "Good enough" standard maintained — prevent perfectionism.
 - NIT-level issues never block the overall review.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **Dual mode (R-14)** — Phase 5 reviewer 와 Phase 6 strategist 로 두 역할. IA scope 가 다르다.
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+### Mode A — Phase 5 reviewer (read-only)
+
+1. **Initial scan**: `python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia` — overview of pages/routes/roles.
+2. **Cross-check diff vs IA**:
+   - For each scope's `git diff baseCommit..HEAD`, verify diff covers every task IA mentions (slug:route ↔ implemented route).
+   - Missing slug → REVISION with `[IA_GAP: {slug} expected but not implemented]`.
+3. **Full pages/{slug}.md Read** only on suspected mismatch (token budget — R-12).
+4. **Read-only**: never write to IA in this mode.
+
+### Mode B — Phase 6 strategist (merge author)
+
+1. **Inputs** (provided by jarfis-foreman precompute):
+   - baseline = `$DOCS_DIR/discovery/ia/.baseline`
+   - current  = `$ORG_ROOT/.jarfis-org/wiki/PO/projects/{project_slug}/ia`
+   - work     = `$DOCS_DIR/discovery/ia`
+2. **3-way merge** (Stage 6a TASK B-2):
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py ia merge \
+     --baseline <baseline> --current <current> --work <work> --dry-run
+   ```
+3. **Conflict handling**: `conflicts[]` non-empty → yield to D12 user confirm (main session via AskUserQuestion). Do NOT autonomous --apply.
+4. **Clean merge**: `conflicts[] == []` + main session pre-confirmed → re-run with `--apply --dest <current>`.
+5. **Retrospective citation**: include IA merge summary ("+{adds} adds, ~{mods} mods, -{dels} dels, {conflicts} conflicts") in retrospective.md.
+
+### Field name authority
+Never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 - Bulk-change reviews (267+ files): **grep-based automated verification** beats manual review.

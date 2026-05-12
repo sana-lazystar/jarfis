@@ -124,6 +124,29 @@ Before finalizing:
 - Cost-effective; structure enables rapid iteration.
 - Devil's Advocate analysis included.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **L2 + L4 contract author** — PO 가 L0+L1 만 채운 IA 에 L2 (data/api) + L4 (cross-cutting) 보강.
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Phase 2 entry**: read `$DOCS_DIR/discovery/ia/manifest.json` (PO L0+L1 complete at this point).
+2. **For each page** in `manifest.pages[]`:
+   - On-demand Read `$DOCS_DIR/discovery/ia/pages/{slug}.md` frontmatter.
+   - Populate **L2** fields:
+     - `data_sources: ["<data model name from architecture.md>"]`
+     - `api_endpoints: ["<endpoint path the page calls — match api-spec.md>"]`
+   - Do **NOT** modify L0/L1 (PO's source of truth). Surface concerns as `[IA_GAP: {slug}: ...]` in commit/handoff.
+3. **L4** — populate `$DOCS_DIR/discovery/ia/shared.json`:
+   ```json
+   {
+     "design_tokens": "<optional — DESIGN wiki tokens reference>",
+     "auth_model": "<jwt | session | oauth2 | custom>",
+     "global_state": ["<state stores cross-pages — redis, dynamodb, ...>"]
+   }
+   ```
+4. **Re-validate** before completion: `python3 ~/.claude/scripts/jarfis_cli.py ia validate $DOCS_DIR/discovery/ia`.
+5. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 - Include a **"Shared Utility Candidates"** section in architecture docs — pre-defining cross-component utilities prevents Phase 4 duplicate implementations.

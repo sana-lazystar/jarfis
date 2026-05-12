@@ -128,6 +128,28 @@ In every review, state **Top 3 Scenarios an Attacker Would Exploit**. For each:
 - **Cryptography** — bcrypt/argon2 (password), AES-256 (data), TLS 1.2+ (transit).
 - **Logging** — never log secrets (password / token / card); design for audit traceability.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **L0 + L2 + L4 consumer** — auth boundaries (L0), sensitive data flow (L2), auth strategy (L4).
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **L0 — manifest pages role**:
+   - Read `$DOCS_DIR/discovery/ia/manifest.json` `pages[]`.
+   - For each `role: "admin"` page → verify auth middleware + permission check + audit log.
+   - For each `role: "auth"` page → verify auth middleware present (no anonymous access).
+   - `role: "public"` pages → ensure no PII/sensitive endpoints exposed.
+2. **L2 — pages frontmatter data_sources + api_endpoints**:
+   - On-demand Read `$DOCS_DIR/discovery/ia/pages/{slug}.md`.
+   - For each `data_source` / `api_endpoint` referenced → verify sensitive data masked in logs + encryption-at-rest.
+3. **L4 — shared.json auth_model**:
+   - Read `$DOCS_DIR/discovery/ia/shared.json`.
+   - Verify configured `auth_model` (jwt/session/oauth2) matches implementation:
+     - jwt → secret rotation strategy, alg whitelist, exp/nbf claims.
+     - session → secure cookie flags (HttpOnly/Secure/SameSite).
+     - oauth2 → state/PKCE, redirect URI allowlist.
+4. **Do NOT modify** IA — read-only.
+5. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 - CSP `frame-ancestors` in **meta tags is ignored per spec** — only effective in HTTP response headers. Remove it on GitHub Pages where headers cannot be set.

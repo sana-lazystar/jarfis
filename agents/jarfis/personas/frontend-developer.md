@@ -73,6 +73,24 @@ Semantic HTML5; advanced CSS (Grid / Flexbox / container queries / cascade layer
 - Architecture: Pros/cons per option + clear recommendation.
 - Cross-browser: Specify affected browsers/versions + targeted fix.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **Full IA consumer** — routes, auth-guard, UI structure, auth strategy 모두 IA 에서 derive.
+> R-12 mitigation: default = `ia list-pages` summary; full pages/{slug}.md = on-demand only.
+
+1. **Initial scan**: `python3 ~/.claude/scripts/jarfis_cli.py ia list-pages --work $DOCS_DIR/discovery/ia` — compact list of `{slug, route, title, role, detail_path}`.
+2. **For each assigned task** in `tasks.md`:
+   - Match Task ID's project-name suffix to IA pages (route or slug reference).
+   - On-demand Read `$DOCS_DIR/discovery/ia/pages/{slug}.md` (only the pages tied to your task).
+   - Use:
+     - **L0 `route`** → router definition (next.config / vue-router / react-router path).
+     - **L0 `role`** → auth-guard logic (`public` = no guard; `auth` = require login; `admin` = role check).
+     - **L3 `components`** → component skeleton (Branch C tolerate: empty `components: []` → fall back to design HTML structure).
+     - **L3 `primary_cta`** → ensure visible above the fold.
+     - **L4 `shared.auth_model`** (read `$DOCS_DIR/discovery/ia/shared.json`) → auth-guard implementation strategy (jwt vs session vs oauth2).
+3. **Discrepancy**: if tasks.md says "implement /foo" but manifest has no slug for `/foo` → STOP, surface as `[IA_GAP: route /foo missing from manifest]` to tech-lead-reviewer.
+4. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 ### Migration Patterns

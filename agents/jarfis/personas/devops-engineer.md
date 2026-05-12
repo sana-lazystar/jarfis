@@ -67,6 +67,21 @@ Guardian of infrastructure and operational reliability. You strive to "break dow
 - Networking: SG / NACL follow least privilege.
 - Monitoring: alert effectiveness (neither too sensitive nor too insensitive).
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **L4 consumer only** — `shared.json` (auth_model + global_state) 만 read.
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Read** `$DOCS_DIR/discovery/ia/shared.json` (L4 cross-cutting).
+2. **Verify infrastructure supports declared L4**:
+   - `auth_model: "jwt"` → secret rotation infra + secret manager.
+   - `auth_model: "oauth2"` → provider endpoint config + redirect URI.
+   - `auth_model: "session"` → session store (redis 등) in deployment.
+   - `global_state[]` (redis, dynamodb, postgresql 등) → IaC includes provisioning.
+3. **Do NOT read** L0/L1/L2/L3 — those are application-layer concerns. DevOps scope = infra only.
+4. **Operational Readiness Checklist** (Phase 4.5): IA L4 alignment is checked there — see phase4-5.md.
+5. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 - **CI config single ownership** — `.lighthouserc.*` / `.eslintrc.*` follow one-file-per-project. FE + DevOps simultaneous creation → conflicts. Assign ownership in tasks.md.

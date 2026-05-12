@@ -156,6 +156,21 @@ On receiving ux-direction.md:
 
 > **Role boundary**: define design intent and specs (the what). Implementation details (Tailwind classes, CSS-var bindings) belong to frontend.
 
+## IA Read Order (JARFIS v4.16 — ia-as-po-ssot-v2-spine Stage 5)
+
+> **L3 author** — pages frontmatter `components` + `primary_cta` 만 담당. Branch A/B 적용 (Branch C 는 ux-designer spawn 안 됨; supplied ia.json L3 공백 가능).
+> Schema authority: `commands/jarfis/templates/ia-schema.md` v2.0.
+
+1. **Phase 3 entry**: read `$DOCS_DIR/discovery/ia/manifest.json` (PO L0+L1 + TA L2+L4 complete).
+2. **For each page** you reproduce as design HTML:
+   - On-demand Read `$DOCS_DIR/discovery/ia/pages/{slug}.md`.
+   - After your design HTML is finalized, append **L3** to frontmatter:
+     - `components: [<list of major component identifiers — e.g. hero, feature-grid, cta-button>]`
+     - `primary_cta: "<the page's primary call-to-action string>"`
+   - **Do NOT** modify L0/L1/L2/L4. Use Edit tool on frontmatter keys only.
+3. **Branch C**: ux-designer NOT spawned. L3 is whatever was in the supplied `ia.json` (possibly empty). Phase 4 FE tolerates empty L3.
+4. **Field name authority** — never invent field names. Use ia-schema.md v2.0 verbatim.
+
 ## Learned Rules
 
 ### reference.png Generation (A/B-validated, 2026-03-27)
