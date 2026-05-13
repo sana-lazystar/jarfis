@@ -172,12 +172,13 @@ def sync_files(repo_path, claude_dir):
             rel = f[len(src_fixtures) + 1:]
             synced += _sync_file(f, os.path.join(dst_fixtures, rel), claude_dir, changes)
 
-    # 6. statusline-command.sh
-    synced += _sync_file(
-        os.path.join(claude_dir, "statusline-command.sh"),
-        os.path.join(repo_path, "statusline-command.sh"),
-        claude_dir, changes
-    )
+    # 6. statusline-command.sh + statusline-jarfis.sh (event-stream-v1)
+    for stl in ("statusline-command.sh", "statusline-jarfis.sh"):
+        synced += _sync_file(
+            os.path.join(claude_dir, stl),
+            os.path.join(repo_path, stl),
+            claude_dir, changes
+        )
 
     return synced, changes
 

@@ -37,11 +37,20 @@ You do **not**:
 ## Execution Protocol (per phase)
 
 1. Read `prompts/phase{N}.md` fully before acting.
-2. For every `#### Compose invocation (jarfis-foreman executes)` block: run the bash command exactly as written.
-3. For every `#### Sub-agent task prompt (jarfis-foreman injects verbatim)` block: spawn the sub-agent with the composed prompt + this blob as the task description; do **not** paraphrase.
-4. Run the per-phase `phase-verify` and (Phase 5 only) the `pattern-detect` loop — honour `MAX_REVIEW_ROUNDS = 3`.
-5. Merge / save artifacts to the paths listed in the phase prompt. Never invent new paths.
-6. Write the Completion Protocol block (`{completed|needs_retry|blocked}`, artifacts[], missing[], notes) as the last tmux output of the phase.
+2. **Phase boundary emit (event-stream-v1, D10)** — before executing the phase body, emit one `phase.start` event; after the phase body finishes (just before the Completion Protocol), emit one `phase.end` event. Both fail silently and never block:
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py emit --type=phase.start --level=highlight \
+     --summary="Phase ${PHASE_N} · ${PHASE_NAME} 시작" >/dev/null 2>&1 || true
+   # ... phase work ...
+   python3 ~/.claude/scripts/jarfis_cli.py emit --type=phase.end --level=highlight \
+     --summary="Phase ${PHASE_N} 완료" >/dev/null 2>&1 || true
+   ```
+   The emit is no-op unless `$JARFIS_WORKFLOW` is set by the tmux launch (= sub-Claude under JARFIS context). Resolution: env var first, then `--workflow-id=` if you have it.
+3. For every `#### Compose invocation (jarfis-foreman executes)` block: run the bash command exactly as written.
+4. For every `#### Sub-agent task prompt (jarfis-foreman injects verbatim)` block: spawn the sub-agent with the composed prompt + this blob as the task description; do **not** paraphrase.
+5. Run the per-phase `phase-verify` and (Phase 5 only) the `pattern-detect` loop — honour `MAX_REVIEW_ROUNDS = 3`.
+6. Merge / save artifacts to the paths listed in the phase prompt. Never invent new paths.
+7. Write the Completion Protocol block (`{completed|needs_retry|blocked}`, artifacts[], missing[], notes) as the last tmux output of the phase.
 
    **Atomic publish + sentinel (tmux-claude-completion-signal-v1)** — every Completion Protocol emission MUST follow the three-step sequence below. Skipping any step leaves the parent's `poll()` waiting on `{result}.done`; the idle watchdog (~3 min) will eventually trip, surfacing as `reason="idle watchdog tripped"`, but the explicit emission is the only correct path.
 

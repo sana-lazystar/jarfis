@@ -62,6 +62,17 @@ The `currentState` starts at `step0` (in_progress).
 After init succeeds, capture the returned `planDir` for use by subsequent
 steps. All later step outputs go under `{planDir}/artifacts/step{N}/`.
 
+**Event Stream register (event-stream-v1, D10)** — register the plan in `~/.jarfis/active.json` and emit the workflow-level `phase.start` so the multi-line statusline begins rendering. Both calls are best-effort:
+
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py register \
+  --workflow-id="sys-impl:{plan-name}" --skill=sys-implement --docs-dir="{planDir}" \
+  >/dev/null 2>&1 || true
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="sys-impl:{plan-name}" --type=phase.start --level=highlight \
+  --summary="sys-implement {plan-name} 시작" >/dev/null 2>&1 || true
+```
+
 #### Step 0.3 — Read system structure
 
 1. Read `~/.claude/commands/jarfis/jarfis-index.md` to understand the current JARFIS system structure.
@@ -208,6 +219,13 @@ The orchestrator does **not** judge content. The verdict is decided by citation 
 
 #### UNRESOLVED handling (user Confirm)
 
+**Event Stream emit (event-stream-v1, D10)** — before displaying the banner, emit one `dialectic.unresolved` event so the statusline visibly stalls (purple `[STUCK]` per D5):
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="sys-impl:{plan-name}" --type=dialectic.unresolved --level=highlight \
+  --summary="dialectic UNRESOLVED [STUCK]" >/dev/null 2>&1 || true
+```
+
 Display the banner and ask the user:
 
 ```
@@ -238,6 +256,13 @@ options:
 ```
 
 Persist the user's choice to `{planDir}/artifacts/step1.5/unresolved.md`.
+
+**Event Stream emit (event-stream-v1, D10)** — after the user picks an option, emit one `note` event capturing the resolution:
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="sys-impl:{plan-name}" --type=note \
+  --summary="user confirm: ${USER_CHOICE}" >/dev/null 2>&1 || true
+```
 
 #### Convergence display (ACKNOWLEDGED)
 
@@ -577,6 +602,18 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>" && git tag v{version} &
 ```
 
 **Step 5 artifacts**: write the results banner content to `{planDir}/artifacts/step5/results-banner.md` and the generated commit/push command text to `{planDir}/artifacts/step5/commit-cmd.txt`.
+
+**Event Stream Exit (event-stream-v1, D10)** — after the banner and commit command are displayed, emit the workflow-level `phase.end` and unregister so the multi-line statusline drops back to the standard 1-line format. Both calls are best-effort:
+
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="sys-impl:{plan-name}" --type=phase.end --level=highlight \
+  --summary="sys-implement {plan-name} 완료 (v{new_version})" >/dev/null 2>&1 || true
+python3 ~/.claude/scripts/jarfis_cli.py unregister \
+  --workflow-id="sys-impl:{plan-name}" >/dev/null 2>&1 || true
+```
+
+If the plan was aborted (Step 1.5 UNRESOLVED → Abort, or Step 2 tmux failure exhaust) replace `phase.end` with `phase.abort` and adjust the summary; the unregister step always runs.
 
 → Apply Workspace Update Snippet (step=5, next=null — workspace finalized).
 → The plan is complete. Optionally archive via `jarfis_cli.py implement archive {plan-name}` after the user confirms the commit landed.

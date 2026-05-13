@@ -27,6 +27,12 @@ Commands:
     implement        sys-implement deliverables workspace (init/state/log/resume/list/archive) [v4.2 — ADR-0003]
     agent            Skill+persona registry CRUD (skill list/add/update/remove, persona list) [v4.5 — agent-skill-system-v1]
     ia               IA snapshot/validate/merge/list-pages/probe (manifest.json + pages/{slug}.md + shared.json) [ia-as-po-ssot-v2-spine]
+    register         Event Stream — register a workflow in ~/.jarfis/active.json [event-stream-v1]
+    unregister       Event Stream — remove a workflow from ~/.jarfis/active.json [event-stream-v1]
+    emit             Event Stream — append a single event to {docs_dir}/events.jsonl [event-stream-v1]
+    status           Event Stream — list active workflows + event counts [event-stream-v1]
+    tail             Event Stream — tail N events of a workflow (or all -a) [event-stream-v1]
+    bind-session     Event Stream — statusline auto-bind helper (D9) [event-stream-v1]
 """
 
 import os
@@ -117,6 +123,14 @@ def main():
         "agent": "jarfis.agent_admin",
         # ia-as-po-ssot-v2-spine — Stage 1: IA snapshot/validate/merge module.
         "ia": "jarfis.ia",
+        # event-stream-v1 — D8/D10 lockdown: active registry + emit + statusline support.
+        "register": "jarfis.cli",
+        "unregister": "jarfis.cli",
+        "emit": "jarfis.cli",
+        "status": "jarfis.cli",
+        "tail": "jarfis.cli",
+        "bind-session": "jarfis.cli",
+        "render-statusline": "jarfis.cli",
     }
 
     if command not in commands:
@@ -134,6 +148,17 @@ def main():
         module.search_main(args)
     elif command in ("gate-check", "phase-check", "phase-verify", "pattern-detect"):
         # verify.main expects the subcommand name as args[0]
+        module.main([command] + args)
+    elif command in (
+        "register",
+        "unregister",
+        "emit",
+        "status",
+        "tail",
+        "bind-session",
+        "render-statusline",
+    ):
+        # cli.main argparse expects the subcommand as args[0]
         module.main([command] + args)
     else:
         module.main(args)

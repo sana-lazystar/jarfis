@@ -86,6 +86,16 @@ engaging in free-form discussion with the user to explore and refine ideas.
    Show a banner with: meeting name, attendees (PO/TL), commands ("summarize" → interim summary, "wrap up"/"done"/"end" → close + generate artifacts), and auto-summoning of experts.
    - If `$PREV_MEETING_NAME` is set, include "Previous meeting reference: $PREV_MEETING_NAME" in the banner.
 
+6. **Event Stream register (event-stream-v1, D10)** — register the meeting in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort:
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py register \
+     --workflow-id="$MEETING_NAME" --skill=work-meeting --docs-dir="$MEETING_DIR" \
+     >/dev/null 2>&1 || true
+   python3 ~/.claude/scripts/jarfis_cli.py emit \
+     --workflow-id="$MEETING_NAME" --type=phase.start --level=highlight \
+     --summary="Meeting kickoff: $MEETING_NAME" >/dev/null 2>&1 || true
+   ```
+
 ---
 
 ## M-1: Opening Round (Sharing First Impressions)
@@ -206,8 +216,20 @@ PO/TL autonomously summon experts when specialized knowledge is needed.
 
 **Procedure:**
 1. PO/TL naturally announce the summoning → call via Agent tool (model per work.md Agent Mapping, passing: planning topic, 2-3 lines of discussion context, specific question, + above context injection per role)
+   - **Event Stream emit (event-stream-v1, D10)** — just before the Agent tool call, emit one `agent.spawn` event so the statusline reflects the expert summon:
+     ```bash
+     python3 ~/.claude/scripts/jarfis_cli.py emit \
+       --workflow-id="$MEETING_NAME" --type=agent.spawn \
+       --summary="spawn $EXPERT_NAME" >/dev/null 2>&1 || true
+     ```
 2. PO/TL naturally integrate the expert's response into the meeting
 3. Record research results cumulatively in `$MEETING_DIR/tech-research.md` (expert type, topic, question, answer summary, recommendations)
+   - **Event Stream emit (event-stream-v1, D10)** — after the expert's response is integrated, emit one `note` event capturing the gist (≤80 chars):
+     ```bash
+     python3 ~/.claude/scripts/jarfis_cli.py emit \
+       --workflow-id="$MEETING_NAME" --type=note \
+       --summary="$EXPERT_NAME 결론: ${ONE_LINE_GIST}" >/dev/null 2>&1 || true
+     ```
 
 ---
 
@@ -243,6 +265,13 @@ Generate the following 4 files in `$MEETING_DIR`:
 - `decisions.md` — Decision tracking table
 - `tech-research.md` — Expert research results (generated only when experts were summoned)
 
+**Event Stream emit (event-stream-v1, D10)** — once all 4 artifacts land, emit one `checkpoint` event so the statusline shows artifacts ready:
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="$MEETING_NAME" --type=checkpoint \
+  --summary="meeting artifacts ready (4 files)" >/dev/null 2>&1 || true
+```
+
 ### Semantic Search Index Update (best-effort)
 
 After generating artifacts, incrementally update the meetings index:
@@ -254,3 +283,15 @@ Do not block meeting completion on failure (best-effort). If the error contains 
 ### Completion Message
 
 Display a completion banner with: meeting name, list of generated artifacts (files under `$MEETING_DIR/`), and next steps guidance (`/jarfis:sys-implement` or `/jarfis:work $ARGUMENTS --meeting $MEETING_NAME`).
+
+### Event Stream Exit (event-stream-v1, D10)
+
+After the completion banner, emit the workflow-level `phase.end` and unregister so the multi-line statusline drops back to the standard 1-line format. Both calls are best-effort:
+
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="$MEETING_NAME" --type=phase.end --level=highlight \
+  --summary="Meeting $MEETING_NAME 완료" >/dev/null 2>&1 || true
+python3 ~/.claude/scripts/jarfis_cli.py unregister \
+  --workflow-id="$MEETING_NAME" >/dev/null 2>&1 || true
+```

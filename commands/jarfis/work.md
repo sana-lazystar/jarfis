@@ -68,6 +68,16 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 2. **sessionKey**: `jf-` + uuid4 first 8 chars → `state.sessionKey`.
 3. **Org detect** (v4.4 — defect D2: must run BEFORE docsDir composition): `python3 ~/.claude/scripts/jarfis_cli.py org detect <project_path>` → `state.org = {name, root}` or `null` (M10 — snapshot once, no re-detection later). Then run `python3 ~/.claude/scripts/jarfis_cli.py preflight <project_path>` to obtain `preflight.org_dir` (`{org_root}/.jarfis-org/` for registered org, `{JARFIS_SOURCE}/.personal/` for standalone). The result is the convention variable `$JARFIS_ORG_DIR` (NOT an exported env var — consume from preflight JSON).
 4. **Work identity** (v4.4 — defect D1: explicit docsDir rule): AskUserQuestion (or derive from `$ARGUMENTS`) → `state.work = {name, input, docsDir (absolute), startedAt}`. **`docsDir` MUST be `{org_dir}/works/{YYYYMMDD}-{slug}` where `org_dir` comes from preflight.org_dir (org registered → `{org_root}/.jarfis-org/`; standalone → `{JARFIS_SOURCE}/.personal/`).** Create `docsDir` if missing.
+
+   **Event Stream register (event-stream-v1, D10)** — immediately after `docsDir` is created, register the workflow in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort (`|| true`):
+   ```bash
+   python3 ~/.claude/scripts/jarfis_cli.py register \
+     --workflow-id="${state.work.name}" --skill=work --docs-dir="${state.work.docsDir}" \
+     >/dev/null 2>&1 || true
+   python3 ~/.claude/scripts/jarfis_cli.py emit \
+     --workflow-id="${state.work.name}" --type=phase.start --level=highlight \
+     --summary="Workflow ${state.work.name} 시작" >/dev/null 2>&1 || true
+   ```
 5. **Workspace scope**: AskUserQuestion-driven loop (add project paths). For each path run `jarfis_cli.py detect <path>` to auto-fill `framework` + `languages`. User supplies `name` + `type` (`frontend` | `backend` | `mobile` | `desktop` | `library` | `cli` — M5.2 / ADR-0004 §2.1: `mobile`/`desktop` route to mobile.yaml/desktop.yaml; `library`/`cli` are meta-only and skip per-scope domain dispatch). Result → `state.workspace.scope[]` + `state.workspace.structure` (monorepo | multi-project). **Greenfield handling (ADR-0003 §2.4)**: after collecting each scope path, run `jarfis_cli.py preflight <path>`. If the response contains `"greenfield": true` AND no `--domain`/`--scope-domain` override applies for that scope, AskUserQuestion (`$LOCALE`): "Project profile not found at `<path>`. Proceed how?" — options: "Create profile (`/jarfis:project-init --depth medium`)" / "Skip for this run (continue with empty profile)" / "Abort". Honor the choice before continuing the scope loop.
 6. **Git branch cut**: for each `scope[i]` run `git -C {path} checkout -b {branch}` then `git -C {path} rev-parse HEAD` → `scope[i].baseCommit` (B2).
 7. **Domain detect** (ADR-0003 §2.2 — full 6-case dispatch matrix). The matrix is per-scope: every entry under `state.workspace.scope[]` runs through the cases below independently, so multi-domain monorepos (Tauri shell + RN app, etc.) naturally end up with different `scope[i].domain` values. The branches resolve in this priority order — first match wins:
@@ -168,6 +178,22 @@ Before presenting any Gate:
    - **Gate 2** (after Phase 2 + Phase 3): summarize `planning/{architecture, tasks, test-strategy, api-spec?}.md` + `design/` if applicable. Options: Approve → Phase 4 / Revision → re-run Phase 2 or Phase 3 (ask which) / Abort.
    - **Gate 3** (after Phase 5): summarize `review/review.md` + `api-contract-check.md` (if api-spec exists) + `diagnosis-*.md` (if pattern-detect flagged any). Options: Approve → Phase 6 / Re-review → Phase 5 additional round (`state.phases.5.attempt += 1`, max 2) / **Re-design Phase 2** (conditional: only if `meta.pathological_patterns` non-empty — M3 decision) → return to Phase 2 to rewrite architecture/tasks / Abort.
 3. **Update state**: `state.gates.{N} = "approved" | "rejected"`. Approved → next Phase. Rejected / Abort → terminate workflow.
+
+---
+
+## Workflow Exit (event-stream-v1, D10)
+
+Whenever the workflow terminates — Phase 6 verified, any Abort at a Gate, or fatal error after MAX_RETRIES — emit a workflow-level `phase.end` and unregister from `~/.jarfis/active.json` so the multi-line statusline drops back to the standard 1-line format. Both calls are best-effort:
+
+```bash
+python3 ~/.claude/scripts/jarfis_cli.py emit \
+  --workflow-id="${state.work.name}" --type=phase.end --level=highlight \
+  --summary="Workflow ${state.work.name} 완료" >/dev/null 2>&1 || true
+python3 ~/.claude/scripts/jarfis_cli.py unregister \
+  --workflow-id="${state.work.name}" >/dev/null 2>&1 || true
+```
+
+For Abort exits, change `phase.end` to `phase.abort` and adjust the summary (`"Workflow … 중단 (Gate {N} reject)"`). Same `unregister` step always runs.
 
 ---
 
