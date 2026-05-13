@@ -200,10 +200,15 @@ def render_line(event: dict[str, Any], *, color: bool = True) -> str:
     lv = Level(lv_value)
     glyph = GLYPH[et]
     ts = event["ts"]
-    if "T" in ts:
-        time_part = ts.split("T")[1][:8]
-    else:
-        time_part = ts[:8]
+    try:
+        from datetime import datetime
+        dt = datetime.fromisoformat(ts)
+        time_part = dt.astimezone().strftime("%H:%M:%S")
+    except (ValueError, TypeError):
+        if "T" in ts:
+            time_part = ts.split("T")[1][:8]
+        else:
+            time_part = ts[:8]
     type_col = f"[{et.value}]".ljust(16)
     body = f"{glyph} {event['summary']}" if glyph else event["summary"]
     line = f"  {time_part}  {type_col} {body}"

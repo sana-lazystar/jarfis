@@ -333,7 +333,7 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
     Side effect: on first match via cwd, binds session_id to the workflow
     entry (D9 — "1회 박음").
     """
-    from jarfis.emit import Level  # local import to keep top-level minimal
+    from jarfis.emit import ANSI, ANSI_RESET, Level  # local import to keep top-level minimal
 
     raw = sys.stdin.read()
     try:
@@ -352,7 +352,6 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
 
     # 1. session_id match (preferred — survives cwd drift, D9 step 3)
     matched: dict[str, Any] | None = None
-    drift = False
     if session_id:
         for wf in data["workflows"]:
             if wf.get("session_id") == session_id:
@@ -375,27 +374,22 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
         elif wf is not None:
             matched = wf
 
-    # 3. Fix C — drift fallback. Neither session_id nor cwd matched, but the
-    #    registry is non-empty. Show the most recently started workflow with a
-    #    `· drift` marker instead of FALLBACK-ing to the original statusline.
-    #    Rationale: users still benefit from seeing *some* JARFIS context even
-    #    when their shell cwd has drifted away from the docs_dir (e.g. working
-    #    in a sibling project dir).
+    # Neither session_id nor cwd matched → this session is not an owner of any
+    # active workflow. Silence (FALLBACK) rather than showing a `· drift` marker
+    # to other sessions — Fix A (register-time session_id bind via
+    # $CLAUDE_CODE_SESSION_ID) ensures the owner session always matches.
     if matched is None:
-        matched = max(
-            data["workflows"], key=lambda w: w.get("started_at", "")
-        )
-        drift = True
+        print("FALLBACK")
+        return 0
 
-    # Header — purple bold
+    # Header — purple bold (statusline pipe path: force color, isatty() is False
+    # under Claude Code TUI but ANSI is rendered correctly)
     active_count = len(data["workflows"])
     elapsed = _format_elapsed(matched.get("started_at", ""))
     header = (
         f"JARFIS · {active_count} active · ←{matched['workflow_id']} · {elapsed}"
     )
-    if drift:
-        header = f"{header} · drift"
-    use_color = sys.stdout.isatty() and not getattr(ns, "no_color", False)
+    use_color = not getattr(ns, "no_color", False)
     if use_color:
         print(f"{ANSI[Level.HIGHLIGHT]}{header}{ANSI_RESET}")
     else:

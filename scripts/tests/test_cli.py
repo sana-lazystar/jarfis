@@ -541,28 +541,22 @@ class TestRenderStatusline:
         out = self._run(stdin, capsys, monkeypatch)
         assert out.strip() == "FALLBACK"
 
-    def test_render_drift_marker_when_cwd_unrelated(
+    def test_render_fallback_when_neither_match(
         self, active, docs_dir, capsys, monkeypatch, tmp_path
     ):
-        """Fix C — cwd 매칭 실패 + session_id 매칭 실패 시 FALLBACK 대신
-        latest-by-started_at workflow header + body events, header 끝에 `· drift`."""
+        """Fix C rollback — cwd 매칭 실패 + session_id 매칭 실패 시 FALLBACK 침묵.
+        Fix A (register-time session_id bind) 가 owner session 매칭을 보장하므로
+        non-owner session 에는 latest workflow 표시 (drift) 가 아닌 침묵이 정답."""
         cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
         d2 = tmp_path / "d2"
         d2.mkdir()
         cli.main(["register", "--workflow-id=wf-2", "--skill=work", f"--docs-dir={d2}"])
-        cli.main(["emit", "--workflow-id=wf-2", "--type=phase.start", "--summary=newer-evt"])
         unrelated = tmp_path / "unrelated"
         unrelated.mkdir()
         # Session id that doesn't match either workflow + cwd not an ancestor
         stdin = self._stdin("sess-orphan", str(unrelated))
         out = self._run(stdin, capsys, monkeypatch)
-        assert out.strip() != "FALLBACK"
-        lines = out.rstrip("\n").split("\n")
-        # Latest registered = wf-2 (later started_at), so header shows wf-2
-        assert "wf-2" in lines[0]
-        assert "drift" in lines[0]
-        # Body should show events from wf-2
-        assert "newer-evt" in out
+        assert out.strip() == "FALLBACK"
 
     def test_render_no_drift_when_cwd_match(
         self, active, docs_dir, capsys, monkeypatch

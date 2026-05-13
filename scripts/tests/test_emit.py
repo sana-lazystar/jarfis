@@ -279,7 +279,10 @@ class TestAtomicAppend:
 
 
 class TestRenderLine:
-    def test_includes_hhmmss_and_type(self, tmp_path):
+    def test_includes_hhmmss_and_type(self, tmp_path, monkeypatch):
+        import time
+        monkeypatch.setenv("TZ", "UTC")
+        time.tzset()
         events = tmp_path / "events.jsonl"
         ts = datetime(2026, 5, 13, 14, 21, 38, tzinfo=timezone.utc)
         ev = emit(events, EventType.PHASE_START, "boot", timestamp=ts)
@@ -287,6 +290,31 @@ class TestRenderLine:
         assert "14:21:38" in line
         assert "[phase.start]" in line
         assert "boot" in line
+
+    def test_render_line_converts_to_local_timezone(self, tmp_path, monkeypatch):
+        """Fix E — ts stored as UTC; render_line displays in machine local TZ."""
+        import time
+        monkeypatch.setenv("TZ", "Asia/Seoul")
+        time.tzset()
+        events = tmp_path / "events.jsonl"
+        # 07:00 UTC = 16:00 KST
+        ts = datetime(2026, 5, 13, 7, 0, 0, tzinfo=timezone.utc)
+        ev = emit(events, EventType.PHASE_START, "boot", timestamp=ts)
+        line = render_line(ev, color=False)
+        assert "16:00:00" in line, f"expected KST 16:00:00, got: {line}"
+
+    def test_render_line_fallback_on_malformed_ts(self, tmp_path):
+        """Fix E safety — malformed ts must not crash; fall back to raw slice."""
+        ev = {
+            "type": "phase.start",
+            "summary": "x",
+            "ts": "not-a-valid-ts",
+            "level": "highlight",
+        }
+        line = render_line(ev, color=False)
+        # Just verify it doesn't crash and includes the slice fallback
+        assert "phase.start" in line
+        assert "x" in line
 
     def test_includes_glyph_for_typed_events(self, tmp_path):
         ev = emit(tmp_path / "events.jsonl", EventType.PHASE_START, "boot")
