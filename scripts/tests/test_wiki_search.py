@@ -556,3 +556,132 @@ class TestFilterChunksForIncremental:
         new_chunks, new_embs = _filter_chunks_for_incremental(meta, embeddings, {"a.md"})
         assert new_chunks == []
         assert new_embs.shape == (0, 2)
+
+
+class TestCollectPOProjectsIA:
+    """Stage 6b — wiki_search recognizes wiki/PO/projects/{name}/ia/ subdirs."""
+
+    def _make_wiki(self, tmp_path, project_names=None):
+        wiki_dir = tmp_path / ".jarfis-org" / "wiki"
+        for section in ("PO", "DESIGN", "TA", "QA"):
+            (wiki_dir / section).mkdir(parents=True, exist_ok=True)
+            (wiki_dir / section / "_index.md").write_text(
+                "| File | Summary | Projects | Updated |\n"
+                "|------|---------|----------|---------|\n"
+                "| (none) | - | - | - |\n",
+                encoding="utf-8",
+            )
+        if project_names is not None:
+            projects_dir = wiki_dir / "PO" / "projects"
+            projects_dir.mkdir(parents=True, exist_ok=True)
+            for name in project_names:
+                ia_dir = projects_dir / name / "ia"
+                ia_dir.mkdir(parents=True, exist_ok=True)
+                (ia_dir / "manifest.json").write_text(
+                    '{"version":"2.0","project":"' + name + '","pages":[]}\n',
+                    encoding="utf-8",
+                )
+        return wiki_dir
+
+    def test_no_projects_dir_returns_empty(self, tmp_path):
+        """R-15 — pre-Stage-6a orgs have no PO/projects/; helper returns []."""
+        from jarfis.wiki_search import _collect_po_projects_ia
+        self._make_wiki(tmp_path, project_names=None)
+        result = _collect_po_projects_ia(str(tmp_path / ".jarfis-org" / "wiki"))
+        assert result == []
+
+    def test_empty_projects_dir_returns_empty(self, tmp_path):
+        """R-18 — PO/projects/ exists but empty → []."""
+        from jarfis.wiki_search import _collect_po_projects_ia
+        self._make_wiki(tmp_path, project_names=[])
+        result = _collect_po_projects_ia(str(tmp_path / ".jarfis-org" / "wiki"))
+        assert result == []
+
+    def test_lists_projects_with_ia(self, tmp_path):
+        """Each PO/projects/{name}/ia/ directory yields one entry."""
+        from jarfis.wiki_search import _collect_po_projects_ia
+        self._make_wiki(tmp_path, project_names=["alpha", "beta"])
+        result = _collect_po_projects_ia(str(tmp_path / ".jarfis-org" / "wiki"))
+        names = sorted(e["name"] for e in result)
+        assert names == ["alpha", "beta"]
+        # Each entry exposes pages_count for INDEX rendering.
+        for entry in result:
+            assert "pages_count" in entry
+            assert entry["pages_count"] == 0  # empty manifest
+
+    def test_skips_project_without_ia(self, tmp_path):
+        """Project dir without ia/ subdir is ignored (graceful)."""
+        from jarfis.wiki_search import _collect_po_projects_ia
+        wiki_dir = self._make_wiki(tmp_path, project_names=["alpha"])
+        # Add a stray dir without ia/
+        (wiki_dir / "PO" / "projects" / "stray").mkdir()
+        result = _collect_po_projects_ia(str(wiki_dir))
+        names = [e["name"] for e in result]
+        assert "stray" not in names
+        assert "alpha" in names
+
+
+class TestRebuildIndexProjects:
+    """Stage 6b — cmd_rebuild_index renders PO/projects/ sub-list when present."""
+
+    def _seed_wiki(self, tmp_path, project_names=None):
+        wiki_dir = tmp_path / ".jarfis-org" / "wiki"
+        for section in ("PO", "DESIGN", "TA", "QA"):
+            (wiki_dir / section).mkdir(parents=True, exist_ok=True)
+            (wiki_dir / section / "_index.md").write_text(
+                "| File | Summary | Projects | Updated |\n"
+                "|------|---------|----------|---------|\n"
+                "| (none) | - | - | - |\n",
+                encoding="utf-8",
+            )
+        if project_names is not None:
+            projects_dir = wiki_dir / "PO" / "projects"
+            projects_dir.mkdir(parents=True, exist_ok=True)
+            for name in project_names:
+                ia_dir = projects_dir / name / "ia"
+                ia_dir.mkdir(parents=True, exist_ok=True)
+                (ia_dir / "manifest.json").write_text(
+                    '{"version":"2.0","project":"' + name + '","pages":[]}\n',
+                    encoding="utf-8",
+                )
+        return tmp_path
+
+    def test_rebuild_index_no_projects_dir_preserves_layout(self, tmp_path, capsys):
+        """R-15 — pre-Stage-6a INDEX.md still renders cleanly."""
+        from jarfis.wiki_search import cmd_rebuild_index
+        org_root = self._seed_wiki(tmp_path, project_names=None)
+        try:
+            cmd_rebuild_index(str(org_root))
+        except SystemExit:
+            pass
+        capsys.readouterr()  # drain json_output stdout
+        content = (org_root / ".jarfis-org" / "wiki" / "INDEX.md").read_text(encoding="utf-8")
+        assert "### PO/ (0 files)" in content
+        assert "Projects:" not in content  # no sub-list when no projects/ dir
+
+    def test_rebuild_index_with_projects_renders_sublist(self, tmp_path, capsys):
+        """R-16 mitigation — PO section gains a 'Projects:' sub-list."""
+        from jarfis.wiki_search import cmd_rebuild_index
+        org_root = self._seed_wiki(tmp_path, project_names=["alpha", "beta"])
+        try:
+            cmd_rebuild_index(str(org_root))
+        except SystemExit:
+            pass
+        capsys.readouterr()
+        content = (org_root / ".jarfis-org" / "wiki" / "INDEX.md").read_text(encoding="utf-8")
+        # Sub-list line under PO section
+        assert "Projects:" in content
+        assert "alpha" in content
+        assert "beta" in content
+
+    def test_rebuild_index_empty_projects_dir_no_sublist(self, tmp_path, capsys):
+        """R-18 — empty PO/projects/ directory does not emit empty sub-list."""
+        from jarfis.wiki_search import cmd_rebuild_index
+        org_root = self._seed_wiki(tmp_path, project_names=[])
+        try:
+            cmd_rebuild_index(str(org_root))
+        except SystemExit:
+            pass
+        capsys.readouterr()
+        content = (org_root / ".jarfis-org" / "wiki" / "INDEX.md").read_text(encoding="utf-8")
+        assert "Projects:" not in content

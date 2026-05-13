@@ -19,6 +19,8 @@ Create `{org_root}/.jarfis-org/wiki/INDEX.md` with the structure below.
 ### PO/ (0 files)
 Key: (none)
 Details: PO/_index.md
+Projects: project-a (ia: 0 pages), project-b (ia: 12 pages)
+(↑ Stage 6b — auto-rendered when `wiki/PO/projects/{name}/ia/manifest.json` exists; omitted otherwise)
 
 ### DESIGN/ (0 files)
 Key: (none)

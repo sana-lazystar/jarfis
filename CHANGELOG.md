@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.18.0] - 2026-05-13
+
+- implement: IA SSOT Stage 6b — INDEX.md PO/projects/{name}/ia/ sub-list (cmd_rebuild_index scans wiki/PO/projects/, renders Projects line in INDEX.md). **All P0/P1/P2 stages complete; ia-as-po-ssot-v2-spine finished.**
+
 ## [4.17.0] - 2026-05-12
 
 - implement: IA SSOT Stage 8 — ux-direction.md cleanup (IA & URL Structure + Pages sections removed; Pages 디테일 → ia pages/{slug}.md Notes body 흡수; verify.py kebab-case check removed; ia-schema.md Notes sub-headings 명시). **All P0/P1 stages complete.**

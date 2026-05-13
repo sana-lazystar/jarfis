@@ -1219,7 +1219,39 @@ def _parse_section_index(section_index_path):
     return entries
 
 
-def _render_index_md(sections_entries, preserved_design_marker=None):
+def _collect_po_projects_ia(wiki_dir):
+    """Scan wiki/PO/projects/{name}/ia/ subdirs (Stage 6b).
+
+    Returns list[dict] with `name` and `pages_count` for each project that has
+    an `ia/manifest.json`. Empty list when:
+      - `PO/projects/` directory does not exist (pre-Stage-6a orgs; R-15).
+      - `PO/projects/` is empty (R-18).
+      - A project subdir is missing the `ia/` directory (graceful skip).
+
+    pages_count comes from manifest.pages length; non-readable JSON → 0.
+    """
+    projects_dir = os.path.join(wiki_dir, "PO", "projects")
+    if not os.path.isdir(projects_dir):
+        return []
+    out = []
+    for name in sorted(os.listdir(projects_dir)):
+        manifest_path = os.path.join(projects_dir, name, "ia", "manifest.json")
+        if not os.path.isfile(manifest_path):
+            continue
+        pages_count = 0
+        try:
+            with open(manifest_path, "r", encoding="utf-8") as f:
+                manifest = json.load(f)
+            pages = manifest.get("pages") or []
+            if isinstance(pages, list):
+                pages_count = len(pages)
+        except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+            pages_count = 0
+        out.append({"name": name, "pages_count": pages_count})
+    return out
+
+
+def _render_index_md(sections_entries, preserved_design_marker=None, po_projects=None):
     """Render INDEX.md content from parsed section entries.
 
     preserved_design_marker: if the existing INDEX.md had a DESIGN_LAST_UPDATED marker line,
@@ -1267,6 +1299,11 @@ def _render_index_md(sections_entries, preserved_design_marker=None):
             key_files = [e["file"] for e in sorted_entries[:3]]
             lines.append(f"Key: {', '.join(key_files)}")
         lines.append(f"Details: {section}/_index.md")
+        if section == "PO" and po_projects:
+            project_labels = ", ".join(
+                f"{p['name']} (ia: {p['pages_count']} pages)" for p in po_projects
+            )
+            lines.append(f"Projects: {project_labels}")
         lines.append("")
 
     # Preserve DESIGN_LAST_UPDATED marker line (used by Track B sed update)
@@ -1309,9 +1346,15 @@ def cmd_rebuild_index(org_root_str):
         section_index = os.path.join(wiki_dir, section, "_index.md")
         sections_entries[section] = _parse_section_index(section_index)
 
+    po_projects = _collect_po_projects_ia(wiki_dir)
+
     index_path = os.path.join(wiki_dir, "INDEX.md")
     preserved = _extract_design_marker(index_path)
-    rendered = _render_index_md(sections_entries, preserved_design_marker=preserved)
+    rendered = _render_index_md(
+        sections_entries,
+        preserved_design_marker=preserved,
+        po_projects=po_projects,
+    )
 
     try:
         with open(index_path, "w", encoding="utf-8") as f:
@@ -1324,6 +1367,7 @@ def cmd_rebuild_index(org_root_str):
             "status": "ok",
             "sections": {s: len(sections_entries[s]) for s in SECTIONS},
             "total_entries": sum(len(e) for e in sections_entries.values()),
+            "po_projects": po_projects,
             "index_path": index_path,
             "design_marker_preserved": preserved is not None,
         }
