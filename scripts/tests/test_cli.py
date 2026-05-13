@@ -17,9 +17,16 @@ from jarfis import cli, emit
 
 @pytest.fixture
 def active(tmp_path, monkeypatch):
-    """Isolate active.json + provide helpers."""
+    """Isolate active.json + provide helpers.
+
+    Also strips `CLAUDE_CODE_SESSION_ID` from the ambient environment so the
+    Fix A auto-bind logic (cmd_register reads the env var) doesn't pollute
+    pre-existing tests that expect `session_id` to start as None. Tests that
+    *want* to exercise the env path re-set it explicitly via `monkeypatch.setenv`.
+    """
     active_path = tmp_path / "active.json"
     monkeypatch.setenv("JARFIS_ACTIVE_PATH", str(active_path))
+    monkeypatch.delenv("CLAUDE_CODE_SESSION_ID", raising=False)
     return active_path
 
 
@@ -122,6 +129,104 @@ class TestRegister:
     def test_missing_required_args_fail(self, active):
         with pytest.raises(SystemExit):
             cli.main(["register", "--workflow-id=x"])
+
+    # ── Fix A — session_id auto-bind at register time (CLAUDE_CODE_SESSION_ID) ──
+
+    def test_register_binds_session_id_from_arg(self, active, docs_dir, monkeypatch):
+        monkeypatch.delenv("CLAUDE_CODE_SESSION_ID", raising=False)
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+                "--session-id=sid-abc",
+            ]
+        )
+        wf = cli._read_active()["workflows"][0]
+        assert wf["session_id"] == "sid-abc"
+
+    def test_register_binds_session_id_from_env(self, active, docs_dir, monkeypatch):
+        monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "sid-env")
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+            ]
+        )
+        wf = cli._read_active()["workflows"][0]
+        assert wf["session_id"] == "sid-env"
+
+    def test_register_arg_overrides_env(self, active, docs_dir, monkeypatch):
+        monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "sid-env")
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+                "--session-id=sid-arg",
+            ]
+        )
+        wf = cli._read_active()["workflows"][0]
+        assert wf["session_id"] == "sid-arg"
+
+    def test_register_session_id_none_when_neither(self, active, docs_dir, monkeypatch):
+        monkeypatch.delenv("CLAUDE_CODE_SESSION_ID", raising=False)
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+            ]
+        )
+        wf = cli._read_active()["workflows"][0]
+        assert wf.get("session_id") is None
+
+    def test_register_empty_session_id_normalized_to_none(
+        self, active, docs_dir, monkeypatch
+    ):
+        # Empty string from either source should normalize to None
+        monkeypatch.setenv("CLAUDE_CODE_SESSION_ID", "")
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+                "--session-id=",
+            ]
+        )
+        wf = cli._read_active()["workflows"][0]
+        assert wf.get("session_id") is None
+
+    def test_register_dedupe_updates_session_id_when_new_value_provided(
+        self, active, docs_dir, monkeypatch
+    ):
+        # First register without session_id, second register with → update
+        monkeypatch.delenv("CLAUDE_CODE_SESSION_ID", raising=False)
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+            ]
+        )
+        assert cli._read_active()["workflows"][0]["session_id"] is None
+        cli.main(
+            [
+                "register",
+                "--workflow-id=wf1",
+                "--skill=s",
+                f"--docs-dir={docs_dir}",
+                "--session-id=sid-new",
+            ]
+        )
+        assert cli._read_active()["workflows"][0]["session_id"] == "sid-new"
 
 
 # ---------------------------------------------------------------- unregister
@@ -436,11 +541,56 @@ class TestRenderStatusline:
         out = self._run(stdin, capsys, monkeypatch)
         assert out.strip() == "FALLBACK"
 
-    def test_fallback_when_cwd_unrelated(self, active, docs_dir, capsys, monkeypatch, tmp_path):
+    def test_render_drift_marker_when_cwd_unrelated(
+        self, active, docs_dir, capsys, monkeypatch, tmp_path
+    ):
+        """Fix C — cwd 매칭 실패 + session_id 매칭 실패 시 FALLBACK 대신
+        latest-by-started_at workflow header + body events, header 끝에 `· drift`."""
         cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
+        d2 = tmp_path / "d2"
+        d2.mkdir()
+        cli.main(["register", "--workflow-id=wf-2", "--skill=work", f"--docs-dir={d2}"])
+        cli.main(["emit", "--workflow-id=wf-2", "--type=phase.start", "--summary=newer-evt"])
         unrelated = tmp_path / "unrelated"
         unrelated.mkdir()
-        stdin = self._stdin("sess-x", str(unrelated))
+        # Session id that doesn't match either workflow + cwd not an ancestor
+        stdin = self._stdin("sess-orphan", str(unrelated))
+        out = self._run(stdin, capsys, monkeypatch)
+        assert out.strip() != "FALLBACK"
+        lines = out.rstrip("\n").split("\n")
+        # Latest registered = wf-2 (later started_at), so header shows wf-2
+        assert "wf-2" in lines[0]
+        assert "drift" in lines[0]
+        # Body should show events from wf-2
+        assert "newer-evt" in out
+
+    def test_render_no_drift_when_cwd_match(
+        self, active, docs_dir, capsys, monkeypatch
+    ):
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
+        stdin = self._stdin("sess-A", str(docs_dir))
+        out = self._run(stdin, capsys, monkeypatch)
+        lines = out.rstrip("\n").split("\n")
+        assert "drift" not in lines[0]
+
+    def test_render_no_drift_when_session_id_match(
+        self, active, docs_dir, capsys, monkeypatch, tmp_path
+    ):
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
+        # Bind session via first render under matching cwd
+        self._run(self._stdin("sess-X", str(docs_dir)), capsys, monkeypatch)
+        capsys.readouterr()  # drain
+        # Now cd to unrelated dir — but session_id still matches
+        elsewhere = tmp_path / "elsewhere"
+        elsewhere.mkdir()
+        out = self._run(self._stdin("sess-X", str(elsewhere)), capsys, monkeypatch)
+        lines = out.rstrip("\n").split("\n")
+        assert "drift" not in lines[0]
+        assert "wf-1" in lines[0]
+
+    def test_render_fallback_when_no_workflows(self, active, capsys, monkeypatch):
+        # Empty active.json (no registered workflows) → FALLBACK (drift makes no sense)
+        stdin = self._stdin("sess-1", "/tmp/anywhere")
         out = self._run(stdin, capsys, monkeypatch)
         assert out.strip() == "FALLBACK"
 

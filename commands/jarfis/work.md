@@ -134,6 +134,7 @@ For each tmux phase:
      --prompt {prompt_path} \
      --result {result_path} \
      --workspace {docsDir} \
+     --workflow-id {workflow_id} \
      --save-pane {docsDir}/phase-results/phase{phase_id}/attempt{K}.pane.log
    ```
    - Append `--mcp-config ~/.claude/.mcp.json` only if the M6 MCP inheritance check falls back (M1 Step 1.4 Scenario 2 outcome).

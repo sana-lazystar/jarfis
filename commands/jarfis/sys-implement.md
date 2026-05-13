@@ -385,6 +385,7 @@ python3 ~/.claude/scripts/jarfis_cli.py implement state {plan-name} --set execut
      --prompt {planDir}/step2-prompt.md \
      --result {planDir}/phase-results/step2/attempt{K}.json \
      --workspace $(cat ~/.claude/.jarfis-source) \
+     --workflow-id "sys-impl:{plan-name}" \
      --save-pane {planDir}/phase-results/step2/attempt{K}.pane.log
    ```
    `tmux_claude.py` has no `--timeout` (v4.13 — tmux-claude-completion-signal-v1). Parent waits on `{result}.done` sentinel; idle watchdog catches sub-Claude that fails to emit the sentinel.

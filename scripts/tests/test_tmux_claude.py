@@ -201,6 +201,66 @@ class TestCleanupRemovesSentinelAndTmp:
         assert not result_path.exists()
 
 
+class TestCreateSessionEnvPropagation:
+    """Fix B — `create_session` injects `JARFIS_WORKFLOW` env into tmux."""
+
+    def test_create_session_injects_workflow_env(self, monkeypatch):
+        captured = {}
+
+        def fake_run(cmd, check=False):
+            captured["cmd"] = cmd
+            class R:
+                returncode = 0
+            return R()
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        tmux_claude.create_session(
+            name="jf-test-phase1",
+            workspace="/tmp/ws",
+            workflow_id="wf-xyz",
+        )
+        cmd = captured["cmd"]
+        assert "-e" in cmd
+        # `-e VAR=value` pair must be present
+        idx = cmd.index("-e")
+        assert cmd[idx + 1] == "JARFIS_WORKFLOW=wf-xyz"
+
+    def test_create_session_omits_env_when_workflow_id_absent(self, monkeypatch):
+        captured = {}
+
+        def fake_run(cmd, check=False):
+            captured["cmd"] = cmd
+            class R:
+                returncode = 0
+            return R()
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        tmux_claude.create_session(name="jf-test-phase1", workspace="/tmp/ws")
+        cmd = captured["cmd"]
+        # No JARFIS_WORKFLOW present
+        assert not any(
+            isinstance(arg, str) and arg.startswith("JARFIS_WORKFLOW=") for arg in cmd
+        )
+
+    def test_create_session_omits_env_when_workflow_id_empty_string(self, monkeypatch):
+        captured = {}
+
+        def fake_run(cmd, check=False):
+            captured["cmd"] = cmd
+            class R:
+                returncode = 0
+            return R()
+
+        monkeypatch.setattr(subprocess, "run", fake_run)
+        tmux_claude.create_session(
+            name="jf-test-phase1", workspace="/tmp/ws", workflow_id=""
+        )
+        cmd = captured["cmd"]
+        assert not any(
+            isinstance(arg, str) and arg.startswith("JARFIS_WORKFLOW=") for arg in cmd
+        )
+
+
 class TestDeprecatedTimeoutRemoved:
     def test_default_timeout_constant_removed(self):
         assert not hasattr(tmux_claude, "DEFAULT_TIMEOUT"), (

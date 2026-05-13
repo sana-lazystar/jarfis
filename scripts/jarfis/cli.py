@@ -114,8 +114,40 @@ def _err(msg: str, code: int = 1) -> None:
 # ---------------------------------------------------------------- subcommands
 
 
+def _resolve_session_id(ns: argparse.Namespace) -> str | None:
+    """Pick session_id with priority: --session-id arg > $CLAUDE_CODE_SESSION_ID > None.
+
+    Empty strings (from either source) normalize to None so the entry stores a
+    real value or nothing — never `""`.
+    """
+    arg_val = getattr(ns, "session_id", None)
+    if arg_val:  # non-empty string wins
+        return arg_val
+    env_val = os.environ.get("CLAUDE_CODE_SESSION_ID", "")
+    return env_val or None
+
+
 def cmd_register(ns: argparse.Namespace) -> int:
+    """Register a workflow in active.json.
+
+    Fix A — session_id is bound at register time when available:
+      priority = --session-id arg > $CLAUDE_CODE_SESSION_ID env > None.
+    On dedupe replace, if the new invocation supplies a session_id but the
+    prior entry had none, the new value wins (update). If neither side has
+    a value, session_id stays None — left for statusline auto-bind (D9 step 2).
+    """
+    resolved_session = _resolve_session_id(ns)
+
     data = _read_active()
+    # Carry forward an existing session_id only when the new register call
+    # didn't supply one (resolved_session is None). When both exist, new wins.
+    prior = next(
+        (w for w in data["workflows"] if w.get("workflow_id") == ns.workflow_id),
+        None,
+    )
+    if resolved_session is None and prior is not None and prior.get("session_id"):
+        resolved_session = prior["session_id"]
+
     data["workflows"] = [
         w for w in data["workflows"] if w.get("workflow_id") != ns.workflow_id
     ]
@@ -124,7 +156,7 @@ def cmd_register(ns: argparse.Namespace) -> int:
             "workflow_id": ns.workflow_id,
             "skill": ns.skill,
             "docs_dir": str(Path(ns.docs_dir).expanduser().resolve()),
-            "session_id": None,
+            "session_id": resolved_session,
             "tmux_session": ns.tmux_session,
             "started_at": _now_iso(),
         }
@@ -320,6 +352,7 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
 
     # 1. session_id match (preferred — survives cwd drift, D9 step 3)
     matched: dict[str, Any] | None = None
+    drift = False
     if session_id:
         for wf in data["workflows"]:
             if wf.get("session_id") == session_id:
@@ -342,9 +375,17 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
         elif wf is not None:
             matched = wf
 
+    # 3. Fix C — drift fallback. Neither session_id nor cwd matched, but the
+    #    registry is non-empty. Show the most recently started workflow with a
+    #    `· drift` marker instead of FALLBACK-ing to the original statusline.
+    #    Rationale: users still benefit from seeing *some* JARFIS context even
+    #    when their shell cwd has drifted away from the docs_dir (e.g. working
+    #    in a sibling project dir).
     if matched is None:
-        print("FALLBACK")
-        return 0
+        matched = max(
+            data["workflows"], key=lambda w: w.get("started_at", "")
+        )
+        drift = True
 
     # Header — purple bold
     active_count = len(data["workflows"])
@@ -352,6 +393,8 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
     header = (
         f"JARFIS · {active_count} active · ←{matched['workflow_id']} · {elapsed}"
     )
+    if drift:
+        header = f"{header} · drift"
     use_color = sys.stdout.isatty() and not getattr(ns, "no_color", False)
     if use_color:
         print(f"{ANSI[Level.HIGHLIGHT]}{header}{ANSI_RESET}")
@@ -424,6 +467,12 @@ def _build_parser() -> argparse.ArgumentParser:
     pr.add_argument("--skill", required=True, help="work / work-meeting / sys-implement / ...")
     pr.add_argument("--docs-dir", required=True, help="Workflow docs dir (events.jsonl parent)")
     pr.add_argument("--tmux-session", default=None)
+    pr.add_argument(
+        "--session-id",
+        default=None,
+        help="Bind Claude Code session id at register time (Fix A — event-stream-v2). "
+             "Fallback: $CLAUDE_CODE_SESSION_ID env. Empty → None.",
+    )
     pr.set_defaults(func=cmd_register)
 
     pu = sub.add_parser("unregister", help="Remove a workflow from active.json")

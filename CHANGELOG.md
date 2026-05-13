@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.20.1] - 2026-05-13
+
+- implement: event-stream-v2 — D9 step 3 explicit bind + tmux env propagation + drift fallback + padding cleanup
+
 ## [4.20.0] - 2026-05-13
 
 - implement: add /jarfis:design-spec skill + unify supplied-mode token filename SSOT

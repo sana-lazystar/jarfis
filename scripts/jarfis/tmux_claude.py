@@ -51,20 +51,35 @@ TMUX_SIZE = (200, 50)
 AGENT_NAME = "jarfis-foreman"
 
 
-def create_session(name: str, workspace: str, mcp_config: str | None = None) -> None:
+def create_session(
+    name: str,
+    workspace: str,
+    mcp_config: str | None = None,
+    workflow_id: str | None = None,
+) -> None:
     """tmux 세션 생성. `-c workspace`로 working directory 지정.
-    새 세션 내에서 바로 Claude 실행 (경쟁 조건 회피)."""
+    새 세션 내에서 바로 Claude 실행 (경쟁 조건 회피).
+
+    Fix B (event-stream-v2) — `workflow_id` truthy 면 `tmux new-session -e
+    JARFIS_WORKFLOW={workflow_id}` 로 env 를 sub-Claude 쪽에 주입한다.
+    `jarfis-emit-tool.sh` 가 이 env 를 가드로 사용하므로 inject 가 빠지면
+    sub-Claude emit 이 silent no-op 가 된다 (events.jsonl 손실).
+    """
     cmd = [
         "tmux", "new-session", "-d",
         "-s", name,
         "-x", str(TMUX_SIZE[0]),
         "-y", str(TMUX_SIZE[1]),
         "-c", workspace,
+    ]
+    if workflow_id:
+        cmd.extend(["-e", f"JARFIS_WORKFLOW={workflow_id}"])
+    cmd.extend([
         "--",
         "claude",
         "--agent", AGENT_NAME,
         "--dangerously-skip-permissions",
-    ]
+    ])
     if mcp_config:
         cmd.extend(["--mcp-config", mcp_config])
     subprocess.run(cmd, check=True)
@@ -301,6 +316,13 @@ def main():
                    help="결과 JSON 경로 (예: phase-results/phase3/attempt1.json)")
     p.add_argument("--workspace", required=True, help="작업 디렉토리 (일반적으로 docsDir)")
     p.add_argument("--mcp-config", default=None, help="MCP 설정 파일 (선택, 글로벌 미상속 시)")
+    p.add_argument(
+        "--workflow-id",
+        default=None,
+        help="(선택) JARFIS workflow_id. 주어지면 tmux new-session -e "
+             "JARFIS_WORKFLOW={id} 로 env 주입 → sub-Claude의 emit hook 활성화. "
+             "Fix B (event-stream-v2).",
+    )
     p.add_argument("--save-pane", default=None,
                    help="(선택) tmux 세션 종료 직전 pane 전체 스크롤백을 "
                         "해당 경로에 저장. 캡처 실패해도 phase 결과엔 영향 없음. "
@@ -328,7 +350,12 @@ def main():
     cleanup_result_files(args.result)
 
     # 3. 세션 생성
-    create_session(args.name, args.workspace, args.mcp_config)
+    create_session(
+        args.name,
+        args.workspace,
+        args.mcp_config,
+        workflow_id=args.workflow_id,
+    )
 
     # 4. Claude 준비 대기
     if not wait_for_ready(args.name):
