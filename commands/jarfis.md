@@ -30,6 +30,8 @@ Display the following as-is:
     Run full workflow (plan → design → implement → review → retrospective)
   /jarfis:wiki-storyboard                          [Org]
     Browse the service-wide design catalog
+  /jarfis:design-spec
+    Print the supplied-mode design artifact spec (copy & forward to a designer/outsourcer)
 
   /jarfis:search [--meetings] [--works] [--wiki] query  [Org]
     Unified semantic search (meetings + works + wiki)

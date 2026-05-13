@@ -564,7 +564,7 @@ and presents Gate 2.
     {slug-2}/index.html
     {slug-2}/reference.png
   assets/                            (이미지/폰트/아이콘 — 시안 HTML 에서 상대경로 참조)
-  tokens.json                        (선택)
+  token-map.json                     (선택; 다른 모드와 동일 파일명 — phase4.md:35,204 가 그대로 소비)
   sitemap.md                         (선택)
   ia.json                            (선택)
 ```
@@ -646,7 +646,7 @@ echo '</ul></body></html>' >> _index.html
     "suppliedPath": "$SUPPLIED_PATH",
     "responsive_captured": ["mobile","tablet" 등],
     "responsive_supplied": ["mobile","tablet" 등],
-    "tokens_json_present": true,
+    "token_map_present":   true,
     "sitemap_md_present":  true,
     "ia_json_present":     true,
     "brand_assets_dir":    "$BRAND_ASSETS_DIR"
@@ -656,7 +656,7 @@ echo '</ul></body></html>' >> _index.html
 
 > `responsive_supplied` 는 시안에 동봉되어 있던 캡처 타겟 목록. `responsive_captured` 는 jarfis-foreman 이 Playwright 로 새로 만든 타겟 목록. 둘은 disjoint.
 >
-> `tokens_json_present` / `sitemap_md_present` / `ia_json_present` 는 단순 boolean — 파일 존재 여부만 기록한다. **자동 생성 금지** (Critic blocker #3 흡수).
+> `token_map_present` / `sitemap_md_present` / `ia_json_present` 는 단순 boolean — 파일 존재 여부만 기록한다. **자동 생성 금지** (Critic blocker #3 흡수).
 >
 > `brand_assets_dir` 가 비어있으면 `null`.
 

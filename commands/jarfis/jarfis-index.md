@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-13 | Version: 4.19.1
+> Do not edit manually. Last updated: 2026-05-13 | Version: 4.20.0
 
 ## File Structure
 ```
@@ -23,6 +23,7 @@
     ├── org.md                     # Full organization list — orgs.json + unregistered Org auto-discovery + CWD highlight (98 lines)
     ├── org-init.md                # Organization initialization — scan + wiki creation + semantic index guide (115 lines)
     ├── wiki-storyboard.md         # Design catalog browsing command (50 lines)
+    ├── design-spec.md             # Supplied-mode design artifact spec brief — copy & forward to designer/outsourcer (output-only; sourced from prompts/phase3.md:537-668 + phase3.md:7-15 Triple SSOT; v4.20.0) (244 lines)
     ├── search.md                  # Semantic unified search — meetings/works/wiki/jarfis filtering + low-memory LLM fallback (94 lines; +jarfis scope v4.2.0)
     ├── search-setup.md            # Semantic search installation — venv + sentence-transformers one-step (59 lines)
     ├── search-index.md            # Full Org semantic index batch creation/refresh — wiki+meetings+works+jarfis + incremental + memory guard (137 lines; +jarfis scope v4.2.0)
@@ -32,7 +33,7 @@
     ├── prompts/                   # Externalized phase prompts — loaded by jarfis-foreman inside the phase's tmux session
     │   ├── phase1b.md             # Phase 1b Discovery Processing — PO + TA artifacts (tmux; Phase 1a runs in main as PO dialogue) (184 lines)
     │   ├── phase2.md              # Phase 2 Architecture & Planning — runs in parallel with phase3 under separate tmux sessions (173 lines)
-    │   ├── phase3.md              # Phase 3 Design (figma + text unified) — parallel multi-page processing, per-section v5 generation + Triple SSOT contract (reference.png=visual / index.html=markup / token-map.json=design-token authority + mode-specific reference.png origin; v4.19.1) (714 lines)
+    │   ├── phase3.md              # Phase 3 Design (figma + text unified) — parallel multi-page processing, per-section v5 generation + Triple SSOT contract (reference.png=visual / index.html=markup / token-map.json=design-token authority + mode-specific reference.png origin; v4.19.1) + supplied-mode token filename SSOT unified (tokens.json → token-map.json, tokens_json_present → token_map_present; v4.20.0) (714 lines)
     │   ├── phase4.md              # Phase 4 Implementation — parallel BE/FE/DevOps + security pre-review + TDD Step 4-0.5 + TDD Ratchet (conditional on $TDD_ENABLED) (320 lines)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness — DevOps-owned, `phase_id = "4-5"` (117 lines)
     │   ├── phase5.md              # Phase 5 Review & QA — review_round loop + pattern-detect + Phase 4 Agent Status injection + Learning Candidate Detection + Step 5-5 Host Smoke Test (per-scope `type ∈ {desktop,mobile,frontend}` OR profile `Host Smoke: required`; `host_smoke_max_attempts=2`; fabricate 금지) (841 lines; +Step 5-5 v4.8.0 phase5-host-smoke-test-v1)
@@ -102,6 +103,7 @@
 | `/jarfis:org` | `jarfis/org.md` | Full registered Org list (orgs.json based, CWD highlight) |
 | `/jarfis:org-init` | `jarfis/org-init.md` | Organization initialization (scan + wiki creation) |
 | `/jarfis:wiki-storyboard` | `jarfis/wiki-storyboard.md` | Design catalog browsing (wiki/DESIGN → browser) |
+| `/jarfis:design-spec` | `jarfis/design-spec.md` | Supplied-mode design artifact spec — render brief to screen (copy & forward to external worker; output-only, locale-aware) |
 | `/jarfis:search` | `jarfis/search.md` | Semantic unified search (meetings+works+wiki, filterable) |
 | `/jarfis:search-setup` | `jarfis/search-setup.md` | Semantic search installation (venv + sentence-transformers one-step) |
 | `/jarfis:search-index` | `jarfis/search-index.md` | Full Org semantic index batch creation/refresh (wiki+meetings+works) |
