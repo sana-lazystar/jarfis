@@ -4,7 +4,15 @@
 > jarfis-foreman is the **orchestrator**: spawns ux-designer (and PO for review rounds) via Task. It does NOT read figma-spec YAML or design HTML itself — those belong to the sub-agent.
 > Minimal orchestrator-only work: `cp` of existing token-map baseline (text mode), `jq` on state.
 > All sub-agent artifacts in English. User-facing messages in $LOCALE.
-> Output contract is identical across modes: `$DOCS_DIR/design/{page_path}/index.html` + `reference*.png`.
+> Output contract is identical across modes — **Triple SSOT** (each artifact owns a distinct authority; downstream phases consume them by role, not interchangeably):
+>   - `reference*.png` → **visual authority** — pixel-diff baseline for `compare_design` MCP (Phase 5 regression detection, `phase5.md:342`). LLMs do NOT read PNG directly; the MCP reducer returns diff% + diff-image path.
+>   - `index.html` → **markup authority** — LLM-readable structural reference. Consumed directly by frontend in Phase 4 (`phase4.md:35`) and as supplementary comparison in Phase 5 (`phase5.md:343, 361-364`).
+>   - `token-map.json` → **design-token authority** — color/typography mappings; takes precedence over raw hex during FE implementation (`phase4.md:204`).
+>
+> Mode-specific origin of `reference*.png`:
+>   - figma mode: downloaded via Framelink (external Figma = upstream truth; `phase3.md:88-90`).
+>   - text mode: Playwright fullPage screenshot of `index.html` — HTML is authoring medium, PNG is frozen visual authority (circular but intentional; `phase3.md:426-428`).
+>   - supplied mode: provided by user as immutable input (`jarfis-index.md:319`; HTML + PNG both untouched).
 
 **Execution context**:
 - `$DOCS_DIR` = tmux workspace

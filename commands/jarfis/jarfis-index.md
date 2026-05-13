@@ -1,7 +1,7 @@
 # JARFIS System Index
 
 > This file is automatically read when `/jarfis:sys-implement` runs and auto-updated after modifications.
-> Do not edit manually. Last updated: 2026-05-13 | Version: 4.19.0
+> Do not edit manually. Last updated: 2026-05-13 | Version: 4.19.1
 
 ## File Structure
 ```
@@ -32,7 +32,7 @@
     ├── prompts/                   # Externalized phase prompts — loaded by jarfis-foreman inside the phase's tmux session
     │   ├── phase1b.md             # Phase 1b Discovery Processing — PO + TA artifacts (tmux; Phase 1a runs in main as PO dialogue) (184 lines)
     │   ├── phase2.md              # Phase 2 Architecture & Planning — runs in parallel with phase3 under separate tmux sessions (173 lines)
-    │   ├── phase3.md              # Phase 3 Design (figma + text unified) — parallel multi-page processing, per-section v5 generation (546 lines)
+    │   ├── phase3.md              # Phase 3 Design (figma + text unified) — parallel multi-page processing, per-section v5 generation + Triple SSOT contract (reference.png=visual / index.html=markup / token-map.json=design-token authority + mode-specific reference.png origin; v4.19.1) (714 lines)
     │   ├── phase4.md              # Phase 4 Implementation — parallel BE/FE/DevOps + security pre-review + TDD Step 4-0.5 + TDD Ratchet (conditional on $TDD_ENABLED) (320 lines)
     │   ├── phase4-5.md            # Phase 4.5 Operational Readiness — DevOps-owned, `phase_id = "4-5"` (117 lines)
     │   ├── phase5.md              # Phase 5 Review & QA — review_round loop + pattern-detect + Phase 4 Agent Status injection + Learning Candidate Detection + Step 5-5 Host Smoke Test (per-scope `type ∈ {desktop,mobile,frontend}` OR profile `Host Smoke: required`; `host_smoke_max_attempts=2`; fabricate 금지) (841 lines; +Step 5-5 v4.8.0 phase5-host-smoke-test-v1)

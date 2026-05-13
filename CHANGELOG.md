@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.19.1] - 2026-05-13
+
+- implement: triple SSOT contract clarification in phase3.md L7
+
 ## [4.19.0] - 2026-05-13
 
 - implement: event stream v1.0 + multi-line statusline (D1~D10 lockdown, EventType enum 10, active.json D8 registry, cwd→session_id D9 auto-bind, foreman/skill markdown D10 emit producers)
