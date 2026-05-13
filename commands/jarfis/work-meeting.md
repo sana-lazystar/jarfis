@@ -86,7 +86,9 @@ engaging in free-form discussion with the user to explore and refine ideas.
    Show a banner with: meeting name, attendees (PO/TL), commands ("summarize" → interim summary, "wrap up"/"done"/"end" → close + generate artifacts), and auto-summoning of experts.
    - If `$PREV_MEETING_NAME` is set, include "Previous meeting reference: $PREV_MEETING_NAME" in the banner.
 
-6. **Event Stream register (event-stream-v1, D10)** — register the meeting in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort:
+6. **Event Stream register (event-stream-v1+v4, D10)** — register the meeting in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort.
+
+   **`--show-tools` opt-in (event-stream-v4)**: if the user invocation includes the `--show-tools` flag (e.g. `/jarfis:work-meeting --show-tools <args>`), append `--show-tools` to the register call below. Default: omit.
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py register \
      --workflow-id="$MEETING_NAME" --skill=work-meeting --docs-dir="$MEETING_DIR" \

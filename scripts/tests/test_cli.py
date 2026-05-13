@@ -627,18 +627,18 @@ class TestRenderStatusline:
         assert "wf-1" in out
 
     def test_body_includes_last_5_events_filtered(self, active, docs_dir, capsys, monkeypatch):
+        """Default filter: HIGHLIGHT + INFO shown, DEBUG (incl. TOOL via v4) hidden."""
         cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
         cli.main(["emit", "--workflow-id=wf-1", "--type=phase.start", "--summary=p"])
         for i in range(7):
-            cli.main(["emit", "--workflow-id=wf-1", "--type=tool", f"--summary=t{i}"])
-        cli.main(["emit", "--workflow-id=wf-1", "--type=tool", "--summary=debug-only", "--level=debug"])
+            cli.main(["emit", "--workflow-id=wf-1", "--type=agent.spawn", f"--summary=a{i}"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=tool", "--summary=tool-hidden"])
         out = self._run(self._stdin("sess-1", str(docs_dir)), capsys, monkeypatch)
-        # Only last 5 highlight+info events shown (debug filtered)
-        # Total events: phase.start + 7×tool + 1×debug-tool = 9, after filter = 8 → last 5 = t3,t4,t5,t6
-        assert "t3" in out
-        assert "t6" in out
-        assert "debug-only" not in out  # filtered
-        assert "t0" not in out  # trimmed (only last 5)
+        # Total HIGHLIGHT+INFO events: phase.start + 7×agent.spawn = 8 → last 5 = a2..a6
+        assert "a3" in out
+        assert "a6" in out
+        assert "tool-hidden" not in out  # TOOL is DEBUG (v4) — filtered
+        assert "a0" not in out  # trimmed (only last 5)
 
     def test_header_shows_active_count(self, active, tmp_path, capsys, monkeypatch):
         d1 = tmp_path / "d1"
@@ -660,3 +660,42 @@ class TestRenderStatusline:
         out = self._run(self._stdin("sess-1", str(docs_dir)), capsys, monkeypatch)
         lines = out.rstrip("\n").split("\n")
         assert len(lines) == 6  # always 6 — pad with blank if <5 events
+
+    # ----- event-stream-v4: --show-tools opt-in (Fix G) -----
+
+    def test_register_show_tools_flag_sets_field(self, active, docs_dir):
+        """Fix G — register --show-tools sets show_tools=True on active.json entry."""
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work",
+                  f"--docs-dir={docs_dir}", "--show-tools"])
+        data = json.loads(active.read_text())
+        entry = next(w for w in data["workflows"] if w["workflow_id"] == "wf-1")
+        assert entry["show_tools"] is True
+
+    def test_register_without_show_tools_defaults_false(self, active, docs_dir):
+        """Default: show_tools=False (tool events filtered from statusline)."""
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
+        data = json.loads(active.read_text())
+        entry = next(w for w in data["workflows"] if w["workflow_id"] == "wf-1")
+        assert entry["show_tools"] is False
+
+    def test_render_filters_tool_when_show_tools_false(self, active, docs_dir, capsys, monkeypatch):
+        """Default — TOOL events (DEBUG level, v4 Fix F) hidden from statusline body."""
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work", f"--docs-dir={docs_dir}"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=phase.start", "--summary=boot"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=tool", "--summary=Bash: ls"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=tool", "--summary=Bash: pwd"])
+        out = self._run(self._stdin("sess-A", str(docs_dir)), capsys, monkeypatch)
+        # phase.start (highlight) shown, tool events (debug) hidden
+        assert "boot" in out
+        assert "Bash: ls" not in out
+        assert "Bash: pwd" not in out
+
+    def test_render_shows_tool_when_show_tools_true(self, active, docs_dir, capsys, monkeypatch):
+        """Opt-in — register --show-tools → statusline body includes DEBUG (tool) events."""
+        cli.main(["register", "--workflow-id=wf-1", "--skill=work",
+                  f"--docs-dir={docs_dir}", "--show-tools"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=phase.start", "--summary=boot"])
+        cli.main(["emit", "--workflow-id=wf-1", "--type=tool", "--summary=Bash: ls"])
+        out = self._run(self._stdin("sess-A", str(docs_dir)), capsys, monkeypatch)
+        assert "boot" in out
+        assert "Bash: ls" in out

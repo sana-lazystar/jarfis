@@ -82,11 +82,11 @@ class TestDefaultLevel:
         ):
             assert DEFAULT_LEVEL[et] == Level.HIGHLIGHT
 
-    def test_agent_tool_note_are_info(self):
+    def test_agent_note_are_info(self):
+        """v4 Fix F — TOOL was moved to DEBUG; AGENT_SPAWN/AGENT_DONE/NOTE remain INFO."""
         for et in (
             EventType.AGENT_SPAWN,
             EventType.AGENT_DONE,
-            EventType.TOOL,
             EventType.NOTE,
         ):
             assert DEFAULT_LEVEL[et] == Level.INFO
@@ -121,6 +121,19 @@ class TestGlyphMapping:
     def test_info_types_have_no_glyph(self):
         for et in (EventType.AGENT_SPAWN, EventType.AGENT_DONE, EventType.TOOL, EventType.NOTE):
             assert GLYPH[et] == ""
+
+    def test_tool_default_level_is_debug_v4(self):
+        """event-stream-v4 Fix F — TOOL 의 default level 은 DEBUG (회색).
+        statusline body 의 기본 filter ({HIGHLIGHT, INFO}) 에서 자동 제외."""
+        from jarfis.emit import DEFAULT_LEVEL
+        assert DEFAULT_LEVEL[EventType.TOOL] == Level.DEBUG
+
+    def test_other_info_types_unchanged_v4(self):
+        """AGENT_SPAWN, AGENT_DONE, NOTE 는 INFO 유지 (statusline 표시 가치)."""
+        from jarfis.emit import DEFAULT_LEVEL
+        assert DEFAULT_LEVEL[EventType.AGENT_SPAWN] == Level.INFO
+        assert DEFAULT_LEVEL[EventType.AGENT_DONE] == Level.INFO
+        assert DEFAULT_LEVEL[EventType.NOTE] == Level.INFO
 
 
 class TestANSI:
@@ -375,14 +388,19 @@ class TestTailEvents:
     def test_filters_by_level_set(self, tmp_path):
         events = tmp_path / "events.jsonl"
         emit(events, EventType.PHASE_START, "p-start")  # highlight
-        emit(events, EventType.TOOL, "t1")  # info
-        emit(events, EventType.TOOL, "t2", level="debug")  # debug
+        emit(events, EventType.AGENT_SPAWN, "a")  # info
+        emit(events, EventType.TOOL, "t1")  # debug (v4: TOOL default = DEBUG)
+        emit(events, EventType.TOOL, "t2", level="debug")  # debug explicit
         emit(events, EventType.PHASE_END, "p-end")  # highlight
 
-        # Statusline shows highlight + info, hides debug
+        # Default statusline filter shows highlight + info, hides debug
         result = tail_events(events, n=10, levels={Level.HIGHLIGHT, Level.INFO})
-        assert len(result) == 3
+        assert len(result) == 3  # 2 highlight + 1 info (AGENT_SPAWN)
         assert all(e["level"] in ("highlight", "info") for e in result)
+
+        # With show_tools=True, DEBUG also included
+        result_with_debug = tail_events(events, n=10, levels={Level.HIGHLIGHT, Level.INFO, Level.DEBUG})
+        assert len(result_with_debug) == 5  # all events
 
     def test_filter_with_string_levels(self, tmp_path):
         events = tmp_path / "events.jsonl"

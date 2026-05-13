@@ -159,6 +159,7 @@ def cmd_register(ns: argparse.Namespace) -> int:
             "session_id": resolved_session,
             "tmux_session": ns.tmux_session,
             "started_at": _now_iso(),
+            "show_tools": bool(getattr(ns, "show_tools", False)),
         }
     )
     _write_active(data)
@@ -398,7 +399,9 @@ def cmd_render_statusline(ns: argparse.Namespace) -> int:
     # Body — last 5 highlight+info events; pad to 5 lines
     events_path = Path(matched["docs_dir"]) / "events.jsonl"
     events = tail_events(
-        events_path, n=5, levels={Level.HIGHLIGHT, Level.INFO}
+        events_path, n=5, levels=({Level.HIGHLIGHT, Level.INFO, Level.DEBUG}
+                              if matched.get("show_tools")
+                              else {Level.HIGHLIGHT, Level.INFO})
     )
     for ev in events:
         print(render_line(ev, color=use_color))
@@ -466,6 +469,13 @@ def _build_parser() -> argparse.ArgumentParser:
         default=None,
         help="Bind Claude Code session id at register time (Fix A — event-stream-v2). "
              "Fallback: $CLAUDE_CODE_SESSION_ID env. Empty → None.",
+    )
+    pr.add_argument(
+        "--show-tools",
+        action="store_true",
+        help="Show tool events in statusline body (event-stream-v4). "
+             "Default: False — TOOL is DEBUG and filtered out. "
+             "Tool events are always recorded in events.jsonl regardless (tail -a still works).",
     )
     pr.set_defaults(func=cmd_register)
 

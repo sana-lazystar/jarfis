@@ -64,6 +64,7 @@ steps. All later step outputs go under `{planDir}/artifacts/step{N}/`.
 
 **Event Stream register (event-stream-v1, D10)** — register the plan in `~/.jarfis/active.json` and emit the workflow-level `phase.start` so the multi-line statusline begins rendering. Both calls are best-effort:
 
+**`--show-tools` opt-in (event-stream-v4)**: if the user invocation includes the `--show-tools` flag (e.g. `/jarfis:sys-implement --show-tools <args>`), append `--show-tools` to the register call below. Default: omit.
 ```bash
 python3 ~/.claude/scripts/jarfis_cli.py register \
   --workflow-id="sys-impl:{plan-name}" --skill=sys-implement --docs-dir="{planDir}" \

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.20.3] - 2026-05-13
+
+- implement: event-stream-v4-tool-quiet — TOOL default DEBUG + --show-tools opt-in
+
 ## [4.20.2] - 2026-05-13
 
 - implement: event-stream-v3 — color forced + UTC→local TZ + Fix C drift fallback rollback

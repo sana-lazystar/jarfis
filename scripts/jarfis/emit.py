@@ -59,7 +59,7 @@ DEFAULT_LEVEL: dict[EventType, Level] = {
     EventType.DIALECTIC_UNRESOLVED: Level.HIGHLIGHT,
     EventType.AGENT_SPAWN: Level.INFO,
     EventType.AGENT_DONE: Level.INFO,
-    EventType.TOOL: Level.INFO,
+    EventType.TOOL: Level.DEBUG,
     EventType.NOTE: Level.INFO,
     EventType.ERROR: Level.ERROR,
 }

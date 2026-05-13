@@ -69,7 +69,9 @@ Execute these steps in order; each writes to `.jarfis-state.json` via `jarfis_cl
 3. **Org detect** (v4.4 — defect D2: must run BEFORE docsDir composition): `python3 ~/.claude/scripts/jarfis_cli.py org detect <project_path>` → `state.org = {name, root}` or `null` (M10 — snapshot once, no re-detection later). Then run `python3 ~/.claude/scripts/jarfis_cli.py preflight <project_path>` to obtain `preflight.org_dir` (`{org_root}/.jarfis-org/` for registered org, `{JARFIS_SOURCE}/.personal/` for standalone). The result is the convention variable `$JARFIS_ORG_DIR` (NOT an exported env var — consume from preflight JSON).
 4. **Work identity** (v4.4 — defect D1: explicit docsDir rule): AskUserQuestion (or derive from `$ARGUMENTS`) → `state.work = {name, input, docsDir (absolute), startedAt}`. **`docsDir` MUST be `{org_dir}/works/{YYYYMMDD}-{slug}` where `org_dir` comes from preflight.org_dir (org registered → `{org_root}/.jarfis-org/`; standalone → `{JARFIS_SOURCE}/.personal/`).** Create `docsDir` if missing.
 
-   **Event Stream register (event-stream-v1, D10)** — immediately after `docsDir` is created, register the workflow in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort (`|| true`):
+   **Event Stream register (event-stream-v1+v4, D10)** — immediately after `docsDir` is created, register the workflow in `~/.jarfis/active.json` and emit the workflow-level `phase.start` event so the multi-line statusline begins rendering. Both calls are best-effort (`|| true`).
+
+   **`--show-tools` opt-in (event-stream-v4)**: if the user invocation includes the `--show-tools` flag (e.g. `/jarfis:work --show-tools <args>`), append `--show-tools` to the register call below. Default: omit, and tool events are stored in events.jsonl but filtered out of statusline body.
    ```bash
    python3 ~/.claude/scripts/jarfis_cli.py register \
      --workflow-id="${state.work.name}" --skill=work --docs-dir="${state.work.docsDir}" \
